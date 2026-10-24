@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-24",
+  "scope": "Managed source selections; not a fresh-install acceptance record",
+  "chezmoi_revision": "861861eaa3ff67ca65ce4577318fd52135917620",
+  "hosts": [
+    "Starship",
+    "Snap",
+    "Carbon"
+  ],
+  "shell": "minimal Niri",
+  "notifier": "SwayNC fork",
+  "locker": "Gtklock",
+  "swaync": {
+    "package": "swaync-bryan",
+    "version": "0.12.6-15",
+    "recipe_revision": "cd1038d1c824f256ecb5a448d78df9f71b64850a",
+    "recipe_archive_sha256": "297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0",
+    "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
+    "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83"
+  },
+  "optional_tools": {
+    "agent_plus": "0.15.0a15",
+    "tmux_plus_bundle": "0.12.0a8",
+    "mesh_plus": "0.1.0a24"
+  },
+  "personal_policy": {
+    "display_off_minutes": 10,
+    "automatic_lock": false,
+    "battery_suspend_minutes": 30,
+    "ac_suspend": false,
+    "lock_before_suspend": false
+  },
+  "chezmoi_source_visibility": "private"
+}

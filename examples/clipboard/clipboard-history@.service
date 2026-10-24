@@ -1,0 +1,16 @@
+[Unit]
+Description=Clipboard history collector for %i
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+Type=simple
+ExecCondition=%h/.local/bin/desktop-session-ready
+ExecStart=/usr/bin/wl-paste --type %i --watch /usr/bin/cliphist -max-items 200 store
+Restart=on-failure
+RestartSec=2
+UMask=0077
+
+[Install]
+WantedBy=niri.service

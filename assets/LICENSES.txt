@@ -1,0 +1,15 @@
+Niri Plus site code and documentation: MIT, Copyright 2026 Bryan Bai.
+
+agent-plus.png: MIT, Copyright 2026 Bryan Bai.
+Source: https://github.com/byebyebryan/rofi-agent-plus
+The full MIT license is in the repository LICENSE.
+
+panel.png and panel-ethernet.png: screenshots of SwayNotificationCenter,
+GPL-3.0-only, Erik Reider and contributors, including Bryan Bai.
+Source and license: https://github.com/byebyebryan/SwayNotificationCenter/tree/4114c9cd56f086e166253880d0c96c6c5212e4aa
+License text: https://github.com/byebyebryan/SwayNotificationCenter/blob/4114c9cd56f086e166253880d0c96c6c5212e4aa/COPYING
+See provenance.json for native rendering setup and fixture-data limitations.
+
+The interactive desktop illustration and social image are original code-rendered
+Niri Plus artwork under the repository MIT license.
+Niri Plus is independent of the Niri project.

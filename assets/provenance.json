@@ -1,0 +1,72 @@
+{
+  "files": [
+    {
+      "path": "assets/agent-plus.png",
+      "sha256": "7feaee0de386b96d89d017b3e793e77ba3dc25aa8d36f3e5f631d57b2b3f69e7",
+      "source": "https://github.com/byebyebryan/rofi-agent-plus/blob/35eeadaff286f20ee631c2240587536647c8248d/docs/assets/picker.png",
+      "license": "MIT",
+      "description": "Actual Rofi rendering; fictional environments/windows and preview theme, no live sessions"
+    },
+    {
+      "path": "assets/panel.png",
+      "sha256": "3cf1d548ea754cf934319087a9e6d30410b83fa89c69c0d5b02c6f9ceed5ba67",
+      "source": "https://github.com/byebyebryan/SwayNotificationCenter/tree/4114c9cd56f086e166253880d0c96c6c5212e4aa",
+      "license": "GPL-3.0-only",
+      "description": "Actual isolated native rendering with fictional wireless and GPU values; actual CPU/RAM; default theme; no Battery card, title, DND or volume. Site displays the panel region through CSS, preserving original screenshot bytes."
+    },
+    {
+      "path": "assets/panel-ethernet.png",
+      "sha256": "ffc9bb4f30140a3e209f89e9b8a0fba5fe46ca9c0b4a4df50cac0853e9e401ac",
+      "source": "https://github.com/byebyebryan/SwayNotificationCenter/tree/4114c9cd56f086e166253880d0c96c6c5212e4aa",
+      "license": "GPL-3.0-only",
+      "description": "Actual isolated native rendering with fictional wireless and GPU values; actual CPU/RAM; default theme; no Battery card, title, DND or volume. Site displays the panel region through CSS, preserving original screenshot bytes."
+    }
+  ],
+  "swaync_render": {
+    "created_date": "2026-10-24",
+    "source_repository": "https://github.com/byebyebryan/SwayNotificationCenter",
+    "recipe_revision": "cd1038d1c824f256ecb5a448d78df9f71b64850a",
+    "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
+    "package": "swaync-bryan 0.12.6-15",
+    "package_archive_sha256": "4093a758294746941b701e792f1a153618e63f9b800c7173f3513e03ad05bf44",
+    "binary_sha256": "7776fb409fd42acdcfe45a754821150161d94ba3e081d30e2d1069370e120be6",
+    "binary_validation": "pacman -Qkk: 43 total files, 0 altered; installed binary hash equals binary streamed from cached selected package; managed recipe/version stamp matches",
+    "source_harness_path": "tests/notification-actions.py",
+    "source_harness_sha256": "c3c2ba32457586ba4ffba367cefb764d0751947d7e5ab6456802e72243ed6687",
+    "scratch_harness_sha256": "90557d52974ebe6e773f2357b4be5e4158077512462b6d5ef5593e52f0e4212a",
+    "scratch_harness_changes": [
+      "Keep private D-Bus listener in owned scratch directory",
+      "Disable the nested compositor startup hotkey overlay"
+    ],
+    "theme": {
+      "description": "Installed packaged SwayNC system stylesheet with the fixture empty custom stylesheet; private empty XDG_CONFIG_HOME, memory-backed GSettings, cairo/software rendering; not the managed personal SwayNC style",
+      "path": "/etc/xdg/swaync/style.css",
+      "sha256": "a42522b13d9699a801de4eaede361d11fd0594a2d9f86e731e1b9b0f45d91cc1"
+    },
+    "limitations": [
+      "Actual native GTK fork output inside an owned nested Niri/Xvfb session; not a capture of the user desktop",
+      "Wi-Fi SSID, signal, Ethernet documentation address, Bluetooth names/percentages and NVIDIA query numbers are fixture data",
+      "CPU frequency/utilization and RAM values read actual host /proc/sysfs; GPU row visibility still follows real cached PCI runtime state",
+      "No Battery card is present because no present system battery was discovered on this host",
+      "Fixture panel uses dashboard and notifications only, omitting title, DND and volume widgets from the personal configuration",
+      "1280x800 full nested output includes default gray empty desktop and compositor pointer; panel begins at x=832",
+      "Generated PNGs are unedited screenshots; no crop or image processing performed"
+    ],
+    "media": [
+      {
+        "file": "dashboard.png",
+        "sha256": "3cf1d548ea754cf934319087a9e6d30410b83fa89c69c0d5b02c6f9ceed5ba67",
+        "width": 1280,
+        "height": 800
+      },
+      {
+        "file": "dashboard-ethernet.png",
+        "sha256": "ffc9bb4f30140a3e209f89e9b8a0fba5fe46ca9c0b4a4df50cac0853e9e401ac",
+        "width": 1280,
+        "height": 800
+      }
+    ],
+    "license_context": "Renderer/source/theme are GPL-3.0-only; include fork source attribution and accurate fixture-data caption when reusing screenshots"
+  },
+  "desktop_walkthrough": "HTML/CSS illustration with fictional content; not a recording"
+}

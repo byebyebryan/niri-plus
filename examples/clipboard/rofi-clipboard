@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""Rofi clipboard picker; selecting a stored item copies its original bytes."""
+import os
+from pathlib import Path
+import shlex
+import subprocess
+import sys
+
+
+def cliphist(*arguments, data=None):
+    return subprocess.run(["cliphist", *arguments], input=data, capture_output=True, check=True).stdout
+
+
+def header(**options):
+    for name, value in options.items():
+        print(f"\0{name.replace('_', '-')}\x1f{value}")
+
+
+def confirm_clear():
+    header(prompt="Clear clipboard history?", message="Enter: Choose · Escape: Cancel",
+           no_custom="true", use_hot_keys="true", markup_rows="false",
+           keep_selection="true", new_selection=0, keep_filter="false", data="confirm-clear")
+    print("Cancel\0info\x1fcancel")
+    print("Clear history\0info\x1fconfirm-clear")
+
+
+def history(*, keep=True):
+    header(prompt="Clipboard", message="Enter: Copy · Delete: Remove · Ctrl+Shift+Delete: Clear all",
+           no_custom="true", use_hot_keys="true", markup_rows="false",
+           keep_selection=str(keep).lower(), keep_filter=str(keep).lower(), data="")
+    try:
+        listing = cliphist("list")
+    except subprocess.CalledProcessError as error:
+        if b"please store something first" not in error.stderr:
+            raise
+        listing = b""
+    for row in listing.splitlines():
+        identifier, separator, preview = row.partition(b"\t")
+        if not separator or not identifier.isdigit():
+            continue
+        # Clipboard content is plain display text, never Rofi metadata or markup.
+        preview = "".join(char if char.isprintable() else " "
+                          for char in preview.decode("utf-8", "replace"))
+        print(f"{preview}\0info\x1f{identifier.decode('ascii')}")
+    if not listing:
+        print("Clipboard is empty\0nonselectable\x1ftrue")
+
+
+def menu():
+    action = os.environ.get("ROFI_RETV", "0")
+    identifier = os.environ.get("ROFI_INFO", "")
+    if os.environ.get("ROFI_DATA") == "confirm-clear":
+        if action == "1" and identifier == "confirm-clear":
+            cliphist("wipe")
+        elif action != "1":
+            confirm_clear()
+            return
+        history(keep=False)
+    elif action == "10":
+        confirm_clear()
+    elif action == "1" and identifier.isascii() and identifier.isdigit():
+        data = cliphist("decode", identifier)
+        subprocess.run(["wl-copy"], input=data, stdout=subprocess.DEVNULL, check=True)
+    else:
+        if action == "3" and identifier.isascii() and identifier.isdigit():
+            cliphist("delete", data=identifier.encode("ascii") + b"\n")
+        history()
+
+
+def main():
+    os.umask(0o077)
+    # Rofi appends the selected display text; only ROFI_INFO identifies an item.
+    if sys.argv[1:2] == ["--menu"]:
+        menu()
+    elif not sys.argv[1:]:
+        command = shlex.join([str(Path(__file__).resolve()), "--menu"])
+        os.execvp("rofi", ["rofi", "-show", "clipboard", "-modes", "clipboard:" + command,
+                           "-no-sort", "-no-show-icons", "-kb-delete-entry", "Delete",
+                           "-kb-remove-char-forward", "Control+d", "-kb-accept-custom", "",
+                           "-kb-custom-1", "Control+Shift+Delete", "-kb-cancel", "Escape,Control+g",
+                           "-theme-str", 'entry { placeholder: "Filter clipboard"; }'])
+    else:
+        raise SystemExit("Usage: rofi-clipboard")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, subprocess.CalledProcessError) as error:
+        print(f"rofi-clipboard: {error}", file=sys.stderr)
+        raise SystemExit(1)

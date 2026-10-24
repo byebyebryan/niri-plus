@@ -1,0 +1,77 @@
+{
+  "date": "2026-10-24",
+  "files": [
+    {
+      "path": "examples/clipboard/clipboard-history@.service",
+      "sha256": "0de3dc1569f2fce3339f0eb178b8d35f60767832ad239a72f2dcafacb4723572",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
+      "notes": "Authored portable example; not byte-identical to the personal managed source. Portal choices follow upstream Niri guidance.",
+      "source_visibility": "private"
+    },
+    {
+      "path": "examples/clipboard/config",
+      "sha256": "b8d2bb9b67c705d530d3b32ecad65516b5c3385e4856ca9211579bda94456397",
+      "kind": "verbatim managed helper/configuration",
+      "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
+      "source_visibility": "private",
+      "source_path": "dot_config/cliphist/config"
+    },
+    {
+      "path": "examples/clipboard/rofi-clipboard",
+      "sha256": "6700f4c14d700502634c9c95cd92fbbf7493e01232e7bed357ce8ad932fd084c",
+      "kind": "verbatim managed helper/configuration",
+      "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
+      "source_visibility": "private",
+      "source_path": "dot_local/bin/executable_rofi-clipboard"
+    },
+    {
+      "path": "examples/niri/config.kdl",
+      "sha256": "d3bb5f2c2321d0ddc600dd0d9e389e0cb42b5a51fb8ab8eaed511f959b09cdfa",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
+      "notes": "Authored portable example; not byte-identical to the personal managed source. Portal choices follow upstream Niri guidance.",
+      "source_visibility": "private"
+    },
+    {
+      "path": "examples/notifications/config.json",
+      "sha256": "da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
+      "notes": "Authored portable example; not byte-identical to the personal managed source. Portal choices follow upstream Niri guidance.",
+      "source_visibility": "private"
+    },
+    {
+      "path": "examples/notifications/style.css",
+      "sha256": "8d69c9ff7df9d37d36975dd9f4cc56a7a711274029152a15cb26c80a0dd6ce6a",
+      "kind": "verbatim managed helper/configuration",
+      "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
+      "source_visibility": "private",
+      "source_path": "dot_config/swaync/style.css"
+    },
+    {
+      "path": "examples/portals/niri-portals.conf",
+      "sha256": "9043d1f2ddad6f7e626836527e05c07ae5e68f9a5903ada62a381061dd77ff8f",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
+      "notes": "Authored portable example; not byte-identical to the personal managed source. Portal choices follow upstream Niri guidance.",
+      "source_visibility": "private"
+    },
+    {
+      "path": "examples/session/desktop-lock.service",
+      "sha256": "82384de915a4dac44a004feec65f2441e25405257e9d7bae20bb3cd809c13c60",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
+      "notes": "Authored portable example; not byte-identical to the personal managed source. Portal choices follow upstream Niri guidance.",
+      "source_visibility": "private"
+    },
+    {
+      "path": "examples/session/desktop-session-ready",
+      "sha256": "75c242d4638c35f7416f825f20e04ca4eb60c27993f50c99b08312c88f2bf580",
+      "kind": "verbatim managed helper/configuration",
+      "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
+      "source_visibility": "private",
+      "source_path": "dot_local/bin/executable_desktop-session-ready"
+    }
+  ]
+}

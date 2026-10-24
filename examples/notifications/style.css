@@ -1,0 +1,63 @@
+/* Keep the packaged GTK4 layout and match the desktop's charcoal/blue palette. */
+@import url("/etc/xdg/swaync/style.css");
+
+:root {
+  --cc-bg: rgba(18, 18, 18, 0.85);
+  --noti-bg: 18, 18, 18;
+  --noti-bg-alpha: 0.85;
+  --noti-bg-darker: #121212;
+  --noti-bg-hover: #242424;
+  --noti-bg-focus: rgba(66, 165, 245, 0.15);
+  --noti-border-color: rgba(66, 165, 245, 0.7);
+  --text-color: #f0f0f0;
+  --text-color-disabled: #a0a0a0;
+  --bg-selected: #42a5f5;
+  --border-radius: 0px;
+  --notification-icon-size: 40px;
+  --font-size-body: 15px;
+  --font-size-summary: 15px;
+}
+
+* {
+  font-family: "Inter Variable", sans-serif;
+}
+
+.control-center {
+  border: 1px solid var(--noti-border-color);
+}
+
+.widget-dashboard {
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+.notification-row .notification-background .notification.critical {
+  background: rgba(36, 36, 36, 0.85);
+  border: 2px solid #ef5350;
+}
+
+/* Match the packaged selectors so its 4px padding cannot override this. */
+.notification-row .notification-background .notification .notification-default-action {
+  padding: 14px 16px;
+}
+
+.notification-row .notification-background .notification .notification-default-action .body {
+  margin-top: 6px;
+}
+
+.notification-row .notification-background .notification .notification-alt-actions {
+  padding: 0 12px 10px;
+}
+
+.notification-action > button,
+.widget-title > button {
+  border-radius: 0;
+}
+
+progressbar trough {
+  background: #303030;
+}
+
+progressbar progress {
+  background: #42a5f5;
+}

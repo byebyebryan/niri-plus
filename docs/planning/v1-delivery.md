@@ -69,8 +69,9 @@ All 30 served pages/assets/examples match the reviewed build byte for byte;
 An owned headless browser verified the public homepage, scene interaction,
 navigation to the personal story, and keyboard-reference filtering, with no
 browser errors. The [publication record](v1-publication.json) preserves URLs,
-artifact hashes, and these checks. Later changes to this nonpublic planning
-record do not change the recorded site artifact.
+artifact hashes, and these checks. This planning record is public in the
+repository and excluded from the generated site. Changes to it do not change
+the recorded site artifact.
 
 ## Remaining acceptance and media work
 

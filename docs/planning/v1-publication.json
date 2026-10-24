@@ -1,0 +1,203 @@
+{
+  "site": "https://dev.byebyebryan.com/niri-plus/",
+  "site_source_commit": "9ef2c5f361ed76c5804e8567cfca026fb94ac61f",
+  "workflow": "https://github.com/byebyebryan/niri-plus/actions/runs/40125177001",
+  "workflow_conclusion": "success",
+  "date": "2026-10-24",
+  "checked_files": 30,
+  "excluded_control_files": [
+    ".nojekyll"
+  ],
+  "files": [
+    {
+      "path": "architecture/index.html",
+      "status": 200,
+      "sha256": "2fa352cd6ffc102f0c6d6b569de81f1087a2f96788a15e33762a44fb913e265f",
+      "matches": true
+    },
+    {
+      "path": "assets/LICENSES.txt",
+      "status": 200,
+      "sha256": "d3a3fff837f65c633103365a7e1b8be9b47aa47934d2c13fc007a4f04e401960",
+      "matches": true
+    },
+    {
+      "path": "assets/agent-plus.png",
+      "status": 200,
+      "sha256": "7feaee0de386b96d89d017b3e793e77ba3dc25aa8d36f3e5f631d57b2b3f69e7",
+      "matches": true
+    },
+    {
+      "path": "assets/favicon.svg",
+      "status": 200,
+      "sha256": "93dcbff17462be60110f30d35aecac8bcb51b21b805964b8061ca48883912b1c",
+      "matches": true
+    },
+    {
+      "path": "assets/panel-ethernet.png",
+      "status": 200,
+      "sha256": "ffc9bb4f30140a3e209f89e9b8a0fba5fe46ca9c0b4a4df50cac0853e9e401ac",
+      "matches": true
+    },
+    {
+      "path": "assets/panel.png",
+      "status": 200,
+      "sha256": "3cf1d548ea754cf934319087a9e6d30410b83fa89c69c0d5b02c6f9ceed5ba67",
+      "matches": true
+    },
+    {
+      "path": "assets/provenance.json",
+      "status": 200,
+      "sha256": "ede21b77816fa1dffadd8988cfaf6c5c1d94277140ed8e1278cc4f4ebac8bbe7",
+      "matches": true
+    },
+    {
+      "path": "assets/site.js",
+      "status": 200,
+      "sha256": "51a40e409aae51571ce835259e40c4a35c70a69e8e520aa3b8725578fab476ce",
+      "matches": true
+    },
+    {
+      "path": "assets/social.png",
+      "status": 200,
+      "sha256": "bdfafc5b416fa6f883ca1de2edb32b66b05415d2f1832ed2355db829590d8e93",
+      "matches": true
+    },
+    {
+      "path": "assets/style.css",
+      "status": 200,
+      "sha256": "4cd44d796159055e8739b8cd7ed4d9039278005b813ec34d67ba34e40ba5614e",
+      "matches": true
+    },
+    {
+      "path": "data/setup.json",
+      "status": 200,
+      "sha256": "596a306592b1d52721d654b743f3b8b75c3b34752375a5b8fd8830423e8c6957",
+      "matches": true
+    },
+    {
+      "path": "examples/clipboard/clipboard-history@.service",
+      "status": 200,
+      "sha256": "0de3dc1569f2fce3339f0eb178b8d35f60767832ad239a72f2dcafacb4723572",
+      "matches": true
+    },
+    {
+      "path": "examples/clipboard/config",
+      "status": 200,
+      "sha256": "b8d2bb9b67c705d530d3b32ecad65516b5c3385e4856ca9211579bda94456397",
+      "matches": true
+    },
+    {
+      "path": "examples/clipboard/rofi-clipboard",
+      "status": 200,
+      "sha256": "6700f4c14d700502634c9c95cd92fbbf7493e01232e7bed357ce8ad932fd084c",
+      "matches": true
+    },
+    {
+      "path": "examples/manifest.json",
+      "status": 200,
+      "sha256": "238ef973cffd87c60bb653795c0a0815537b4c6152a94f423c44ac7062ed3ff2",
+      "matches": true
+    },
+    {
+      "path": "examples/niri/config.kdl",
+      "status": 200,
+      "sha256": "d3bb5f2c2321d0ddc600dd0d9e389e0cb42b5a51fb8ab8eaed511f959b09cdfa",
+      "matches": true
+    },
+    {
+      "path": "examples/notifications/config.json",
+      "status": 200,
+      "sha256": "da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577",
+      "matches": true
+    },
+    {
+      "path": "examples/notifications/style.css",
+      "status": 200,
+      "sha256": "8d69c9ff7df9d37d36975dd9f4cc56a7a711274029152a15cb26c80a0dd6ce6a",
+      "matches": true
+    },
+    {
+      "path": "examples/portals/niri-portals.conf",
+      "status": 200,
+      "sha256": "9043d1f2ddad6f7e626836527e05c07ae5e68f9a5903ada62a381061dd77ff8f",
+      "matches": true
+    },
+    {
+      "path": "examples/session/desktop-lock.service",
+      "status": 200,
+      "sha256": "82384de915a4dac44a004feec65f2441e25405257e9d7bae20bb3cd809c13c60",
+      "matches": true
+    },
+    {
+      "path": "examples/session/desktop-session-ready",
+      "status": 200,
+      "sha256": "75c242d4638c35f7416f825f20e04ca4eb60c27993f50c99b08312c88f2bf580",
+      "matches": true
+    },
+    {
+      "path": "index.html",
+      "status": 200,
+      "sha256": "9d69980ac93854a5c750e2bebec00c2271002ab0e0d747af618b3d51bed05755",
+      "matches": true
+    },
+    {
+      "path": "recipes/clipboard/index.html",
+      "status": 200,
+      "sha256": "64374b3cd6f5e069015d90ce1b0aec12d9603f8d702bf6b0baaa2165ed296df4",
+      "matches": true
+    },
+    {
+      "path": "recipes/notifications/index.html",
+      "status": 200,
+      "sha256": "608d63039da06fb911b774adc109a487f6549dc648338361f616e2fd00564331",
+      "matches": true
+    },
+    {
+      "path": "recipes/session/index.html",
+      "status": 200,
+      "sha256": "6955bb78768a806ff02b2e0e0d0d26026647dde63e7fbbff39912e45d7c60109",
+      "matches": true
+    },
+    {
+      "path": "reference/index.html",
+      "status": 200,
+      "sha256": "d8f2fbdcab4da7571ca5d18b3bbfccb96d382f1604912499393efe034d7a415a",
+      "matches": true
+    },
+    {
+      "path": "setup/index.html",
+      "status": 200,
+      "sha256": "56f31bcab3fc7aa8dfc633d0887ce6e15a00f6e531f2cdb675a3590779112cf6",
+      "matches": true
+    },
+    {
+      "path": "sitemap.xml",
+      "status": 200,
+      "sha256": "10c2f76ea57fb2dbddf69e83d72459042a704b00684315b151544dd011a03081",
+      "matches": true
+    },
+    {
+      "path": "story/index.html",
+      "status": 200,
+      "sha256": "9826eaf1a99649d909c6a4ca87cc91c8210fb745e6e10acd8c8d1c7a55aedd64",
+      "matches": true
+    },
+    {
+      "path": "tour/index.html",
+      "status": 200,
+      "sha256": "9948e727644b661ff05e95dfe4ccbefe3b7536e4c570848b65ca7765369d66e9",
+      "matches": true
+    }
+  ],
+  "public_browser_smoke": {
+    "result": "passed",
+    "checks": [
+      "home HTTP 200",
+      "workflow scene interaction",
+      "story navigation and personal content",
+      "reference search",
+      "no browser errors"
+    ]
+  }
+}

@@ -59,6 +59,19 @@ The GitHub workflow repeats the build and browser checks before Pages delivery.
 Remote branch parity, workflow success, and served artifact bytes are verified
 separately at publication.
 
+## Published edition
+
+The [first publication](https://github.com/byebyebryan/niri-plus/actions/runs/40125177001)
+passed on 2026-10-24 from site source `9ef2c5f361ed76c5804e8567cfca026fb94ac61f`.
+All 30 served pages/assets/examples match the reviewed build byte for byte;
+`.nojekyll` is a build-control file excluded from HTTP comparison.
+
+An owned headless browser verified the public homepage, scene interaction,
+navigation to the personal story, and keyboard-reference filtering, with no
+browser errors. The [publication record](v1-publication.json) preserves URLs,
+artifact hashes, and these checks. Later changes to this nonpublic planning
+record do not change the recorded site artifact.
+
 ## Remaining acceptance and media work
 
 The daily desktop still needs a representative real-session recording. Current

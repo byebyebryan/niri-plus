@@ -77,3 +77,7 @@ media/example hashes. Browser checks cover nine pages at four widths,
 keyboard operation, motion preferences, and reading without JavaScript. To save
 local captures, set `NIRI_SCREENSHOTS=/absolute/directory` for the browser check.
 Keep generated output and captures untracked.
+
+See the [v1 delivery record](docs/planning/v1-delivery.md) for the first edition's
+scope, verification, public-delivery evidence, and remaining media/target-machine
+acceptance work.

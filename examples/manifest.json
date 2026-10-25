@@ -51,10 +51,10 @@
     },
     {
       "path": "examples/portals/niri-portals.conf",
-      "sha256": "9043d1f2ddad6f7e626836527e05c07ae5e68f9a5903ada62a381061dd77ff8f",
+      "sha256": "f683299f24c52df13e495208fe7dbf44bcb71163d6761af59bf1de22ba79c3da",
       "kind": "portable adaptation",
-      "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
-      "notes": "Authored portable example; not byte-identical to the personal managed source. Portal choices follow upstream Niri guidance.",
+      "source": "Reviewed GTK/WLR personal desktop selection, 2026-10-25",
+      "notes": "Portable GTK file picker/notification routing with WLR whole-monitor capture. Secrets and host-specific exclusions remain separately configured; GNOME per-window capture is optional.",
       "source_visibility": "private"
     },
     {

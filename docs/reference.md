@@ -105,7 +105,7 @@ boundaries.
 - [Niri configuration](../examples/niri/config.kdl): portable window layout and
   base bindings, with no personal paths or service startup hooks.
 - [Portal preferences](../examples/portals/niri-portals.conf): GTK file picker and
-  GNOME screencasting, following upstream guidance.
+  notification integration, with WLR whole-monitor sharing.
 - [Clipboard collector](../examples/clipboard/clipboard-history@.service) and
   [picker](../examples/clipboard/rofi-clipboard): sample service and frozen helper.
 - [Manual lock service](../examples/session/desktop-lock.service): a focused

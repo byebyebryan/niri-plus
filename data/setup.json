@@ -119,5 +119,33 @@
     "accent": "#83b8f5",
     "focus": "#a6ceff",
     "selection": "#2b425b"
+  },
+  "portals": {
+    "baseline": "gtk+wlr",
+    "file_chooser": "gtk",
+    "access": "gtk",
+    "settings": "gtk",
+    "notifications": "gtk",
+    "screencast": "wlr",
+    "screenshot": "wlr",
+    "secrets": "kwallet",
+    "capture_source_types": [
+      "monitor"
+    ],
+    "per_window_sharing": "outside selected baseline",
+    "live_browser_capture": "not exercised during package cleanup",
+    "cleanup": {
+      "date": "2026-10-25",
+      "carbon": "No GNOME/KDE portal or Nautilus installed; checked before the host went offline",
+      "starship": "No GNOME/KDE portal or Nautilus installed; no package changes",
+      "snap": {
+        "removed_packages": 20,
+        "removed_installed_bytes": 35651757,
+        "exact_recovery_archives": 20,
+        "shared_gvfs_retained": true,
+        "selected_services": "preserved without restart"
+      },
+      "source_revision": "00dc486a473424be24fec85128cce7b8127c57f3"
+    }
   }
 }

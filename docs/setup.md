@@ -18,14 +18,16 @@ for the baseline. Keep your current desktop available while trying it.
 On Arch, the basic window, terminal, launcher, and file tools are:
 
 ```sh
-sudo pacman -S --needed niri kitty rofi dolphin xdg-desktop-portal-gtk xdg-desktop-portal-gnome
+sudo pacman -S --needed niri kitty rofi dolphin xdg-desktop-portal-gtk xdg-desktop-portal-wlr
 ```
 
 Choose and install your browser separately. I use Chrome. Niri's
 [important software guide](https://niri-wm.github.io/niri/Important-Software.html)
 covers portals, an authorization agent, Xwayland, and the rest of a usable
-session. Screencasting uses the GNOME portal; file picking can be routed to GTK
-without making Nautilus your file manager.
+session. This setup uses GTK for file picking and WLR for whole-monitor sharing.
+Niri exposes the capture protocol used by WLR; the selected portal advertises
+monitors rather than individual application windows. Dolphin remains the file
+manager.
 
 From a clone of Niri Plus, try the example as a separate file first:
 
@@ -39,7 +41,7 @@ personal filesystem paths, or automatic suspend policy. Niri reloads its
 configuration when it changes.
 
 The [portal example](../examples/portals/niri-portals.conf) selects GTK for file
-dialogs and GNOME for screencasting. Before checking file dialogs, inspect your
+dialogs/notifications and WLR for whole-monitor capture. Before checking file dialogs, inspect your
 existing `~/.config/xdg-desktop-portal/niri-portals.conf` if present and back it
 up. Merge these preferences, or install the example if you have no override:
 
@@ -51,6 +53,14 @@ cp examples/portals/niri-portals.conf ~/.config/xdg-desktop-portal/niri-portals.
 Log out and back into Niri to load the selected portal configuration. Wallet
 and secret-service integration are separate preferences; preserve your existing
 backend if you already use one.
+
+Individual-window sharing is an optional extension through
+`xdg-desktop-portal-gnome`, as described in
+[Niri's screencasting guide](https://niri-wm.github.io/niri/Screencasting.html).
+It is not part of this baseline. Keep provider selection explicit when adding
+it: the GNOME backend has GNOME-specific service dependencies, while GTK can
+retain file picking and notifications and the existing secret backend can stay
+selected.
 
 ## Check the browser and file workflow
 

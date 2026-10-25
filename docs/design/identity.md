@@ -2,7 +2,7 @@
 
 **Selected identity: Neutral Slate. One theme for the initial reference.**
 
-Use the reviewed warm charcoal/off-white surfaces, pale steel-blue accent,
+Use the reviewed warm charcoal/off-white surfaces, Clear Blue accent,
 Noto Sans UI, and Meslo terminal. Graphite Blue is retained as a future
 alternative. The public design presentation should show these choices in use.
 
@@ -25,10 +25,10 @@ appearance.
 | text | `#efefec` |
 | secondary | `#b9bec3` |
 | muted | `#9ba4ab` |
-| accent | `#b3c9dd` |
+| accent | `#83b8f5` |
 | accent ink | `#151b20` |
-| focus | `#d0e2f1` |
-| selection | `#35434f` |
+| focus | `#a6ceff` |
+| selection | `#2b425b` |
 | selection text | `#efefec` |
 | warning | `#ddbb80` |
 | error | `#e5a09b` |

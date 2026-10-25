@@ -15,7 +15,7 @@ native behavior.
 
 The generated [Neutral Slate Kitty fragment](../../examples/kitty/neutral-slate.conf)
 contains only appearance options: a `#202326` background, warm off-white text,
-a pale blue cursor, blue-gray selection, and a coordinated 16-color ANSI table.
+a clear blue cursor, blue selection, and a coordinated 16-color ANSI table.
 It does not change input, paste handling, glyph mappings, cursor trail, windows,
 or shell behavior. The fragment is selected design material; its presence here
 does not claim native deployment.

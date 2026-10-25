@@ -82,7 +82,7 @@
     },
     {
       "path": "examples/kitty/neutral-slate.conf",
-      "sha256": "d036e5cd634cd8165915778b30c588c8df78998be8b5f78444fd3cd6a5561e7b",
+      "sha256": "232fbe4aed9ee4a0d9eb81aac312a7987e9a05bc794ea5b48c6bef5ddb43e4c6",
       "kind": "generated selected appearance specimen",
       "source": "design/identity.json",
       "notes": "Selected Neutral Slate appearance options only. Generated from the canonical profile; no shell behavior or deployed appearance claim."
@@ -207,64 +207,64 @@
     },
     {
       "path": "examples/theme/neutral-slate.rasi",
-      "sha256": "9c0acd263b5988b0fc70dd079de9eef0c5ec1ca62ec1cc49954e407028aa27dd",
-      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "sha256": "d9a27f9308ff4d32c401c87b560fc538cc86f2e58ba0425f77a903e596801e0b",
+      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
       "source_visibility": "private",
       "notes": "Rofi appearance only. Existing key bindings, actions, and launcher behavior remain separately owned; not a deployed artifact."
     },
     {
       "path": "examples/theme/swaync.css",
-      "sha256": "58d9e9f0b62bed6e59b886faeaf2928aae96ae60b9762cd4594e4777ad836d33",
-      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "sha256": "466d5ac89fdb1cc25daa391305d9151db14564d82c52d30b6cf824609277b9f2",
+      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
       "source_visibility": "private",
       "notes": "SwayNC CSS only for the selected fork; notification behavior and services remain separately owned. Not a deployed artifact."
     },
     {
       "path": "examples/theme/gtklock.css",
-      "sha256": "a7ad4f3ca96fee7a2624077bdfd9986f12f2197d7f33ed79d1fa597930a07b89",
-      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "sha256": "0099a7d295c508d6b16e70ac2eec2e8fe6712e5c8a1bea2ddcbab6c7ca3cd3c7",
+      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
       "source_visibility": "private",
       "notes": "Gtklock stylesheet only; authentication, manual lock service, and power policy remain unchanged. Not a deployed artifact."
     },
     {
       "path": "examples/theme/qt5-palette.conf",
-      "sha256": "51277edaae2740370cfd7a7b2e27e2a5709d3f02ad271039b48a7f1b3afb6092",
-      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "sha256": "608f5c05f716929d241b900cd83571190652a79a7be59251fe98678656d6d8d4",
+      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
       "source_visibility": "private",
       "notes": "Qt 5 QPalette colors only; style, dialogs, fonts, and application preferences remain separately owned. Not a deployed artifact."
     },
     {
       "path": "examples/theme/qt6-palette.conf",
-      "sha256": "36a20fe5b188e187b29d5680c545e3b8e06ffe83c867968a22b8cc6e4999d7d7",
-      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "sha256": "72fc3c6f9348906c27740acbd25c052d24602d120c58fc43aa8f0dfd44a495c7",
+      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
       "source_visibility": "private",
       "notes": "Qt 6 QPalette colors only; style, dialogs, fonts, and application preferences remain separately owned. Not a deployed artifact."
     },
     {
       "path": "examples/theme/NeutralSlate.colors",
-      "sha256": "a7f4328e418937294f2a248555d68d7e43024fb457f058ef270cce0fcaded34d",
-      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "sha256": "03a9fe5e5ee6d47fa456e758f8a5e3c0d3344fb219a04aa3a4ddb5586276c88b",
+      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
       "source_visibility": "private",
       "notes": "KDE color scheme with Colors:* groups. Font values are configured separately; do not replace kdeglobals. Not a deployed artifact."
     },
     {
       "path": "examples/theme/niri-neutral-slate.kdl",
-      "sha256": "b3ebb0e8028940b1a9275f558f33591b62f3088ea105b6c62aa104c83fdd0f3d",
-      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "sha256": "2a80aa95cf01e48efd80735d30aaa089dc045263bb40f560dabea48de9bc145b",
+      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
       "kind": "authored appearance-only fragment",
-      "source": "design/identity.json",
+      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
       "notes": "Canvas and focus-ring appearance only. Merge into the existing layout block; no input, bindings, startup, service, or power settings. Not a deployed artifact."
     }
   ]

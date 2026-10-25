@@ -1,6 +1,6 @@
 # Neutral Slate
 
-Neutral Slate brings warm charcoal surfaces, readable type, and pale blue focus
+Neutral Slate brings warm charcoal surfaces, readable type, and clear blue focus
 to the browser-and-terminal desktop. Niri keeps the work area open; the palette
 helps identify focus, selection, and status without turning every surface blue.
 

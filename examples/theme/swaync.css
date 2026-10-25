@@ -6,11 +6,11 @@
   --noti-bg-alpha: 0.96;
   --noti-bg-darker: #191c1f;
   --noti-bg-hover: #2b3034;
-  --noti-bg-focus: #35434f;
+  --noti-bg-focus: #2b425b;
   --noti-border-color: #535d66;
   --text-color: #efefec;
   --text-color-disabled: #9ba4ab;
-  --bg-selected: #b3c9dd;
+  --bg-selected: #83b8f5;
   --border-radius: 0px;
   --notification-icon-size: 40px;
   --font-size-body: 11pt;
@@ -27,6 +27,6 @@
 .notification-row .notification-background .notification .notification-default-action .body { margin-top: 6px; }
 .notification-row .notification-background .notification .notification-alt-actions { padding: 0 12px 10px; }
 .notification-action > button, .widget-title > button { border-radius: 3px; }
-button:focus-visible { outline: 2px solid #d0e2f1; outline-offset: 2px; }
+button:focus-visible { outline: 2px solid #a6ceff; outline-offset: 2px; }
 progressbar trough { background: #191c1f; }
-progressbar progress { background: #b3c9dd; }
+progressbar progress { background: #83b8f5; }

@@ -21,3 +21,14 @@ The producer identity SHA-256 is
 Source/build/browser and isolated native checks precede immutable publication
 and scoped Carbon → Starship → Snap delivery. Normal-use visual feedback remains
 separate from those checks.
+
+## Delivery
+
+The follow-up completed Carbon, Starship and Snap from consumer
+`853a19b4ad05e4699f4572e904ee9ed59fd92aaf`. All three have zero scoped
+differences and no-op repeat file/hook applies. Notification process identities
+and counts, all 27 captured native processes, GSettings, root greeter files and
+unrelated local work were preserved. No new SwayNC CSS diagnostics appeared.
+The [sanitized receipt](../../design/evidence/neutral-slate-clear-blue-delivery.json)
+records the immutable producer and per-host results. Ordinary visual feedback
+and the earlier physical qualification tasks remain open.

@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-25",
+  "status": "installed and activated; normal-use visual review pending",
+  "profile": "neutral-slate",
+  "accent_variant": "clear-blue",
+  "order": [
+    "carbon",
+    "starship",
+    "snap"
+  ],
+  "producer_commit": "f5aeecf722579fa755ec3a6f3ea148073a87edb9",
+  "canonical_identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+  "archive_sha256": "0eb31a45f0d987eb840d1882558212ae7dcb73b6aeedb30ca95e31dfc4d00691",
+  "applied_consumer_revision": "853a19b4ad05e4699f4572e904ee9ed59fd92aaf",
+  "changed_roles": {
+    "accent": {
+      "before": "#b3c9dd",
+      "after": "#83b8f5"
+    },
+    "focus": {
+      "before": "#d0e2f1",
+      "after": "#a6ceff"
+    },
+    "selection": {
+      "before": "#35434f",
+      "after": "#2b425b"
+    }
+  },
+  "terminal_ansi_changed": [
+    4,
+    12
+  ],
+  "background_typography_status_roles": "unchanged",
+  "hosts": [
+    {
+      "host": "carbon",
+      "consumer": "853a19b4ad05e4699f4572e904ee9ed59fd92aaf",
+      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+      "managed_diff_bytes": 0,
+      "repeat_apply": "no writes or hook execution",
+      "notifications_before": 39,
+      "notifications_after": 39,
+      "native_processes_preserved": 5,
+      "native_processes_ended": 0,
+      "css_diagnostics": 0,
+      "greeter_theme": "/usr/local/share/sddm/themes/niri-neutral-ab2469ae2948"
+    },
+    {
+      "host": "starship",
+      "consumer": "853a19b4ad05e4699f4572e904ee9ed59fd92aaf",
+      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+      "managed_diff_bytes": 0,
+      "repeat_apply": "no writes or hook execution",
+      "notifications_before": 25,
+      "notifications_after": 25,
+      "native_processes_preserved": 11,
+      "native_processes_ended": 0,
+      "css_diagnostics": 0,
+      "greeter_theme": "/usr/local/share/sddm/themes/niri-neutral-ab2469ae2948"
+    },
+    {
+      "host": "snap",
+      "consumer": "853a19b4ad05e4699f4572e904ee9ed59fd92aaf",
+      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+      "managed_diff_bytes": 0,
+      "repeat_apply": "no writes or hook execution",
+      "notifications_before": 34,
+      "notifications_after": 34,
+      "native_processes_preserved": 11,
+      "native_processes_ended": 0,
+      "css_diagnostics": 0,
+      "greeter_theme": "/usr/local/share/sddm/themes/niri-neutral-ab2469ae2948"
+    }
+  ],
+  "preserved": [
+    "native sessions and service identities",
+    "notification history",
+    "SDDM derivation and root override",
+    "GSettings and font/icon/cursor choices",
+    "input, power, device, package and utility selections",
+    "unrelated source work"
+  ],
+  "checks": [
+    "three-host source renders, isolation, admission, palette and CSS reload fixtures",
+    "five isolated native GTK3/GTK4/Qt6/Rofi/Kitty checks",
+    "12 site build tests and 401 browser checks",
+    "exact approved color-substitution guard on all nine changing target files per host",
+    "native archive preflight and installed identity digest",
+    "zero scoped diff, no-op repeat files and hooks"
+  ],
+  "pending": [
+    "ordinary application visual feedback",
+    "normal lock/login visual review",
+    "physical device, scaling, dock and resume checks"
+  ]
+}

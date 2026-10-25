@@ -1,9 +1,9 @@
 {
   "date": "2026-10-25",
-  "scope": "Scoped Neutral Slate appearance delivery; not a fresh-install or complete physical-acceptance record",
-  "consumer_revision": "46ab3eb4d44efe71c9cd7815a59f959742a5103c",
-  "producer_revision": "4d4066b1916cf49e14d146cd4ef1a337c7e9e5da",
-  "canonical_identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+  "scope": "Scoped Neutral Slate Clear Blue accent delivery; not a fresh-install or complete physical-acceptance record",
+  "consumer_revision": "853a19b4ad05e4699f4572e904ee9ed59fd92aaf",
+  "producer_revision": "f5aeecf722579fa755ec3a6f3ea148073a87edb9",
+  "canonical_identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
   "hosts": [
     "Carbon",
     "Starship",
@@ -31,7 +31,10 @@
           "Kitty terminal sessions",
           "SwayNC notifications",
           "native sessions"
-        ]
+        ],
+        "notification_count_before": 39,
+        "notification_count_after": 39,
+        "css_diagnostics": 0
       },
       {
         "host": "Starship",
@@ -47,7 +50,10 @@
           "Kitty terminal sessions",
           "SwayNC notifications",
           "native sessions"
-        ]
+        ],
+        "notification_count_before": 25,
+        "notification_count_after": 25,
+        "css_diagnostics": 0
       },
       {
         "host": "Snap",
@@ -63,11 +69,14 @@
           "Kitty terminal sessions",
           "SwayNC notifications",
           "native sessions"
-        ]
+        ],
+        "notification_count_before": 34,
+        "notification_count_after": 34,
+        "css_diagnostics": 0
       }
     ],
     "root_greeter": {
-      "status": "installed",
+      "status": "installed; unchanged by the accent update",
       "theme_path": "/usr/local/share/sddm/themes/niri-neutral-ab2469ae2948"
     },
     "remaining_normal_use_checks": [
@@ -77,7 +86,8 @@
       "dock and undock behavior"
     ],
     "fresh_install_acceptance": false,
-    "new_daily_desktop_captures": false
+    "new_daily_desktop_captures": false,
+    "change": "Clear Blue accent, focus and selection; base surfaces, fonts and semantic status colors retained"
   },
   "shell": "minimal Niri",
   "notifier": "SwayNC fork",
@@ -102,5 +112,12 @@
     "ac_suspend": false,
     "lock_before_suspend": false
   },
-  "chezmoi_source_visibility": "private"
+  "chezmoi_source_visibility": "private",
+  "appearance": {
+    "profile": "neutral-slate",
+    "accent_variant": "clear-blue",
+    "accent": "#83b8f5",
+    "focus": "#a6ceff",
+    "selection": "#2b425b"
+  }
 }

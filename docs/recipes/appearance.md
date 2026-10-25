@@ -1,8 +1,8 @@
 # Neutral Slate appearance files
 
-These are appearance-only examples for the selected Neutral Slate identity. Six
-files are frozen from a local, uncommitted chezmoi render; the Niri fragment is
-authored from the canonical identity. Each manifest entry records the SHA-256
+These are appearance-only examples for Neutral Slate with Clear Blue accents.
+The stylesheets and toolkit palettes match the canonical chezmoi adapters;
+the Niri fragment is authored from the canonical identity. Each manifest entry records the SHA-256
 of `design/identity.json` so the build rejects a stale palette association.
 They are public examples, not proof of native installation or deployment.
 

@@ -72,7 +72,7 @@ in their existing native paths.
 
 ## Working setup
 
-Neutral Slate was delivered in order to Carbon, Starship, and Snap. Each scoped
+Neutral Slate with Clear Blue accents was delivered in order to Carbon, Starship, and Snap. Each scoped
 pass had zero remaining file and hook differences on repeat; the Niri, Kitty,
 SwayNC, and native sessions remained in place. The separately managed SDDM
 greeter theme is installed at

@@ -72,13 +72,19 @@ in their existing native paths.
 
 ## Working setup
 
-The managed source selects the minimal Niri shell with SwayNC and Gtklock on
-Starship, Snap, and Carbon. This is a dated source configuration record, rather
-than a claim that these public recipes have been exercised on a fresh install.
+Neutral Slate was delivered in order to Carbon, Starship, and Snap. Each scoped
+pass had zero remaining file and hook differences on repeat; the Niri, Kitty,
+SwayNC, and native sessions remained in place. The separately managed SDDM
+greeter theme is installed at
+`/usr/local/share/sddm/themes/niri-neutral-ab2469ae2948`.
+
+This is scoped deployment evidence, not a fresh-install or complete physical
+acceptance record. New login/unlock appearance, application visuals, device and
+backlight behavior, and docking checks remain for normal use.
 
 <!-- niri-plus:snapshot -->
-The private machine configuration revision and selected immutable artifacts are recorded in
-[the source snapshot](../data/setup.json). Public examples identify their
+The producer, consumer, host results, and selected identity hash are recorded in
+[the delivery record](../data/setup.json). Public examples identify their
 origin in [the example manifest](../examples/manifest.json). All files needed by
 these example recipes are included here; access to my private dotfiles is not
 required.

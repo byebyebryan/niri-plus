@@ -1,12 +1,84 @@
 {
-  "date": "2026-10-24",
-  "scope": "Managed source selections; not a fresh-install acceptance record",
-  "chezmoi_revision": "861861eaa3ff67ca65ce4577318fd52135917620",
+  "date": "2026-10-25",
+  "scope": "Scoped Neutral Slate appearance delivery; not a fresh-install or complete physical-acceptance record",
+  "consumer_revision": "46ab3eb4d44efe71c9cd7815a59f959742a5103c",
+  "producer_revision": "4d4066b1916cf49e14d146cd4ef1a337c7e9e5da",
+  "canonical_identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
   "hosts": [
+    "Carbon",
     "Starship",
-    "Snap",
-    "Carbon"
+    "Snap"
   ],
+  "deployment": {
+    "status": "passed",
+    "rollout_order": [
+      "Carbon",
+      "Starship",
+      "Snap"
+    ],
+    "host_results": [
+      {
+        "host": "Carbon",
+        "status": "passed",
+        "scoped_diff_files": 0,
+        "scoped_diff_hooks": 0,
+        "repeat_apply": {
+          "files": "no-op",
+          "hooks": "no-op"
+        },
+        "preserved": [
+          "Niri session",
+          "Kitty terminal sessions",
+          "SwayNC notifications",
+          "native sessions"
+        ]
+      },
+      {
+        "host": "Starship",
+        "status": "passed",
+        "scoped_diff_files": 0,
+        "scoped_diff_hooks": 0,
+        "repeat_apply": {
+          "files": "no-op",
+          "hooks": "no-op"
+        },
+        "preserved": [
+          "Niri session",
+          "Kitty terminal sessions",
+          "SwayNC notifications",
+          "native sessions"
+        ]
+      },
+      {
+        "host": "Snap",
+        "status": "passed",
+        "scoped_diff_files": 0,
+        "scoped_diff_hooks": 0,
+        "repeat_apply": {
+          "files": "no-op",
+          "hooks": "no-op"
+        },
+        "preserved": [
+          "Niri session",
+          "Kitty terminal sessions",
+          "SwayNC notifications",
+          "native sessions"
+        ]
+      }
+    ],
+    "root_greeter": {
+      "status": "installed",
+      "theme_path": "/usr/local/share/sddm/themes/niri-neutral-ab2469ae2948"
+    },
+    "remaining_normal_use_checks": [
+      "login and unlock appearance",
+      "application visual review",
+      "device and backlight behavior",
+      "dock and undock behavior"
+    ],
+    "fresh_install_acceptance": false,
+    "new_daily_desktop_captures": false
+  },
   "shell": "minimal Niri",
   "notifier": "SwayNC fork",
   "locker": "Gtklock",

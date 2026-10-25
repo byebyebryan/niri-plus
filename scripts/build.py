@@ -47,13 +47,13 @@ def working_identity():
     direction = next(c for c in identity["candidates"] if c["id"] == identity["working_direction"])
     if identity["selected_candidate"] != direction["id"] or identity["status"] != "selected":
         raise ValueError("public identity must project the selected candidate")
-    return {"schema_version": identity["schema_version"], "status": "selected design; desktop adoption pending", "selected_candidate": identity["selected_candidate"], "source": "design/identity.json", "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "theme_scope": identity["theme_scope"], "shared": identity["shared"], "direction": direction, "terminal": identity["terminal"]}
+    return {"schema_version": identity["schema_version"], "status": "selected design", "selected_candidate": identity["selected_candidate"], "source": "design/identity.json", "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "theme_scope": identity["theme_scope"], "shared": identity["shared"], "direction": direction, "terminal": identity["terminal"]}
 
 
 def kitty_fragment(identity):
     colors, terminal = identity["direction"]["colors"], identity["terminal"]
     roles = {"background": "background_role", "foreground": "foreground_role", "cursor": "cursor_role", "cursor_text_color": "cursor_text_role", "selection_background": "selection_background_role", "selection_foreground": "selection_foreground_role"}
-    lines = ["# Niri Plus / Neutral Slate - selected design; desktop adoption pending.", "# Generated from design/identity.json; preserve your existing Kitty behavior."]
+    lines = ["# Niri Plus / Neutral Slate - selected terminal appearance.", "# Generated from design/identity.json; preserve your existing Kitty behavior."]
     lines += [f"{option} {colors[terminal[role]]}" for option, role in roles.items()]
     lines += [f"color{index} {color}" for index, color in enumerate(terminal["ansi"])]
     return "\n".join(lines) + "\n"
@@ -137,7 +137,9 @@ def panel():
 def snapshot():
     data = json.loads((ROOT / "data/setup.json").read_text())
     fork = data["swaync"]
-    return f'''<div class="snapshot"><div><span class="eyebrow">Source snapshot / {escape(data['date'])}</span><strong>Minimal Niri · SwayNC · Gtklock</strong><p>Selected on three managed machines. Public recipes are adapted examples.</p></div><dl><div><dt>SwayNC fork</dt><dd>{escape(fork['package'])} {escape(fork['version'])}</dd></div><div><dt>Private configuration</dt><dd><code>{data['chezmoi_revision'][:10]}</code></dd></div></dl><a href="{BASE}data/setup.json">Full source record ↗</a></div>'''
+    deployment = data["deployment"]
+    hosts = ", ".join(deployment["rollout_order"])
+    return f'''<div class="snapshot"><div><span class="eyebrow">Appearance delivery / {escape(data['date'])}</span><strong>Neutral Slate · {escape(hosts)}</strong><p>Scoped delivery passed; normal-use visual and device checks remain.</p></div><dl><div><dt>Producer</dt><dd><code>{data['producer_revision'][:10]}</code></dd></div><div><dt>Consumer</dt><dd><code>{data['consumer_revision'][:10]}</code></dd></div><div><dt>SwayNC fork</dt><dd>{escape(fork['package'])} {escape(fork['version'])}</dd></div></dl><a href="{BASE}data/setup.json">Full delivery record ↗</a></div>'''
 
 
 def render_markdown(source):

@@ -82,7 +82,7 @@
     },
     {
       "path": "examples/kitty/neutral-slate.conf",
-      "sha256": "e7b96751726c5d14e97c21b737a631bff565d9482679e8b351c7c3207647d6d1",
+      "sha256": "d036e5cd634cd8165915778b30c588c8df78998be8b5f78444fd3cd6a5561e7b",
       "kind": "generated selected appearance specimen",
       "source": "design/identity.json",
       "notes": "Selected Neutral Slate appearance options only. Generated from the canonical profile; no shell behavior or deployed appearance claim."

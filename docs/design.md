@@ -4,6 +4,10 @@ Neutral Slate brings warm charcoal surfaces, readable type, and pale blue focus
 to the browser-and-terminal desktop. Niri keeps the work area open; the palette
 helps identify focus, selection, and status without turning every surface blue.
 
+The selected appearance was delivered to Carbon, Starship, and Snap. The
+[deployment record](reference.md#working-setup) lists the scoped results and
+remaining normal-use checks; the gallery below remains labeled sample content.
+
 ## Desktop overview
 
 The browser and terminal share the screen, with the focused window marked by a
@@ -65,5 +69,5 @@ Start with the [setup guide](setup.md), then use the
 [Kitty and Zsh guide](recipes/terminal.md) for terminal colors and typography.
 The [architecture guide](architecture.md) and
 [desktop reference](reference.md) describe component ownership and everyday
-entry points. The gallery is a design specimen; selecting an identity does not
-establish that it has been adopted on a machine.
+entry points. The gallery is a design specimen and does not claim to be a
+recording of the deployed desktop.

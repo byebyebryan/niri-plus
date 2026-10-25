@@ -9,6 +9,24 @@ and a visual Design page showing the theme in use. The public presentation
 should concentrate on appearance, interaction, and setup. Keep palette selection
 history in internal design notes.
 
+## Fleet delivery checkpoint - 2026-10-25
+
+The selected Neutral Slate appearance was delivered from consumer
+`46ab3eb4d44efe71c9cd7815a59f959742a5103c`, using producer
+`4d4066b1916cf49e14d146cd4ef1a337c7e9e5da` and canonical identity SHA-256
+`0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c`. The
+rollout completed Carbon, Starship, then Snap. All three scoped passes ended
+with zero file and hook differences; repeat applies were no-ops. Niri, Kitty,
+SwayNC, and native sessions remained in place. The root-owned SDDM theme is
+installed at `/usr/local/share/sddm/themes/niri-neutral-ab2469ae2948`.
+
+New login/unlock appearance, application visuals, device/backlight behavior,
+and docking checks remain for normal use. The Design page's labeled specimens
+do not claim those checks. The sanitized receipt is
+[`design/evidence/neutral-slate-fleet-delivery.json`](../../design/evidence/neutral-slate-fleet-delivery.json);
+it excludes process identifiers and session contents. Website publication is a
+separate step.
+
 ## Implementation checkpoint - 2026-10-24
 
 The source/reference pass is implemented locally. This checkpoint covers

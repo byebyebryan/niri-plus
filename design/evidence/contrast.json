@@ -1,0 +1,57 @@
+{
+  "scope": "Computed token-pair contrast in the design proposal; not native or physical legibility acceptance",
+  "results": [
+    {
+      "candidate": "slate-blue",
+      "contrast_pairs": {
+        "text/surface": 13.71,
+        "secondary/surface": 8.43,
+        "muted/surface": 6.24,
+        "accent_ink/accent": 8.64,
+        "selection_text/selection": 8.97,
+        "warning/surface": 8.37,
+        "error/surface": 6.5,
+        "success/surface": 8.38
+      }
+    },
+    {
+      "candidate": "graphite-blue",
+      "contrast_pairs": {
+        "text/surface": 14.48,
+        "secondary/surface": 8.26,
+        "muted/surface": 6.02,
+        "accent_ink/accent": 8.64,
+        "selection_text/selection": 9.02,
+        "warning/surface": 8.79,
+        "error/surface": 6.82,
+        "success/surface": 8.8
+      }
+    },
+    {
+      "candidate": "neutral-slate",
+      "contrast_pairs": {
+        "text/surface": 13.71,
+        "secondary/surface": 8.43,
+        "muted/surface": 6.24,
+        "accent_ink/accent": 10.18,
+        "selection_text/selection": 8.82,
+        "warning/surface": 8.64,
+        "error/surface": 7.39,
+        "success/surface": 8.97
+      }
+    },
+    {
+      "candidate": "ink-blue",
+      "contrast_pairs": {
+        "text/surface": 14.18,
+        "secondary/surface": 8.69,
+        "muted/surface": 6.67,
+        "accent_ink/accent": 9.0,
+        "selection_text/selection": 7.78,
+        "warning/surface": 9.28,
+        "error/surface": 7.31,
+        "success/surface": 8.95
+      }
+    }
+  ]
+}

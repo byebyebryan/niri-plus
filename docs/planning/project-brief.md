@@ -2,6 +2,14 @@
 
 Captured on 2026-10-24.
 
+After v1, the scope was clarified: Niri Plus should define a coherent everyday
+desktop, including the surrounding utilities and an overall visual identity.
+The [Neutral Slate implementation and site plan](neutral-slate-pass.md) records
+the selected identity and current sequence. Its public Design page should show
+appearance, behavior, palette/type, and setup; palette-selection history stays
+in internal notes. The [original design pass](design-pass.md) remains context.
+The initial site proposals below remain as context for how the project began.
+
 Niri Plus will record and present Bryan's daily Linux desktop: a Niri setup
 refined around browser use, terminal work, and coding agents. Its purpose is to
 show the experience, explain how the pieces fit together, and help others adopt

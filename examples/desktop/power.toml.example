@@ -1,0 +1,4 @@
+# Copy to $XDG_CONFIG_HOME/desktop-session/power.toml only after choosing the
+# value that matches your session's power policy. Missing or invalid policy
+# cancels Suspend; the helper does not infer a default.
+lock_before_suspend = false

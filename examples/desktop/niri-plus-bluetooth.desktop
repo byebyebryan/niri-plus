@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Bluetooth
+Comment=Pair and connect devices with BlueZ
+Exec=kitty -e bluetoothctl
+TryExec=bluetoothctl
+Icon=preferences-system-bluetooth
+Terminal=false
+Categories=Settings;HardwareSettings;
+Keywords=pair;headphones;keyboard;mouse;

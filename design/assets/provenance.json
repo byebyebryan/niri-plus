@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-24",
+  "files": [
+    {
+      "path": "assets/fonts/inter.woff2",
+      "sha256": "03375c16c83739f4a8850fd6c7f67b2bcc9f91cbe36fa96d4ebab443285d3f09",
+      "family": "Inter Variable",
+      "package": "inter-font 4.1-1",
+      "source_sha256": "4989b125924991b90d05b2d16e0e388c48f7d5bb8b30539bbf9c755278d0ccaf",
+      "transformation": "WOFF2 packaging, preserving the source glyph set",
+      "license": "assets/licenses/inter.txt"
+    },
+    {
+      "path": "assets/fonts/noto.woff2",
+      "sha256": "e0907759b235a014bf8f0ba817c973ed35d9e47d3ae51b368734c9e77a1bb8b9",
+      "family": "Noto Sans",
+      "package": "noto-fonts 1:2026.10.01-1",
+      "source_sha256": "478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823",
+      "transformation": "WOFF2 packaging, preserving the source glyph set",
+      "license": "assets/licenses/noto.txt"
+    },
+    {
+      "path": "assets/fonts/noto-medium.woff2",
+      "sha256": "8838f22d348bc5f96f29f65bf4ef83ac95da3f98e1455c7b3de7993aa41f1dcf",
+      "family": "Noto Sans Medium",
+      "package": "noto-fonts 1:2026.10.01-1",
+      "source_sha256": "635d93d1131d791f2576de90b3bb0f7cdf61929906e8420a61b5f7f8e76420bb",
+      "transformation": "WOFF2 packaging, preserving the source glyph set",
+      "license": "assets/licenses/noto-medium.txt"
+    },
+    {
+      "path": "assets/fonts/noto-semibold.woff2",
+      "sha256": "560eeaadf022c203cac388b9d8259add6d2f20cbdb351fd7af533b319fcfe7df",
+      "family": "Noto Sans Semibold",
+      "package": "noto-fonts 1:2026.10.01-1",
+      "source_sha256": "a4e91fd530ac2b4ef5367240144ff37d7d65d66cf76f2e9a2187b93c676f92d0",
+      "transformation": "WOFF2 packaging, preserving the source glyph set",
+      "license": "assets/licenses/noto-semibold.txt"
+    },
+    {
+      "path": "assets/fonts/meslo.woff2",
+      "sha256": "34e698f412e79adf4b01ebfe3489ea68a5274ce3e8c86e560ca41c2a4b274a4a",
+      "family": "MesloLGS Nerd Font",
+      "package": "ttf-meslo-nerd 3.5.1-2",
+      "source_sha256": "f3148b1e05c1dcf86785020d1d144524b9458deaab17505b88ecfe1694543214",
+      "transformation": "WOFF2 packaging, preserving the source glyph set",
+      "license": "assets/licenses/meslo.txt"
+    },
+    {
+      "path": "assets/fonts/jetbrains.woff2",
+      "sha256": "75375f0bbf9cd09701eb9baefdf74143f82c11727df84be136c04f3ff365e4bc",
+      "family": "JetBrainsMono Nerd Font",
+      "package": "ttf-jetbrains-mono-nerd 3.5.1-2",
+      "source_sha256": "1c680e8cde9fcf8b88a5605ce8d1fb94dd3fb15841f7ca7bf4c55664855e5611",
+      "transformation": "WOFF2 packaging, preserving the source glyph set",
+      "license": "assets/licenses/jetbrains.txt"
+    },
+    {
+      "path": "assets/fonts/source-han.woff2",
+      "sha256": "e15e47db3bdfef885fe35733d2358fdcb5186a707eecc03510d22ca43333bef0",
+      "family": "Source Han Sans CN",
+      "package": "adobe-source-han-sans-cn-fonts 2.005-2",
+      "source_sha256": "e2bc8a2e7f37474b774fff8db758681ece40bb6947a90d571bce9dd60671a8e4",
+      "transformation": "WOFF2 packaging, preserving the source glyph set",
+      "license": "assets/licenses/source-han.txt"
+    },
+    {
+      "path": "assets/icons/files.svg",
+      "sha256": "fd3cf3c2ddd01ce4877e45ccfe9fe4f8ece6573890c95aa1b5bf4d36e3b568da",
+      "source": "KDE Breeze Dark system-file-manager.svg",
+      "package": "breeze-icons 6.31.0-1",
+      "license": "LGPL-3.0-or-later / LGPL-2.1-only; see bundled texts"
+    },
+    {
+      "path": "assets/icons/wifi.svg",
+      "sha256": "85df96ca4318a04219710535a8900a3c4a61dc9c4e7a6711dfa442255c82fa97",
+      "source": "KDE Breeze Dark network-wireless.svg",
+      "package": "breeze-icons 6.31.0-1",
+      "license": "LGPL-3.0-or-later / LGPL-2.1-only; see bundled texts"
+    },
+    {
+      "path": "assets/icons/audio.svg",
+      "sha256": "e0ce14040d83c5f548060e136f08b5e4e7e10af27c5e884bf2a09c2fe0f178e4",
+      "source": "KDE Breeze Dark audio-volume-high.svg",
+      "package": "breeze-icons 6.31.0-1",
+      "license": "LGPL-3.0-or-later / LGPL-2.1-only; see bundled texts"
+    },
+    {
+      "path": "assets/icons/lock.svg",
+      "sha256": "ee60e1e5c929ad9516e8308b619ba84b8bbe6b1732787ec62d59876ef5eb6909",
+      "source": "KDE Breeze Dark system-lock-screen.svg",
+      "package": "breeze-icons 6.31.0-1",
+      "license": "LGPL-3.0-or-later / LGPL-2.1-only; see bundled texts"
+    },
+    {
+      "path": "assets/icons/power.svg",
+      "sha256": "77960e5f3ccb96082b1c621d02438843e2d73a305c53f9b65921e5682329fb5f",
+      "source": "KDE Breeze Dark system-shutdown.svg",
+      "package": "breeze-icons 6.31.0-1",
+      "license": "LGPL-3.0-or-later / LGPL-2.1-only; see bundled texts"
+    }
+  ],
+  "icon_source": "https://invent.kde.org/frameworks/breeze-icons",
+  "icon_attribution": "KDE Breeze contributors; installed package version and file hashes recorded above",
+  "license_text_source": "https://github.com/spdx/license-list-data",
+  "native_images": "See native/native-provenance.json; all other screens are HTML/CSS design mockups."
+}

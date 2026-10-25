@@ -93,8 +93,10 @@ If a debug package is also produced, it is separate from the runtime package.
 Review the replacement transaction; the fork conflicts with upstream `swaync`.
 
 After installing the fork, the [dashboard configuration](../../examples/notifications/config.json)
-and [charcoal/blue stylesheet](../../examples/notifications/style.css) provide a
-small starting point. Back up your existing SwayNC files before merging them
+and [charcoal/blue stylesheet](../../examples/notifications/style.css) remain
+the earlier historical baseline. For the selected Neutral Slate candidate, use
+the [appearance recipe](appearance.md); its SwayNC file is a frozen CSS render,
+not a deployed stylesheet. Back up your existing SwayNC files before merging
 under `~/.config/swaync`. The stylesheet imports the package's default styles.
 The configuration requires this fork; upstream SwayNC does not have its dashboard.
 

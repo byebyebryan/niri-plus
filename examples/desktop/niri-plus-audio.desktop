@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Audio
+Comment=Choose audio devices and application streams
+Exec=pavucontrol
+TryExec=pavucontrol
+Icon=audio-volume-high
+Terminal=false
+Categories=Settings;AudioVideo;Audio;Mixer;
+Keywords=volume;microphone;output;input;headphones;

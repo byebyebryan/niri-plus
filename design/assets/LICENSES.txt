@@ -1,0 +1,28 @@
+Niri Plus design review source and original HTML/CSS mockups:
+Copyright 2026 Bryan Bai, MIT. See the repository LICENSE.
+
+Fonts are packaged as WOFF2 from the installed font files, preserving their glyph
+sets. Their own licenses and notices are retained under assets/licenses:
+
+Inter Variable: inter.txt
+  https://github.com/rsms/inter
+Noto Sans, Medium and Semibold: noto.txt, noto-medium.txt and noto-semibold.txt
+  https://github.com/notofonts/latin-greek-cyrillic
+MesloLGS Nerd Font: meslo.txt
+  https://github.com/ryanoasis/nerd-fonts
+JetBrainsMono Nerd Font: jetbrains.txt
+  https://github.com/ryanoasis/nerd-fonts
+Source Han Sans CN: source-han.txt
+  https://github.com/adobe-fonts/source-han-sans
+
+The five Breeze Dark SVG icons are unmodified files from breeze-icons 6.31.0-1.
+Copyright KDE Breeze contributors. The installed package declares
+LGPL-3.0-or-later and LGPL-2.1-only; both license texts are bundled, using the
+SPDX license-list-data texts. Source: https://invent.kde.org/frameworks/breeze-icons
+Their exact hashes and installed-package origin are in provenance.json.
+
+The native GTK3 and Qt6 PNGs are reference renders made by render-native.py.
+Underlying GTK, Qt, adw-gtk3 and Breeze projects retain their respective rights.
+They are screenshots of isolated example widgets, not redistributed theme source
+or captures of the daily desktop. See native/native-provenance.json for the
+rendering conditions and hashes.

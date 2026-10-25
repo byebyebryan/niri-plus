@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-24",
+  "working_direction": "slate-blue",
+  "theme_targets": 1,
+  "status": "Local site/design source complete for review; blended appearance and desktop adoption remain pending.",
+  "report": {
+    "id": "199f050ad2755cd93fdf5f27fd3a2f95d77cfb987605a6aca813dfa5434f9fb1",
+    "url": "http://starship:8787/reports/199f050ad2755cd93fdf5f27fd3a2f95d77cfb987605a6aca813dfa5434f9fb1/design/",
+    "entrypoint": "design/index.html",
+    "files": 43,
+    "delivery": "HTTP 200; all 42 non-dot public files matched exported SHA-256; browser smoke verified."
+  },
+  "checks": {
+    "unit_tests": 9,
+    "site_browser_checks": 334,
+    "site_routes": 11,
+    "site_widths": [
+      375,
+      768,
+      1280,
+      1600
+    ],
+    "comparison_browser_checks": 132,
+    "comparison_directions": 4,
+    "comparison_scope": "One working direction plus three historical explorations; not four supported themes.",
+    "kitty": "Native Kitty config parser accepted generated color fragment.",
+    "source_whitespace": "git diff --check passed.",
+    "contrast": "Working blend semantic text pairs all exceed 4.5:1; computed only.",
+    "browser_errors": 0
+  },
+  "boundaries": {
+    "public_github_pages": "Unchanged; preview published separately.",
+    "desktop": "No apply, configuration edit, service restart or device action.",
+    "chezmoi_source": "Read-only inspection; clean repository.",
+    "commits_pushes": "None; design and site edits remain local.",
+    "zsh": "Current managed workflow documented and added to reference scope; portable bundle extraction and immutable upstream pins remain pending."
+  },
+  "source": {
+    "identity": "design/identity.json",
+    "public_design": "docs/design.md",
+    "terminal_guide": "docs/recipes/terminal.md",
+    "kitty_fragment": "examples/kitty/slate-blue.conf"
+  },
+  "preview_only_augmentation": "Portable design page includes a link to the earlier immutable design review.",
+  "visual_review": "Desktop and mobile specimens inspected; shell location typography scoped independently from the older miniature tour."
+}

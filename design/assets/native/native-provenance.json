@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-24",
+  "isolation": "Owned Xvfb, private XDG directories, no accessible session bus, Qt offscreen. No real network/audio/login actions.",
+  "samples": [
+    {
+      "file": "gtk-inter.png",
+      "sha256": "c0ccba011f12b2283e87b3dda29a211964b07cdcc5789831cf61f72306cd4370",
+      "toolkit": "gtk",
+      "font": "Inter Variable 11pt",
+      "native_resolution": {
+        "style": "adw-gtk3-dark",
+        "font": "Inter Variable 11"
+      },
+      "state": "isolated native reference, not selected theme or daily desktop",
+      "details": "GTK3 uses installed adw-gtk3-dark. Qt6 uses available Breeze/Fusion with a representative Breeze Dark palette."
+    },
+    {
+      "file": "gtk-noto.png",
+      "sha256": "07439d7834c9d47d8537109c15a366f83ffca23e4f0c63ab5c8a62a8103a8695",
+      "toolkit": "gtk",
+      "font": "Noto Sans 11pt",
+      "native_resolution": {
+        "style": "adw-gtk3-dark",
+        "font": "Noto Sans 11"
+      },
+      "state": "isolated native reference, not selected theme or daily desktop",
+      "details": "GTK3 uses installed adw-gtk3-dark. Qt6 uses available Breeze/Fusion with a representative Breeze Dark palette."
+    },
+    {
+      "file": "qt-inter.png",
+      "sha256": "85fe4b1a5c4858922a5ebdfa6c86cf4560f06bcd6a8e02ccbf10eb98fd96fce9",
+      "toolkit": "qt",
+      "font": "Inter Variable 11pt",
+      "native_resolution": {
+        "style": "Breeze",
+        "font": "Inter Variable"
+      },
+      "state": "isolated native reference, not selected theme or daily desktop",
+      "details": "GTK3 uses installed adw-gtk3-dark. Qt6 uses available Breeze/Fusion with a representative Breeze Dark palette."
+    },
+    {
+      "file": "qt-noto.png",
+      "sha256": "51430890de2b1ce0947cd2c22745e29d44f0247a22f3f89ecc4c6f3f2d0c5a7a",
+      "toolkit": "qt",
+      "font": "Noto Sans 11pt",
+      "native_resolution": {
+        "style": "Breeze",
+        "font": "Noto Sans"
+      },
+      "state": "isolated native reference, not selected theme or daily desktop",
+      "details": "GTK3 uses installed adw-gtk3-dark. Qt6 uses available Breeze/Fusion with a representative Breeze Dark palette."
+    }
+  ],
+  "limits": [
+    "Reference widgets are not SDDM/Gtklock/polkit or a complete native desktop preview.",
+    "Candidate-specific shell colors are explored in labeled HTML mockups; these show native styles and font feasibility."
+  ]
+}

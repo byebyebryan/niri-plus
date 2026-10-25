@@ -6,8 +6,8 @@ import { chromium } from "playwright";
 
 const output = path.resolve(process.argv[2] || "dist");
 const prefix = "/niri-plus/";
-const routes = ["", "story/", "tour/", "architecture/", "setup/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "reference/"];
-const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".svg": "image/svg+xml", ".json": "application/json" };
+const routes = ["", "story/", "tour/", "design/", "architecture/", "setup/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/appearance/", "reference/"];
+const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
 const server = http.createServer(async (request, response) => {
   try {
     let url = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
@@ -42,12 +42,58 @@ try {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `horizontal overflow at ${width}: ${route}`);
       assert.equal(await page.locator("img").evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).length), 0, `broken image: ${route}`);
       checks += 6;
-      if (process.env.NIRI_SCREENSHOTS && ["", "story/", "tour/", "architecture/", "setup/"].includes(route) && [375, 1280].includes(width)) {
+      if (process.env.NIRI_SCREENSHOTS && ["", "design/", "recipes/terminal/"].includes(route) && [375, 1280].includes(width)) {
+        await page.evaluate(() => document.fonts.ready);
         await fs.mkdir(process.env.NIRI_SCREENSHOTS, { recursive: true });
         await page.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `${route.replaceAll("/", "-") || "home"}-${width}.png`), fullPage: true });
       }
     }
   }
+  await page.goto(origin + "design/");
+  const identity = await (await page.request.get(origin + "data/identity.json")).json();
+  assert.equal(identity.selected_candidate, "neutral-slate");
+  assert.equal(identity.direction.id, "neutral-slate");
+  assert.equal(identity.direction.ui_font, "Noto Sans");
+  assert.equal(identity.direction.mono_font, "MesloLGS Nerd Font");
+  assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()), identity.direction.colors.canvas);
+  assert.equal(await page.locator("[data-surface-button]").count(), 4);
+  assert.equal(await page.locator("[data-surface-panel]:visible").count(), 1);
+  await page.locator('[data-surface-button="launch"]').focus();
+  await page.keyboard.press("ArrowRight");
+  assert.equal(await page.locator('[data-surface-button="information"]').getAttribute("aria-pressed"), "true");
+  assert.equal(await page.locator('[data-surface-panel="information"]:visible').count(), 1);
+  await page.locator('[data-surface-button="terminal"]').click();
+  await page.evaluate(() => document.fonts.ready);
+  const terminalFont = await page.locator(".terminal-transcript").evaluate(node => getComputedStyle(node).fontFamily);
+  assert.match(terminalFont, /MesloLGS Nerd Font/);
+  assert.ok(await page.locator(".terminal-transcript").evaluate(node => parseFloat(getComputedStyle(node).fontSize) >= 14), "Terminal specimen should use the selected 11pt size on desktop");
+  assert.equal(await page.locator(".terminal-ansi-preview [role=listitem]").count(), 16);
+  assert.equal(await page.locator(".ansi-reference-grid [role=listitem]").count(), 16);
+  assert.ok(await page.evaluate(() => document.fonts.check('14px "Noto Sans"')));
+  assert.ok(await page.evaluate(() => document.fonts.check('14px "MesloLGS Nerd Font"')));
+  checks += 12;
+  await page.locator('[data-surface-button="launch"]').click();
+  const filter = page.getByLabel("Filter sample windows");
+  await filter.fill("claude");
+  assert.equal(await page.locator("[data-launch-row]:visible").count(), 1);
+  assert.match(await page.locator("[data-launch-message]").innerText(), /1 sample row match/);
+  await page.locator("[data-launch-row]:visible").click();
+  await page.locator('[data-launch-action="new"]').click();
+  assert.equal(await page.locator('[data-launch-action="new"]').getAttribute("aria-pressed"), "true");
+  assert.match(await page.locator("[data-launch-message]").innerText(), /New window/);
+  await filter.fill("no-such-window");
+  assert.equal(await page.locator("[data-launch-row]:visible").count(), 0);
+  assert.match(await page.locator("[data-launch-message]").innerText(), /No sample rows match/);
+  await filter.fill("");
+  await page.locator('[data-surface-button="login-lock"]').click();
+  await page.locator("[data-login-error-toggle]").click();
+  assert.equal(await page.locator("[data-login-error]").isVisible(), true);
+  assert.equal(await page.locator("[data-login-error-toggle]").getAttribute("aria-expanded"), "true");
+  checks += 10;
+  await page.locator('[data-surface-button="launch"]').focus();
+  await page.keyboard.press("End");
+  assert.equal(await page.locator('[data-surface-button="login-lock"]').getAttribute("aria-pressed"), "true");
+  checks += 1;
   await page.setViewportSize({ width: 1280, height: 1000 });
   for (const route of ["", "tour/"]) {
     await page.goto(origin + route);
@@ -81,13 +127,20 @@ try {
   checks += 2;
   const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 900 } });
   const staticPage = await noScript.newPage();
-  for (const route of ["", "story/", "tour/", "setup/", "reference/"]) {
+  for (const route of ["", "story/", "tour/", "design/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "reference/"]) {
     await staticPage.goto(origin + route);
     assert.ok((await staticPage.locator("main").innerText()).length > 400);
     assert.equal(await staticPage.locator("[data-scene-controls]:visible").count(), 0);
+    assert.equal(await staticPage.locator("[data-surface-switcher]:visible").count(), 0);
     assert.ok(await staticPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-    checks += 3;
+    checks += 4;
   }
+  await staticPage.goto(origin + "design/");
+  assert.equal(await staticPage.locator("[data-surface-panel]:visible").count(), 4);
+  assert.equal(await staticPage.locator("[data-surface-button]:visible").count(), 0);
+  assert.ok(await staticPage.locator("[data-surface-panel=terminal]").innerText());
+  checks += 3;
+  await staticPage.goto(origin + "reference/");
   assert.equal(await staticPage.locator(".table-scroll tbody tr").first().count(), 1);
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ checks, routes: routes.length, widths: [375, 768, 1280, 1600], javascript: "interactive + disabled", browser_errors: errors.length }));

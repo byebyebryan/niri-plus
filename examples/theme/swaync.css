@@ -1,0 +1,32 @@
+/* Neutral Slate over the selected fork's native GTK4 layout. */
+@import url("/etc/xdg/swaync/style.css");
+:root {
+  --cc-bg: alpha(#202326, 0.96);
+  --noti-bg: 32, 35, 38;
+  --noti-bg-alpha: 0.96;
+  --noti-bg-darker: #191c1f;
+  --noti-bg-hover: #2b3034;
+  --noti-bg-focus: #35434f;
+  --noti-border-color: #535d66;
+  --text-color: #efefec;
+  --text-color-disabled: #9ba4ab;
+  --bg-selected: #b3c9dd;
+  --border-radius: 0px;
+  --notification-icon-size: 40px;
+  --font-size-body: 11pt;
+  --font-size-summary: 11pt;
+}
+* { font-family: "Noto Sans", "Source Han Sans CN", sans-serif; }
+.control-center { border: 1px solid var(--noti-border-color); }
+.widget-dashboard { margin-left: 16px; margin-right: 16px; }
+.notification-row .notification-background .notification.critical {
+  background: alpha(#2b3034, 0.96);
+  border: 2px solid #e5a09b;
+}
+.notification-row .notification-background .notification .notification-default-action { padding: 14px 16px; }
+.notification-row .notification-background .notification .notification-default-action .body { margin-top: 6px; }
+.notification-row .notification-background .notification .notification-alt-actions { padding: 0 12px 10px; }
+.notification-action > button, .widget-title > button { border-radius: 3px; }
+button:focus-visible { outline: 2px solid #d0e2f1; outline-offset: 2px; }
+progressbar trough { background: #191c1f; }
+progressbar progress { background: #b3c9dd; }

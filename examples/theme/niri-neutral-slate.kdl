@@ -1,0 +1,12 @@
+// Neutral Slate appearance only. Merge this layout fragment into your existing
+// Niri layout block so current sizing, gaps, borders, shadows and behavior stay
+// under their current owner.
+layout {
+    background-color "#151719"
+
+    focus-ring {
+        width 4
+        active-color "#d0e2f1"
+        inactive-color "#535d66"
+    }
+}

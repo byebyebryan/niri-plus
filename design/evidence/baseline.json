@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-24",
+  "host": "Starship",
+  "chezmoi_revision": "861861eaa3ff67ca65ce4577318fd52135917620",
+  "site_revision": "45881d7b4d4f01625c3391aa1dbdf7745d2dbfb9",
+  "commands": {
+    "nmcli": true,
+    "nmtui": true,
+    "nm-connection-editor": false,
+    "bluetoothctl": true,
+    "blueman-manager": false,
+    "pavucontrol": true,
+    "wpctl": true,
+    "brightnessctl": true,
+    "powerprofilesctl": true,
+    "udisksctl": true,
+    "gio": true
+  },
+  "package_owners": {
+    "bluetoothctl": "bluez-utils",
+    "pavucontrol": "pavucontrol",
+    "udisksctl": "udisks2"
+  },
+  "limits": [
+    "Command presence is not cohort admission or functional acceptance.",
+    "No live device, network, volume, lock or power operations were performed."
+  ]
+}

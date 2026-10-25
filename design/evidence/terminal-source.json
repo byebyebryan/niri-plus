@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-24",
+  "scope": "Read-only managed-source inspection; no live shell startup or deployment",
+  "chezmoi_revision": "861861eaa3ff67ca65ce4577318fd52135917620",
+  "files": [
+    {
+      "source_path": "dot_zshrc",
+      "sha256": "517517ed1bc575f668310475c28ac02cf0d51b3f336024f7fd7feba881070338"
+    },
+    {
+      "source_path": "dot_zshenv",
+      "sha256": "f93e51a9feed266f53fde932f1eb634d428ebe621ac068bcb9cb4c35521d2347"
+    },
+    {
+      "source_path": "dot_config/zsh/p10k.zsh",
+      "sha256": "ebdd341c7b6728223c7cb358e105af104e371e25ab3cbc7cf08a6e00228e5dd0"
+    },
+    {
+      "source_path": "dot_config/zsh/p10k-custom-segments.zsh",
+      "sha256": "15ca57aad72cf607d46dc92dc64e1547ddb16ea0058546c34637e162d9823c66"
+    },
+    {
+      "source_path": "dot_config/kitty/kitty.conf",
+      "sha256": "a3d55d08639873fa7e56d9d87f39202577d4dd7e3b05caf473c57c63f3e60baf"
+    },
+    {
+      "source_path": ".chezmoiexternal.toml",
+      "sha256": "2c95943eda40d81aa5d2461172540c23fd6b6c5c19066c4660ad05dcc142fc59"
+    }
+  ],
+  "plugin_revisions": "Git externals refresh periodically; immutable public extraction pins still pending.",
+  "private_state": "No history, credentials, plugin runtime state, environment values or private routes included."
+}

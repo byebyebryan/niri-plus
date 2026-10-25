@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Session
+Comment=Lock, leave, suspend or power off
+Exec=desktop-session-menu
+TryExec=desktop-session-menu
+Icon=system-shutdown
+Terminal=false
+Categories=System;
+Keywords=lock;logout;suspend;restart;shutdown;

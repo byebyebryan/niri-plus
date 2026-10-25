@@ -1,0 +1,3 @@
+# Preserve verbatim upstream license bytes, including CRLF and trailing spaces.
+design/assets/licenses/meslo.txt -whitespace
+design/assets/licenses/jetbrains.txt -whitespace

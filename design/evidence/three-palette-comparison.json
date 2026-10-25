@@ -1,0 +1,25 @@
+{
+  "report_url": "http://starship:8787/reports/7e40d91689056e08e4ad00e6c91c2ec1a0ed7920247808d0b0d2ea5f344a5ae6/",
+  "source": "design/identity.json",
+  "candidates": [
+    "graphite-blue",
+    "neutral-slate",
+    "slate-blue"
+  ],
+  "scene_checks": "Four scenes synchronously show all three candidates.",
+  "font_checks": "Same-font default; original font toggle maps Inter/Noto/Inter.",
+  "token_filter_checks": {
+    "all": 19,
+    "differing": 16
+  },
+  "native_size_css_px": 14.6667,
+  "browser_console_errors": 0,
+  "carbon_delivery": {
+    "status": 200,
+    "bytes": 26144,
+    "sha256": "42b9ccd9b0cc58a638c5ac2c77f883d2407f03ae7470cb5514db6de4be390b71"
+  },
+  "public_site": "Unchanged",
+  "desktop": "Unchanged",
+  "comparison_source": "design/build-comparison.py"
+}

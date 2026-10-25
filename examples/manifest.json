@@ -72,6 +72,200 @@
       "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
       "source_visibility": "private",
       "source_path": "dot_local/bin/executable_desktop-session-ready"
+    },
+    {
+      "path": "examples/kitty/slate-blue.conf",
+      "sha256": "4105a92d31853d74803051754e7b2b160e1786ddf32663eec90db769dc99645f",
+      "kind": "historical generated appearance proposal",
+      "source": "design/evidence/slate-blue-site-review.json",
+      "notes": "Retained unchanged as the previous Slate Blue experiment. It is not the selected profile or a supported theme; no shell behavior or deployed appearance claim."
+    },
+    {
+      "path": "examples/kitty/neutral-slate.conf",
+      "sha256": "e7b96751726c5d14e97c21b737a631bff565d9482679e8b351c7c3207647d6d1",
+      "kind": "generated selected appearance specimen",
+      "source": "design/identity.json",
+      "notes": "Selected Neutral Slate appearance options only. Generated from the canonical profile; no shell behavior or deployed appearance claim."
+    },
+    {
+      "path": "examples/terminal/zshrc",
+      "sha256": "860cacb5aba5f07159fb23af7c04f8ef0cb46d867659022b451f1b1e5ef5d01d",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi source at revision d4d780be4a336ac66d248128563300bf501645ba",
+      "source_path": "dot_zshrc",
+      "source_visibility": "private",
+      "notes": "Portable human/agent shell core; cloud SDKs, host/provider setup, private paths, and credentials are excluded."
+    },
+    {
+      "path": "examples/terminal/p10k.zsh",
+      "sha256": "ad09a06056f513de6108870d778be23b595ee3df531ef6b2fe6c36ce4b169641",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi source at revision d4d780be4a336ac66d248128563300bf501645ba",
+      "source_path": "dot_config/zsh/p10k.zsh",
+      "source_visibility": "private",
+      "notes": "Retains the lean transient prompt and selected Neutral Slate ANSI role indices."
+    },
+    {
+      "path": "examples/terminal/p10k-custom-segments.zsh",
+      "sha256": "c455539cd6226dbadd7b2000bea6cd536a8f18b409b55022c9ffb5b7fea2a16c",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi source at revision d4d780be4a336ac66d248128563300bf501645ba",
+      "source_path": "dot_config/zsh/p10k-custom-segments.zsh",
+      "source_visibility": "private",
+      "notes": "Selected semantic color indices and testable proc/sys roots. Runtime probes retain five-second wireless and battery caching."
+    },
+    {
+      "path": "examples/terminal/pins.json",
+      "sha256": "4a4c0dd16b17e48e3113e23d7e9e64a600f7f8dfe4d086d186e44290592bbd90",
+      "kind": "immutable upstream archive pins",
+      "source": "Public upstream GitHub repositories and immutable Git commits",
+      "notes": "SHA-256 values were computed from the exact codeload tarballs dated 2026-10-24."
+    },
+    {
+      "path": "examples/terminal/THIRD_PARTY_NOTICES.md",
+      "sha256": "50eb531b7d5087b2f437963e4b1590301b294c811f75a3a82ddfa43d0ad52862",
+      "kind": "upstream license and attribution record",
+      "source": "examples/terminal/pins.json",
+      "notes": "The fetcher retains each upstream archive's license material and contributor notices."
+    },
+    {
+      "path": "examples/terminal/fetch.py",
+      "sha256": "64972c61d008ac63a5fbe4451f2675a534875e8e5a48f6c56bc90d547a8802a5",
+      "kind": "safe opt-in fetch/install tool",
+      "source": "Niri Plus",
+      "notes": "Verifies pinned HTTPS archives and installs only into a new home-directory leaf. It never edits shell startup files."
+    },
+    {
+      "path": "scripts/check-terminal.py",
+      "sha256": "b0d0d60583879ae73848ce09969a66723e39e5a273d8c67778638ffdee588e7f",
+      "kind": "isolated verification tool",
+      "source": "Niri Plus",
+      "notes": "Exercises temporary shell homes, fixture-backed device reads, prompt cleanup, and Session cancellation/dispatch without live desktop operations."
+    },
+    {
+      "path": "examples/desktop/desktop-session-menu",
+      "sha256": "3c64fdae979b5b7164ff6ef86ecec3aa3612d72886cdd9d8dabc57ffbd927bed",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi working tree, uncommitted utility proposal dated 2026-10-24",
+      "source_path": "dot_local/bin/executable_desktop-session-menu",
+      "source_visibility": "private",
+      "notes": "Keeps native Niri quit confirmation, restart/shutdown confirmation, independent manual locking, cancellation, and explicit lock-before-suspend policy. No public source revision exists yet."
+    },
+    {
+      "path": "examples/desktop/desktop-session-ready",
+      "sha256": "75c242d4638c35f7416f825f20e04ca4eb60c27993f50c99b08312c88f2bf580",
+      "kind": "verbatim managed helper/configuration",
+      "source": "Personal chezmoi source at revision d4d780be4a336ac66d248128563300bf501645ba",
+      "source_visibility": "private",
+      "source_path": "dot_local/bin/executable_desktop-session-ready",
+      "notes": "Checks only whether the Wayland display socket accepts a connection; it does not identify the compositor."
+    },
+    {
+      "path": "examples/desktop/niri-plus-network.desktop",
+      "sha256": "5dce4d3cfc92988f48646d7ced6bc0276ec233136c80b360aa1dbb1d85227a24",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi working tree, uncommitted utility proposal dated 2026-10-24",
+      "source_path": "dot_local/share/applications/niri-plus-network.desktop",
+      "source_visibility": "private",
+      "notes": "Requires Kitty, NetworkManager, and nmtui. No public source revision exists yet."
+    },
+    {
+      "path": "examples/desktop/niri-plus-bluetooth.desktop",
+      "sha256": "5a7b0ec3f420e21489e0f942c560241becf70f241b6f59c49e97b89f8499371d",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi working tree, uncommitted utility proposal dated 2026-10-24",
+      "source_path": "dot_local/share/applications/niri-plus-bluetooth.desktop",
+      "source_visibility": "private",
+      "notes": "Requires Kitty, BlueZ, bluetoothctl, and service/adapter availability. No public source revision exists yet."
+    },
+    {
+      "path": "examples/desktop/niri-plus-audio.desktop",
+      "sha256": "762ff833adba93a2ea005081b18af8fb9a216d3a84565fa3dcff12e8141f1243",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi working tree, uncommitted utility proposal dated 2026-10-24",
+      "source_path": "dot_local/share/applications/niri-plus-audio.desktop",
+      "source_visibility": "private",
+      "notes": "Requires pavucontrol and a PulseAudio-compatible server. No public source revision exists yet."
+    },
+    {
+      "path": "examples/desktop/niri-plus-session.desktop",
+      "sha256": "695f1e5af9a1a9a3b2b660069b027783f765ead1232dd36beebd6cf3088f8135",
+      "kind": "portable adaptation",
+      "source": "Personal chezmoi working tree, uncommitted utility proposal dated 2026-10-24",
+      "source_path": "dot_local/share/applications/niri-plus-session.desktop",
+      "source_visibility": "private",
+      "notes": "Launches the portable Session helper from the desktop application list. No public source revision exists yet."
+    },
+    {
+      "path": "examples/desktop/power.toml.example",
+      "sha256": "60d5804956b20d00091217a108c27292dd6ec60b787e3b36c2a6fecbfad62583",
+      "kind": "portable policy example",
+      "source": "Personal chezmoi source at revision d4d780be4a336ac66d248128563300bf501645ba",
+      "source_path": ".chezmoidata/desktop.yaml",
+      "source_visibility": "private",
+      "notes": "Captured lock-before-suspend value is shown as an example only; the helper requires an explicit Boolean."
+    },
+    {
+      "path": "examples/theme/neutral-slate.rasi",
+      "sha256": "9c0acd263b5988b0fc70dd079de9eef0c5ec1ca62ec1cc49954e407028aa27dd",
+      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "kind": "frozen rendered native appearance candidate",
+      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source_visibility": "private",
+      "notes": "Rofi appearance only. Existing key bindings, actions, and launcher behavior remain separately owned; not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/swaync.css",
+      "sha256": "58d9e9f0b62bed6e59b886faeaf2928aae96ae60b9762cd4594e4777ad836d33",
+      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "kind": "frozen rendered native appearance candidate",
+      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source_visibility": "private",
+      "notes": "SwayNC CSS only for the selected fork; notification behavior and services remain separately owned. Not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/gtklock.css",
+      "sha256": "a7ad4f3ca96fee7a2624077bdfd9986f12f2197d7f33ed79d1fa597930a07b89",
+      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "kind": "frozen rendered native appearance candidate",
+      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source_visibility": "private",
+      "notes": "Gtklock stylesheet only; authentication, manual lock service, and power policy remain unchanged. Not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/qt5-palette.conf",
+      "sha256": "51277edaae2740370cfd7a7b2e27e2a5709d3f02ad271039b48a7f1b3afb6092",
+      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "kind": "frozen rendered native appearance candidate",
+      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source_visibility": "private",
+      "notes": "Qt 5 QPalette colors only; style, dialogs, fonts, and application preferences remain separately owned. Not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/qt6-palette.conf",
+      "sha256": "36a20fe5b188e187b29d5680c545e3b8e06ffe83c867968a22b8cc6e4999d7d7",
+      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "kind": "frozen rendered native appearance candidate",
+      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source_visibility": "private",
+      "notes": "Qt 6 QPalette colors only; style, dialogs, fonts, and application preferences remain separately owned. Not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/NeutralSlate.colors",
+      "sha256": "a7f4328e418937294f2a248555d68d7e43024fb457f058ef270cce0fcaded34d",
+      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "kind": "frozen rendered native appearance candidate",
+      "source": "Private uncommitted chezmoi candidate rendered 2026-10-24",
+      "source_visibility": "private",
+      "notes": "KDE color scheme with Colors:* groups. Font values are configured separately; do not replace kdeglobals. Not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/niri-neutral-slate.kdl",
+      "sha256": "b3ebb0e8028940b1a9275f558f33591b62f3088ea105b6c62aa104c83fdd0f3d",
+      "identity_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+      "kind": "authored appearance-only fragment",
+      "source": "design/identity.json",
+      "notes": "Canvas and focus-ring appearance only. Merge into the existing layout block; no input, bindings, startup, service, or power settings. Not a deployed artifact."
     }
   ]
 }

@@ -1,0 +1,54 @@
+/* Neutral Slate. dms-* aliases retain the public Rofi Plus styling contract. */
+* {
+    dms-primary: #b3c9dd;
+    dms-primary-container: #35434f;
+    dms-surface: #202326f5;
+    dms-surface-container: #191c1f;
+    dms-surface-container-high: #2b3034;
+    dms-surface-text: #efefec;
+    dms-surface-variant-text: #b9bec3;
+    dms-outline: #535d66;
+    dms-primary-muted: #b3c9dd70;
+    dms-warning: #ddbb80;
+    dms-warning-muted: #ddbb8080;
+    dms-warning-container: #191c1f;
+    dms-danger: #e5a09b;
+    dms-danger-muted: #e5a09b80;
+    dms-danger-container: #191c1f;
+    dms-highlight: bold #b3c9dd;
+    background-color: transparent;
+    text-color: @dms-surface-text;
+    font: "Noto Sans 11";
+}
+window {
+    width: 52em;
+    padding: 12px;
+    border: 1px;
+    border-color: @dms-outline;
+    border-radius: 0px;
+    background-color: @dms-surface;
+    transparency: "real";
+}
+mainbox { spacing: 10px; background-color: transparent; }
+inputbar {
+    padding: 8px 10px;
+    spacing: 10px;
+    border: 1px;
+    border-color: #d0e2f1;
+    border-radius: 3px;
+    background-color: @dms-surface-container;
+    children: [ prompt, entry ];
+}
+prompt { padding: 3px 7px; border-radius: 3px; background-color: @dms-surface-container-high; text-color: @dms-primary; }
+entry { padding: 0px 4px; placeholder: "Search applications"; placeholder-color: @dms-surface-variant-text; text-color: @dms-surface-text; cursor-color: #d0e2f1; }
+listview { lines: 9; columns: 1; fixed-height: false; dynamic: true; scrollbar: false; spacing: 5px; background-color: transparent; }
+element { padding: 10px 12px; spacing: 12px; border: 0px 0px 0px 3px; border-color: transparent; border-radius: 3px; background-color: transparent; text-color: @dms-surface-text; }
+element selected { background-color: @dms-primary-container; border-color: #d0e2f1; text-color: #efefec; }
+element active { background-color: @dms-surface-container-high; border-color: @dms-primary-muted; }
+element selected.active { background-color: @dms-primary-container; border-color: #d0e2f1; }
+element-icon { size: 1.75em; vertical-align: 0.5; }
+element-text { vertical-align: 0.5; highlight: @dms-highlight; }
+message { padding: 8px 10px; border: 1px; border-color: @dms-outline; border-radius: 3px; background-color: @dms-surface-container; }
+textbox { text-color: @dms-surface-variant-text; }
+message textbox { markup: true; }
+mode-switcher, case-indicator { enabled: false; }

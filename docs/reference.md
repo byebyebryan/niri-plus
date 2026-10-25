@@ -47,6 +47,29 @@ Left/Right changes host scope; SSH and Agent keep their own filter-editing
 behavior. Use the full launcher instructions rather than copying only a binary
 name.
 
+## Common utilities
+
+`Mod+D` opens the application list. The portable entries for Network,
+Bluetooth, Audio, and Session are documented in the
+[desktop utility recipe](recipes/desktop-utilities.md). They rely on their
+named service/tool owners and keep lock, logout confirmation, and power actions
+in their existing native paths.
+
+## Session and hardware ownership
+
+| Capability | Owner | Boundary |
+| --- | --- | --- |
+| Login screen | SDDM | The greeter theme and root-owned assets are separate from the user session. |
+| Window/session navigation | Niri | Keyboard, pointer, touchpad, window layout, and the native quit confirmation. |
+| Output profiles | Kanshi | Selects monitor layouts; does not own the shell or display-manager theme. |
+| Idle and power | swayidle and the session policy | Display-off, lock, suspend, lid, and battery timing remain explicit policy. |
+| Manual lock | Gtklock through `desktop-lock.service` | An independent user unit keeps manual locks separate from idle reloads. |
+| Portals | xdg-desktop-portal backends | File selection and screen capture use their selected GTK/GNOME backends. |
+| Input methods | Fcitx5 | Text composition and candidate UI remain separate from the keyboard layout. |
+| Authorization | polkit-kde-agent | Applications request authorization; the agent supplies the graphical prompt. |
+| Removable storage | UDisks2 plus polkit and filesystem support | File-manager mounting is separate from the common utility entries. |
+| Brightness | Laptop backlight device | Hardware-key feedback applies to the laptop panel; external-monitor DDC/CI is separate. |
+
 ## Working setup
 
 The managed source selects the minimal Niri shell with SwayNC and Gtklock on
@@ -61,6 +84,16 @@ these example recipes are included here; access to my private dotfiles is not
 required.
 <!-- /niri-plus:snapshot -->
 
+## Appearance
+
+The [Neutral Slate Design page](design.md) shows the selected palette, type,
+and launcher, information, terminal, and login/lock surfaces. Its illustrations
+are samples, not native or deployed screenshots. The [terminal recipe](recipes/terminal.md)
+links to the generated [Neutral Slate Kitty fragment](../examples/kitty/neutral-slate.conf).
+The [appearance recipe](recipes/appearance.md) links to the Niri, Rofi, SwayNC,
+Gtklock, Qt 5/6, and KDE color examples and describes their owners and merge
+boundaries.
+
 ## Examples and verification
 
 - [Niri configuration](../examples/niri/config.kdl): portable window layout and
@@ -71,6 +104,8 @@ required.
   [picker](../examples/clipboard/rofi-clipboard): sample service and frozen helper.
 - [Manual lock service](../examples/session/desktop-lock.service): a focused
   Gtklock service example.
+- [Common utility recipe](recipes/desktop-utilities.md): portable application
+  launchers and Session power-policy example.
 
 The site build checks its routes, links, example inventory, and asset hashes.
 Browser checks cover responsive layout, keyboard controls, walkthrough behavior,
@@ -85,4 +120,5 @@ installation require checks on the target system.
 - [Fleet Plus](https://dev.byebyebryan.com/fleet-plus/)
 - [Cliphist](https://github.com/sentriz/cliphist)
 - [Gtklock](https://github.com/jovanlanik/gtklock)
+- [UDisks2](https://github.com/storaged-project/udisks)
 - [Media sources and attribution](../assets/provenance.json)

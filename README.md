@@ -73,7 +73,7 @@ Pages uses the GitHub Actions build type. The project inherits the portfolio
 domain and needs no project CNAME or DNS change.
 
 The build checks local links and anchors, metadata, public file inventory, and
-media/example hashes. Browser checks cover nine pages at four widths,
+media/example hashes. Browser checks cover thirteen pages at four widths,
 keyboard operation, motion preferences, and reading without JavaScript. To save
 local captures, set `NIRI_SCREENSHOTS=/absolute/directory` for the browser check.
 Keep generated output and captures untracked.
@@ -81,3 +81,22 @@ Keep generated output and captures untracked.
 See the [v1 delivery record](docs/planning/v1-delivery.md) for the first edition's
 scope, verification, public-delivery evidence, and remaining media/target-machine
 acceptance work.
+
+The [Neutral Slate pass checkpoint](docs/planning/neutral-slate-pass.md) records
+the prepared source and remaining host/publication gates. The
+[coverage and coherence review](docs/planning/desktop-review.md) is its baseline.
+
+The [Neutral Slate Design page](docs/design.md) is a permanent part of the site,
+alongside the [Kitty and Zsh guide](docs/recipes/terminal.md). The canonical
+`design/identity.json` supplies the selected profile, public identity export,
+site colors, specimens, and generated Kitty fragment. The internal
+[design package](docs/design/README.md) retains palette-comparison history and
+implementation/verification plans. Desktop adoption and public deployment are
+separate from these source changes.
+
+The site packages the selected Noto Sans UI weights, Meslo terminal face, and
+Source Han CJK fallback as WOFF2 files with their upstream licenses and generated
+provenance. The build exports only this explicit subset, rather than the whole
+design-review tree.
+Use `--portable` with `scripts/build.py` for a review snapshot with relative
+links; canonical URLs continue to describe the public Pages destination.

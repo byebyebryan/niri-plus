@@ -59,6 +59,27 @@ exercise a web upload file picker. Check a screen-sharing selection as well if
 you need it. These tasks establish that your session's portals and desktop
 integration are useful for the way you work.
 
+## Add the common utilities
+
+Follow the [desktop utility recipe](recipes/desktop-utilities.md) for the
+Network, Bluetooth, Audio, and Session application entries. Install only the
+services you use. On Arch, the supporting packages include:
+
+```sh
+sudo pacman -S --needed networkmanager bluez bluez-utils pavucontrol udisks2
+```
+
+`nmtui` needs NetworkManager to own the devices; `bluetoothctl` needs the BlueZ
+service and an adapter; `pavucontrol` needs a PulseAudio-compatible audio
+server. UDisks2 supports removable media through file managers. Choose the
+system-service and polkit setup that fits your distribution. These utilities
+do not configure audio routing, radios, backlight, or suspend policy.
+See the Arch package records for [NetworkManager](https://archlinux.org/packages/extra/x86_64/networkmanager/),
+[BlueZ](https://archlinux.org/packages/extra/x86_64/bluez/),
+[BlueZ utilities](https://archlinux.org/packages/extra/x86_64/bluez-utils/),
+[pavucontrol](https://archlinux.org/packages/extra/x86_64/pavucontrol/), and
+[UDisks2](https://archlinux.org/packages/extra/x86_64/udisks2/).
+
 ## Add notifications and information
 
 Follow the [notification recipe](recipes/notifications.md). You can begin with
@@ -98,3 +119,14 @@ For each addition, check the service status and one real task before continuing.
 To back out, restore that part's configuration and stop only the user services
 you introduced. Do not remove the previous notification daemon or change power
 policy until the replacement works in your session.
+
+## Terminal workflow and appearance
+
+Read the [Kitty and Zsh guide](recipes/terminal.md) for the selected colors,
+portable shell files, pinned plugins, fetcher, and history/navigation workflow. The
+[Neutral Slate Design page](design.md) shows the selected palette and typography
+across desktop surfaces. The [Kitty and Zsh guide](recipes/terminal.md) links to
+the generated [Kitty color fragment](../examples/kitty/neutral-slate.conf) and
+the [common utility recipe](recipes/desktop-utilities.md). Use the
+[appearance recipe](recipes/appearance.md) to review and merge the scoped native
+appearance examples without replacing component behavior.

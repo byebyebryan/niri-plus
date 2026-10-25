@@ -1,0 +1,154 @@
+{
+  "date": "2026-10-25T04:07:20.553985+00:00",
+  "scope": "Neutral Slate source and reference pass; live adoption and public GitHub/Pages publication excluded",
+  "producer": {
+    "repository": "https://github.com/byebyebryan/niri-plus",
+    "head": "45881d7b4d4f01625c3391aa1dbdf7745d2dbfb9",
+    "state": "local uncommitted changes",
+    "canonical_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c"
+  },
+  "consumer": {
+    "repository": "private chezmoi",
+    "head": "d4d780be4a336ac66d248128563300bf501645ba",
+    "state": "local uncommitted changes",
+    "selection": {
+      "schema_version": 1,
+      "enabledHosts": [],
+      "profile": "neutral-slate",
+      "source": {
+        "status": "unpublished",
+        "repository": "https://github.com/byebyebryan/niri-plus",
+        "canonical_path": "design/identity.json",
+        "canonical_sha256": "0c9135b5d22f796e076c1373cddf57ad0d947d1b7feb80b4f1c3f0b3f4f19b1c",
+        "commit": null,
+        "archive_url": null,
+        "archive_sha256": null
+      },
+      "note": "Reviewed local candidate only. Public artifact proof and a separate host selection are required before live apply."
+    }
+  },
+  "checks": {
+    "site_unit_tests": 12,
+    "site": {
+      "pages": 13,
+      "files": 71,
+      "local_links": 396
+    },
+    "browser": {
+      "checks": 401,
+      "routes": 13,
+      "widths": [
+        375,
+        768,
+        1280,
+        1600
+      ],
+      "javascript": [
+        "enabled",
+        "disabled"
+      ],
+      "errors": 0
+    },
+    "terminal": {
+      "isolated_checks": 47,
+      "reported_by": "Luna implementation handoff, reviewed by primary",
+      "upstream_archive_install": "four pinned archives installed in a temporary HOME; isolated real Zsh startup passed",
+      "live_desktop_operations": 0
+    },
+    "chezmoi_full_suite": "passed after final private prompt integration",
+    "consumer_focused": "passed, including unselected byte parity against d4d780be4a336ac66d248128563300bf501645ba for three hosts plus unknown, selected renders, Niri validation, Qt/INI/package gates, publication/hash rejection and safe Session dispatch",
+    "native": {
+      "isolation": "Owned Xvfb/offscreen, private HOME/XDG paths, absent session/system bus addresses, memory-backed settings; no real device/auth/session actions",
+      "results": [
+        {
+          "toolkit": "gtk3",
+          "result": "GTK3 selected locker CSS parsed and rendered",
+          "scope": "Native sample controls, not Gtklock/PAM or lock/unlock acceptance"
+        },
+        {
+          "toolkit": "gtk4",
+          "result": "GTK4 parsed selected SwayNC stylesheet including its packaged import",
+          "scope": "CSS parser only; no SwayNC service or hardware reads"
+        },
+        {
+          "toolkit": "qt",
+          "result": "Qt6 staged QPalette and serialized font parsed/rendered",
+          "font": "Noto Sans",
+          "style": "Breeze",
+          "scope": "Native sample widgets, not complete Dolphin/portal or physical acceptance"
+        },
+        {
+          "toolkit": "rofi",
+          "result": "Native Rasi theme parser accepted staged palette/aliases"
+        },
+        {
+          "toolkit": "kitty",
+          "result": "Native config parser accepted full staged file including retained input/glyph/paste settings"
+        },
+        {
+          "toolkit": "sddm",
+          "result": "Native greeter test mode with the selected derived theme",
+          "theme_derivation_sha256": "ab2469ae2948904e8e01f81cf9529f94d02fcb7f99495277e9599a6697d14151",
+          "scope": "Owned private Xvfb; no SDDM service restart, root installation, authentication or power action"
+        }
+      ],
+      "files": [
+        {
+          "path": "sddm-test-mode.png",
+          "sha256": "792fff12e6789c9a89a8f8519742760f7f25c58516b1ff3553f4d48b90d12c49"
+        },
+        {
+          "path": "rofi.png",
+          "sha256": "02146a87f305e6efe71643f29f91925a2bac6809abf47db3a042af23dedfcfd9"
+        },
+        {
+          "path": "qt.png",
+          "sha256": "8f3ec74c344b9b9aed7d526efeb4fc8daeb65a116be2a7473f20dbf457b2298e"
+        },
+        {
+          "path": "gtk3.png",
+          "sha256": "8900f1e4bdb95713efedd5e3a694ad65720ad1d7500ecd0f5048724fdb6b5632"
+        }
+      ],
+      "input_hashes": {
+        "sddm-staged.py": "047a73721af16c0f9c88491b5bc0cc9f0735fbba7111912bc35b080a3fa0c49d",
+        "kdeglobals": "ea1c85cc52208a1e82baefe43f7c2b5b2081386b22287092cb6cf9bf8d7a57cd",
+        "NeutralSlate.colors": "a7f4328e418937294f2a248555d68d7e43024fb457f058ef270cce0fcaded34d",
+        "gtklock.css": "a7ad4f3ca96fee7a2624077bdfd9986f12f2197d7f33ed79d1fa597930a07b89",
+        "swaync.css": "58d9e9f0b62bed6e59b886faeaf2928aae96ae60b9762cd4594e4777ad836d33",
+        "neutral-slate.rasi": "9c0acd263b5988b0fc70dd079de9eef0c5ec1ca62ec1cc49954e407028aa27dd",
+        "kitty.conf": "a742a597ee987218c94d6b68aacffb06e524697ad12f84e0b82d1c54892cfef0",
+        "qt6-appearance.ini": "58cbada154a1df4d1f11f76c13200649dc189b0387e14a71ad2a79a4a3083d3f",
+        "qt6-palette.conf": "36a20fe5b188e187b29d5680c545e3b8e06ffe83c867968a22b8cc6e4999d7d7",
+        "qt5-appearance.ini": "19f81c6c2e7f52005acd45d4be875f321bc50d59d3fc7f5bb84ddbc5cf0602fb",
+        "qt5-palette.conf": "51277edaae2740370cfd7a7b2e27e2a5709d3f02ad271039b48a7f1b3afb6092",
+        "config.kdl": "dadce63dc64293ba08370e52ae60bc7bdc1f65501760a92d413b99e01a9a1f08"
+      }
+    },
+    "current_scoped_diff": "empty, including Kitty/Zsh/Niri/Rofi/SwayNC/Gtklock/GTK/Qt/KDE/Dolphin",
+    "current_scoped_apply_dry_run": "empty",
+    "git_diff_check": "passed both repositories"
+  },
+  "preview": {
+    "url": "http://starship:8787/reports/9f609b9f397475c80a17eca07a42fcf6a0b9537d2d3b707f08ba2ab097cda777/design/",
+    "report_id": "9f609b9f397475c80a17eca07a42fcf6a0b9537d2d3b707f08ba2ab097cda777",
+    "publisher_delivery": "HTTP 200; verified bytes from Starship",
+    "carbon_delivery": "SSH to Carbon fetched design, identity CSS, Noto font, appearance and terminal recipes, native appendix and SDDM image; all seven hashes matched the prepared export",
+    "browser_acceptance": "Published Design opened; gallery Information/Terminal/Login views and native appendix inspected; Design left open",
+    "appendix": "../review/",
+    "source_site_files": 71,
+    "report_files_including_review_appendix": 77
+  },
+  "contributors": {
+    "luna": "Selected identity/site, portable terminal and utilities, appearance exports and recipes",
+    "primary": "Native consumer adapters, isolated native rendering, publication/admission guards, integration review and final delivery"
+  },
+  "remaining": [
+    "Commit/push and public Pages publication",
+    "Explicit host selection and scoped live chezmoi rollout",
+    "Native Kitty glyph/CJK, tmux/SSH and full-screen terminal use",
+    "Actual utilities, devices, portals, lock/login/resume, docking and per-host scaling acceptance",
+    "Daily desktop captures after adoption"
+  ],
+  "preserved": "No live apply or service restart; existing native sessions, power/locking/pairing/fleet selections and unrelated Tmux Observer installed drift preserved"
+}

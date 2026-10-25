@@ -1,0 +1,47 @@
+{
+  "status": "design-review-proposal",
+  "date": "2026-10-24",
+  "recommended_candidate": "graphite-blue",
+  "selected_candidate": null,
+  "report": {
+    "id": "9b9e5a20085fc2e33ee54390df3b568657392135bdc85c8731b0afdfcc07d3aa",
+    "url": "http://starship:8787/reports/9b9e5a20085fc2e33ee54390df3b568657392135bdc85c8731b0afdfcc07d3aa/",
+    "project_url": "http://starship:8787/reports/#project=niri-plus",
+    "state": "published",
+    "file_count": 40,
+    "byte_count": 9802428,
+    "delivery": {
+      "checked_at": "2026-10-24T21:58:02.655136+00:00",
+      "checked_from": "starship",
+      "state": "verified",
+      "http_status": 200,
+      "bytes": 67999,
+      "verified_url": "http://starship:8787/reports/9b9e5a20085fc2e33ee54390df3b568657392135bdc85c8731b0afdfcc07d3aa/"
+    }
+  },
+  "verification": {
+    "browser_checks": 107,
+    "candidates": 3,
+    "surface_groups": 4,
+    "capabilities": 22,
+    "native_reference_images": 4,
+    "widths": [
+      375,
+      768,
+      1440
+    ],
+    "fractional_device_scale": 1.5,
+    "javascript_disabled": true,
+    "published_browser_smoke": "passed",
+    "published_manifest_files_verified": 39,
+    "public_site_baseline_files_unchanged": 30
+  },
+  "boundaries": {
+    "desktop_configuration_changed": false,
+    "desktop_deployment": false,
+    "public_site_changed": false,
+    "git_push": false,
+    "user_visual_selection": "open",
+    "live_physical_acceptance": "not performed"
+  }
+}

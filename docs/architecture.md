@@ -18,14 +18,16 @@ monitoring. Chezmoi owns my configuration and deployment.
 | --- | --- | --- |
 | Windows and navigation | Niri | Scrolling columns, workspaces, overview, and keyboard navigation. |
 | Browser and files | Chrome and Dolphin | Interactive web work, downloads, and graphical file operations. |
-| Terminals | Kitty | Terminal work and dedicated native coding-agent windows. |
+| Terminal and shell | Kitty, Zsh, Powerlevel10k, fzf, zoxide | Terminal work, prompt/status, history/completion, directory navigation, and dedicated coding-agent windows. |
 | Applications and pickers | Rofi and Rofi Plus | Find applications, hosts, tmux sessions, agent windows, and clipboard items. |
+| Common utilities | NetworkManager/nmtui, BlueZ/bluetoothctl, pavucontrol, Session helper | Open network, pairing, audio, lock, logout, and power actions from the application list. |
 | Notifications and information | SwayNC fork | Notification history and a panel of system information, available on demand. |
 | Clipboard | Cliphist and wl-clipboard | Collect text and images; a Rofi picker restores the original item. |
 | Locking | Gtklock | Manual locks through an independent user service. |
 | Idle and power | swayidle and desktop-power | Explicit display, suspend, and battery policy per machine. |
 | Authorization | polkit-kde-agent | Graphical authorization prompts when an application needs them. |
-| Outputs and integration | Kanshi, portals, GTK/Qt configuration, Fcitx5 | Monitor profiles, file dialogs, appearance, and input methods. |
+| Login and outputs | SDDM, Kanshi | Display-manager login theme and independent monitor profiles. |
+| Portals and input | xdg-desktop-portal, Fcitx5, Niri input | File/screen integration, input methods, and compositor-owned keyboard/touchpad behavior. |
 
 ## Keep changes independent
 
@@ -37,6 +39,11 @@ does not stop an active locker.
 The panel only refreshes its metrics and wireless subscriptions while open.
 NVIDIA GPU reads wait for cached runtime activity. Closing it cancels the outstanding
 work. This behavior is part of the fork, beyond what a CSS theme can express.
+
+The [desktop utility recipe](recipes/desktop-utilities.md) keeps the small
+application entry points separate from session policy. UDisks2 and polkit
+authorize removable-drive access; external monitor brightness is separate from
+the laptop backlight controls.
 
 ## Configuration that an agent can inspect
 
@@ -61,3 +68,12 @@ examples without requiring my personal deployment system.
 
 The fleet tools and external displays are optional integrations. The browser,
 terminal, and basic desktop remain understandable without them.
+
+## A shared visual identity
+
+The [design guide](design.md) presents the selected Neutral Slate palette,
+Noto Sans UI, Meslo terminal type, and the surface gallery. It links to the
+generated [identity export](../data/identity.json) and
+[Kitty appearance fragment](../examples/kitty/neutral-slate.conf).
+[Kitty and Zsh](recipes/terminal.md) are part of the reference workflow. The
+design specimen and machine adoption remain separate states.

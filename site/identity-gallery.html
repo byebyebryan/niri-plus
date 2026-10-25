@@ -1,0 +1,67 @@
+<div class="surface-gallery" data-surface-gallery>
+  <div class="surface-switcher" hidden data-surface-switcher role="group" aria-label="Choose a Neutral Slate surface">
+    <button type="button" data-surface-button="launch" aria-pressed="true">Launch</button>
+    <button type="button" data-surface-button="information" aria-pressed="false">Information</button>
+    <button type="button" data-surface-button="terminal" aria-pressed="false">Terminal</button>
+    <button type="button" data-surface-button="login-lock" aria-pressed="false">Login / lock</button>
+  </div>
+  <section class="surface-panel" data-surface-panel="launch" aria-labelledby="surface-launch-title">
+    <header class="surface-heading"><div><p class="eyebrow">01 / Launch</p><h3 id="surface-launch-title">Find it. Choose an action.</h3></div><p>Rofi · sample rows and local controls</p></header>
+    <div class="launch-specimen">
+      <section class="launch-window" aria-label="Rofi application and Agent Plus illustration">
+        <div class="launch-titlebar"><span>Agent Plus</span><span>LOCAL / REMOTE</span></div>
+        <label class="launch-search-label" for="design-launch-filter">Filter sample windows</label>
+        <input id="design-launch-filter" type="search" data-launch-filter placeholder="Filter windows" autocomplete="off">
+        <div class="launch-actions" role="group" aria-label="Sample named action">
+          <button type="button" data-launch-action="open" aria-pressed="true">Open</button>
+          <button type="button" data-launch-action="new" aria-pressed="false">New window</button>
+          <span>Enter runs · Tab cycles</span>
+        </div>
+        <div class="launch-rows" role="group" aria-label="Sample launcher rows">
+          <button type="button" class="launch-row is-selected" data-launch-row aria-pressed="true"><span class="provider-mark">CX</span><span><strong>Codex · Workstation · Default</strong><small>Window 1 · a-small-idea</small></span><em>local</em></button>
+          <button type="button" class="launch-row" data-launch-row aria-pressed="false"><span class="provider-mark">CL</span><span><strong>Claude · Buildbox</strong><small>Open a native TUI window</small></span><em>SSH</em></button>
+          <button type="button" class="launch-row" data-launch-row aria-pressed="false"><span class="provider-mark">CH</span><span><strong>Chrome · Research notes</strong><small>Browser · field-notes.example</small></span><em>window</em></button>
+        </div>
+        <p class="launch-status" data-launch-message aria-live="polite">Sample selection: Codex on Workstation. No session is opened.</p>
+        <div class="launch-footer">↑ ↓ move · Tab / Shift+Tab actions · Escape cancels</div>
+      </section>
+      <aside class="launch-context"><p class="eyebrow">ACTIVE SELECTION</p><strong>Visible focus, clear action</strong><p>The row stays selected while the named action changes. Search filters these three fictional rows only.</p><p class="design-native-note">This web specimen demonstrates appearance and interaction. It does not launch or focus an application.</p></aside>
+    </div>
+  </section>
+  <section class="surface-panel" data-surface-panel="information" aria-labelledby="surface-information-title">
+    <header class="surface-heading"><div><p class="eyebrow">02 / Information</p><h3 id="surface-information-title">Useful while the panel is open.</h3></div><p>SwayNC · fictional live-looking values</p></header>
+    <div class="information-specimen">
+      <section class="information-panel" aria-label="SwayNC status panel illustration">
+        <div class="information-title"><span><i aria-hidden="true"></i> Notifications</span><span>Do not disturb <b class="sample-switch" aria-hidden="true"></b></span></div>
+        <article class="information-card"><h4>System</h4><div class="information-cells"><div><span>CPU</span><strong>2.8 GHz · 12%</strong></div><div><span>RAM</span><strong>8.2 GiB · 26%</strong></div></div></article>
+        <article class="information-card"><h4>Network</h4><div class="information-cells"><div><span>WIFI</span><strong>Workshop Wi-Fi</strong></div><div><span>Signal</span><strong>83%</strong></div></div></article>
+        <article class="information-card"><h4>Bluetooth</h4><div class="information-cells"><div><span>Keyboard</span><strong>72%</strong></div><div><span>Headphones</span><strong>—</strong></div></div></article>
+        <article class="information-card"><h4>Battery</h4><div class="information-cells"><div><span>Charge</span><strong>65%</strong></div><div><span>State</span><strong>Charging to 80%</strong></div></div><div class="information-cells"><div><span>PWR</span><strong>17.6 W</strong></div><div><span>ETA</span><strong>1:10 to 80%</strong></div></div></article>
+      </section>
+      <div class="information-notes"><div class="sample-notification"><p class="eyebrow">KITTY · SAMPLE NOTIFICATION</p><strong>Build complete</strong><p>Return to the originating window.</p><button type="button" class="specimen-button">Open</button><small>Retained card · example action only</small></div>
+        <div class="availability-card"><p class="eyebrow">WHEN HARDWARE IS ABSENT</p><p><strong>GPU asleep:</strong> GPU rows stay hidden.</p><p><strong>Desktop without a battery:</strong> the Battery card hides.</p><p><strong>Unknown device charge:</strong> show “—”; do not guess.</p><p><strong>Feedback:</strong> brief, replaceable, and kept out of history.</p></div>
+      </div>
+    </div>
+  </section>
+  <section class="surface-panel" data-surface-panel="terminal" aria-labelledby="surface-terminal-title">
+    <header class="surface-heading"><div><p class="eyebrow">03 / Terminal</p><h3 id="surface-terminal-title">The palette keeps its meaning.</h3></div><p>Kitty · MesloLGS Nerd Font · 11pt</p></header>
+    <div class="terminal-specimen">
+      <div class="terminal-window-head"><span>Kitty · Zsh</span><span>NEUTRAL SLATE DESIGN TARGET</span></div>
+      <div class="terminal-transcript"><p class="terminal-rprompt">14:32:07 · CPU 3% · RAM 24%</p><p><span class="terminal-cyan">󰍹</span> <span class="terminal-host">workstation</span> <span class="terminal-blue">~/code/a-small-idea</span> <span class="terminal-green">main</span></p><p><span class="terminal-blue">❯</span> git status --short</p><p><span class="terminal-green">✓</span> working tree clean <span class="terminal-dim">· no pending changes</span></p><p class="terminal-selection">A selected terminal line stays readable.</p><p><strong>Bold emphasis</strong> <span class="terminal-dim">dim suggestion</span> <span class="terminal-warning">! warning</span> <span class="terminal-error">× error</span></p><p>Latin / 中文 / Nerd glyphs: <span class="terminal-glyph"> 󰈔 󰆍</span></p><p><span class="terminal-blue">❯</span> <span class="overview-caret" aria-hidden="true"></span></p></div>
+      <div class="terminal-ansi-preview" role="list" aria-label="Terminal ANSI color sample">@@ANSI@@</div>
+    </div>
+    <p class="design-native-note">The 16-color strip is generated from the selected identity. Full-screen tools and explicit RGB syntax keep their own colors.</p>
+  </section>
+  <section class="surface-panel" data-surface-panel="login-lock" aria-labelledby="surface-login-title">
+    <header class="surface-heading"><div><p class="eyebrow">04 / Login and lock</p><h3 id="surface-login-title">Quiet, neutral authentication.</h3></div><p>SDDM + Gtklock · appearance mockup</p></header>
+    <div class="login-lock-specimen">
+      <section class="secure-specimen" aria-label="SDDM login mockup">
+        <p class="secure-label">SDDM · LOGIN MOCKUP</p><div class="secure-content"><span class="secure-mark" aria-hidden="true">+</span><strong>Bryan</strong><span>Niri session</span><label for="design-login-password">Password field appearance</label><input id="design-login-password" type="password" placeholder="Password" readonly><button type="button" data-login-error-toggle>Show sample error</button><p class="secure-error" data-login-error hidden>Authentication failed · sample state only</p></div>
+      </section>
+      <section class="secure-specimen" aria-label="Gtklock lock-screen mockup">
+        <p class="secure-label">GTKLOCK · LOCK MOCKUP</p><div class="secure-content lock-content"><time datetime="2026-10-24T11:42">11:42</time><span>Saturday, 24 October</span><strong>Session locked</strong><label for="design-lock-password">Password field appearance</label><input id="design-lock-password" type="password" placeholder="Password" readonly><button type="button" class="lock-button" disabled>Unlock</button></div>
+      </section>
+    </div>
+    <p class="design-native-note">Illustrations only. No credentials are requested or checked, and the desktop is not locked or unlocked.</p>
+  </section>
+</div>

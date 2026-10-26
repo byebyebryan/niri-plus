@@ -2,6 +2,11 @@
 
 **Selected identity: Neutral Slate. One theme for the initial reference.**
 
+The [contrast study](contrast.md) previews the next revision: distinct desktop
+and terminal palettes within this identity. The split is agreed; the exact
+proposal values remain under review. This specification records the current
+selected baseline until that review is complete.
+
 Use the reviewed warm charcoal/off-white surfaces, Clear Blue accent,
 Noto Sans UI, and Meslo terminal. Graphite Blue is retained as a future
 alternative. The public design presentation should show these choices in use.

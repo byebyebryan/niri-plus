@@ -73,7 +73,7 @@ Pages uses the GitHub Actions build type. The project inherits the portfolio
 domain and needs no project CNAME or DNS change.
 
 The build checks local links and anchors, metadata, public file inventory, and
-media/example hashes. Browser checks cover thirteen pages at four widths,
+media/example hashes. Browser checks cover fourteen pages at four widths,
 keyboard operation, motion preferences, and reading without JavaScript. To save
 local captures, set `NIRI_SCREENSHOTS=/absolute/directory` for the browser check.
 Keep generated output and captures untracked.
@@ -93,6 +93,12 @@ site colors, specimens, and generated Kitty fragment. The internal
 [design package](docs/design/README.md) retains palette-comparison history and
 implementation/verification plans. Desktop adoption and public deployment are
 separate from these source changes.
+
+The [contrast study](docs/design/contrast.md) is a public comparison of a clearer
+desktop and separate black terminal palette. Its proposal source is
+`design/contrast-study.json`; it leaves the selected identity, installation
+examples, and chezmoi inputs unchanged. A portable site build can be published
+as an HTML report with `design/contrast/index.html` as its entrypoint.
 
 The site packages the selected Noto Sans UI weights, Meslo terminal face, and
 Source Han CJK fallback as WOFF2 files with their upstream licenses and generated

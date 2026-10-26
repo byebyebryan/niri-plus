@@ -5,6 +5,10 @@ workstation, and remote hosts. This guide covers the Neutral Slate color
 fragment and a portable shell core that you can install beside your existing
 configuration.
 
+The [desktop and terminal contrast study](../design/contrast.md) previews a
+separate black terminal palette and stronger ANSI colors. It is a proposal;
+the fragment in this guide retains the currently selected appearance.
+
 ## Kitty: the everyday surface
 
 My terminal uses MesloLGS Nerd Font at 11pt, no window decorations, explicit

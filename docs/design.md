@@ -8,6 +8,11 @@ The selected appearance was delivered to Carbon, Starship, and Snap. The
 [deployment record](reference.md#working-setup) lists the scoped results and
 remaining normal-use checks; the gallery below remains labeled sample content.
 
+The new [desktop and terminal contrast study](design/contrast.md) compares this
+palette with clearer warm desktop surfaces and a separate black terminal
+palette. Those colors are proposals; the selected examples below retain the
+delivered appearance.
+
 ## Desktop overview
 
 The browser and terminal share the screen, with the focused window marked by a

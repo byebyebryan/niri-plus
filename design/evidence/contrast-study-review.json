@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-26",
+  "scope": "Design source, public comparison page, and immutable HTML report. Exact proposal colors await human selection. No live desktop changes.",
+  "baseline_revision": "c5da370e2b70c6e86ac3f47e3a021052d0e31529",
+  "baseline_identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+  "proposal_source": "design/contrast-study.json",
+  "public_route": "https://dev.byebyebryan.com/niri-plus/design/contrast/",
+  "comparisons": {
+    "desktop": ["current", "crisper-slate"],
+    "terminal": ["current", "black-only", "black-vivid"],
+    "desktop_states": ["success", "warning", "error"],
+    "terminal_sizes_pt": [11, 12],
+    "ansi_slots_per_terminal": 16,
+    "faint_opacity_illustrations": [0.4, 0.7]
+  },
+  "validation": {
+    "unit_tests": 14,
+    "browser_checks": 467,
+    "routes": 14,
+    "widths": [375, 768, 1280, 1600],
+    "javascript": ["enabled", "disabled"],
+    "browser_errors": 0,
+    "export_files": 75,
+    "checked_local_links": 422,
+    "portable_export": "passed",
+    "published_report_http": 200,
+    "published_report_browser": "Fonts, computed colors, view/state controls, and narrow viewport passed.",
+    "visual_review": "Headless desktop, terminal, and narrow-screen specimen captures inspected; these are HTML illustrations.",
+    "selected_identity_and_examples": "Unchanged. Unit checks protect the current Kitty fragment and selected identity export.",
+    "black_only_experiment": "Only the background differs from the current terminal colors; id and display name label the experiment."
+  },
+  "report": {
+    "id": "f3e6bea2450fd01eb9e567a1413ad47b4a89fc9a988cb9a2b6049371b3b75990",
+    "url": "http://starship:8787/reports/f3e6bea2450fd01eb9e567a1413ad47b4a89fc9a988cb9a2b6049371b3b75990/design/contrast/",
+    "project": "niri-plus",
+    "entrypoint": "design/contrast/index.html",
+    "files": 75,
+    "delivery": "HTTP bytes verified by publisher; served page checked with headless Chromium."
+  },
+  "remaining": [
+    "Human palette comparison and exact-color selection.",
+    "Native GTK/Qt and overlay rendering.",
+    "Physical OLED review on Carbon and Starship.",
+    "Kitty faint attributes, 256 colors, RGB, application backgrounds, tmux, SSH, and full-screen tools.",
+    "Canonical identity promotion and scoped chezmoi rollout after selection."
+  ]
+}

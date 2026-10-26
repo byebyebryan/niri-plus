@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("niri_plus_build", ROOT / "scripts/build.py")
@@ -19,7 +20,7 @@ class BuildContracts(unittest.TestCase):
 
     def test_complete_site_has_checked_links_and_no_planning_material(self):
         result = builder.build(self.output)
-        self.assertEqual(result["pages"], 13)
+        self.assertEqual(result["pages"], 14)
         self.assertGreater(result["local_links"], 200)
         self.assertFalse((self.output / "docs").exists())
         self.assertFalse((self.output / "AGENTS.md").exists())
@@ -107,6 +108,34 @@ class BuildContracts(unittest.TestCase):
         builder.build(self.output)
         public_manifest = json.loads((self.output / "examples/manifest.json").read_text())
         self.assertEqual(len([item for item in public_manifest["files"] if item["path"].startswith("examples/theme/")]), 7)
+
+    def test_contrast_study_keeps_the_selected_identity_and_isolates_black_only(self):
+        builder.build(self.output)
+        study = json.loads((self.output / "data/contrast-study.json").read_text())
+        identity = json.loads((self.output / "data/identity.json").read_text())
+        self.assertEqual(study["status"], "proposal")
+        self.assertEqual(study["baseline_sha256"], identity["source_sha256"])
+        current, black, vivid = study["terminal_variants"]
+        self.assertEqual({key for key in current if current[key] != black[key]}, {"id", "name", "background"})
+        self.assertEqual(black["background"], "#000000")
+        self.assertEqual(vivid["background"], "#000000")
+        self.assertEqual(vivid["foreground"], current["foreground"])
+        self.assertEqual(len(vivid["ansi"]), 16)
+        self.assertEqual(identity["direction"]["colors"]["surface"], "#202326")
+        self.assertNotIn("crisper-slate", (self.output / "assets/identity.css").read_text())
+        fragment = (self.output / "examples/kitty/neutral-slate.conf").read_text()
+        self.assertIn("background #202326", fragment)
+        study["terminal_variants"][1]["background"] = "#111111"
+        (self.output / "data/contrast-study.json").write_text(json.dumps(study))
+        with self.assertRaisesRegex(ValueError, "contrast study differs"):
+            builder.validate(self.output)
+
+    def test_contrast_study_rejects_a_changed_selected_baseline(self):
+        identity = builder.working_identity()
+        identity["source_sha256"] = "0" * 64
+        with patch.object(builder, "working_identity", return_value=identity):
+            with self.assertRaisesRegex(ValueError, "reviewed baseline"):
+                builder.contrast_study()
 
     def test_portable_review_keeps_links_valid_without_the_project_mount(self):
         builder.build(self.output, portable=True)

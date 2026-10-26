@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "status": "proposal",
+  "baseline_source": "design/identity.json",
+  "baseline_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+  "scope": "Design comparison only. Desktop and terminal have separate color values within one identity. No live configuration or selected identity is changed.",
+  "desktop": {
+    "id": "crisper-slate",
+    "name": "Crisper Neutral Slate",
+    "status": "proposal",
+    "overlay_opacity": 1,
+    "colors": {
+      "canvas": "#111213",
+      "surface": "#1b1d1f",
+      "raised": "#303336",
+      "input": "#111315",
+      "border": "#81878c",
+      "separator": "#454b50",
+      "text": "#efefec",
+      "secondary": "#c9cbc8",
+      "muted": "#aaaeac",
+      "accent": "#6eafff",
+      "accent_ink": "#111315",
+      "focus": "#a6ceff",
+      "selection": "#294e75",
+      "selection_text": "#efefec",
+      "warning": "#e9b55f",
+      "error": "#f27d78",
+      "success": "#a9d180",
+      "secure_surface": "#202020",
+      "secure_input": "#303030",
+      "secure_button": "#d0d0d0"
+    }
+  },
+  "terminal": {
+    "id": "black-vivid",
+    "name": "Black + stronger ANSI",
+    "status": "proposal",
+    "background": "#000000",
+    "foreground": "#efefec",
+    "background_opacity": 1,
+    "cursor": "#a6ceff",
+    "cursor_text_color": "#111315",
+    "selection_background": "#294e75",
+    "selection_foreground": "#efefec",
+    "ansi": [
+      "#000000", "#ff5370", "#a9d86e", "#f2bd5b",
+      "#6eafff", "#c792ea", "#62d6e8", "#d2d4d1",
+      "#8b9299", "#ff8396", "#c3e88d", "#ffda8a",
+      "#a6ceff", "#deb0ff", "#9be9f2", "#ffffff"
+    ],
+    "basis": "Material Darker's stronger color family from the preceding terminal setup, adjusted for distinct normal/bright pairs, Clear Blue continuity, and a black background.",
+    "extended_colors": "Entries 16-255 and application-owned RGB colors remain independent. Faint text, application backgrounds, and native rendering require separate review."
+  }
+}

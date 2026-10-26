@@ -22,6 +22,7 @@ SITE = "https://dev.byebyebryan.com/niri-plus/"
 BASE = urlsplit(SITE).path
 PAGES = {
     "design/": ("docs/design.md", "Neutral Slate: appearance, behavior, palette, typography, and setup for the Niri Plus desktop."),
+    "design/contrast/": ("docs/design/contrast.md", "Compare a clearer warm desktop and a separate pure-black terminal palette with the current Neutral Slate design."),
     "story/": ("docs/story.md", "The personal story behind a desktop shaped around Chrome, terminals, and coding agents."),
     "tour/": ("docs/tour.md", "Explore browser, terminal, notification, clipboard, and remote-host workflows."),
     "architecture/": ("docs/architecture.md", "How Niri, SwayNC, Rofi, Kitty, and small session services fit together."),
@@ -35,9 +36,9 @@ PAGES = {
     "reference/": ("docs/reference.md", "Search the keyboard reference, explore source versions, and download portable examples."),
 }
 SOURCES = {source: route for route, (source, _) in PAGES.items()}
-ASSETS = {"style.css", "site.js", "favicon.svg", "social.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt"}
+ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt"}
 FONT_ASSETS = {f"assets/{directory}/{font}.{suffix}" for font in ["noto", "noto-medium", "noto-semibold", "meslo", "source-han"] for directory, suffix in [("fonts", "woff2"), ("licenses", "txt")]}
-GENERATED = {"data/identity.json", "assets/identity.css", "assets/fonts/provenance.json", "examples/kitty/neutral-slate.conf"}
+GENERATED = {"data/identity.json", "data/contrast-study.json", "assets/identity.css", "assets/fonts/provenance.json", "examples/kitty/neutral-slate.conf"}
 PUBLIC_TOOLS = {"scripts/check-terminal.py"}
 
 
@@ -90,6 +91,80 @@ def identity_gallery():
     terminal = identity["terminal"]
     ansi = ''.join(f'<span role="listitem" style="--ansi-color:{color}" aria-label="ANSI {index}: {escape(terminal["ansi_names"][index])} · {escape(terminal["ansi_roles"][index])} · {color}">{index:02}</span>' for index, color in enumerate(terminal["ansi"]))
     return partial("identity-gallery.html").replace("@@ANSI@@", ansi)
+
+
+def contrast_ratio(first, second):
+    def luminance(color):
+        values = [int(color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        linear = [v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4 for v in values]
+        return sum(v * weight for v, weight in zip(linear, (0.2126, 0.7152, 0.0722)))
+    low, high = sorted((luminance(first), luminance(second)))
+    return (high + 0.05) / (low + 0.05)
+
+
+def contrast_study():
+    identity = working_identity()
+    source = ROOT / "design/contrast-study.json"
+    study = json.loads(source.read_text())
+    if study["status"] != "proposal" or study["baseline_sha256"] != identity["source_sha256"]:
+        raise ValueError("contrast proposal must match its reviewed baseline")
+    colors = dict(identity["direction"]["colors"])
+    colors["separator"] = colors["border"]
+    desktop = {"id": "current", "name": "Current Neutral Slate", "status": "current baseline", "colors": colors, "overlay_opacity": identity["shared"]["overlay_opacity"]}
+    terminal = identity["terminal"]
+    roles = {"background": "background_role", "foreground": "foreground_role", "cursor": "cursor_role", "cursor_text_color": "cursor_text_role", "selection_background": "selection_background_role", "selection_foreground": "selection_foreground_role"}
+    current = {"id": "current", "name": "Current terminal", **{option: colors[terminal[role]] for option, role in roles.items()}, "ansi": terminal["ansi"], "background_opacity": 1}
+    black = {**current, "id": "black-only", "name": "Black background only", "background": "#000000"}
+    if len(study["terminal"]["ansi"]) != 16 or set(study["desktop"]["colors"]) != set(colors):
+        raise ValueError("contrast study must define complete desktop and ANSI colors")
+    color_values = [*study["desktop"]["colors"].values(), *study["terminal"]["ansi"], *(study["terminal"][key] for key in roles)]
+    if any(not re.fullmatch(r"#[0-9a-f]{6}", value) for value in color_values):
+        raise ValueError("contrast study expects opaque sRGB hex colors")
+    pairs = [
+        ("Main text / surface", "text", "surface"),
+        ("Secondary text / surface", "secondary", "surface"),
+        ("Muted text / surface", "muted", "surface"),
+        ("Control border / surface", "border", "surface"),
+        ("Control border / raised", "border", "raised"),
+        ("Raised / surface", "raised", "surface"),
+        ("Accent / surface", "accent", "surface"),
+        ("Text on accent / accent", "accent_ink", "accent"),
+        ("Selection fill / surface", "selection", "surface"),
+        ("Selected text / selection", "selection_text", "selection"),
+        ("Focus marker / selection", "focus", "selection"),
+        ("Success / raised", "success", "raised"),
+        ("Warning / raised", "warning", "raised"),
+        ("Error / raised", "error", "raised"),
+    ]
+    measurements = [{"label": label, **{key: round(contrast_ratio(model["colors"][a], model["colors"][b]), 2) for key, model in [("current", desktop), ("proposal", study["desktop"])]}} for label, a, b in pairs]
+    return {**study, "source": "design/contrast-study.json", "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "baseline": {"desktop": desktop, "terminal": current}, "terminal_variants": [current, black, study["terminal"]], "ansi_names": terminal["ansi_names"], "contrast_pairs": measurements}
+
+
+def contrast_html():
+    study = contrast_study()
+    current = study["baseline"]["desktop"]
+    desktops = []
+    for key, model, label, note in [("current", current, "Delivered palette", "Warm charcoal, soft status colors, and the current Clear Blue accent."), ("proposal", study["desktop"], "Proposal", "Deeper neutrals, clearer control edges, stronger color character, and quiet interior dividers.")]:
+        variables = ";".join(f"--d-{role.replace('_', '-')}:{value}" for role, value in model["colors"].items())
+        desktops.append(f'<article class="study-card" data-desktop-card="{key}" style="{variables}"><header><p class="eyebrow">{label}</p><h3>{escape(model["name"])}</h3><p>{note}</p></header>{partial("contrast-desktop.html")}</article>')
+    terminals = []
+    labels = [("Delivered palette", "Grey background and the existing muted ANSI table."), ("Background experiment", "Only the background changes. Every foreground, ANSI, cursor, and selection color stays the same."), ("Proposal", "Pure black with stronger ANSI hues and distinct normal/bright pairs; ordinary text stays warm off-white.")]
+    for model, (label, note) in zip(study["terminal_variants"], labels):
+        keys = ["background", "foreground", "cursor", "cursor_text_color", "selection_background", "selection_foreground"]
+        variables = ";".join(f"--t-{key.replace('_', '-')}:{model[key]}" for key in keys)
+        variables += ";" + ";".join(f"--t-a{i}:{color}" for i, color in enumerate(model["ansi"]))
+        ansi = ''.join(f'<span role="listitem" style="background:{color};color:{"#000000" if contrast_ratio(color, "#000000") >= contrast_ratio(color, "#ffffff") else "#ffffff"}" aria-label="ANSI {i}: {escape(study["ansi_names"][i])}, {color}">{i:02}</span>' for i, color in enumerate(model["ansi"]))
+        scene = partial("contrast-terminal.html").replace("@@ANSI@@", ansi).replace("@@BACKGROUND@@", model["background"]).replace("@@FOREGROUND@@", model["foreground"])
+        terminals.append(f'<article class="study-card" data-terminal-card="{model["id"]}" style="{variables}"><header><p class="eyebrow">{label}</p><h3>{escape(model["name"])}</h3><p>{note}</p></header>{scene}</article>')
+    def value_cell(color):
+        return f'<td><span class="study-token-dot" style="--token-color:{color}" aria-hidden="true"></span><code>{color}</code></td>'
+    desktop_values = ''.join(f'<tr><th scope="row">{escape(role.replace("_", " "))}</th>{value_cell(current["colors"][role])}{value_cell(color)}</tr>' for role, color in study["desktop"]["colors"].items())
+    terminal_values = ''.join(f'<tr><th scope="row">{i:02} · {escape(study["ansi_names"][i])}</th>{value_cell(study["baseline"]["terminal"]["ansi"][i])}{value_cell(color)}</tr>' for i, color in enumerate(study["terminal"]["ansi"]))
+    contrast = ''.join(f'<tr><th scope="row">{escape(pair["label"])}</th><td>{pair["current"]:.2f}:1</td><td>{pair["proposal"]:.2f}:1</td></tr>' for pair in study["contrast_pairs"])
+    html = partial("contrast-study.html")
+    for key, value in {"DESKTOPS": ''.join(desktops), "TERMINALS": ''.join(terminals), "DESKTOP_VALUES": desktop_values, "TERMINAL_VALUES": terminal_values, "CONTRAST": contrast}.items():
+        html = html.replace("@@" + key + "@@", value)
+    return html
 
 
 def public_files():
@@ -150,7 +225,7 @@ def render_markdown(source):
 
     def slot(match):
         name, fallback = match.groups()
-        if name not in {"workbench", "architecture", "keys", "snapshot", "panel", "overview", "gallery", "palette", "typography"} or name in enhancements.values():
+        if name not in {"workbench", "architecture", "keys", "snapshot", "panel", "overview", "gallery", "palette", "typography", "contrast"} or name in enhancements.values():
             raise ValueError(f"{source}: invalid enhancement {name}")
         if not fallback.strip():
             raise ValueError(f"{source}: empty Markdown fallback")
@@ -186,7 +261,7 @@ def render_markdown(source):
     parser.renderer.rules["table_open"] = lambda *_: '<div class="table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table"><table>\n'
     parser.renderer.rules["table_close"] = lambda *_: '</table></div>\n'
     body = parser.renderer.render(tokens, parser.options, {})
-    replacements = {"workbench": partial("workbench.html"), "architecture": partial("architecture.html"), "snapshot": snapshot(), "panel": panel(), "overview": partial("identity-overview.html"), "gallery": identity_gallery(), "palette": identity_palette(), "typography": identity_typography()}
+    replacements = {"workbench": partial("workbench.html"), "architecture": partial("architecture.html"), "snapshot": snapshot(), "panel": panel(), "overview": partial("identity-overview.html"), "gallery": identity_gallery(), "palette": identity_palette(), "typography": identity_typography(), "contrast": contrast_html()}
     for key, name in enhancements.items():
         if name != "keys":
             body = body.replace(f"<p>{key}</p>", replacements[name])
@@ -195,6 +270,8 @@ def render_markdown(source):
         body = body.replace('<h2 id="keyboard-reference">Keyboard reference</h2>', '<h2 id="keyboard-reference">Keyboard reference</h2>' + control, 1)
     title = (ROOT / source).read_text().splitlines()[0].removeprefix("# ")
     toc = ''.join(f'<a href="#{a}">{escape(t)}</a>' for a, t in headings)
+    if source == "docs/design/contrast.md":
+        return title, f'<article class="wrap contrast-study"><p class="eyebrow">Niri Plus / Contrast study</p>{body}</article>'
     if source == "docs/story.md":
         toc = '<p class="eyebrow">A personal setup</p><p>Browser interaction.<br>Terminal work.<br>Agents in the everyday.</p><a href="' + BASE + 'tour/">See the desktop →</a>'
     body = f'<div class="wrap document-layout"><aside class="on-this-page" aria-label="On this page"><span class="aside-label">{"The story" if source == "docs/story.md" else "On this page"}</span>{toc}</aside><article class="prose"><p class="eyebrow">Niri Plus / {"Personal story" if source == "docs/story.md" else "Desktop guide"}</p>{body}<div class="article-end"><a href="{BASE}setup/">Setup guide →</a><a href="https://github.com/byebyebryan/niri-plus/blob/main/{source}">Read on GitHub ↗</a></div></article></div>'
@@ -203,7 +280,8 @@ def render_markdown(source):
 
 def shell(route, title, description, body):
     navigation = ''.join(f'<a href="{BASE}{r}"' + (' aria-current="page"' if route == r else '') + f'>{label}</a>' for r, label in [("story/", "Story"), ("tour/", "Tour"), ("design/", "Design"), ("setup/", "Setup"), ("reference/", "Reference")])
-    return Template((ROOT / "site/layout.html").read_text()).substitute(title=escape(title), description=escape(description, quote=True), canonical=SITE + route, site=SITE, base=BASE, navigation=navigation, body=body, theme_canvas=working_identity()["direction"]["colors"]["canvas"])
+    page_assets = f'<link rel="stylesheet" href="{BASE}assets/contrast.css"><script defer src="{BASE}assets/contrast.js"></script>' if route == "design/contrast/" else ""
+    return Template((ROOT / "site/layout.html").read_text()).substitute(title=escape(title), description=escape(description, quote=True), canonical=SITE + route, site=SITE, base=BASE, navigation=navigation, body=body, page_assets=page_assets, theme_canvas=working_identity()["direction"]["colors"]["canvas"])
 
 
 class Page(HTMLParser):
@@ -262,6 +340,8 @@ def validate(output):
     identity = working_identity()
     if json.loads((output / "data/identity.json").read_text()) != identity:
         raise ValueError("public identity differs from source")
+    if json.loads((output / "data/contrast-study.json").read_text()) != contrast_study():
+        raise ValueError("public contrast study differs from source")
     if (output / "assets/identity.css").read_text() != identity_css(identity) or (output / "examples/kitty/neutral-slate.conf").read_text() != kitty_fragment(identity):
         raise ValueError("generated appearance differs from identity source")
     return {"pages": len(pages), "files": len(actual), "local_links": links}
@@ -279,7 +359,7 @@ def build(output, portable=False):
     identity = working_identity()
     fonts = json.loads((ROOT / "design/assets/provenance.json").read_text())
     examples = json.loads((ROOT / "examples/manifest.json").read_text())
-    generated = {"data/identity.json": json.dumps(identity, indent=2) + "\n", "assets/identity.css": identity_css(identity), "examples/kitty/neutral-slate.conf": kitty_fragment(identity), "examples/manifest.json": json.dumps(examples, indent=2) + "\n", "assets/fonts/provenance.json": json.dumps({"files": [item for item in fonts["files"] if item["path"] in FONT_ASSETS]}, indent=2) + "\n"}
+    generated = {"data/identity.json": json.dumps(identity, indent=2) + "\n", "data/contrast-study.json": json.dumps(contrast_study(), indent=2) + "\n", "assets/identity.css": identity_css(identity), "examples/kitty/neutral-slate.conf": kitty_fragment(identity), "examples/manifest.json": json.dumps(examples, indent=2) + "\n", "assets/fonts/provenance.json": json.dumps({"files": [item for item in fonts["files"] if item["path"] in FONT_ASSETS]}, indent=2) + "\n"}
     for name in public_files():
         target = output / name
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -289,7 +369,7 @@ def build(output, portable=False):
         source = ROOT / name
         if name in FONT_ASSETS:
             source = ROOT / "design" / name
-        if name in {"assets/style.css", "assets/site.js", "assets/favicon.svg"}:
+        if name in {"assets/style.css", "assets/site.js", "assets/contrast.css", "assets/contrast.js", "assets/favicon.svg"}:
             source = ROOT / "site" / Path(name).name
         shutil.copyfile(source, target)
     home = partial("home.html").replace("@@WORKBENCH@@", partial("workbench.html")).replace("@@PANEL@@", panel())

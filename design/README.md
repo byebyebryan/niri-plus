@@ -24,6 +24,13 @@ downloadable identity, and Kitty fragment. `capabilities.json` distinguishes
 managed behavior, locally available tools, and planned work, including Kitty and
 Zsh.
 
+The [public contrast study](../docs/design/contrast.md) explores a crisper warm
+desktop and a separate black terminal palette. Its exact proposal values live
+in `contrast-study.json`, pinned to the current identity hash. The normal site
+build includes this comparison without promoting its values into the selected
+identity, component examples, or deployment inputs. See the
+[bounded pass](../docs/planning/contrast-pass.md) for review and promotion gates.
+
 The review board lives under `board/`. Build a dedicated export with:
 
 ```sh

@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 
 const output = path.resolve(process.argv[2] || "dist");
 const prefix = "/niri-plus/";
-const routes = ["", "story/", "tour/", "design/", "architecture/", "setup/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/appearance/", "reference/"];
+const routes = ["", "story/", "tour/", "design/", "design/contrast/", "architecture/", "setup/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/appearance/", "reference/"];
 const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
 const server = http.createServer(async (request, response) => {
   try {
@@ -42,7 +42,7 @@ try {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `horizontal overflow at ${width}: ${route}`);
       assert.equal(await page.locator("img").evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).length), 0, `broken image: ${route}`);
       checks += 6;
-      if (process.env.NIRI_SCREENSHOTS && ["", "design/", "recipes/terminal/"].includes(route) && [375, 1280].includes(width)) {
+      if (process.env.NIRI_SCREENSHOTS && ["", "design/", "design/contrast/", "recipes/terminal/"].includes(route) && [375, 1280].includes(width)) {
         await page.evaluate(() => document.fonts.ready);
         await fs.mkdir(process.env.NIRI_SCREENSHOTS, { recursive: true });
         await page.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `${route.replaceAll("/", "-") || "home"}-${width}.png`), fullPage: true });
@@ -94,6 +94,49 @@ try {
   await page.keyboard.press("End");
   assert.equal(await page.locator('[data-surface-button="login-lock"]').getAttribute("aria-pressed"), "true");
   checks += 1;
+  await page.goto(origin + "design/contrast/");
+  assert.equal(await page.locator("[data-desktop-card]:visible").count(), 2);
+  assert.equal(await page.locator("[data-terminal-card]:visible").count(), 3);
+  assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()), identity.direction.colors.canvas);
+  assert.deepEqual(await page.locator(".study-desktop").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor)), ["rgb(21, 23, 25)", "rgb(17, 18, 19)"]);
+  const desktopText = await page.locator(".study-desktop").allInnerTexts();
+  assert.equal(desktopText[0], desktopText[1]);
+  const transcriptText = await page.locator(".study-transcript").allInnerTexts();
+  assert.deepEqual(transcriptText, Array(3).fill(transcriptText[0]));
+  const terminalBackgrounds = await page.locator(".study-terminal").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor));
+  assert.deepEqual(terminalBackgrounds, ["rgb(32, 35, 38)", "rgb(0, 0, 0)", "rgb(0, 0, 0)"]);
+  assert.equal(await page.locator(".study-ansi [role=listitem]").count(), 48);
+  assert.deepEqual(await page.locator(".t-rgb").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).color)), Array(3).fill("rgb(180, 168, 250)"));
+  for (const state of ["warning", "error", "success"]) {
+    await page.locator(`[data-study-state="${state}"]`).click();
+    assert.deepEqual(await page.locator(".study-desktop").evaluateAll(nodes => nodes.map(node => node.dataset.state)), [state, state]);
+    assert.equal(await page.locator(`[data-study-state="${state}"]`).getAttribute("aria-pressed"), "true");
+    checks += 2;
+  }
+  for (const view of ["current", "proposal", "all"]) {
+    const button = page.locator(`[data-desktop-view="${view}"]`);
+    await button.focus();
+    await page.keyboard.press("Enter");
+    assert.equal(await page.locator("[data-desktop-card]:visible").count(), view === "all" ? 2 : 1);
+    if (view !== "all") assert.equal(await page.locator("[data-desktop-card]:visible").getAttribute("data-desktop-card"), view);
+    checks += 2;
+  }
+  for (const view of ["current", "black-only", "black-vivid", "all"]) {
+    await page.locator(`[data-terminal-view="${view}"]`).click();
+    assert.equal(await page.locator("[data-terminal-card]:visible").count(), view === "all" ? 3 : 1);
+    if (view !== "all") assert.equal(await page.locator("[data-terminal-card]:visible").getAttribute("data-terminal-card"), view);
+    checks += 2;
+  }
+  await page.locator('[data-terminal-size="larger"]').click();
+  assert.deepEqual(await page.locator(".study-transcript").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).fontSize)), Array(3).fill("16px"));
+  await page.locator('[data-terminal-size="standard"]').click();
+  assert.ok(await page.locator(".study-transcript").first().evaluate(node => Math.abs(parseFloat(getComputedStyle(node).fontSize) - 14.6667) < .01));
+  for (const details of await page.locator(".study-details").all()) {
+    await details.locator("summary").click();
+    assert.ok(await details.getAttribute("open") !== null);
+    checks += 1;
+  }
+  checks += 11;
   await page.setViewportSize({ width: 1280, height: 1000 });
   for (const route of ["", "tour/"]) {
     await page.goto(origin + route);
@@ -127,7 +170,7 @@ try {
   checks += 2;
   const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 900 } });
   const staticPage = await noScript.newPage();
-  for (const route of ["", "story/", "tour/", "design/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "reference/"]) {
+  for (const route of ["", "story/", "tour/", "design/", "design/contrast/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "reference/"]) {
     await staticPage.goto(origin + route);
     assert.ok((await staticPage.locator("main").innerText()).length > 400);
     assert.equal(await staticPage.locator("[data-scene-controls]:visible").count(), 0);
@@ -140,6 +183,12 @@ try {
   assert.equal(await staticPage.locator("[data-surface-button]:visible").count(), 0);
   assert.ok(await staticPage.locator("[data-surface-panel=terminal]").innerText());
   checks += 3;
+  await staticPage.goto(origin + "design/contrast/");
+  assert.equal(await staticPage.locator("[data-desktop-card]:visible").count(), 2);
+  assert.equal(await staticPage.locator("[data-terminal-card]:visible").count(), 3);
+  assert.equal(await staticPage.locator("[data-study-controls]:visible").count(), 0);
+  assert.ok((await staticPage.locator("main").innerText()).includes("Proposal"));
+  checks += 4;
   await staticPage.goto(origin + "reference/");
   assert.equal(await staticPage.locator(".table-scroll tbody tr").first().count(), 1);
   assert.deepEqual(errors, []);

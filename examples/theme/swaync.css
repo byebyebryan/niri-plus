@@ -1,16 +1,16 @@
 /* Neutral Slate over the selected fork's native GTK4 layout. */
 @import url("/etc/xdg/swaync/style.css");
 :root {
-  --cc-bg: alpha(#202326, 0.96);
-  --noti-bg: 32, 35, 38;
-  --noti-bg-alpha: 0.96;
-  --noti-bg-darker: #191c1f;
-  --noti-bg-hover: #2b3034;
-  --noti-bg-focus: #2b425b;
-  --noti-border-color: #535d66;
+  --cc-bg: alpha(#1b1d1f, 1);
+  --noti-bg: 27, 29, 31;
+  --noti-bg-alpha: 1;
+  --noti-bg-darker: #111315;
+  --noti-bg-hover: #303336;
+  --noti-bg-focus: #294e75;
+  --noti-border-color: #81878c;
   --text-color: #efefec;
-  --text-color-disabled: #9ba4ab;
-  --bg-selected: #83b8f5;
+  --text-color-disabled: #aaaeac;
+  --bg-selected: #6eafff;
   --border-radius: 0px;
   --notification-icon-size: 40px;
   --font-size-body: 11pt;
@@ -19,14 +19,17 @@
 * { font-family: "Noto Sans", "Source Han Sans CN", sans-serif; }
 .control-center { border: 1px solid var(--noti-border-color); }
 .widget-dashboard { margin-left: 16px; margin-right: 16px; }
+.widget-dashboard .dashboard-card { background: #303336; border: 1px solid #454b50; }
+.widget-dashboard .dashboard-card-title { color: #c9cbc8; }
+.widget-dashboard .metric-label { color: #aaaeac; }
 .notification-row .notification-background .notification.critical {
-  background: alpha(#2b3034, 0.96);
-  border: 2px solid #e5a09b;
+  background: alpha(#303336, 1);
+  border: 2px solid #f27d78;
 }
 .notification-row .notification-background .notification .notification-default-action { padding: 14px 16px; }
 .notification-row .notification-background .notification .notification-default-action .body { margin-top: 6px; }
 .notification-row .notification-background .notification .notification-alt-actions { padding: 0 12px 10px; }
 .notification-action > button, .widget-title > button { border-radius: 3px; }
 button:focus-visible { outline: 2px solid #a6ceff; outline-offset: 2px; }
-progressbar trough { background: #191c1f; }
-progressbar progress { background: #83b8f5; }
+progressbar trough { background: #111315; }
+progressbar progress { background: #6eafff; }

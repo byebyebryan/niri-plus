@@ -118,6 +118,11 @@
   .download-chip > span:last-child { margin-left: auto; }
   .download-chip small { display: block; font-size: 5px; color: #63716c; margin-top: 4px; }
   .terminal-content { padding: 16px 11px; font: 8px/1.8 var(--mono); color: #d7dde4; }
+  .terminal-window { background: var(--terminal-background); color: var(--terminal-foreground); }
+  .terminal-window .terminal-content { color: var(--terminal-foreground); }
+  .terminal-window .terminal-path, .terminal-window .prompt { color: var(--ansi-4); }
+  .terminal-window .terminal-output { color: var(--ansi-8); }
+  .terminal-window .terminal-success, .terminal-window .agent-response { color: var(--ansi-2); }
   .terminal-path { font-size: 7px; color: #91a3b3; margin-bottom: 12px; white-space: nowrap; }
   .prompt { color: var(--accent); }
   .terminal-output { font-size: 7px; color: #84959f; margin-block: 5px 13px; }
@@ -368,6 +373,7 @@
   .overview-window { min-width: 0; min-height: 360px; border: 1px solid var(--border); background: var(--surface); }
   .overview-browser { transform: translateY(-10px); }
   .overview-terminal-window { transform: translateY(10px); }
+  .overview-terminal-window { background: var(--terminal-background); color: var(--terminal-foreground); }
   .overview-terminal-window.is-focused { border: 1px solid var(--focus); box-shadow: 0 0 0 3px var(--focus); }
   .overview-titlebar { min-height: 42px; justify-content: flex-start; padding: 0 13px; background: var(--raised); border-bottom: 1px solid var(--line); font-size: 11px; }
   .overview-titlebar > span:last-child { margin-left: auto; color: var(--muted); font: 8px var(--mono); }
@@ -387,7 +393,7 @@
   .overview-download > span:last-child { color: var(--muted); font: 8px var(--mono); margin-left: auto; }
   .overview-download strong, .overview-download small { display: block; }
   .overview-download small { color: var(--muted); font-size: 9px; }
-  .overview-terminal-content { padding: 23px 16px; color: var(--text); font: 12px/1.9 var(--mono); overflow-wrap: anywhere; }
+  .overview-terminal-content { padding: 23px 16px; color: var(--terminal-foreground); font: 12px/1.9 var(--mono); overflow-wrap: anywhere; }
   .overview-terminal-content p { margin: 0 0 10px; }
   .terminal-blue { color: var(--ansi-4); }
   .terminal-green { color: var(--ansi-2); }
@@ -459,13 +465,13 @@
   .specimen-button { min-height: 28px; margin-top: 9px; font-size: 10px; }
   .availability-card p:not(.eyebrow) { margin-top: 7px; color: var(--secondary); font-size: 10px; }
   .availability-card strong { color: var(--text); font-weight: 500; }
-  .terminal-specimen { overflow: hidden; border-color: var(--focus); box-shadow: 0 0 0 2px var(--focus); }
+  .terminal-specimen { overflow: hidden; border-color: var(--focus); box-shadow: 0 0 0 2px var(--focus); background: var(--terminal-background); color: var(--terminal-foreground); }
   .terminal-window-head { padding: 10px 13px; background: var(--raised); color: var(--secondary); font-size: 9px; }
   .terminal-window-head span:last-child { color: var(--muted); font-size: 8px; }
   .terminal-transcript { padding: 16px clamp(12px, 2vw, 22px); font: clamp(12px, 1.145vw, 14.6667px)/1.7 var(--mono); overflow-wrap: anywhere; }
   .terminal-transcript p { margin: 0 0 5px; }
-  .terminal-rprompt { color: var(--muted); text-align: right; font-size: 9px; }
-  .terminal-selection { margin-block: 8px !important; padding: 2px 5px; color: var(--selection-text); background: var(--selection); border-left: 2px solid var(--focus); }
+  .terminal-rprompt { color: var(--ansi-8); text-align: right; font-size: 9px; }
+  .terminal-selection { margin-block: 8px !important; padding: 2px 5px; color: var(--terminal-selection-foreground); background: var(--terminal-selection-background); border-left: 2px solid var(--terminal-cursor); }
   .terminal-transcript strong { font-weight: 600; }
   .terminal-glyph { color: var(--ansi-14); }
   .terminal-ansi-preview { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 5px; padding: 12px; background: var(--input); border-top: 1px solid var(--line); }

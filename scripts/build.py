@@ -42,41 +42,43 @@ GENERATED = {"data/identity.json", "data/contrast-study.json", "assets/identity.
 PUBLIC_TOOLS = {"scripts/check-terminal.py"}
 
 
-def working_identity():
-    source = ROOT / "design/identity.json"
+def working_identity(source_path="design/identity.json"):
+    source = ROOT / source_path
     identity = json.loads(source.read_text())
     direction = next(c for c in identity["candidates"] if c["id"] == identity["working_direction"])
     if identity["selected_candidate"] != direction["id"] or identity["status"] != "selected":
         raise ValueError("public identity must project the selected candidate")
-    return {"schema_version": identity["schema_version"], "status": "selected design", "selected_candidate": identity["selected_candidate"], "source": "design/identity.json", "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "theme_scope": identity["theme_scope"], "shared": identity["shared"], "direction": direction, "terminal": identity["terminal"]}
+    return {"schema_version": identity["schema_version"], "status": "selected design", "selected_candidate": identity["selected_candidate"], "source": source_path, "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "theme_scope": identity["theme_scope"], "shared": identity["shared"], "direction": direction, "terminal": identity["terminal"]}
 
 
 def kitty_fragment(identity):
-    colors, terminal = identity["direction"]["colors"], identity["terminal"]
-    roles = {"background": "background_role", "foreground": "foreground_role", "cursor": "cursor_role", "cursor_text_color": "cursor_text_role", "selection_background": "selection_background_role", "selection_foreground": "selection_foreground_role"}
-    lines = ["# Niri Plus / Neutral Slate - selected terminal appearance.", "# Generated from design/identity.json; preserve your existing Kitty behavior."]
-    lines += [f"{option} {colors[terminal[role]]}" for option, role in roles.items()]
+    terminal = identity["terminal"]
+    lines = ["# Niri Plus / Neutral Slate - Balanced+ terminal appearance.", "# Generated from design/identity.json; preserve your existing Kitty behavior."]
+    lines += [f"{option} {color}" for option, color in terminal["colors"].items()]
+    lines += [f'background_opacity {terminal["background_opacity"]}']
     lines += [f"color{index} {color}" for index, color in enumerate(terminal["ansi"])]
     return "\n".join(lines) + "\n"
 
 
 def identity_css(identity):
     colors = identity["direction"]["colors"]
-    roles = {"bg": "canvas", "canvas": "canvas", "surface": "surface", "raised": "raised", "input": "input", "line": "border", "border": "border", "text": "text", "secondary": "secondary", "muted": "muted", "blue": "accent", "accent": "accent", "accent-ink": "accent_ink", "focus": "focus", "selection": "selection", "selection-text": "selection_text", "green": "success", "success": "success", "warning": "warning", "error": "error", "secure-surface": "secure_surface", "secure-input": "secure_input", "secure-button": "secure_button"}
+    roles = {"bg": "canvas", "canvas": "canvas", "surface": "surface", "raised": "raised", "input": "input", "line": "separator", "border": "border", "text": "text", "secondary": "secondary", "muted": "muted", "blue": "accent", "accent": "accent", "accent-ink": "accent_ink", "focus": "focus", "selection": "selection", "selection-text": "selection_text", "green": "success", "success": "success", "warning": "warning", "error": "error", "secure-surface": "secure_surface", "secure-input": "secure_input", "secure-button": "secure_button"}
     values = ";".join(f"--{name}:{colors[role]}" for name, role in roles.items())
     values += f';--ui-family:"{identity["direction"]["ui_font"]}";--mono-family:"{identity["direction"]["mono_font"]}"'
     values += ";" + ";".join(f"--ansi-{i}:{c}" for i, c in enumerate(identity["terminal"]["ansi"]))
+    values += ";" + ";".join(f"--terminal-{key.replace('_', '-')}:{color}" for key, color in identity["terminal"]["colors"].items())
     return "/* Generated from design/identity.json */\n:root{" + values + "}\n"
 
 
 def identity_palette():
     identity = working_identity()
     colors = identity["direction"]["colors"]
-    names = [("canvas", "Canvas"), ("surface", "Surface"), ("raised", "Raised surface"), ("input", "Input"), ("border", "Border"), ("text", "Main text"), ("secondary", "Secondary text"), ("muted", "Muted text"), ("accent", "Accent"), ("accent_ink", "Text on accent"), ("focus", "Focus"), ("selection", "Selection"), ("selection_text", "Text on selection"), ("success", "Success"), ("warning", "Warning"), ("error", "Error"), ("secure_surface", "Login / lock surface"), ("secure_input", "Login / lock input"), ("secure_button", "Login / lock button")]
+    names = [("canvas", "Canvas"), ("surface", "Surface"), ("raised", "Raised surface"), ("input", "Input"), ("border", "Control border"), ("separator", "Quiet separator"), ("text", "Main text"), ("secondary", "Secondary text"), ("muted", "Muted text"), ("accent", "Accent"), ("accent_ink", "Text on accent"), ("focus", "Focus"), ("selection", "Selection"), ("selection_text", "Text on selection"), ("success", "Success"), ("warning", "Warning"), ("error", "Error"), ("visited_link", "Visited link"), ("secure_surface", "Login / lock surface"), ("secure_input", "Login / lock input"), ("secure_button", "Login / lock button")]
     swatches = ''.join(f'<div class="palette-swatch" role="listitem"><i style="--swatch:{colors[role]}" aria-hidden="true"></i><strong>{label}</strong><code>{colors[role]}</code></div>' for role, label in names)
     terminal = identity["terminal"]
     ansi = ''.join(f'<div class="ansi-slot" role="listitem"><i style="--ansi-color:{color}" aria-hidden="true"></i><strong>{index:02} · {escape(terminal["ansi_names"][index])}</strong><span>{escape(terminal["ansi_roles"][index])}</span><code>{color}</code></div>' for index, color in enumerate(terminal["ansi"]))
-    return partial("identity-palette.html").replace("@@PALETTE@@", swatches).replace("@@ANSI@@", ansi)
+    framing = ''.join(f'<div class="palette-swatch" role="listitem"><i style="--swatch:{color}" aria-hidden="true"></i><strong>{escape(role.replace("_", " "))}</strong><code>{color}</code></div>' for role, color in terminal["colors"].items())
+    return partial("identity-palette.html").replace("@@PALETTE@@", swatches).replace("@@TERMINAL_FRAMING@@", framing).replace("@@ANSI@@", ansi)
 
 
 def identity_typography():
@@ -103,10 +105,12 @@ def contrast_ratio(first, second):
 
 
 def contrast_study():
-    identity = working_identity()
     source = ROOT / "design/contrast-study.json"
     study = json.loads(source.read_text())
-    if study["status"] != "proposal" or study["baseline_sha256"] != identity["source_sha256"]:
+    if study["baseline_source"] != "design/history/neutral-slate-clear-blue.json":
+        raise ValueError("contrast study requires the retained historical baseline")
+    identity = working_identity(study["baseline_source"])
+    if study["status"] != "comparison" or study["baseline_sha256"] != identity["source_sha256"]:
         raise ValueError("contrast proposal must match its reviewed baseline")
     colors = dict(identity["direction"]["colors"])
     colors["separator"] = colors["border"]
@@ -147,12 +151,14 @@ def contrast_html():
     study = contrast_study()
     current = study["baseline"]["desktop"]
     desktops = []
-    for key, model, label, note in [("current", current, "Delivered palette", "Warm charcoal, soft status colors, and the current Clear Blue accent."), ("proposal", study["desktop"], "Proposal", "Deeper neutrals, clearer control edges, stronger color character, and quiet interior dividers.")]:
+    for key, model, label, note in [("current", current, "Previous baseline", "Warm charcoal, soft status colors, and the preceding Clear Blue accent."), ("proposal", study["desktop"], "Selected desktop", "Deeper neutrals, clearer control edges, stronger color character, and quiet interior dividers.")]:
         variables = ";".join(f"--d-{role.replace('_', '-')}:{value}" for role, value in model["colors"].items())
         desktops.append(f'<article class="study-card" data-desktop-card="{key}" style="{variables}"><header><p class="eyebrow">{label}</p><h3>{escape(model["name"])}</h3><p>{note}</p></header>{partial("contrast-desktop.html")}</article>')
     terminals = []
     labels = [("Balanced endpoint", "The preceding moderate palette, retained unchanged as the quieter endpoint."), ("Intermediate / 40% blend start", "A little more color than Balanced, with deliberate normal/bright separation."), ("Intermediate / 70% blend start", "Closer to Vivid, with extra shade separation where the normal colors would become too bright."), ("Vivid endpoint", "The preceding saturated palette, retained unchanged as the stronger endpoint.")]
     for model, (label, note) in zip(study["terminal_variants"], labels):
+        if model["id"] == study["selected_terminal"]:
+            label = "Selected terminal / Balanced+"
         keys = ["background", "foreground", "cursor", "cursor_text_color", "selection_background", "selection_foreground"]
         variables = ";".join(f"--t-{key.replace('_', '-')}:{model[key]}" for key in keys)
         variables += ";" + ";".join(f"--t-a{i}:{color}" for i, color in enumerate(model["ansi"]))

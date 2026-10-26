@@ -5,10 +5,10 @@ workstation, and remote hosts. This guide covers the Neutral Slate color
 fragment and a portable shell core that you can install beside your existing
 configuration.
 
-The [desktop and terminal contrast study](../design/contrast.md) previews a
-separate black terminal palette with clearer normal/bright pairs and moderate
-color saturation. It is a proposal;
-the fragment in this guide retains the currently selected appearance.
+The selected terminal palette is **Balanced+ on pure black**, independent of
+the desktop's warm charcoal surfaces. The
+[contrast study](../design/contrast.md) retains the compared alternatives and
+marks the selected sample.
 
 ## Kitty: the everyday surface
 
@@ -19,8 +19,8 @@ terminal modes, while applications using Kitty's keyboard protocol keep their
 native behavior.
 
 The generated [Neutral Slate Kitty fragment](../../examples/kitty/neutral-slate.conf)
-contains only appearance options: a `#202326` background, warm off-white text,
-a clear blue cursor, blue selection, and a coordinated 16-color ANSI table.
+contains only appearance options: a fully opaque `#000000` background, warm
+off-white text, a clear blue cursor, blue selection, and the Balanced+ ANSI table.
 It does not change input, paste handling, glyph mappings, cursor trail, windows,
 or shell behavior. The fragment is selected design material; its presence here
 does not claim native deployment.
@@ -33,8 +33,9 @@ kitty --config ~/.config/kitty/kitty.conf --config /path/to/neutral-slate.conf
 
 The [Design page's palette](../design.md#palette) lists every ANSI slot and
 role. Red maps to errors, green to success, yellow to warnings, blue to the
-accent, violet and cyan are supplemental, and neutral slots map to canvas,
-muted, secondary, and main text. Entries 16–255 retain Kitty's defaults;
+blue family, violet and cyan are supplemental, and neutral slots are chosen
+for terminal work. These values are independent of desktop color roles.
+Entries 16–255 retain Kitty's defaults;
 applications' explicit RGB colors remain separately owned. Check default,
 dim, bold, selected, ANSI, and full-screen tool output before adopting the
 fragment.

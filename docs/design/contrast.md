@@ -4,11 +4,10 @@ A design study for Neutral Slate: clearer desktop surfaces and states, with a
 separate pure-black terminal palette. Both use the existing Noto Sans UI and
 Meslo terminal fonts.
 
-**Refined proposal · 26 October 2026.** The desktop/terminal split and black
-terminal background are the agreed direction; these exact colors are under
-review. The
-[current design](../design.md) and downloadable setup examples retain the
-delivered Neutral Slate · Clear Blue palette.
+**Selected · 26 October 2026.** Crisper Neutral Slate is the desktop palette;
+Balanced+ on pure black is the terminal palette. The
+[current design](../design.md) and downloadable appearance examples now use
+that selection. This comparison retains the earlier baseline and alternatives.
 
 <!-- niri-plus:contrast -->
 ## Desktop comparison
@@ -60,9 +59,9 @@ tools. Faint attributes, entries 16–255, explicit RGB, and application-owned
 backgrounds need their own checks. Browser font rendering and screenshots cannot
 settle how this feels on Carbon and Starship's OLED monitors.
 
-If selected, promote the reviewed values into the canonical identity, update
-the component adapters and examples, then deliver through chezmoi. This study
-does not change those deployment inputs.
+The selected values are promoted into the canonical identity and appearance
+adapters. Chezmoi delivery and native/physical acceptance are recorded
+separately; comparison controls never apply a desktop theme.
 
 ## Source and earlier comparisons
 

@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-26",
+  "status": "source validated; immutable publication and scoped fleet delivery follow separately",
+  "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
+  "historical_baseline_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+  "selection": {"desktop": "crisper neutral-slate", "terminal": "balanced-plus", "terminal_background": "#000000", "terminal_opacity": 1},
+  "checks": {
+    "site_unit_tests": 14,
+    "browser_checks": 477,
+    "browser_widths": [375, 768, 1280, 1600],
+    "routes": 14,
+    "javascript": ["enabled", "disabled"],
+    "browser_errors": 0,
+    "native_checks": 6,
+    "native_reference_images": 4,
+    "native_scope": "Owned Xvfb/offscreen GTK3, GTK4 CSS parsing, Qt6, Rofi, Kitty parser and SDDM test mode. No real session, root install, authentication or power operation.",
+    "chezmoi": "Full source check suite passed, including host/profile isolation, publication/hash rejection, native appearance renders and in-place CSS reload fixtures.",
+    "examples": "Seven desktop appearance examples and the generated Kitty fragment match the canonical schema-2 identity."
+  },
+  "remaining": ["Immutable producer publication proof", "Scoped per-host appearance delivery", "Active-session versus next-login verification", "Normal-use OLED and native application acceptance"]
+}

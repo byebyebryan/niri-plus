@@ -82,9 +82,9 @@
     },
     {
       "path": "examples/kitty/neutral-slate.conf",
-      "sha256": "232fbe4aed9ee4a0d9eb81aac312a7987e9a05bc794ea5b48c6bef5ddb43e4c6",
+      "sha256": "0c23ed4b7a27f8ce30fd44e54c4163b66b7f26c644733a6bbf1456b43cf84c67",
       "kind": "generated selected appearance specimen",
-      "source": "design/identity.json",
+      "source": "Generated from canonical schema-2 identity; separate Balanced+ terminal on pure black.",
       "notes": "Selected Neutral Slate appearance options only. Generated from the canonical profile; no shell behavior or deployed appearance claim."
     },
     {
@@ -207,64 +207,64 @@
     },
     {
       "path": "examples/theme/neutral-slate.rasi",
-      "sha256": "d9a27f9308ff4d32c401c87b560fc538cc86f2e58ba0425f77a903e596801e0b",
-      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+      "sha256": "036f206cdce8a782c1b1faee60e4989f8b5e27f4d98f384b19301e3e603affe3",
+      "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
+      "source": "Canonical chezmoi appearance adapters with Crisper Neutral Slate desktop and separate Balanced+ terminal, 2026-10-26",
       "source_visibility": "private",
       "notes": "Rofi appearance only. Existing key bindings, actions, and launcher behavior remain separately owned; not a deployed artifact."
     },
     {
       "path": "examples/theme/swaync.css",
-      "sha256": "466d5ac89fdb1cc25daa391305d9151db14564d82c52d30b6cf824609277b9f2",
-      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+      "sha256": "fcfc904b1c72831a0946c8570e508584016b3696435954b7e847df54fb0fdcf5",
+      "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
+      "source": "Canonical chezmoi appearance adapters with Crisper Neutral Slate desktop and separate Balanced+ terminal, 2026-10-26",
       "source_visibility": "private",
       "notes": "SwayNC CSS only for the selected fork; notification behavior and services remain separately owned. Not a deployed artifact."
     },
     {
       "path": "examples/theme/gtklock.css",
-      "sha256": "0099a7d295c508d6b16e70ac2eec2e8fe6712e5c8a1bea2ddcbab6c7ca3cd3c7",
-      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+      "sha256": "6b2ae034a8efd61139aa02e98ebfefef122177ebb39b820aa6423a8486a3e4a8",
+      "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
+      "source": "Canonical chezmoi appearance adapters with Crisper Neutral Slate desktop and separate Balanced+ terminal, 2026-10-26",
       "source_visibility": "private",
       "notes": "Gtklock stylesheet only; authentication, manual lock service, and power policy remain unchanged. Not a deployed artifact."
     },
     {
       "path": "examples/theme/qt5-palette.conf",
-      "sha256": "608f5c05f716929d241b900cd83571190652a79a7be59251fe98678656d6d8d4",
-      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+      "sha256": "1c3ad86d17592778b1304f67bf85dc1518416684499ed7a5aa2b046a9d916a13",
+      "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
+      "source": "Canonical chezmoi appearance adapters with Crisper Neutral Slate desktop and separate Balanced+ terminal, 2026-10-26",
       "source_visibility": "private",
       "notes": "Qt 5 QPalette colors only; style, dialogs, fonts, and application preferences remain separately owned. Not a deployed artifact."
     },
     {
       "path": "examples/theme/qt6-palette.conf",
-      "sha256": "72fc3c6f9348906c27740acbd25c052d24602d120c58fc43aa8f0dfd44a495c7",
-      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+      "sha256": "50df7b2982a583c55b98d9ce3f136fa1247a7afba04ae241ee835953e4b5128f",
+      "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
+      "source": "Canonical chezmoi appearance adapters with Crisper Neutral Slate desktop and separate Balanced+ terminal, 2026-10-26",
       "source_visibility": "private",
       "notes": "Qt 6 QPalette colors only; style, dialogs, fonts, and application preferences remain separately owned. Not a deployed artifact."
     },
     {
       "path": "examples/theme/NeutralSlate.colors",
-      "sha256": "03a9fe5e5ee6d47fa456e758f8a5e3c0d3344fb219a04aa3a4ddb5586276c88b",
-      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+      "sha256": "a16cd33f7167bb595f1f2ecc63276e75c4479e7b11aa4d3aefa8549345481017",
+      "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
       "kind": "frozen rendered native appearance candidate",
-      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
+      "source": "Canonical chezmoi appearance adapters with Crisper Neutral Slate desktop and separate Balanced+ terminal, 2026-10-26",
       "source_visibility": "private",
       "notes": "KDE color scheme with Colors:* groups. Font values are configured separately; do not replace kdeglobals. Not a deployed artifact."
     },
     {
       "path": "examples/theme/niri-neutral-slate.kdl",
-      "sha256": "2a80aa95cf01e48efd80735d30aaa089dc045263bb40f560dabea48de9bc145b",
-      "identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+      "sha256": "a21f0c10e706c37eb2b259390d064d1a8f2006a09a9fcaad36f884f388d6bc39",
+      "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
       "kind": "authored appearance-only fragment",
-      "source": "Canonical chezmoi appearance adapters with the selected Clear Blue accent, 2026-10-25",
+      "source": "Canonical chezmoi appearance adapters with Crisper Neutral Slate desktop and separate Balanced+ terminal, 2026-10-26",
       "notes": "Canvas and focus-ring appearance only. Merge into the existing layout block; no input, bindings, startup, service, or power settings. Not a deployed artifact."
     }
   ]

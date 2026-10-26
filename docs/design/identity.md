@@ -2,10 +2,10 @@
 
 **Selected identity: Neutral Slate. One theme for the initial reference.**
 
-The [contrast study](contrast.md) previews the next revision: distinct desktop
-and terminal palettes within this identity. The split is agreed; the exact
-proposal values remain under review. This specification records the current
-selected baseline until that review is complete.
+The selected revision pairs Crisper Neutral Slate desktop surfaces with a
+pure-black Balanced+ terminal. The [contrast study](contrast.md) retains the
+preceding baseline and alternatives; exact selected values live in the canonical
+identity and generated examples. Deployment evidence remains separate.
 
 Use the reviewed warm charcoal/off-white surfaces, Clear Blue accent,
 Noto Sans UI, and Meslo terminal. Graphite Blue is retained as a future
@@ -22,22 +22,24 @@ appearance.
 
 | Role | Selected value |
 | --- | --- |
-| canvas | `#151719` |
-| surface | `#202326` |
-| raised | `#2b3034` |
-| input | `#191c1f` |
-| border | `#535d66` |
+| canvas | `#111213` |
+| surface | `#1b1d1f` |
+| raised | `#303336` |
+| input | `#111315` |
+| border | `#81878c` |
+| separator | `#454b50` |
+| visited link | `#c8b9d6` |
 | text | `#efefec` |
-| secondary | `#b9bec3` |
-| muted | `#9ba4ab` |
-| accent | `#83b8f5` |
-| accent ink | `#151b20` |
+| secondary | `#c9cbc8` |
+| muted | `#aaaeac` |
+| accent | `#6eafff` |
+| accent ink | `#111315` |
 | focus | `#a6ceff` |
-| selection | `#2b425b` |
+| selection | `#294e75` |
 | selection text | `#efefec` |
-| warning | `#ddbb80` |
-| error | `#e5a09b` |
-| success | `#b8c9a4` |
+| warning | `#e9b55f` |
+| error | `#f27d78` |
+| success | `#a9d180` |
 | secure surface | `#202020` |
 | secure input | `#303030` |
 | secure button | `#d0d0d0` |
@@ -64,12 +66,10 @@ At 96 DPI, 11pt corresponds to about 14.67 CSS pixels. That is a conversion for
 specimens, not a command to paste the same number into every toolkit. Compare
 perceived size under native scale and the laptops' fractional scale.
 
-The terminal extension maps background, foreground, cursor, selection, and the
-full sixteen ANSI slots to the selected identity. Red, green, and yellow retain
-error, success, and warning roles; blue follows accent/focus. Subdued violet and
-cyan fill the other colored slots, while neutral slots follow canvas, muted,
-secondary, and main text. Zsh prompt roles follow those meanings; extended
-colors, syntax highlighting, and suggestions need native review.
+The terminal has independent framing colors and a complete Balanced+ ANSI
+table. Its background is pure black and fully opaque; ordinary text stays warm
+off-white. Normal and bright colors are deliberately separated. Prompt semantic
+indices stay unchanged, while native RGB and extended colors keep their owners.
 Explicit RGB editor/provider syntax remains independently owned. See the
 [terminal and Zsh guide](../recipes/terminal.md) for the current workflow,
 source/extraction boundary, and acceptance tasks.
@@ -84,7 +84,7 @@ source/extraction boundary, and acceptance tasks.
   4px internal-card radius where the component supports it.
 - Preserve the 448px notification panel and Rofi's 52em launcher width, with
   viewport constraints on smaller logical displays.
-- Proposed owned-overlay opacity is 96%; native application interiors remain
+- Selected owned-overlay opacity is 100%; native application interiors remain
   opaque. Judge this against the current more translucent overlays in native
   previews before adoption.
 - Use a flat canvas initially, no new wallpaper dependency, blur, or ambient

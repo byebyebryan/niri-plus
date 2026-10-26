@@ -1,14 +1,15 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "status": "selected",
-  "date": "2026-10-25",
+  "date": "2026-10-26",
   "recommended_candidate": "neutral-slate",
   "selected_candidate": "neutral-slate",
   "assumptions": [
     "Neutral Slate is the selected visual identity for the initial reference.",
     "One maintained theme; other palettes remain design history.",
     "Noto Sans is the UI face; Meslo terminal typography and its glyph mappings remain.",
-    "Design selection, desktop adoption and physical acceptance are separate states."
+    "Design selection, desktop adoption and physical acceptance are separate states.",
+    "Desktop and terminal use separate color values within one maintained identity."
   ],
   "shared": {
     "ui_pt": 11,
@@ -51,11 +52,11 @@
     "feedback_duration_ms": 1500,
     "normal_notification_timeout_ms": 30000,
     "critical_notification_timeout_ms": 0,
-    "overlay_opacity": 0.96,
+    "overlay_opacity": 1,
     "native_app_opacity": 1,
     "blur": false,
     "new_ambient_animations": false,
-      "syntax_palettes": "Retain existing editor/provider syntax colors; map terminal framing, selection, and typography deliberately.",
+    "syntax_palettes": "Retain existing editor/provider syntax colors; map terminal framing, selection, and typography deliberately.",
     "native_app_scope": "Use supported dark appearance, fonts, icons, cursors and Qt palettes. Exact shell colors are not a promise to recolor all native/web content."
   },
   "candidates": [
@@ -125,33 +126,36 @@
       "id": "neutral-slate",
       "name": "Neutral Slate",
       "accent_variant": "clear-blue",
-      "summary": "Warm charcoal surfaces, clear blue accent and focus, Noto Sans UI, and the existing Meslo terminal face.",
+      "summary": "Crisper warm charcoal desktop surfaces with Clear Blue focus, paired with a pure-black Balanced+ terminal.",
       "ui_font": "Noto Sans",
       "mono_font": "MesloLGS Nerd Font",
       "ui_asset": "noto.woff2",
       "mono_asset": "meslo.woff2",
       "colors": {
-        "canvas": "#151719",
-        "surface": "#202326",
-        "raised": "#2b3034",
-        "input": "#191c1f",
-        "border": "#535d66",
+        "canvas": "#111213",
+        "surface": "#1b1d1f",
+        "raised": "#303336",
+        "input": "#111315",
+        "border": "#81878c",
+        "separator": "#454b50",
         "text": "#efefec",
-        "secondary": "#b9bec3",
-        "muted": "#9ba4ab",
-        "accent": "#83b8f5",
-        "accent_ink": "#151b20",
+        "secondary": "#c9cbc8",
+        "muted": "#aaaeac",
+        "accent": "#6eafff",
+        "accent_ink": "#111315",
         "focus": "#a6ceff",
-        "selection": "#2b425b",
+        "selection": "#294e75",
         "selection_text": "#efefec",
-        "warning": "#ddbb80",
-        "error": "#e5a09b",
-        "success": "#b8c9a4",
+        "warning": "#e9b55f",
+        "error": "#f27d78",
+        "success": "#a9d180",
         "secure_surface": "#202020",
         "secure_input": "#303030",
-        "secure_button": "#d0d0d0"
+        "secure_button": "#d0d0d0",
+        "visited_link": "#c8b9d6"
       },
-      "tradeoff": "Keeps the existing Noto UI family and neutral login surfaces; native toolkit colors still need component review."
+      "tradeoff": "One identity with separate desktop and terminal palettes. Native toolkit colors and application-owned RGB remain independently reviewed.",
+      "desktop_variant": "crisper"
     },
     {
       "id": "ink-blue",
@@ -192,42 +196,64 @@
     "comparison_candidates": "Historical explorations, not supported runtime themes."
   },
   "feedback": {
-    "selection": "Neutral Slate is the chosen initial identity; other palette explorations remain historical.",
-    "next_step": "Carry this profile through the selected specimens and component review."
+    "selection": "Crisper Neutral Slate desktop and Balanced+ terminal on pure black.",
+    "next_step": "Publish the immutable identity and deliver scoped appearance adapters through chezmoi; physical and normal-login checks remain separate."
   },
   "terminal": {
-    "status": "selected design target",
-    "background_role": "surface",
-    "foreground_role": "text",
-    "cursor_role": "focus",
-    "cursor_text_role": "accent_ink",
-    "selection_background_role": "selection",
-    "selection_foreground_role": "selection_text",
+    "status": "selected design",
     "ansi": [
-      "#151719",
-      "#e5a09b",
-      "#b8c9a4",
-      "#ddbb80",
-      "#83b8f5",
-      "#c8b9d6",
-      "#a8c4c0",
-      "#b9bec3",
-      "#9ba4ab",
-      "#efb4af",
-      "#cad8b6",
-      "#e8ca9b",
-      "#a6ceff",
-      "#dccfe6",
-      "#c1d9d6",
-      "#efefec"
+      "#000000",
+      "#e76c75",
+      "#99c070",
+      "#deb05c",
+      "#74aae9",
+      "#ba92d4",
+      "#6ec0c3",
+      "#c8ccc9",
+      "#838c8f",
+      "#f7a0a4",
+      "#c4e39d",
+      "#f8d895",
+      "#a7cefc",
+      "#ddbcf3",
+      "#abe1e1",
+      "#f8f8f6"
     ],
     "ansi_names": [
-      "Black", "Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "White",
-      "Bright black", "Bright red", "Bright green", "Bright yellow", "Bright blue", "Bright magenta", "Bright cyan", "Bright white"
+      "Black",
+      "Red",
+      "Green",
+      "Yellow",
+      "Blue",
+      "Magenta",
+      "Cyan",
+      "White",
+      "Bright black",
+      "Bright red",
+      "Bright green",
+      "Bright yellow",
+      "Bright blue",
+      "Bright magenta",
+      "Bright cyan",
+      "Bright white"
     ],
     "ansi_roles": [
-      "canvas", "error", "success", "warning", "accent", "supplemental violet", "supplemental cyan", "secondary",
-      "muted", "bright error", "bright success", "bright warning", "focus", "bright supplemental violet", "bright supplemental cyan", "text"
+      "terminal black",
+      "terminal error",
+      "terminal success",
+      "terminal warning",
+      "terminal blue",
+      "supplemental violet",
+      "supplemental cyan",
+      "terminal white",
+      "terminal bright black",
+      "bright terminal error",
+      "bright terminal success",
+      "bright terminal warning",
+      "bright terminal blue",
+      "bright supplemental violet",
+      "bright supplemental cyan",
+      "terminal bright white"
     ],
     "extended_colors": "Retain Kitty defaults for entries 16-255. Explicit RGB colors remain application-owned.",
     "prompt_roles": {
@@ -238,6 +264,22 @@
       "connected": "cyan / 6",
       "secondary": "white / 7; dim text uses bright black / 8"
     },
-    "behavior": "Preserve Meslo 11pt, glyph maps, paste/input handling, cursor trail and native session ownership."
+    "behavior": "Preserve Meslo 11pt, glyph maps, paste/input handling, cursor trail and native session ownership.",
+    "variant": "balanced-plus",
+    "name": "Balanced+",
+    "background_opacity": 1,
+    "colors": {
+      "background": "#000000",
+      "foreground": "#efefec",
+      "cursor": "#a6ceff",
+      "cursor_text_color": "#111315",
+      "selection_background": "#294e75",
+      "selection_foreground": "#efefec"
+    },
+    "palette_source": {
+      "path": "design/contrast-study.json",
+      "sample_id": "black-balanced-plus"
+    },
+    "separation": "Independent terminal framing and ANSI values; desktop status colors are not reused as terminal palette values."
   }
 }

@@ -1,17 +1,17 @@
 # Neutral Slate
 
-Neutral Slate brings warm charcoal surfaces, readable type, and clear blue focus
-to the browser-and-terminal desktop. Niri keeps the work area open; the palette
-helps identify focus, selection, and status without turning every surface blue.
+Neutral Slate pairs a crisper warm-charcoal desktop with a pure-black Balanced+
+terminal. Clear Blue marks focus and selection; status colors and normal/bright
+terminal pairs stay distinct. Noto Sans UI and Meslo terminal typography remain.
 
-The selected appearance was delivered to Carbon, Starship, and Snap. The
-[deployment record](reference.md#working-setup) lists the scoped results and
-remaining normal-use checks; the gallery below remains labeled sample content.
+This revision is selected for scoped delivery to Carbon, Starship, and Snap.
+The [deployment record](reference.md#working-setup) distinguishes source
+selection, installed files, active sessions, and normal-use checks. The gallery
+below remains labeled sample content.
 
-The new [desktop and terminal contrast study](design/contrast.md) compares this
-palette with clearer warm desktop surfaces and a separate black terminal
-palette. Those colors are proposals; the selected examples below retain the
-delivered appearance.
+The [contrast study](design/contrast.md) retains the preceding desktop baseline
+and terminal comparisons. Balanced+ and the crisper desktop are selected; the
+other terminal options remain references.
 
 ## Desktop overview
 
@@ -38,9 +38,10 @@ login/lock surfaces. All content is an illustration with fictional values.
 
 ## Palette
 
-The palette names the job of each color. The terminal table lists all sixteen
-ANSI slots, including the semantic error, success, and warning colors. Violet
-and cyan fill the remaining semantic slots with subdued companion colors.
+The desktop palette names each color's job. The terminal has independent
+background, foreground, cursor, selection, and sixteen ANSI values. Its error,
+success, warning, and blue families relate to the desktop without sharing exact
+values. Normal and bright entries have deliberate shade separation.
 
 <!-- niri-plus:palette -->
 The swatches list the selected Neutral Slate roles. The terminal uses a complete

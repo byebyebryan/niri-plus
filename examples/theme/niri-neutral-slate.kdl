@@ -2,11 +2,11 @@
 // Niri layout block so current sizing, gaps, borders, shadows and behavior stay
 // under their current owner.
 layout {
-    background-color "#151719"
+    background-color "#111213"
 
     focus-ring {
         width 4
         active-color "#a6ceff"
-        inactive-color "#535d66"
+        inactive-color "#81878c"
     }
 }

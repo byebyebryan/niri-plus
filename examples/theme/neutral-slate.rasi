@@ -1,21 +1,21 @@
 /* Neutral Slate. dms-* aliases retain the public Rofi Plus styling contract. */
 * {
-    dms-primary: #83b8f5;
-    dms-primary-container: #2b425b;
-    dms-surface: #202326f5;
-    dms-surface-container: #191c1f;
-    dms-surface-container-high: #2b3034;
+    dms-primary: #6eafff;
+    dms-primary-container: #294e75;
+    dms-surface: #1b1d1fff;
+    dms-surface-container: #111315;
+    dms-surface-container-high: #303336;
     dms-surface-text: #efefec;
-    dms-surface-variant-text: #b9bec3;
-    dms-outline: #535d66;
-    dms-primary-muted: #83b8f570;
-    dms-warning: #ddbb80;
-    dms-warning-muted: #ddbb8080;
-    dms-warning-container: #191c1f;
-    dms-danger: #e5a09b;
-    dms-danger-muted: #e5a09b80;
-    dms-danger-container: #191c1f;
-    dms-highlight: bold #83b8f5;
+    dms-surface-variant-text: #c9cbc8;
+    dms-outline: #81878c;
+    dms-primary-muted: #6eafff70;
+    dms-warning: #e9b55f;
+    dms-warning-muted: #e9b55f80;
+    dms-warning-container: #111315;
+    dms-danger: #f27d78;
+    dms-danger-muted: #f27d7880;
+    dms-danger-container: #111315;
+    dms-highlight: bold #6eafff;
     background-color: transparent;
     text-color: @dms-surface-text;
     font: "Noto Sans 11";

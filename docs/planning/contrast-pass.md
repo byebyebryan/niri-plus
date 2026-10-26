@@ -49,8 +49,9 @@ GTK/Qt widgets, terminal faint attributes, 256-color output, application-owned
 RGB/backgrounds, tmux, SSH, and agent/full-screen tools require review before
 fleet adoption.
 
-Selection is a later step. Promote the accepted desktop and terminal values to
+Balanced+ and the crisper desktop are now selected. The
+[delivery pass](balanced-plus-rollout.md) promotes the accepted values to
 the canonical identity and update adapters/examples together. Publish an
 immutable producer, then plan scoped chezmoi delivery to the selected hosts.
-This design pass performs no live desktop changes, package actions, or fleet
-rollout.
+The original comparison performed no live changes. The separately authorized
+delivery pass records scoped fleet installation and activation.

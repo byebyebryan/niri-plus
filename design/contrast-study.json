@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "date": "2026-10-26",
-  "status": "proposal",
-  "baseline_source": "design/identity.json",
+  "status": "comparison",
+  "baseline_source": "design/history/neutral-slate-clear-blue.json",
   "baseline_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
   "scope": "Design comparison only. Desktop and terminal have separate color values within one identity. No live configuration or selected identity is changed.",
-  "feedback": "Keep black and normal/bright separation; lean closer to Vivid. Compare two intermediate samples before selecting exact terminal colors.",
+  "feedback": "Balanced+ is selected for the terminal, alongside the crisper warm desktop. Other terminal samples remain comparison references.",
   "desktop": {
     "id": "crisper-slate",
     "name": "Crisper Neutral Slate",
-    "status": "proposal",
+    "status": "selected design",
     "overlay_opacity": 1,
     "colors": {
       "canvas": "#111213",
@@ -151,5 +151,7 @@
       ],
       "basis": "Start with a 70% sRGB-channel blend from Balanced to Vivid. Lower normal colored entries only where needed to keep at least 1.45:1 normal/bright luminance separation; framing and warm foreground remain fixed."
     }
-  ]
+  ],
+  "selected_terminal": "black-balanced-plus",
+  "selected_desktop": "crisper-slate"
 }

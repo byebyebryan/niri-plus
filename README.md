@@ -94,11 +94,12 @@ site colors, specimens, and generated Kitty fragment. The internal
 implementation/verification plans. Desktop adoption and public deployment are
 separate from these source changes.
 
-The [contrast study](docs/design/contrast.md) is a public comparison of a clearer
-desktop and separate black terminal palette. Its proposal source is
-`design/contrast-study.json`; it leaves the selected identity, installation
-examples, and chezmoi inputs unchanged. A portable site build can be published
-as an HTML report with `design/contrast/index.html` as its entrypoint.
+The [contrast study](docs/design/contrast.md) retains the preceding baseline and
+terminal alternatives, marking the crisper desktop and Balanced+ terminal as
+selected. `design/contrast-study.json` owns the comparisons; the canonical
+schema-2 identity owns the selected desktop and independent terminal values.
+The old baseline is frozen under `design/history/`. A portable site build can
+be published as an HTML report with `design/contrast/index.html` as its entrypoint.
 
 The site packages the selected Noto Sans UI weights, Meslo terminal face, and
 Source Han CJK fallback as WOFF2 files with their upstream licenses and generated

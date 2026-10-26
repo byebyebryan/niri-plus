@@ -68,10 +68,12 @@ try {
   assert.match(terminalFont, /MesloLGS Nerd Font/);
   assert.ok(await page.locator(".terminal-transcript").evaluate(node => parseFloat(getComputedStyle(node).fontSize) >= 14), "Terminal specimen should use the selected 11pt size on desktop");
   assert.equal(await page.locator(".terminal-ansi-preview [role=listitem]").count(), 16);
+  assert.equal(await page.locator(".terminal-specimen").evaluate(node => getComputedStyle(node).backgroundColor), "rgb(0, 0, 0)");
+  assert.equal(await page.locator("[aria-label='Selected terminal framing colors'] [role=listitem]").count(), 6);
   assert.equal(await page.locator(".ansi-reference-grid [role=listitem]").count(), 16);
   assert.ok(await page.evaluate(() => document.fonts.check('14px "Noto Sans"')));
   assert.ok(await page.evaluate(() => document.fonts.check('14px "MesloLGS Nerd Font"')));
-  checks += 12;
+  checks += 14;
   await page.locator('[data-surface-button="launch"]').click();
   const filter = page.getByLabel("Filter sample windows");
   await filter.fill("claude");

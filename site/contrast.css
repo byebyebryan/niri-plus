@@ -65,6 +65,12 @@
 .study-primary-button { border: 1px solid var(--d-accent); background: var(--d-accent); color: var(--d-accent-ink); padding: 7px 13px; }
 .study-terminal { background: var(--t-background); color: var(--t-foreground); border: 1px solid var(--line); }
 .study-terminal-bar { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); color: var(--t-a8); font: 9px/1.5 var(--mono); }
+.study-pair-heading, .study-pair { display: grid; grid-template-columns: .8fr 1fr 1fr; gap: 8px; }
+.study-pair-heading { padding: 16px 14px 8px; color: var(--t-a8); font: 9px/1.5 var(--mono); }
+.study-pairs { padding: 0 14px 16px; border-bottom: 1px solid var(--line); }
+.study-pair { align-items: baseline; padding: 4px 0; font: var(--sample-size, 11pt)/1.6 "MesloLGS Nerd Font", "Source Han Sans CN", monospace; }
+.study-pair > span { font: 10px/1.6 var(--mono); color: var(--t-a8); }
+.study-pair code { font: inherit; font-weight: 400; white-space: nowrap; }
 .study-transcript { font: var(--sample-size, 11pt)/1.7 "MesloLGS Nerd Font", "Source Han Sans CN", monospace; padding: 18px 14px; overflow-wrap: anywhere; }
 .study-transcript p { margin: 0; white-space: pre-wrap; text-wrap: wrap; }
 .study-transcript .t-gap { margin-top: 13px; }

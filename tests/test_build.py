@@ -115,17 +115,24 @@ class BuildContracts(unittest.TestCase):
         identity = json.loads((self.output / "data/identity.json").read_text())
         self.assertEqual(study["status"], "proposal")
         self.assertEqual(study["baseline_sha256"], identity["source_sha256"])
-        current, black, vivid = study["terminal_variants"]
+        current = study["baseline"]["terminal"]
+        black, balanced, vivid = study["terminal_variants"]
         self.assertEqual({key for key in current if current[key] != black[key]}, {"id", "name", "background"})
         self.assertEqual(black["background"], "#000000")
         self.assertEqual(vivid["background"], "#000000")
         self.assertEqual(vivid["foreground"], current["foreground"])
         self.assertEqual(len(vivid["ansi"]), 16)
+        self.assertEqual(balanced["background"], "#000000")
+        self.assertEqual(balanced["foreground"], current["foreground"])
+        self.assertEqual(len(balanced["ansi"]), 16)
+        for slot in range(1, 7):
+            self.assertGreaterEqual(builder.contrast_ratio(balanced["ansi"][slot], "#000000"), 4.5)
+            self.assertGreater(builder.contrast_ratio(balanced["ansi"][slot], balanced["ansi"][slot + 8]), builder.contrast_ratio(current["ansi"][slot], current["ansi"][slot + 8]))
         self.assertEqual(identity["direction"]["colors"]["surface"], "#202326")
         self.assertNotIn("crisper-slate", (self.output / "assets/identity.css").read_text())
         fragment = (self.output / "examples/kitty/neutral-slate.conf").read_text()
         self.assertIn("background #202326", fragment)
-        study["terminal_variants"][1]["background"] = "#111111"
+        study["terminal_variants"][0]["background"] = "#111111"
         (self.output / "data/contrast-study.json").write_text(json.dumps(study))
         with self.assertRaisesRegex(ValueError, "contrast study differs"):
             builder.validate(self.output)

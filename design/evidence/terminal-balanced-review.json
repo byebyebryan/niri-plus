@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-26",
+  "scope": "Design refinement only; no live theme or canonical identity change.",
+  "previous_revision": "386f6ed1647c8a9c7da1e8d7451f3fcc092408ae",
+  "baseline_identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+  "feedback": "Black resolves much of the haze. Improve normal/bright separation while moderating saturation. The crisper desktop palette was never part of black-only.",
+  "terminal_views": ["black-only", "black-balanced", "black-vivid"],
+  "background_for_all_views": "#000000",
+  "balanced_red": {"normal_01": "#d77c78", "bright_09": "#f2b4ad"},
+  "pair_text": "Seven normal/bright pairs per view, at equal size and weight. ANSI 0 is shown in the sixteen-slot swatch table.",
+  "validation": {
+    "unit_tests": 14,
+    "browser_checks": 471,
+    "routes": 14,
+    "widths": [375, 768, 1280, 1600],
+    "javascript": ["enabled", "disabled"],
+    "browser_errors": 0,
+    "export_files": 75,
+    "checked_local_links": 422,
+    "visual_review": "Desktop-width comparison and narrow-screen balanced card inspected as HTML illustrations.",
+    "published_report": "HTTP bytes verified; served backgrounds, red-pair colors, view control, fonts and narrow viewport passed.",
+    "selected_theme": "Identity and generated Kitty installation fragment remain unchanged."
+  },
+  "report": {
+    "id": "376a029fc8312346709e56932645850827798d0eebb36460b9e601383130d10d",
+    "url": "http://starship:8787/reports/376a029fc8312346709e56932645850827798d0eebb36460b9e601383130d10d/design/contrast/",
+    "project": "niri-plus"
+  },
+  "remaining": "Exact color selection, native terminal/application review, OLED acceptance, and subsequent scoped chezmoi delivery."
+}

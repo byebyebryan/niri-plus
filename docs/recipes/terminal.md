@@ -6,7 +6,8 @@ fragment and a portable shell core that you can install beside your existing
 configuration.
 
 The [desktop and terminal contrast study](../design/contrast.md) previews a
-separate black terminal palette and stronger ANSI colors. It is a proposal;
+separate black terminal palette with clearer normal/bright pairs and moderate
+color saturation. It is a proposal;
 the fragment in this guide retains the currently selected appearance.
 
 ## Kitty: the everyday surface

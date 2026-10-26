@@ -5,6 +5,7 @@
   "baseline_source": "design/identity.json",
   "baseline_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
   "scope": "Design comparison only. Desktop and terminal have separate color values within one identity. No live configuration or selected identity is changed.",
+  "feedback": "Black already resolves much of the haze. Retain moderate color character and improve normal/bright separation within each hue family; the vivid reference is too saturated for the preferred direction.",
   "desktop": {
     "id": "crisper-slate",
     "name": "Crisper Neutral Slate",
@@ -34,9 +35,29 @@
     }
   },
   "terminal": {
-    "id": "black-vivid",
-    "name": "Black + stronger ANSI",
+    "id": "black-balanced",
+    "name": "Black + balanced colors",
     "status": "proposal",
+    "background": "#000000",
+    "foreground": "#efefec",
+    "background_opacity": 1,
+    "cursor": "#a6ceff",
+    "cursor_text_color": "#111315",
+    "selection_background": "#294e75",
+    "selection_foreground": "#efefec",
+    "ansi": [
+      "#000000", "#d77c78", "#94b775", "#d6aa5f",
+      "#78a7da", "#b292c5", "#79b6b0", "#c2c6c3",
+      "#7e8888", "#f2b4ad", "#c5dfa7", "#f3d79c",
+      "#a8cefa", "#dcc4eb", "#b5dcd5", "#f4f4f0"
+    ],
+    "basis": "Moderate rose, sage, gold, blue, violet, and teal families with deliberate darker normal and lighter bright entries. Separation within each pair takes priority over maximum saturation.",
+    "extended_colors": "Entries 16-255 and application-owned RGB colors remain independent. Faint text, application backgrounds, and native rendering require separate review."
+  },
+  "terminal_reference": {
+    "id": "black-vivid",
+    "name": "Black + vivid reference",
+    "status": "comparison reference",
     "background": "#000000",
     "foreground": "#efefec",
     "background_opacity": 1,

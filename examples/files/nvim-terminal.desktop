@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Neovim (Terminal)
+GenericName=Text Editor
+Comment=Edit text files in Neovim running in Kitty
+Exec=kitty -e nvim %F
+Terminal=false
+Icon=nvim
+Categories=Utility;TextEditor;
+MimeType=text/plain;text/markdown;application/json;text/csv;text/x-python;text/x-shellscript;text/x-tex;text/x-csrc;text/x-chdr;text/x-c++src;text/x-c++hdr;
+StartupNotify=true
+StartupWMClass=kitty

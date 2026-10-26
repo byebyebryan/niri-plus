@@ -20,7 +20,7 @@ class BuildContracts(unittest.TestCase):
 
     def test_complete_site_has_checked_links_and_no_planning_material(self):
         result = builder.build(self.output)
-        self.assertEqual(result["pages"], 14)
+        self.assertEqual(result["pages"], 19)
         self.assertGreater(result["local_links"], 200)
         self.assertFalse((self.output / "docs").exists())
         self.assertFalse((self.output / "AGENTS.md").exists())

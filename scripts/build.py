@@ -33,13 +33,18 @@ PAGES = {
     "recipes/appearance/": ("docs/recipes/appearance.md", "Scoped Neutral Slate appearance fragments for Niri, Rofi, SwayNC, Gtklock, Qt, and KDE."),
     "recipes/terminal/": ("docs/recipes/terminal.md", "Kitty, Zsh, Powerlevel10k, history, completion, and the terminal-centered workflow."),
     "recipes/desktop-utilities/": ("docs/recipes/desktop-utilities.md", "Portable Network, Bluetooth, Audio, and Session entry points for a Niri desktop."),
+    "recipes/displays/": ("docs/recipes/displays.md", "Kanshi display profiles, logical scaling, docking and recovery under Niri."),
+    "recipes/login/": ("docs/recipes/login.md", "SDDM session entry and a separately derived Neutral Slate login theme."),
+    "recipes/hardware-feedback/": ("docs/recipes/hardware-feedback.md", "Transient volume, microphone and laptop-backlight feedback with the managed helpers."),
+    "recipes/input/": ("docs/recipes/input.md", "Fcitx5, keyboard/input ownership, CJK text and fractional-scale candidate windows."),
+    "recipes/files/": ("docs/recipes/files.md", "Default applications, browser file interaction and removable-media ownership."),
     "reference/": ("docs/reference.md", "Search the keyboard reference, explore source versions, and download portable examples."),
 }
 SOURCES = {source: route for route, (source, _) in PAGES.items()}
 ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt"}
 FONT_ASSETS = {f"assets/{directory}/{font}.{suffix}" for font in ["noto", "noto-medium", "noto-semibold", "meslo", "source-han"] for directory, suffix in [("fonts", "woff2"), ("licenses", "txt")]}
 GENERATED = {"data/identity.json", "data/contrast-study.json", "assets/identity.css", "assets/fonts/provenance.json", "examples/kitty/neutral-slate.conf"}
-PUBLIC_TOOLS = {"scripts/check-terminal.py"}
+PUBLIC_TOOLS = {"scripts/check-terminal.py", "scripts/check-desktop.py"}
 
 
 def working_identity(source_path="design/identity.json"):

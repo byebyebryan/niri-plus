@@ -22,6 +22,7 @@ python3 -m venv .venv
 npm ci
 npx playwright install chromium
 .venv/bin/python -B -m unittest discover -s tests -v
+.venv/bin/python -B scripts/check-desktop.py
 .venv/bin/python -B scripts/build.py --output /tmp/niri-plus-site
 node scripts/check-browser.mjs /tmp/niri-plus-site
 ```
@@ -73,8 +74,11 @@ Pages uses the GitHub Actions build type. The project inherits the portfolio
 domain and needs no project CNAME or DNS change.
 
 The build checks local links and anchors, metadata, public file inventory, and
-media/example hashes. Browser checks cover fourteen pages at four widths,
-keyboard operation, motion preferences, and reading without JavaScript. To save
+media/example hashes. Browser checks cover nineteen pages at four widths,
+keyboard operation, motion preferences, and reading without JavaScript. The
+assembly guides cover outputs, login, power/services, hardware feedback, input
+and file defaults; `python3 scripts/check-desktop.py --native` checks their
+portable helpers and installed native validators without desktop actions. To save
 local captures, set `NIRI_SCREENSHOTS=/absolute/directory` for the browser check.
 Keep generated output and captures untracked.
 

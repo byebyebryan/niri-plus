@@ -1,0 +1,12 @@
+# Full idle/battery helper policy. All timeouts are seconds; zero disables one.
+# These are Bryan's current choices. Review every value for your own session.
+locker = "gtklock"
+ac_monitor_timeout = 600
+battery_monitor_timeout = 600
+ac_lock_timeout = 0
+battery_lock_timeout = 0
+ac_suspend_timeout = 0
+battery_suspend_timeout = 1800
+lock_before_suspend = false
+loginctl_lock = true
+critical_percent = 10

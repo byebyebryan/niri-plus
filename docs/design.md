@@ -5,7 +5,7 @@ terminal. Clear Blue marks focus and selection; status colors and normal/bright
 terminal pairs stay distinct. Noto Sans UI and Meslo terminal typography remain.
 
 This revision is installed on Carbon, Starship, and Snap. Carbon and Snap
-reloaded in place; Starship is ready for its next normal graphical login.
+reloaded in place; a later review observed Starship running its Niri session.
 The [deployment record](reference.md#working-setup) distinguishes source
 selection, installed files, active sessions, and normal-use checks. The gallery
 below remains labeled sample content.

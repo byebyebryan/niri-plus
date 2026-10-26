@@ -1,6 +1,6 @@
 {
   "date": "2026-10-26",
-  "scope": "Scoped Crisper Neutral Slate and pure-black Balanced+ delivery; installed-byte/reload evidence, with normal-use and next-login acceptance separate",
+  "scope": "Scoped appearance delivery and common-utility/assembly follow-up; installation and runtime evidence remain separate from physical and fresh-install acceptance",
   "consumer_revision": "b946b5e27936919d6277d7033a50d5e1d747abf9",
   "producer_revision": "3fc6ba4b79631fbc4a7967830ca14bb84f1e9cbf",
   "canonical_identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
@@ -85,7 +85,6 @@
     },
     "remaining_normal_use_checks": [
       "Normal OLED/application visual review",
-      "Starship next graphical login activation",
       "Normal login/lock appearance",
       "Provider-owned RGB/background and faint-text review",
       "Ordinary device, dock and resume checks"
@@ -93,7 +92,17 @@
     "fresh_install_acceptance": false,
     "new_daily_desktop_captures": false,
     "change": "Crisper warm desktop palette and independent pure-black Balanced+ terminal; fonts, native input, power, package/utility and runtime selections retained",
-    "summary": "Installed on all three. Carbon and Snap reloaded in place; Starship is ready for its next graphical login."
+    "summary": "Installed on all three. Carbon and Snap reloaded in place; a subsequent review observed Starship running Niri and its session services.",
+    "runtime_followup": {
+      "date": "2026-10-26",
+      "scope": "utility delivery read-only snapshots",
+      "niri_active_hosts": [
+        "Carbon",
+        "Starship",
+        "Snap"
+      ],
+      "starship": "Subsequent graphical login observed; Niri and owned session services are active."
+    }
   },
   "shell": "minimal Niri",
   "notifier": "SwayNC fork",
@@ -162,5 +171,140 @@
       "source_revision": "00dc486a473424be24fec85128cce7b8127c57f3"
     }
   },
-  "review_revision": "a6254c9c18cff5bf6b5b51f8e9af3faf2b934a1f"
+  "review_revision": "8e1309c086216be365ed5620536a7b7fe5fbbd94",
+  "utilities": {
+    "status": "installed and converged on all three hosts",
+    "consumer_revision": "035ad22bfa7e466af642f0970c68b65b42da3be8",
+    "record_name": "niri-plus-utilities-20261026T234508Z",
+    "entry_point": "Mod+D",
+    "entries": [
+      {
+        "id": "niri-plus-network.desktop",
+        "name": "Network",
+        "command": "kitty -e nmtui"
+      },
+      {
+        "id": "niri-plus-bluetooth.desktop",
+        "name": "Bluetooth",
+        "command": "kitty -e bluetoothctl"
+      },
+      {
+        "id": "niri-plus-audio.desktop",
+        "name": "Audio",
+        "command": "pavucontrol"
+      },
+      {
+        "id": "niri-plus-session.desktop",
+        "name": "Session",
+        "command": "desktop-session-menu"
+      }
+    ],
+    "host_results": [
+      {
+        "host": "carbon",
+        "commit": "035ad22bfa7e466af642f0970c68b65b42da3be8",
+        "files": 5,
+        "scoped_drift": 0,
+        "repeat_apply": "no writes",
+        "protected_configurations": 15,
+        "native_processes_preserved": 7,
+        "native_services_preserved": 8,
+        "entries": [
+          {
+            "id": "niri-plus-network.desktop",
+            "name": "Network",
+            "command": "kitty -e nmtui"
+          },
+          {
+            "id": "niri-plus-bluetooth.desktop",
+            "name": "Bluetooth",
+            "command": "kitty -e bluetoothctl"
+          },
+          {
+            "id": "niri-plus-audio.desktop",
+            "name": "Audio",
+            "command": "pavucontrol"
+          },
+          {
+            "id": "niri-plus-session.desktop",
+            "name": "Session",
+            "command": "desktop-session-menu"
+          }
+        ],
+        "package_inventory_unchanged": true,
+        "device_or_session_actions": 0
+      },
+      {
+        "host": "starship",
+        "commit": "035ad22bfa7e466af642f0970c68b65b42da3be8",
+        "files": 5,
+        "scoped_drift": 0,
+        "repeat_apply": "no writes",
+        "protected_configurations": 15,
+        "native_processes_preserved": 8,
+        "native_services_preserved": 8,
+        "entries": [
+          {
+            "id": "niri-plus-network.desktop",
+            "name": "Network",
+            "command": "kitty -e nmtui"
+          },
+          {
+            "id": "niri-plus-bluetooth.desktop",
+            "name": "Bluetooth",
+            "command": "kitty -e bluetoothctl"
+          },
+          {
+            "id": "niri-plus-audio.desktop",
+            "name": "Audio",
+            "command": "pavucontrol"
+          },
+          {
+            "id": "niri-plus-session.desktop",
+            "name": "Session",
+            "command": "desktop-session-menu"
+          }
+        ],
+        "package_inventory_unchanged": true,
+        "device_or_session_actions": 0
+      },
+      {
+        "host": "snap",
+        "commit": "035ad22bfa7e466af642f0970c68b65b42da3be8",
+        "files": 5,
+        "scoped_drift": 0,
+        "repeat_apply": "no writes",
+        "protected_configurations": 15,
+        "native_processes_preserved": 9,
+        "native_services_preserved": 8,
+        "entries": [
+          {
+            "id": "niri-plus-network.desktop",
+            "name": "Network",
+            "command": "kitty -e nmtui"
+          },
+          {
+            "id": "niri-plus-bluetooth.desktop",
+            "name": "Bluetooth",
+            "command": "kitty -e bluetoothctl"
+          },
+          {
+            "id": "niri-plus-audio.desktop",
+            "name": "Audio",
+            "command": "pavucontrol"
+          },
+          {
+            "id": "niri-plus-session.desktop",
+            "name": "Session",
+            "command": "desktop-session-menu"
+          }
+        ],
+        "package_inventory_unchanged": true,
+        "device_or_session_actions": 0
+      }
+    ],
+    "package_operations": 0,
+    "service_restarts": 0,
+    "device_or_session_actions": 0
+  }
 }

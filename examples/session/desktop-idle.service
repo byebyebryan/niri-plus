@@ -1,0 +1,11 @@
+[Unit]
+Description=Power-aware idle policy for the minimal Niri session
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/desktop-power idle
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=10

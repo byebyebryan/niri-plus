@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 
 const output = path.resolve(process.argv[2] || "dist");
 const prefix = "/niri-plus/";
-const routes = ["", "story/", "tour/", "design/", "design/contrast/", "architecture/", "setup/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/appearance/", "reference/"];
+const routes = ["", "story/", "tour/", "design/", "design/contrast/", "architecture/", "setup/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
 const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
 const server = http.createServer(async (request, response) => {
   try {
@@ -42,7 +42,7 @@ try {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `horizontal overflow at ${width}: ${route}`);
       assert.equal(await page.locator("img").evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).length), 0, `broken image: ${route}`);
       checks += 6;
-      if (process.env.NIRI_SCREENSHOTS && ["", "design/", "design/contrast/", "recipes/terminal/"].includes(route) && [375, 1280].includes(width)) {
+      if (process.env.NIRI_SCREENSHOTS && ["", "design/", "design/contrast/", "recipes/terminal/", "setup/", "recipes/login/", "recipes/desktop-utilities/"].includes(route) && [375, 1280].includes(width)) {
         await page.evaluate(() => document.fonts.ready);
         await fs.mkdir(process.env.NIRI_SCREENSHOTS, { recursive: true });
         await page.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `${route.replaceAll("/", "-") || "home"}-${width}.png`), fullPage: true });

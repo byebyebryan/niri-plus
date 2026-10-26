@@ -1,0 +1,9 @@
+// Merge these entries into your existing binds block; do not add duplicates.
+binds {
+    XF86AudioLowerVolume allow-when-locked=true { spawn "notify-volume" "down"; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "notify-volume" "up"; }
+    XF86AudioMute allow-when-locked=true { spawn "notify-volume" "mute"; }
+    XF86AudioMicMute allow-when-locked=true { spawn "notify-volume" "mic-mute"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "notify-brightness" "down"; }
+    XF86MonBrightnessUp allow-when-locked=true { spawn "notify-brightness" "up"; }
+}

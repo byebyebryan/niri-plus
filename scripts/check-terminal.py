@@ -261,6 +261,16 @@ def main() -> int:
         calls.clear()
         require(session.dispatch("Suspend", run=fake_run, lock_before_suspend=True), "configured suspend was not dispatched")
         require([call[0] for call in calls] == [["systemctl", "--user", "start", "desktop-lock.service"], ["systemctl", "suspend"]], "lock-before-suspend order changed")
+        calls.clear()
+        def failed_lock(command, **kwargs):
+            calls.append((command, kwargs))
+            raise subprocess.CalledProcessError(1, command)
+        try:
+            session.dispatch("Suspend", run=failed_lock, lock_before_suspend=True)
+        except subprocess.CalledProcessError:
+            require(len(calls) == 1 and calls[0][0][-1] == "desktop-lock.service", "failed lock admitted suspend")
+        else:
+            raise AssertionError("failed lock was ignored")
         checks += 8
 
         policy_root = base / "policy"

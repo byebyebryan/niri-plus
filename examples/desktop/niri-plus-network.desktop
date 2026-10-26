@@ -6,5 +6,5 @@ Exec=kitty -e nmtui
 TryExec=nmtui
 Icon=network-wireless
 Terminal=false
-Categories=Settings;Network;
+Categories=Settings;
 Keywords=WiFi;Wi-Fi;Ethernet;connection;

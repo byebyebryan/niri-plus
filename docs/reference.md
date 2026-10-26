@@ -55,6 +55,11 @@ Bluetooth, Audio, and Session are documented in the
 named service/tool owners and keep lock, logout confirmation, and power actions
 in their existing native paths.
 
+These four entries are installed through chezmoi on Carbon, Starship and Snap
+as of 2026-10-26. Native desktop-entry discovery and exact file checks passed;
+repeat applies make no writes. The utility delivery is recorded separately in
+[the setup record](../data/setup.json).
+
 ## Session and hardware ownership
 
 | Capability | Owner | Boundary |
@@ -64,7 +69,7 @@ in their existing native paths.
 | Output profiles | Kanshi | Selects monitor layouts; does not own the shell or display-manager theme. |
 | Idle and power | swayidle and the session policy | Display-off, lock, suspend, lid, and battery timing remain explicit policy. |
 | Manual lock | Gtklock through `desktop-lock.service` | An independent user unit keeps manual locks separate from idle reloads. |
-| Portals | xdg-desktop-portal backends | File selection and screen capture use their selected GTK/GNOME backends. |
+| Portals | GTK / WLR / KWallet | GTK owns file/access/settings/notification interfaces; WLR supplies whole-monitor capture; KWallet owns secrets. |
 | Input methods | Fcitx5 | Text composition and candidate UI remain separate from the keyboard layout. |
 | Authorization | polkit-kde-agent | Applications request authorization; the agent supplies the graphical prompt. |
 | Removable storage | UDisks2 plus polkit and filesystem support | File-manager mounting is separate from the common utility entries. |
@@ -75,8 +80,10 @@ in their existing native paths.
 Crisper Neutral Slate and the independent pure-black Balanced+ terminal are
 installed on Carbon, Starship, and Snap. Scoped file/hook differences are zero
 and repeat applies are no-ops. Carbon and Snap reloaded Niri, Kitty and SwayNC
-in place; Starship had no graphical session and is ready for its next normal
-login. All 42 captured native processes and service/bus identities remained.
+in place. Starship had no graphical session during that appearance delivery;
+the subsequent utility review observed its active Niri session and services.
+All 42 captured native processes and service/bus identities from the appearance
+delivery remained.
 The installed greeter theme is
 `/usr/local/share/sddm/themes/niri-neutral-fe1a7a554ed6`; SDDM was not restarted.
 
@@ -103,6 +110,12 @@ Gtklock, Qt 5/6, and KDE color examples and describes their owners and merge
 boundaries.
 
 ## Examples and verification
+
+The [assembly map](setup.md#assembly-map) gives the order. Focused guides cover
+[display profiles](recipes/displays.md), [SDDM login](recipes/login.md),
+[idle/power and authorization](recipes/session.md),
+[hardware feedback](recipes/hardware-feedback.md), [input methods](recipes/input.md),
+and [files/default applications](recipes/files.md).
 
 - [Niri configuration](../examples/niri/config.kdl): portable window layout and
   base bindings, with no personal paths or service startup hooks.

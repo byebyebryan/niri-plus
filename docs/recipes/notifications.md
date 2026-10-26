@@ -4,6 +4,9 @@
 desktop has no permanent bar. Volume and brightness feedback appear briefly
 when their keys are used.
 
+The [hardware-feedback recipe](hardware-feedback.md) includes those helpers,
+their Niri bindings, dependencies and internal/external brightness distinction.
+
 ## Start with upstream SwayNC
 
 On Arch, install `swaync` and `libnotify` (for the `notify-send` check), and follow its

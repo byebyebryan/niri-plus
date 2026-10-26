@@ -6,5 +6,5 @@ Exec=pavucontrol
 TryExec=pavucontrol
 Icon=audio-volume-high
 Terminal=false
-Categories=Settings;AudioVideo;Audio;Mixer;
+Categories=AudioVideo;Audio;Mixer;
 Keywords=volume;microphone;output;input;headphones;

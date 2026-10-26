@@ -28,6 +28,7 @@ jobs:
       - name: Check and build
         run: |
           python -B -m unittest discover -s tests -v
+          python -B scripts/check-desktop.py
           git diff --check
           python -B scripts/build.py --output "${RUNNER_TEMP}/niri-plus"
       - name: Check browser behavior

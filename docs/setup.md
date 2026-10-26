@@ -8,6 +8,26 @@ The examples are a portable starting point adapted from my configuration. They
 are not a copy of my entire home directory. See [the working setup record](reference.md#working-setup)
 for versions, provenance, and what has been checked.
 
+## Assembly map
+
+For the complete desktop, work through these stages in order. Each recipe
+identifies its files, prerequisites, verification and recovery. Hardware and
+authentication checks belong on the target machine.
+
+| Stage | Guide and result |
+| --- | --- |
+| 1. Session and outputs | Start Niri below; review [SDDM login](recipes/login.md) and [Kanshi profiles](recipes/displays.md). |
+| 2. Browser and files | Configure the portal profile below, then [default applications and removable media](recipes/files.md). |
+| 3. Appearance and input | Merge [Neutral Slate appearance](recipes/appearance.md) and configure [Fcitx5/input](recipes/input.md). |
+| 4. Information | Add [notifications](recipes/notifications.md) and [clipboard history](recipes/clipboard.md). |
+| 5. Session services | Qualify manual locking, then install the explicit [idle, battery and authorization wiring](recipes/session.md). |
+| 6. Everyday controls | Add [volume/backlight feedback](recipes/hardware-feedback.md) and [Network, Bluetooth, Audio and Session entries](recipes/desktop-utilities.md). |
+| 7. Terminal work | Add [Kitty/Zsh](recipes/terminal.md), then optional remote and native-agent launchers. |
+
+The public examples are frozen, attributed adaptations of the managed source.
+They cover the assembly, but the current evidence does not claim an unattended
+installer or a clean-machine installation test.
+
 ## Start with a working Niri session
 
 Install Niri using your distribution's packages and launch it as a session from
@@ -69,6 +89,9 @@ exercise a web upload file picker. Check a screen-sharing selection as well if
 you need it. These tasks establish that your session's portals and desktop
 integration are useful for the way you work.
 
+The [file-workflow recipe](recipes/files.md) lists the actual default application
+map, MIME merge examples, and the UDisks2/polkit removable-drive path.
+
 ## Add the common utilities
 
 Follow the [desktop utility recipe](recipes/desktop-utilities.md) for the
@@ -124,6 +147,11 @@ project's launcher instructions before adding the corresponding
 Review the [key reference](reference.md#keyboard-reference), choose your own
 window sizes, and add monitor profiles and appearance preferences. Keep source
 configuration in version control or a dotfile manager.
+
+Use the [display guide](recipes/displays.md) for profile matching, logical sizes
+and docking recovery. The [hardware-feedback guide](recipes/hardware-feedback.md)
+includes the actual volume/backlight helpers and bindings; the
+[input guide](recipes/input.md) covers Fcitx5, CJK text and candidate scaling.
 
 For each addition, check the service status and one real task before continuing.
 To back out, restore that part's configuration and stop only the user services

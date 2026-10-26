@@ -45,6 +45,10 @@ application entry points separate from session policy. UDisks2 and polkit
 authorize removable-drive access; external monitor brightness is separate from
 the laptop backlight controls.
 
+The [assembly map](setup.md#assembly-map) connects each owner to its installation
+and recovery guide, including display profiles, login, power services, input
+methods and default applications.
+
 ## Configuration that an agent can inspect
 
 Most routine investigation and system management happens through commands and

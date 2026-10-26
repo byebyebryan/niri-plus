@@ -5,6 +5,12 @@ actions in the regular Rofi application list. Use `Mod+D`, then search for the
 entry by its displayed name. They are portable examples for a Niri session;
 they do not add new keybindings or change power policy on their own.
 
+The managed entries are installed on Carbon, Starship and Snap as of
+2026-10-26. They passed native desktop-entry discovery, exact-byte checks and
+no-op repeat applies. The [setup record](../../data/setup.json) keeps this
+five-file deployment separate from appearance delivery and physical/device
+acceptance. The steps below are the portable installation path.
+
 ## Requirements
 
 | Entry | Required software and readiness |

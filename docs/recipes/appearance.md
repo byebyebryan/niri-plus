@@ -18,8 +18,8 @@ They are public examples, not proof of native installation or deployment.
 | [Qt 6 palette](../../examples/theme/qt6-palette.conf) | qt6ct | QPalette colors only. Keep the selected Breeze style and portal dialog setting. |
 | [KDE color scheme](../../examples/theme/NeutralSlate.colors) | KDE / native Qt focus | Includes KDE `Colors:*` role groups. It is a color scheme file, not a replacement for `kdeglobals`. |
 
-The SDDM greeter is not in this bundle. Its root-owned theme and assets remain
-separately managed and must be reviewed in their own context.
+The SDDM greeter has a separate [login/derivation recipe](login.md). Its theme
+and root installation remain separate from these user appearance files.
 
 ## Dependencies and native variation
 

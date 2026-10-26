@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "status": "installed and converged on Carbon, Starship and Snap",
+  "applied_consumer_revision": "035ad22bfa7e466af642f0970c68b65b42da3be8",
+  "record_name": "niri-plus-utilities-20261026T234508Z",
+  "application_entry_point": "Mod+D / rofi -show drun",
+  "hosts": [
+    {
+      "host": "carbon",
+      "commit": "035ad22bfa7e466af642f0970c68b65b42da3be8",
+      "files": 5,
+      "scoped_drift": 0,
+      "repeat_apply": "no writes",
+      "protected_configurations": 15,
+      "native_processes_preserved": 7,
+      "native_services_preserved": 8,
+      "entries": [
+        {
+          "id": "niri-plus-network.desktop",
+          "name": "Network",
+          "command": "kitty -e nmtui"
+        },
+        {
+          "id": "niri-plus-bluetooth.desktop",
+          "name": "Bluetooth",
+          "command": "kitty -e bluetoothctl"
+        },
+        {
+          "id": "niri-plus-audio.desktop",
+          "name": "Audio",
+          "command": "pavucontrol"
+        },
+        {
+          "id": "niri-plus-session.desktop",
+          "name": "Session",
+          "command": "desktop-session-menu"
+        }
+      ],
+      "package_inventory_unchanged": true,
+      "device_or_session_actions": 0
+    },
+    {
+      "host": "starship",
+      "commit": "035ad22bfa7e466af642f0970c68b65b42da3be8",
+      "files": 5,
+      "scoped_drift": 0,
+      "repeat_apply": "no writes",
+      "protected_configurations": 15,
+      "native_processes_preserved": 8,
+      "native_services_preserved": 8,
+      "entries": [
+        {
+          "id": "niri-plus-network.desktop",
+          "name": "Network",
+          "command": "kitty -e nmtui"
+        },
+        {
+          "id": "niri-plus-bluetooth.desktop",
+          "name": "Bluetooth",
+          "command": "kitty -e bluetoothctl"
+        },
+        {
+          "id": "niri-plus-audio.desktop",
+          "name": "Audio",
+          "command": "pavucontrol"
+        },
+        {
+          "id": "niri-plus-session.desktop",
+          "name": "Session",
+          "command": "desktop-session-menu"
+        }
+      ],
+      "package_inventory_unchanged": true,
+      "device_or_session_actions": 0
+    },
+    {
+      "host": "snap",
+      "commit": "035ad22bfa7e466af642f0970c68b65b42da3be8",
+      "files": 5,
+      "scoped_drift": 0,
+      "repeat_apply": "no writes",
+      "protected_configurations": 15,
+      "native_processes_preserved": 9,
+      "native_services_preserved": 8,
+      "entries": [
+        {
+          "id": "niri-plus-network.desktop",
+          "name": "Network",
+          "command": "kitty -e nmtui"
+        },
+        {
+          "id": "niri-plus-bluetooth.desktop",
+          "name": "Bluetooth",
+          "command": "kitty -e bluetoothctl"
+        },
+        {
+          "id": "niri-plus-audio.desktop",
+          "name": "Audio",
+          "command": "pavucontrol"
+        },
+        {
+          "id": "niri-plus-session.desktop",
+          "name": "Session",
+          "command": "desktop-session-menu"
+        }
+      ],
+      "package_inventory_unchanged": true,
+      "device_or_session_actions": 0
+    }
+  ],
+  "checks": {
+    "full_chezmoi_source_suite": "passed",
+    "site_unit_tests": 14,
+    "site_pages": 19,
+    "browser_checks": 597,
+    "native_desktop_example_checks": 38,
+    "isolated_terminal_checks": 47,
+    "package_operations": 0,
+    "service_restarts": 0,
+    "device_or_session_actions": 0,
+    "greeter_derivation_regular_files_equal_to_managed": 23
+  },
+  "remaining": [
+    "Normal use of launcher tools and device-management flows",
+    "Physical login/unlock, docking, suspend/resume and application rendering",
+    "A clean-machine assembly trial and current daily-desktop recordings"
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "status": "installed and converged on all three; Carbon/Snap reloaded; Starship desktop inactive until next normal login",
+  "profile": "neutral-slate",
+  "desktop_variant": "crisper",
+  "terminal_variant": "balanced-plus",
+  "producer": {
+    "status": "published",
+    "repository": "https://github.com/byebyebryan/niri-plus",
+    "canonical_path": "design/identity.json",
+    "canonical_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
+    "commit": "3fc6ba4b79631fbc4a7967830ca14bb84f1e9cbf",
+    "archive_url": "https://github.com/byebyebryan/niri-plus/archive/3fc6ba4b79631fbc4a7967830ca14bb84f1e9cbf.tar.gz",
+    "archive_sha256": "a3767472e001eaa5e2059b73fcddcc52418441b5365ea2530c7cef1f9f6e83a2"
+  },
+  "applied_consumer_revision": "b946b5e27936919d6277d7033a50d5e1d747abf9",
+  "checks": {
+    "full_chezmoi_source_suite": "passed",
+    "native_checks": 6,
+    "native_reference_images": 4,
+    "site_unit_tests": 14,
+    "browser_checks": 477,
+    "scoped_files_per_host": 18,
+    "changing_files_per_host": 9,
+    "non_appearance_delta": false,
+    "package_operations": false,
+    "utility_admission": [],
+    "sddm_restart": false
+  },
+  "remaining": [
+    "Normal OLED/application visual review",
+    "Starship next graphical login activation",
+    "Normal login/lock appearance",
+    "Provider-owned RGB/background and faint-text review",
+    "Ordinary device, dock and resume checks"
+  ],
+  "hosts": [
+    {
+      "host": "Carbon",
+      "status": "installed and reloaded",
+      "graphical_session_active": true,
+      "scoped_diff_files": 0,
+      "scoped_diff_hooks": 0,
+      "repeat_apply": {
+        "files": "no-op",
+        "hooks": "no-op"
+      },
+      "preserved": [
+        "native processes and service identities",
+        "source work and unrelated settings",
+        "notification bus/history"
+      ],
+      "native_processes_preserved": 6,
+      "notification_count_before": 39,
+      "notification_count_after": 39,
+      "css_diagnostics": 0
+    },
+    {
+      "host": "Starship",
+      "status": "installed; next graphical login",
+      "graphical_session_active": false,
+      "scoped_diff_files": 0,
+      "scoped_diff_hooks": 0,
+      "repeat_apply": {
+        "files": "no-op",
+        "hooks": "no-op"
+      },
+      "preserved": [
+        "native processes and service identities",
+        "source work and unrelated settings",
+        "inactive desktop services"
+      ],
+      "native_processes_preserved": 4,
+      "notification_count_before": null,
+      "notification_count_after": null,
+      "css_diagnostics": null
+    },
+    {
+      "host": "Snap",
+      "status": "installed and reloaded",
+      "graphical_session_active": true,
+      "scoped_diff_files": 0,
+      "scoped_diff_hooks": 0,
+      "repeat_apply": {
+        "files": "no-op",
+        "hooks": "no-op"
+      },
+      "preserved": [
+        "native processes and service identities",
+        "source work and unrelated settings",
+        "notification bus/history"
+      ],
+      "native_processes_preserved": 32,
+      "notification_count_before": 31,
+      "notification_count_after": 31,
+      "css_diagnostics": 0
+    }
+  ],
+  "review_revision": "a6254c9c18cff5bf6b5b51f8e9af3faf2b934a1f"
+}

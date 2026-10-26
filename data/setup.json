@@ -1,16 +1,16 @@
 {
-  "date": "2026-10-25",
-  "scope": "Scoped Neutral Slate Clear Blue accent delivery; not a fresh-install or complete physical-acceptance record",
-  "consumer_revision": "853a19b4ad05e4699f4572e904ee9ed59fd92aaf",
-  "producer_revision": "f5aeecf722579fa755ec3a6f3ea148073a87edb9",
-  "canonical_identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+  "date": "2026-10-26",
+  "scope": "Scoped Crisper Neutral Slate and pure-black Balanced+ delivery; installed-byte/reload evidence, with normal-use and next-login acceptance separate",
+  "consumer_revision": "b946b5e27936919d6277d7033a50d5e1d747abf9",
+  "producer_revision": "3fc6ba4b79631fbc4a7967830ca14bb84f1e9cbf",
+  "canonical_identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
   "hosts": [
     "Carbon",
     "Starship",
     "Snap"
   ],
   "deployment": {
-    "status": "passed",
+    "status": "installed and converged; active and next-login states recorded per host",
     "rollout_order": [
       "Carbon",
       "Starship",
@@ -19,7 +19,8 @@
     "host_results": [
       {
         "host": "Carbon",
-        "status": "passed",
+        "status": "installed and reloaded",
+        "graphical_session_active": true,
         "scoped_diff_files": 0,
         "scoped_diff_hooks": 0,
         "repeat_apply": {
@@ -27,18 +28,19 @@
           "hooks": "no-op"
         },
         "preserved": [
-          "Niri session",
-          "Kitty terminal sessions",
-          "SwayNC notifications",
-          "native sessions"
+          "native processes and service identities",
+          "source work and unrelated settings",
+          "notification bus/history"
         ],
+        "native_processes_preserved": 6,
         "notification_count_before": 39,
         "notification_count_after": 39,
         "css_diagnostics": 0
       },
       {
         "host": "Starship",
-        "status": "passed",
+        "status": "installed; next graphical login",
+        "graphical_session_active": false,
         "scoped_diff_files": 0,
         "scoped_diff_hooks": 0,
         "repeat_apply": {
@@ -46,18 +48,19 @@
           "hooks": "no-op"
         },
         "preserved": [
-          "Niri session",
-          "Kitty terminal sessions",
-          "SwayNC notifications",
-          "native sessions"
+          "native processes and service identities",
+          "source work and unrelated settings",
+          "inactive desktop services"
         ],
-        "notification_count_before": 25,
-        "notification_count_after": 25,
-        "css_diagnostics": 0
+        "native_processes_preserved": 4,
+        "notification_count_before": null,
+        "notification_count_after": null,
+        "css_diagnostics": null
       },
       {
         "host": "Snap",
-        "status": "passed",
+        "status": "installed and reloaded",
+        "graphical_session_active": true,
         "scoped_diff_files": 0,
         "scoped_diff_hooks": 0,
         "repeat_apply": {
@@ -65,29 +68,32 @@
           "hooks": "no-op"
         },
         "preserved": [
-          "Niri session",
-          "Kitty terminal sessions",
-          "SwayNC notifications",
-          "native sessions"
+          "native processes and service identities",
+          "source work and unrelated settings",
+          "notification bus/history"
         ],
-        "notification_count_before": 34,
-        "notification_count_after": 34,
+        "native_processes_preserved": 32,
+        "notification_count_before": 31,
+        "notification_count_after": 31,
         "css_diagnostics": 0
       }
     ],
     "root_greeter": {
-      "status": "installed; unchanged by the accent update",
-      "theme_path": "/usr/local/share/sddm/themes/niri-neutral-ab2469ae2948"
+      "status": "installed and verified; no SDDM restart",
+      "theme_path": "/usr/local/share/sddm/themes/niri-neutral-fe1a7a554ed6",
+      "files_verified_per_host": 24
     },
     "remaining_normal_use_checks": [
-      "login and unlock appearance",
-      "application visual review",
-      "device and backlight behavior",
-      "dock and undock behavior"
+      "Normal OLED/application visual review",
+      "Starship next graphical login activation",
+      "Normal login/lock appearance",
+      "Provider-owned RGB/background and faint-text review",
+      "Ordinary device, dock and resume checks"
     ],
     "fresh_install_acceptance": false,
     "new_daily_desktop_captures": false,
-    "change": "Clear Blue accent, focus and selection; base surfaces, fonts and semantic status colors retained"
+    "change": "Crisper warm desktop palette and independent pure-black Balanced+ terminal; fonts, native input, power, package/utility and runtime selections retained",
+    "summary": "Installed on all three. Carbon and Snap reloaded in place; Starship is ready for its next graphical login."
   },
   "shell": "minimal Niri",
   "notifier": "SwayNC fork",
@@ -116,9 +122,17 @@
   "appearance": {
     "profile": "neutral-slate",
     "accent_variant": "clear-blue",
-    "accent": "#83b8f5",
+    "accent": "#6eafff",
     "focus": "#a6ceff",
-    "selection": "#2b425b"
+    "selection": "#294e75",
+    "desktop_variant": "crisper",
+    "terminal_variant": "balanced-plus",
+    "desktop_canvas": "#111213",
+    "desktop_surface": "#1b1d1f",
+    "terminal_background": "#000000",
+    "terminal_foreground": "#efefec",
+    "terminal_background_opacity": 1,
+    "schema_version": 2
   },
   "portals": {
     "baseline": "gtk+wlr",
@@ -147,5 +161,6 @@
       },
       "source_revision": "00dc486a473424be24fec85128cce7b8127c57f3"
     }
-  }
+  },
+  "review_revision": "a6254c9c18cff5bf6b5b51f8e9af3faf2b934a1f"
 }

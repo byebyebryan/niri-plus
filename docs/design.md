@@ -4,7 +4,8 @@ Neutral Slate pairs a crisper warm-charcoal desktop with a pure-black Balanced+
 terminal. Clear Blue marks focus and selection; status colors and normal/bright
 terminal pairs stay distinct. Noto Sans UI and Meslo terminal typography remain.
 
-This revision is selected for scoped delivery to Carbon, Starship, and Snap.
+This revision is installed on Carbon, Starship, and Snap. Carbon and Snap
+reloaded in place; Starship is ready for its next normal graphical login.
 The [deployment record](reference.md#working-setup) distinguishes source
 selection, installed files, active sessions, and normal-use checks. The gallery
 below remains labeled sample content.

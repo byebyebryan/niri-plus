@@ -227,7 +227,8 @@ def snapshot():
     fork = data["swaync"]
     deployment = data["deployment"]
     hosts = ", ".join(deployment["rollout_order"])
-    return f'''<div class="snapshot"><div><span class="eyebrow">Appearance delivery / {escape(data['date'])}</span><strong>Neutral Slate · {escape(hosts)}</strong><p>Scoped delivery passed; normal-use visual and device checks remain.</p></div><dl><div><dt>Producer</dt><dd><code>{data['producer_revision'][:10]}</code></dd></div><div><dt>Consumer</dt><dd><code>{data['consumer_revision'][:10]}</code></dd></div><div><dt>SwayNC fork</dt><dd>{escape(fork['package'])} {escape(fork['version'])}</dd></div></dl><a href="{BASE}data/setup.json">Full delivery record ↗</a></div>'''
+    summary = deployment.get("summary", "Scoped delivery passed; normal-use visual and device checks remain.")
+    return f'''<div class="snapshot"><div><span class="eyebrow">Appearance delivery / {escape(data['date'])}</span><strong>Neutral Slate · {escape(hosts)}</strong><p>{escape(summary)}</p></div><dl><div><dt>Producer</dt><dd><code>{data['producer_revision'][:10]}</code></dd></div><div><dt>Consumer</dt><dd><code>{data['consumer_revision'][:10]}</code></dd></div><div><dt>SwayNC fork</dt><dd>{escape(fork['package'])} {escape(fork['version'])}</dd></div></dl><a href="{BASE}data/setup.json">Full delivery record ↗</a></div>'''
 
 
 def render_markdown(source):

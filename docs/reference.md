@@ -72,11 +72,13 @@ in their existing native paths.
 
 ## Working setup
 
-Neutral Slate with Clear Blue accents was delivered in order to Carbon, Starship, and Snap. Each scoped
-pass had zero remaining file and hook differences on repeat; the Niri, Kitty,
-SwayNC, and native sessions remained in place. The separately managed SDDM
-greeter theme is installed at
-`/usr/local/share/sddm/themes/niri-neutral-ab2469ae2948`.
+Crisper Neutral Slate and the independent pure-black Balanced+ terminal are
+installed on Carbon, Starship, and Snap. Scoped file/hook differences are zero
+and repeat applies are no-ops. Carbon and Snap reloaded Niri, Kitty and SwayNC
+in place; Starship had no graphical session and is ready for its next normal
+login. All 42 captured native processes and service/bus identities remained.
+The installed greeter theme is
+`/usr/local/share/sddm/themes/niri-neutral-fe1a7a554ed6`; SDDM was not restarted.
 
 This is scoped deployment evidence, not a fresh-install or complete physical
 acceptance record. New login/unlock appearance, application visuals, device and

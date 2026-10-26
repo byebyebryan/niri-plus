@@ -5,7 +5,7 @@
   "baseline_source": "design/identity.json",
   "baseline_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
   "scope": "Design comparison only. Desktop and terminal have separate color values within one identity. No live configuration or selected identity is changed.",
-  "feedback": "Black already resolves much of the haze. Retain moderate color character and improve normal/bright separation within each hue family; the vivid reference is too saturated for the preferred direction.",
+  "feedback": "Keep black and normal/bright separation; lean closer to Vivid. Compare two intermediate samples before selecting exact terminal colors.",
   "desktop": {
     "id": "crisper-slate",
     "name": "Crisper Neutral Slate",
@@ -36,7 +36,7 @@
   },
   "terminal": {
     "id": "black-balanced",
-    "name": "Black + balanced colors",
+    "name": "Balanced",
     "status": "proposal",
     "background": "#000000",
     "foreground": "#efefec",
@@ -46,17 +46,29 @@
     "selection_background": "#294e75",
     "selection_foreground": "#efefec",
     "ansi": [
-      "#000000", "#d77c78", "#94b775", "#d6aa5f",
-      "#78a7da", "#b292c5", "#79b6b0", "#c2c6c3",
-      "#7e8888", "#f2b4ad", "#c5dfa7", "#f3d79c",
-      "#a8cefa", "#dcc4eb", "#b5dcd5", "#f4f4f0"
+      "#000000",
+      "#d77c78",
+      "#94b775",
+      "#d6aa5f",
+      "#78a7da",
+      "#b292c5",
+      "#79b6b0",
+      "#c2c6c3",
+      "#7e8888",
+      "#f2b4ad",
+      "#c5dfa7",
+      "#f3d79c",
+      "#a8cefa",
+      "#dcc4eb",
+      "#b5dcd5",
+      "#f4f4f0"
     ],
     "basis": "Moderate rose, sage, gold, blue, violet, and teal families with deliberate darker normal and lighter bright entries. Separation within each pair takes priority over maximum saturation.",
     "extended_colors": "Entries 16-255 and application-owned RGB colors remain independent. Faint text, application backgrounds, and native rendering require separate review."
   },
   "terminal_reference": {
     "id": "black-vivid",
-    "name": "Black + vivid reference",
+    "name": "Vivid",
     "status": "comparison reference",
     "background": "#000000",
     "foreground": "#efefec",
@@ -66,12 +78,78 @@
     "selection_background": "#294e75",
     "selection_foreground": "#efefec",
     "ansi": [
-      "#000000", "#ff5370", "#a9d86e", "#f2bd5b",
-      "#6eafff", "#c792ea", "#62d6e8", "#d2d4d1",
-      "#8b9299", "#ff8396", "#c3e88d", "#ffda8a",
-      "#a6ceff", "#deb0ff", "#9be9f2", "#ffffff"
+      "#000000",
+      "#ff5370",
+      "#a9d86e",
+      "#f2bd5b",
+      "#6eafff",
+      "#c792ea",
+      "#62d6e8",
+      "#d2d4d1",
+      "#8b9299",
+      "#ff8396",
+      "#c3e88d",
+      "#ffda8a",
+      "#a6ceff",
+      "#deb0ff",
+      "#9be9f2",
+      "#ffffff"
     ],
     "basis": "Material Darker's stronger color family from the preceding terminal setup, adjusted for distinct normal/bright pairs, Clear Blue continuity, and a black background.",
     "extended_colors": "Entries 16-255 and application-owned RGB colors remain independent. Faint text, application backgrounds, and native rendering require separate review."
-  }
+  },
+  "terminal_samples": [
+    {
+      "id": "black-balanced-plus",
+      "name": "Balanced +",
+      "status": "proposal",
+      "blend_weight": 0.4,
+      "minimum_colored_pair_contrast": 1.45,
+      "ansi": [
+        "#000000",
+        "#e76c75",
+        "#99c070",
+        "#deb05c",
+        "#74aae9",
+        "#ba92d4",
+        "#6ec0c3",
+        "#c8ccc9",
+        "#838c8f",
+        "#f7a0a4",
+        "#c4e39d",
+        "#f8d895",
+        "#a7cefc",
+        "#ddbcf3",
+        "#abe1e1",
+        "#f8f8f6"
+      ],
+      "basis": "Start with a 40% sRGB-channel blend from Balanced to Vivid. Lower normal colored entries only where needed to keep at least 1.45:1 normal/bright luminance separation; framing and warm foreground remain fixed."
+    },
+    {
+      "id": "black-rich",
+      "name": "Rich",
+      "status": "proposal",
+      "blend_weight": 0.7,
+      "minimum_colored_pair_contrast": 1.45,
+      "ansi": [
+        "#000000",
+        "#f25f72",
+        "#99c269",
+        "#e1b058",
+        "#71acf3",
+        "#c091de",
+        "#64c3ce",
+        "#cdd0cd",
+        "#878f94",
+        "#fb929d",
+        "#c4e595",
+        "#fbd98f",
+        "#a7cefe",
+        "#ddb6f9",
+        "#a3e5e9",
+        "#fcfcfa"
+      ],
+      "basis": "Start with a 70% sRGB-channel blend from Balanced to Vivid. Lower normal colored entries only where needed to keep at least 1.45:1 normal/bright luminance separation; framing and warm foreground remain fixed."
+    }
+  ]
 }

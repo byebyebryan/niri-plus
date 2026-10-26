@@ -115,7 +115,7 @@ def contrast_study():
     roles = {"background": "background_role", "foreground": "foreground_role", "cursor": "cursor_role", "cursor_text_color": "cursor_text_role", "selection_background": "selection_background_role", "selection_foreground": "selection_foreground_role"}
     current = {"id": "current", "name": "Current terminal", **{option: colors[terminal[role]] for option, role in roles.items()}, "ansi": terminal["ansi"], "background_opacity": 1}
     black = {**current, "id": "black-only", "name": "Original colors on black", "background": "#000000"}
-    terminal_models = [study["terminal"], study["terminal_reference"]]
+    terminal_models = [study["terminal"], *[{**study["terminal"], **sample} for sample in study["terminal_samples"]], study["terminal_reference"]]
     if any(len(model["ansi"]) != 16 for model in terminal_models) or set(study["desktop"]["colors"]) != set(colors):
         raise ValueError("contrast study must define complete desktop and ANSI colors")
     color_values = [*study["desktop"]["colors"].values(), *(color for model in terminal_models for color in [*model["ansi"], *(model[key] for key in roles)])]
@@ -138,9 +138,9 @@ def contrast_study():
         ("Error / raised", "error", "raised"),
     ]
     measurements = [{"label": label, **{key: round(contrast_ratio(model["colors"][a], model["colors"][b]), 2) for key, model in [("current", desktop), ("proposal", study["desktop"])]}} for label, a, b in pairs]
-    variants = [black, *terminal_models]
+    variants = terminal_models
     terminal_pairs = [{"label": terminal["ansi_names"][i], "slots": [i, i + 8], **{model["id"]: round(contrast_ratio(model["ansi"][i], model["ansi"][i + 8]), 2) for model in variants}} for i in range(1, 8)]
-    return {**study, "source": "design/contrast-study.json", "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "baseline": {"desktop": desktop, "terminal": current}, "terminal_variants": variants, "ansi_names": terminal["ansi_names"], "contrast_pairs": measurements, "terminal_pair_contrast": terminal_pairs}
+    return {**study, "source": "design/contrast-study.json", "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "baseline": {"desktop": desktop, "terminal": current, "terminal_on_black": black}, "terminal_variants": variants, "ansi_names": terminal["ansi_names"], "contrast_pairs": measurements, "terminal_pair_contrast": terminal_pairs}
 
 
 def contrast_html():
@@ -151,7 +151,7 @@ def contrast_html():
         variables = ";".join(f"--d-{role.replace('_', '-')}:{value}" for role, value in model["colors"].items())
         desktops.append(f'<article class="study-card" data-desktop-card="{key}" style="{variables}"><header><p class="eyebrow">{label}</p><h3>{escape(model["name"])}</h3><p>{note}</p></header>{partial("contrast-desktop.html")}</article>')
     terminals = []
-    labels = [("Original ANSI · black background", "The earlier black-only experiment: original muted colors, with no crisper desktop colors mixed in."), ("Refined proposal", "Moderate hues with darker normal and lighter bright entries. More separation within each color family."), ("Vivid reference", "The preceding more saturated proposal, retained as a comparison endpoint.")]
+    labels = [("Balanced endpoint", "The preceding moderate palette, retained unchanged as the quieter endpoint."), ("Intermediate / 40% blend start", "A little more color than Balanced, with deliberate normal/bright separation."), ("Intermediate / 70% blend start", "Closer to Vivid, with extra shade separation where the normal colors would become too bright."), ("Vivid endpoint", "The preceding saturated palette, retained unchanged as the stronger endpoint.")]
     for model, (label, note) in zip(study["terminal_variants"], labels):
         keys = ["background", "foreground", "cursor", "cursor_text_color", "selection_background", "selection_foreground"]
         variables = ";".join(f"--t-{key.replace('_', '-')}:{model[key]}" for key in keys)
@@ -159,7 +159,8 @@ def contrast_html():
         ansi = ''.join(f'<span role="listitem" style="background:{color};color:{"#000000" if contrast_ratio(color, "#000000") >= contrast_ratio(color, "#ffffff") else "#ffffff"}" aria-label="ANSI {i}: {escape(study["ansi_names"][i])}, {color}">{i:02}</span>' for i, color in enumerate(model["ansi"]))
         paired_text = ''.join(f'<div class="study-pair" role="listitem"><span>{escape(study["ansi_names"][i])}</span><code data-pair-normal="{i}" style="color:{model["ansi"][i]}">{i:02} {escape(study["ansi_names"][i])}</code><code data-pair-bright="{i + 8}" style="color:{model["ansi"][i + 8]}">{i + 8:02} {escape(study["ansi_names"][i])}</code></div>' for i in range(1, 8))
         scene = partial("contrast-terminal.html").replace("@@ANSI@@", ansi).replace("@@PAIRS@@", paired_text).replace("@@BACKGROUND@@", model["background"]).replace("@@FOREGROUND@@", model["foreground"])
-        terminals.append(f'<article class="study-card" data-terminal-card="{model["id"]}" style="{variables}"><header><p class="eyebrow">{label}</p><h3>{escape(model["name"])}</h3><p>{note}</p></header>{scene}</article>')
+        group = ' data-view-group="middle"' if "blend_weight" in model else ''
+        terminals.append(f'<article class="study-card" data-terminal-card="{model["id"]}"{group} style="{variables}"><header><p class="eyebrow">{label}</p><h3>{escape(model["name"])}</h3><p>{note}</p></header>{scene}</article>')
     def value_cell(color):
         return f'<td><span class="study-token-dot" style="--token-color:{color}" aria-hidden="true"></span><code>{color}</code></td>'
     desktop_values = ''.join(f'<tr><th scope="row">{escape(role.replace("_", " "))}</th>{value_cell(current["colors"][role])}{value_cell(color)}</tr>' for role, color in study["desktop"]["colors"].items())
@@ -167,7 +168,8 @@ def contrast_html():
     pair_values = ''.join(f'<tr><th scope="row">{pair["slots"][0]:02}/{pair["slots"][1]:02} · {escape(pair["label"])}</th>{"".join("<td>" + format(pair[model["id"]], ".2f") + ":1</td>" for model in study["terminal_variants"])}</tr>' for pair in study["terminal_pair_contrast"])
     contrast = ''.join(f'<tr><th scope="row">{escape(pair["label"])}</th><td>{pair["current"]:.2f}:1</td><td>{pair["proposal"]:.2f}:1</td></tr>' for pair in study["contrast_pairs"])
     html = partial("contrast-study.html")
-    for key, value in {"DESKTOPS": ''.join(desktops), "TERMINALS": ''.join(terminals), "DESKTOP_VALUES": desktop_values, "TERMINAL_VALUES": terminal_values, "PAIR_VALUES": pair_values, "CONTRAST": contrast}.items():
+    headers = ''.join(f'<th scope="col">{escape(model["name"])}</th>' for model in study["terminal_variants"])
+    for key, value in {"DESKTOPS": ''.join(desktops), "TERMINALS": ''.join(terminals), "DESKTOP_VALUES": desktop_values, "TERMINAL_VALUES": terminal_values, "TERMINAL_HEADERS": headers, "PAIR_VALUES": pair_values, "CONTRAST": contrast}.items():
         html = html.replace("@@" + key + "@@", value)
     return html
 

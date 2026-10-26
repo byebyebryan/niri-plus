@@ -116,7 +116,8 @@ class BuildContracts(unittest.TestCase):
         self.assertEqual(study["status"], "proposal")
         self.assertEqual(study["baseline_sha256"], identity["source_sha256"])
         current = study["baseline"]["terminal"]
-        black, balanced, vivid = study["terminal_variants"]
+        black = study["baseline"]["terminal_on_black"]
+        balanced, balanced_plus, rich, vivid = study["terminal_variants"]
         self.assertEqual({key for key in current if current[key] != black[key]}, {"id", "name", "background"})
         self.assertEqual(black["background"], "#000000")
         self.assertEqual(vivid["background"], "#000000")
@@ -128,6 +129,13 @@ class BuildContracts(unittest.TestCase):
         for slot in range(1, 7):
             self.assertGreaterEqual(builder.contrast_ratio(balanced["ansi"][slot], "#000000"), 4.5)
             self.assertGreater(builder.contrast_ratio(balanced["ansi"][slot], balanced["ansi"][slot + 8]), builder.contrast_ratio(current["ansi"][slot], current["ansi"][slot + 8]))
+        for model in (balanced_plus, rich):
+            self.assertEqual(model["background"], balanced["background"])
+            self.assertEqual(model["foreground"], balanced["foreground"])
+            self.assertEqual(len(model["ansi"]), 16)
+            for slot in range(1, 7):
+                self.assertGreaterEqual(builder.contrast_ratio(model["ansi"][slot], "#000000"), 4.5)
+                self.assertGreaterEqual(builder.contrast_ratio(model["ansi"][slot], model["ansi"][slot + 8]), 1.45)
         self.assertEqual(identity["direction"]["colors"]["surface"], "#202326")
         self.assertNotIn("crisper-slate", (self.output / "assets/identity.css").read_text())
         fragment = (self.output / "examples/kitty/neutral-slate.conf").read_text()

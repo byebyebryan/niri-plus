@@ -6,10 +6,12 @@ if (study) {
     buttons.forEach(button => button.addEventListener("click", () => {
       const selected = button.getAttribute(attribute);
       buttons.forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+      let visible = 0;
       study.querySelectorAll(`[${cards}]`).forEach(card => {
-        card.hidden = selected !== "all" && card.getAttribute(cards) !== selected;
+        card.hidden = selected !== "all" && card.getAttribute(cards) !== selected && card.dataset.viewGroup !== selected;
+        if (!card.hidden) visible++;
       });
-      study.querySelector(`[${grid}]`).classList.toggle("is-single", selected !== "all");
+      study.querySelector(`[${grid}]`).classList.toggle("is-single", visible === 1);
     }));
   }
   views("data-desktop-view", "data-desktop-card", "data-desktop-grid");

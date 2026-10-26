@@ -96,19 +96,19 @@ try {
   checks += 1;
   await page.goto(origin + "design/contrast/");
   assert.equal(await page.locator("[data-desktop-card]:visible").count(), 2);
-  assert.equal(await page.locator("[data-terminal-card]:visible").count(), 3);
+  assert.equal(await page.locator("[data-terminal-card]:visible").count(), 4);
   assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()), identity.direction.colors.canvas);
   assert.deepEqual(await page.locator(".study-desktop").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor)), ["rgb(21, 23, 25)", "rgb(17, 18, 19)"]);
   const desktopText = await page.locator(".study-desktop").allInnerTexts();
   assert.equal(desktopText[0], desktopText[1]);
   const transcriptText = await page.locator(".study-transcript").allInnerTexts();
-  assert.deepEqual(transcriptText, Array(3).fill(transcriptText[0]));
+  assert.deepEqual(transcriptText, Array(4).fill(transcriptText[0]));
   const terminalBackgrounds = await page.locator(".study-terminal").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor));
-  assert.deepEqual(terminalBackgrounds, Array(3).fill("rgb(0, 0, 0)"));
-  assert.equal(await page.locator(".study-ansi [role=listitem]").count(), 48);
-  assert.equal(await page.locator(".study-pairs [role=listitem]").count(), 21);
+  assert.deepEqual(terminalBackgrounds, Array(4).fill("rgb(0, 0, 0)"));
+  assert.equal(await page.locator(".study-ansi [role=listitem]").count(), 64);
+  assert.equal(await page.locator(".study-pairs [role=listitem]").count(), 28);
   assert.deepEqual(await page.locator('[data-terminal-card="black-balanced"] [data-pair-normal="1"], [data-terminal-card="black-balanced"] [data-pair-bright="9"]').evaluateAll(nodes => nodes.map(node => ({color: getComputedStyle(node).color, weight: getComputedStyle(node).fontWeight}))), [{color: "rgb(215, 124, 120)", weight: "400"}, {color: "rgb(242, 180, 173)", weight: "400"}]);
-  assert.deepEqual(await page.locator(".t-rgb").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).color)), Array(3).fill("rgb(180, 168, 250)"));
+  assert.deepEqual(await page.locator(".t-rgb").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).color)), Array(4).fill("rgb(180, 168, 250)"));
   for (const state of ["warning", "error", "success"]) {
     await page.locator(`[data-study-state="${state}"]`).click();
     assert.deepEqual(await page.locator(".study-desktop").evaluateAll(nodes => nodes.map(node => node.dataset.state)), [state, state]);
@@ -123,14 +123,15 @@ try {
     if (view !== "all") assert.equal(await page.locator("[data-desktop-card]:visible").getAttribute("data-desktop-card"), view);
     checks += 2;
   }
-  for (const view of ["black-only", "black-balanced", "black-vivid", "all"]) {
+  for (const view of ["black-balanced", "black-balanced-plus", "black-rich", "black-vivid", "middle", "all"]) {
     await page.locator(`[data-terminal-view="${view}"]`).click();
-    assert.equal(await page.locator("[data-terminal-card]:visible").count(), view === "all" ? 3 : 1);
-    if (view !== "all") assert.equal(await page.locator("[data-terminal-card]:visible").getAttribute("data-terminal-card"), view);
+    assert.equal(await page.locator("[data-terminal-card]:visible").count(), view === "all" ? 4 : view === "middle" ? 2 : 1);
+    if (view === "middle") assert.deepEqual(await page.locator("[data-terminal-card]:visible").evaluateAll(nodes => nodes.map(node => node.dataset.terminalCard)), ["black-balanced-plus", "black-rich"]);
+    else if (view !== "all") assert.equal(await page.locator("[data-terminal-card]:visible").getAttribute("data-terminal-card"), view);
     checks += 2;
   }
   await page.locator('[data-terminal-size="larger"]').click();
-  assert.deepEqual(await page.locator(".study-transcript").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).fontSize)), Array(3).fill("16px"));
+  assert.deepEqual(await page.locator(".study-transcript").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).fontSize)), Array(4).fill("16px"));
   assert.deepEqual(await page.locator("[data-pair-normal], [data-pair-bright]").evaluateAll(nodes => [...new Set(nodes.map(node => getComputedStyle(node).fontSize))]), ["16px"]);
   await page.locator('[data-terminal-size="standard"]').click();
   assert.ok(await page.locator(".study-transcript").first().evaluate(node => Math.abs(parseFloat(getComputedStyle(node).fontSize) - 14.6667) < .01));
@@ -188,7 +189,7 @@ try {
   checks += 3;
   await staticPage.goto(origin + "design/contrast/");
   assert.equal(await staticPage.locator("[data-desktop-card]:visible").count(), 2);
-  assert.equal(await staticPage.locator("[data-terminal-card]:visible").count(), 3);
+  assert.equal(await staticPage.locator("[data-terminal-card]:visible").count(), 4);
   assert.equal(await staticPage.locator("[data-study-controls]:visible").count(), 0);
   assert.match(await staticPage.locator("main").innerText(), /proposal/i);
   checks += 4;

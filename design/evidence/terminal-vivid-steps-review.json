@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-26",
+  "scope": "Two intermediate terminal design samples. No selected identity or live theme change.",
+  "previous_revision": "51ed4bb6376a1467ca9463db04ed5409c2be01d8",
+  "baseline_identity_sha256": "fe8f4e006764038173c96a6c0ba440369ff2d6d4918decc4b192dc856d5ea63d",
+  "terminal_views": ["black-balanced", "black-balanced-plus", "black-rich", "black-vivid"],
+  "intermediate_blend_starts": [0.4, 0.7],
+  "method": "sRGB-channel blends, with normal colored entries deepened only as necessary to retain at least 1.45:1 normal/bright luminance separation. This is a sample design guard, not an accessibility target.",
+  "fixed": "Pure black background, warm off-white foreground, framing, typography and sample content. Balanced and Vivid endpoint color values verified against the preceding revision.",
+  "validation": {
+    "unit_tests": 14,
+    "browser_checks": 475,
+    "routes": 14,
+    "widths": [375, 768, 1280, 1600],
+    "javascript": ["enabled", "disabled"],
+    "browser_errors": 0,
+    "export_files": 75,
+    "checked_local_links": 422,
+    "middle_two": "Only Balanced+ and Rich remain visible; individual and all-four views also passed.",
+    "visual_review": "Wide middle-two composition and narrow Rich card inspected as HTML illustrations.",
+    "selected_identity": "Unchanged, including the generated Kitty installation fragment."
+  },
+  "report": {
+    "id": "e20a791e29548ec977ca82427d703eb3921ebe9ce07ca2568ff3bc882627cf63",
+    "url": "http://starship:8787/reports/e20a791e29548ec977ca82427d703eb3921ebe9ce07ca2568ff3bc882627cf63/design/contrast/",
+    "delivery": "HTTP bytes verified; served view controls, backgrounds and narrow layout checked in headless Chromium."
+  },
+  "remaining": "Human palette selection, native/OLED review, and subsequent canonical promotion and scoped chezmoi delivery."
+}

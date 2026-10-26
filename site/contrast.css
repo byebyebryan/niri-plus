@@ -19,7 +19,7 @@
 .study-toolbar button { border: 1px solid var(--line); background: var(--surface); color: var(--secondary); border-radius: 3px; padding: 8px 11px; font: 12px/1.4 var(--ui-family), sans-serif; min-height: 36px; }
 .study-toolbar button[aria-pressed="true"] { border-color: var(--accent); background: var(--selection); color: var(--text); }
 .study-desktop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-.study-terminal-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.study-terminal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .study-desktop-grid.is-single, .study-terminal-grid.is-single { grid-template-columns: minmax(0, 800px); justify-content: center; }
 .study-card { min-width: 0; }
 .study-card > header { padding: 12px 0 17px; }

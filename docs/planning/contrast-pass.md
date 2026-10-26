@@ -9,8 +9,8 @@ colors make terminal output and some desktop states feel hazy.
 
 - Current desktop against one crisper warm-neutral proposal, using the same
   Noto fonts, geometry, content, and connected/warning/error states.
-- Original colors on black, a balanced middle, and the preceding vivid
-  reference on black, using identical Meslo type, prompts, diffs, and output.
+- Balanced, Balanced+, Rich, and Vivid, all on black, using identical Meslo
+  type, prompts, diffs, and output. The middle two can be viewed together.
 - Equal-size, equal-weight normal/bright pair text, including 01/09, with
   calculated within-pair luminance separation.
 - All sixteen ANSI colors, normal versus bright blue, selected text, and two
@@ -22,7 +22,12 @@ The first comparison established that black resolves much of the haze; the
 remaining priority is separation within a color family. The balanced proposal
 keeps moderate color character and gives each normal entry a lighter bright
 partner. The vivid candidate remains a reference, rather than the preferred
-direction. The grey baseline remains in the earlier immutable report.
+direction in that comparison. Further feedback leans closer to Vivid, so the
+current study adds two intermediates starting at 40% and 70% sRGB-channel blends.
+Normal entries are deepened where needed to retain at least 1.45:1 pair
+separation. This is a design guard, not an accessibility target. Both endpoints
+remain unchanged. The grey and muted-on-black baselines remain in earlier
+immutable reports and the exported source baseline.
 
 `design/contrast-study.json` owns the proposal, tied to the current
 `design/identity.json` SHA-256. The builder rejects a mismatched baseline. Its

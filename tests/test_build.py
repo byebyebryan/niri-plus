@@ -31,17 +31,54 @@ class BuildContracts(unittest.TestCase):
 
     def test_component_source_map_pins_the_release_and_records_appearance_closeout(self):
         producer = json.loads((ROOT / "data/components.json").read_text())
-        self.assertEqual(producer["producer"]["version"], "0.3.0")
+        self.assertEqual(producer["producer"]["version"], "0.3.1")
         self.assertEqual(producer["producer"]["api_version"], 1)
-        self.assertEqual(producer["producer"]["archive_sha256"], "7ac7ca4494826c37e364343838681320dfa759e8a12969f07c4200f10be75d1d")
-        self.assertEqual(producer["consumer"]["final_source_revision"], "e8a11e79b3009bebf1d931c5d3e64982692e2f25")
+        self.assertEqual(producer["producer"]["source_commit"], "014a14241bd722186ae9248e71162e75cf7af7b1")
+        self.assertEqual(producer["producer"]["archive_url"], "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.3.1/niri-plus-components-0.3.1.tar.gz")
+        self.assertEqual(producer["producer"]["archive_sha256"], "868d9de46f54af9b9f563dd52cd94df9358fafaf9c9b33666c557c05d318a843")
+        self.assertEqual(producer["producer"]["manifest_sha256"], "de3e981f8bb76d2b4ccfbf7f2722e81fc9f73edf7b62de11cad55f7a209e7ed3")
+        self.assertEqual(producer["producer"]["publication_status"], "published and direct-download verified")
+        self.assertEqual(producer["producer"]["changed_payloads"], ["components/shell/p10k-custom-segments.zsh"])
+        self.assertEqual(producer["producer"]["deterministic_builds"], 2)
+        self.assertEqual(producer["consumer"]["final_source_revision"], "43d84fe54a8b07c405fc4461fda5fa14f605043e")
+        self.assertEqual(producer["consumer"]["shell_adoption_revision"], "c8e058ed491b63b734c591c6dcff2d21ede7f03e")
         appearance = producer["modules"]["appearance"]
         self.assertTrue(appearance["fleet_rollout_complete"])
         self.assertIn("converged", appearance["consumer_status"])
         self.assertEqual(producer["consumer"]["appearance_adoption_revision"], "9f2bf9689d27a5698c25c0e604a835b5370b0624")
         self.assertEqual(appearance["verified_derived_outputs_per_host"], 39)
+        self.assertEqual(appearance["native_isolated_checks"]["qualification_release"], "0.3.0")
+        self.assertIn("Historical 0.3.0 appearance qualification", appearance["evidence"])
+        self.assertIn("no toolkit, image, or physical qualification was rerun", appearance["evidence"])
+        self.assertEqual(appearance["guarded_greeter_checks"]["profiles"], 3)
+        self.assertEqual(appearance["guarded_greeter_checks"]["privileged_write_requests"], 0)
+        self.assertIn("not rerun for 0.3.1", appearance["native_isolated_checks"]["status"])
+
+        shell = producer["modules"]["shell"]
+        maintenance = shell["maintenance_acceptance"]
+        self.assertIn("4d4066b", maintenance["regression_provenance"])
+        self.assertEqual(maintenance["fixture"], {
+            "capacity_percent": 75,
+            "power": "10.0W",
+            "eta": "3:00",
+            "stderr": "empty",
+        })
+        self.assertEqual(
+            (maintenance["selected_targets_per_host"], maintenance["target_drift_per_host"], maintenance["unchanged_other_targets_per_host"]),
+            (35, 0, 34),
+        )
+        self.assertEqual(maintenance["owned_full_prompt_pty_hosts"], ["Carbon", "Starship", "Snap"])
+        self.assertEqual(maintenance["repeat_apply"], "no writes")
+        self.assertFalse(maintenance["hosts"]["carbon"]["official_prompt_target_changed"])
+        self.assertTrue(maintenance["hosts"]["carbon"]["trial_removed"])
+        self.assertTrue(maintenance["hosts"]["carbon"]["trial_bytes_match_official_payload"])
+        self.assertTrue(maintenance["hosts"]["snap"]["preexisting_package_manifest_edit_preserved"])
+
         self.assertTrue(producer["modules"]["shell"]["headless"])
         self.assertFalse(producer["modules"]["shell"]["requires_niri_or_wayland"])
+        self.assertIn("0.3.1 staging reverified", shell["runtime_cache_evidence"])
+        self.assertIn("synthetic cache layout and tamper checks", shell["runtime_cache_evidence"])
+        self.assertIn("no plugin revision changed", shell["runtime_cache_evidence"])
         self.assertIn("every loaded byte", producer["modules"]["shell"]["runtime_cache_evidence"])
         self.assertIn("alignment bytes", producer["modules"]["shell"]["runtime_cache_evidence"])
 
@@ -53,7 +90,11 @@ class BuildContracts(unittest.TestCase):
         source_map = (self.output / "components/index.html").read_text()
         self.assertIn("independent selections", source_map.lower())
         self.assertIn("private chezmoi", source_map.lower())
-        self.assertIn("Applied at adoption revision", source_map)
+        self.assertIn("0.3.1 shell maintenance acceptance", source_map.lower())
+        self.assertIn("historical 0.3.0", source_map.lower())
+        self.assertIn("014a14241bd722186ae9248e71162e75cf7af7b1", source_map)
+        self.assertIn("c8e058ed491b63b734c591c6dcff2d21ede7f03e", source_map)
+        self.assertIn("43d84fe54a8b07c405fc4461fda5fa14f605043e", source_map)
         self.assertIn("generated files keep their existing public paths", source_map.lower())
 
     def test_broken_local_anchor_is_rejected(self):

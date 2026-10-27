@@ -8,13 +8,13 @@ installer.
 
 ## Public source and example map
 
-| Module | Canonical source at the 0.3.0 producer revision | Public examples and downloads | Consumer boundary |
+| Module | Canonical source at the 0.3.1 producer revision | Public examples and downloads | Consumer boundary |
 | --- | --- | --- | --- |
-| Desktop | [`components/desktop/`](https://github.com/byebyebryan/niri-plus/tree/975eab393d2c4e920448eda888d2dc8f0242b396/components/desktop) | [`desktop-session-ready`](../examples/desktop/desktop-session-ready), [`notify-volume`](../examples/feedback/notify-volume), and [`desktop-power`](../examples/session/desktop-power) | Chezmoi supplies host admission, power policy, package choices and existing service wiring. The two session-readiness downloads come from one source. |
-| Shell | [`components/shell/`](https://github.com/byebyebryan/niri-plus/tree/975eab393d2c4e920448eda888d2dc8f0242b396/components/shell) | The [Zsh starter](../examples/terminal/zshrc), [init module](../examples/terminal/init.zsh), and [opt-in fetcher](../examples/terminal/fetch.py) | Chezmoi keeps the personal startup shim, SDK and tool setup, local defaults and history/cache paths. The shared shell also works headlessly without Niri or Wayland. |
-| Appearance | [`components/appearance/`](https://github.com/byebyebryan/niri-plus/tree/975eab393d2c4e920448eda888d2dc8f0242b396/components/appearance) | The [Rofi theme](../examples/theme/neutral-slate.rasi), [SwayNC stylesheet](../examples/theme/swaync.css), [Kitty fragment](../examples/kitty/neutral-slate.conf), and standalone [SDDM preview helper](../examples/login/derive-theme.py) | Chezmoi selects the identity and native keys, merges owned preferences, selects machines and owns root installation. |
+| Desktop | [`components/desktop/`](https://github.com/byebyebryan/niri-plus/tree/014a14241bd722186ae9248e71162e75cf7af7b1/components/desktop) | [`desktop-session-ready`](../examples/desktop/desktop-session-ready), [`notify-volume`](../examples/feedback/notify-volume), and [`desktop-power`](../examples/session/desktop-power) | Chezmoi supplies host admission, power policy, package choices and existing service wiring. The two session-readiness downloads come from one source. |
+| Shell | [`components/shell/`](https://github.com/byebyebryan/niri-plus/tree/014a14241bd722186ae9248e71162e75cf7af7b1/components/shell) | The [Zsh starter](../examples/terminal/zshrc), [init module](../examples/terminal/init.zsh), and [opt-in fetcher](../examples/terminal/fetch.py) | Chezmoi keeps the personal startup shim, SDK and tool setup, local defaults and history/cache paths. The shared shell also works headlessly without Niri or Wayland. |
+| Appearance | [`components/appearance/`](https://github.com/byebyebryan/niri-plus/tree/014a14241bd722186ae9248e71162e75cf7af7b1/components/appearance) | The [Rofi theme](../examples/theme/neutral-slate.rasi), [SwayNC stylesheet](../examples/theme/swaync.css), [Kitty fragment](../examples/kitty/neutral-slate.conf), and standalone [SDDM preview helper](../examples/login/derive-theme.py) | Chezmoi selects the identity and native keys, merges owned preferences, selects machines and owns root installation. |
 
-`components/metadata.json` at the [producer revision](https://github.com/byebyebryan/niri-plus/blob/975eab393d2c4e920448eda888d2dc8f0242b396/components/metadata.json)
+`components/metadata.json` at the [producer revision](https://github.com/byebyebryan/niri-plus/blob/014a14241bd722186ae9248e71162e75cf7af7b1/components/metadata.json)
 declares the bundle inputs, public exports and module prerequisites. The
 generated files keep their existing public paths. Their source and hashes are
 recorded in the [example manifest](../examples/manifest.json). Portable profiles
@@ -60,11 +60,11 @@ Established projects keep their implementation and release authority:
 The current producer record is [`data/components.json`](../data/components.json).
 It pins one small deterministic archive, its source commit and manifest hash:
 
-- Version: `0.3.0`, API version `1`
-- [Release archive](https://github.com/byebyebryan/niri-plus/releases/download/components-v0.3.0/niri-plus-components-0.3.0.tar.gz)
-- Source commit: [`975eab393d2c4e920448eda888d2dc8f0242b396`](https://github.com/byebyebryan/niri-plus/tree/975eab393d2c4e920448eda888d2dc8f0242b396)
-- Archive SHA-256: `7ac7ca4494826c37e364343838681320dfa759e8a12969f07c4200f10be75d1d`
-- Root `manifest.json` SHA-256: `f10fceaa07eb4e9d62e0afef9fe8339bfab09c34d8c9528db962ea4d9e67bf76`
+- Version: `0.3.1`, API version `1`
+- [Release archive](https://github.com/byebyebryan/niri-plus/releases/download/components-v0.3.1/niri-plus-components-0.3.1.tar.gz)
+- Source commit: [`014a14241bd722186ae9248e71162e75cf7af7b1`](https://github.com/byebyebryan/niri-plus/tree/014a14241bd722186ae9248e71162e75cf7af7b1)
+- Archive SHA-256: `868d9de46f54af9b9f563dd52cd94df9358fafaf9c9b33666c557c05d318a843`
+- Root `manifest.json` SHA-256: `de3e981f8bb76d2b4ccfbf7f2722e81fc9f73edf7b62de11cad55f7a209e7ed3`
 
 Adoption can start from a repository clone or from the reviewed release URL and
 digests above. A consumer verifies the archive, manifest and every listed file
@@ -82,15 +82,52 @@ The release pin is separate from other inputs and choices:
 - Host profiles and native settings remain consumer decisions. Publishing a
   module does not select it on a machine.
 
+## 0.3.1 shell maintenance acceptance
+
+The portable helper's redirection diagnostic regression was introduced in the
+[adaptation at `4d4066b`](https://github.com/byebyebryan/niri-plus/commit/4d4066b1916cf49e14d146cd4ef1a337c7e9e5da).
+Carbon normal Kitty use exposed missing optional sysfs reads on stderr even
+though the probes failed safely. Release `components-v0.3.1` fixes that Zsh
+redirection boundary; it changes only `components/shell/p10k-custom-segments.zsh`
+among 27 bundle files and was verified against two deterministic builds.
+
+The producer and consumer checks require quiet missing/empty/unterminated reads
+and an energy-only battery result of 75%, 10.0W and `3:00`. Host sysfs probes
+and owned full-prompt PTYs passed on Carbon, Starship and Snap. Each host had
+zero drift across all 35 selected targets, preserved 34 other targets, seven
+protected files, 25 protected root files and eleven service identities, and
+repeat applies made no writes. Captured process identities remained intact
+(Carbon 11, Starship 14, Snap 34). Carbon's temporary trial was removed while
+the installed prompt already matched the official payload; the user confirmed
+normal Kitty use of the trial with those same bytes. Starship and Snap changed
+only the selected prompt target. Snap's pre-existing package-manifest edit and
+installed package state were preserved.
+
+Appearance source and identity did not change in 0.3.1, and all 39 derived
+output records per host remain byte-identical to the approved 0.3.0 receipt.
+The six toolkit checks, four reviewed images and 45 pre-change/native
+comparisons remain historical 0.3.0 evidence. For 0.3.1, shell staging
+reverified the existing dependency pins and all known present Powerlevel10k
+caches on each host; no plugin revision changed. The full consumer suite reran
+synthetic cache layout/tamper checks and guarded greeter checks for three
+profiles with zero privileged-write requests. No new toolkit, image or physical
+qualification was run. Carbon's normal use is recorded for the corrected
+prompt; normal new Kitty/tmux/SSH use elsewhere and physical device acceptance
+remain separate follow-ups. Consumer shell adoption is revision
+`c8e058ed491b63b734c591c6dcff2d21ede7f03e`; the final consumer source and
+documentation revision is `43d84fe54a8b07c405fc4461fda5fa14f605043e`.
+
 ## Current adoption status
 
 | Module | Current evidence |
 | --- | --- |
 | Desktop | Deployed and converged on Carbon, Starship and Snap. Sixteen shared files matched byte-for-byte; scoped repeat runs made no writes and preserved services, processes and captured policy. |
-| Shell | Deployed and qualified on all three hosts. Owned full-prompt PTY checks passed on each; scoped repeats were no-ops and existing sessions were preserved. |
-| Appearance | Applied at adoption revision `9f2bf9689d27a5698c25c0e604a835b5370b0624`; the final verified consumer source revision is `e8a11e79b3009bebf1d931c5d3e64982692e2f25`. All three hosts converged across 35 scoped targets with zero drift; repeat runs and the greeter hook made no writes. All 39 derived outputs per host matched the approved receipt byte-for-byte, and all 45 pre-change/native comparisons passed. Native process counts (8/8/9), eleven service identities per host and package state were preserved; 25 protected root-owned files retained bytes, modes, owners and mtimes. Six isolated toolkit checks, four reviewed images and guarded greeter execution for all three profiles passed with zero privileged-write requests. No SDDM restart was needed. |
+| Shell | The 0.3.1 quiet-read correction is deployed and PTY-qualified on all three hosts; see the maintenance acceptance above for fixture results, scoped target preservation and repeat behavior. |
+| Appearance | Original qualification remains at adoption revision `9f2bf9689d27a5698c25c0e604a835b5370b0624` under producer 0.3.0. Its 39 outputs remain identical in 0.3.1; toolkit and image evidence remains historical. The 0.3.1 guarded greeter checks requested zero privileged writes. |
 
-These checkpoints are distinct. The earlier desktop delivery in
+These checkpoints are distinct. The final consumer source revision is
+`43d84fe54a8b07c405fc4461fda5fa14f605043e`; it follows shell adoption revision
+`c8e058ed491b63b734c591c6dcff2d21ede7f03e`. The earlier desktop delivery in
 [`data/setup.json`](../data/setup.json) remains its dated record; it does not
 stand in for qualification or rollout of the current shared appearance
 consumer. The same rule applies to source parity, package verification and

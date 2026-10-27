@@ -13,13 +13,13 @@ accepted scope; current producer and consumer status is summarized here.
 | A. Desktop source and bundle | Complete | Public desktop module and reproducible exports are included in the versioned bundle. |
 | B. Desktop consumer | Complete | Deployed on Carbon, Starship and Snap; 16 shared files matched byte-for-byte, scoped repeats were no-ops, and services, processes and captured policy were preserved. |
 | C. Shared shell candidate | Complete | Shared init/finish, prompt and dependency pins are published; the personal shim remains in chezmoi. |
-| D. Shell consumer | Complete | Applied and PTY-qualified on all three hosts; repeat applies were no-ops and existing sessions were preserved. The cache verifier validates known `.zwc` headers/layouts and compares every loaded byte and mode with a fresh native Zsh compilation, normalizing only validated unused alignment padding. |
-| E. Appearance reconciliation | Complete | The [0.3.0 producer record](../../data/components.json) pins the verified archive, appearance adoption revision and final consumer source revision. All three hosts converged across 35 scoped targets with zero drift; repeated runs made no writes. All 39 derived outputs per host matched the approved receipt, and all 45 pre-change/native comparisons passed. Six toolkit checks, four reviewed images and guarded greeter execution for all profiles passed with zero privileged-write requests. Native processes, service identities, packages and protected root files were preserved. |
+| D. Shell consumer | Complete | The 0.3.1 quiet-read correction is deployed and PTY-qualified on all three hosts. Energy-only and host-sysfs probes passed; scoped repeats made no writes and existing sessions were preserved. Staging reverified existing dependency pins and present caches; the full consumer suite reran synthetic cache layout/tamper checks without changing plugin revisions. |
+| E. Appearance reconciliation | Complete | The [0.3.1 producer record](../../data/components.json) pins the verified archive and records consumer adoption. Appearance source and identity are unchanged from 0.3.0; all 39 derived outputs per host remain identical. The earlier toolkit, reviewed-image and native-comparison evidence is explicitly historical 0.3.0 qualification; the 0.3.1 consumer suite separately reran guarded greeter checks for all profiles with zero privileged-write requests. |
 | F. Public ownership map | Complete | The [component source map](../components.md) and [producer record](../../data/components.json) identify the canonical owners, immutable bundle, personal consumer boundary and deployment evidence. |
 
 `data/setup.json` remains the dated record of the earlier desktop and utility
-delivery. Current shared appearance qualification and rollout are recorded in
-the [producer record](../../data/components.json).
+delivery. The 0.3.1 shell maintenance adoption and historical appearance evidence
+are recorded in the [producer record](../../data/components.json).
 
 ## Outcome
 
@@ -192,10 +192,11 @@ their own `.zshrc`. The normal `compinit` security audit remains enabled. The
 optional-tools case still omits unrelated tools and devices. Normal use on
 Carbon disproved the earlier CI-only interpretation: Zsh 5.9.2 reported
 missing optional sysfs reads on stderr even though the probes failed safely.
-The producer regression now exercises missing, empty and unterminated reads
-and requires quiet stderr with an energy-only battery fixture. The earlier
-fleet rollout's quiet observation did not establish quiet behavior for all
-optional reads.
+The 0.3.1 producer regression exercises missing, empty and unterminated reads
+and requires quiet stderr with an energy-only battery fixture. Consumer fixture,
+real-sysfs and owned full-prompt PTY checks passed on all three hosts. The
+earlier fleet rollout's quiet observation remains historical and did not
+establish quiet behavior for all optional reads.
 
 Keep prompt files at their existing managed paths where possible; a new shared
 entry file can live alongside them. Existing shells, tmux clients and provider

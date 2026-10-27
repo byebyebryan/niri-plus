@@ -2,13 +2,18 @@
   "schema_version": 1,
   "producer": {
     "repository": "https://github.com/byebyebryan/niri-plus",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "api_version": 1,
-    "source_commit": "975eab393d2c4e920448eda888d2dc8f0242b396",
-    "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.3.0/niri-plus-components-0.3.0.tar.gz",
-    "archive_sha256": "7ac7ca4494826c37e364343838681320dfa759e8a12969f07c4200f10be75d1d",
-    "manifest_sha256": "f10fceaa07eb4e9d62e0afef9fe8339bfab09c34d8c9528db962ea4d9e67bf76",
-    "publication_status": "published and direct-download verified"
+    "source_commit": "014a14241bd722186ae9248e71162e75cf7af7b1",
+    "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.3.1/niri-plus-components-0.3.1.tar.gz",
+    "archive_sha256": "868d9de46f54af9b9f563dd52cd94df9358fafaf9c9b33666c557c05d318a843",
+    "manifest_sha256": "de3e981f8bb76d2b4ccfbf7f2722e81fc9f73edf7b62de11cad55f7a209e7ed3",
+    "publication_status": "published and direct-download verified",
+    "bundle_files": 27,
+    "changed_payloads": [
+      "components/shell/p10k-custom-segments.zsh"
+    ],
+    "deterministic_builds": 2
   },
   "identity": {
     "path": "design/identity.json",
@@ -17,7 +22,8 @@
     "selection_owner": "private chezmoi consumer; independent of the code bundle pin"
   },
   "consumer": {
-    "final_source_revision": "e8a11e79b3009bebf1d931c5d3e64982692e2f25",
+    "final_source_revision": "43d84fe54a8b07c405fc4461fda5fa14f605043e",
+    "shell_adoption_revision": "c8e058ed491b63b734c591c6dcff2d21ede7f03e",
     "appearance_adoption_revision": "9f2bf9689d27a5698c25c0e604a835b5370b0624"
   },
   "modules": {
@@ -36,9 +42,65 @@
       "examples": [
         "examples/terminal/"
       ],
-      "consumer_status": "deployed and PTY-qualified on Carbon, Starship, and Snap",
-      "evidence": "Owned full-prompt PTY checks passed on all three hosts; scoped repeats were no-ops and existing sessions were preserved.",
-      "runtime_cache_evidence": "The private verifier validates each known Powerlevel10k .zwc single-file header and layout, then compares every loaded byte and mode against a fresh compilation. Only validated 0-3 unused alignment bytes at the end of each endian half are normalized. Extra caches and loaded-byte, metadata, or mode changes are rejected; upstream caching is retained.",
+      "consumer_status": "0.3.1 correction deployed and qualified on Carbon, Starship, and Snap",
+      "evidence": "The Zsh file-redirection diagnostic regression in the public portable read helper was corrected in 0.3.1. Quiet energy-only and real-sysfs probes and owned full-prompt PTY checks passed on all three hosts. The Carbon trial was removed while its official prompt target remained byte-identical; Starship and Snap changed only the selected prompt. All 35 selected targets have zero drift and repeats made no writes.",
+      "runtime_cache_evidence": "0.3.1 staging reverified the existing pinned dependencies and all known present Powerlevel10k .zwc caches on each host; no plugin revision changed. The verifier checks each single-file header and layout, then compares every loaded byte and mode against a fresh compilation, normalizing only validated 0-3 unused alignment bytes at the end of each endian half. The full consumer suite also reran synthetic cache layout and tamper checks.",
+      "maintenance_acceptance": {
+        "regression_provenance": "The public portable read-helper form introduced the redirection diagnostic regression in 4d4066b; Carbon normal use exposed stderr that prior startup and battery-value checks had not covered.",
+        "fixture": {
+          "capacity_percent": 75,
+          "power": "10.0W",
+          "eta": "3:00",
+          "stderr": "empty"
+        },
+        "quiet_real_sysfs_probe": true,
+        "owned_full_prompt_pty_hosts": [
+          "Carbon",
+          "Starship",
+          "Snap"
+        ],
+        "repeat_apply": "no writes",
+        "selected_targets_per_host": 35,
+        "target_drift_per_host": 0,
+        "unchanged_other_targets_per_host": 34,
+        "protected_files_per_host": 7,
+        "protected_root_files_per_host": 25,
+        "service_identities_preserved_per_host": 11,
+        "native_processes_preserved": {
+          "carbon": 11,
+          "starship": 14,
+          "snap": 34
+        },
+        "hosts": {
+          "carbon": {
+            "real_sysfs_battery": "available",
+            "official_prompt_target_changed": false,
+            "trial_removed": true,
+            "trial_bytes_match_official_payload": true,
+            "normal_use": "User-confirmed normal Kitty use exercised the trial fix with bytes identical to the official 0.3.1 payload."
+          },
+          "starship": {
+            "real_sysfs_battery": "unavailable",
+            "official_prompt_target_changed": true,
+            "only_prompt_target_changed": true
+          },
+          "snap": {
+            "real_sysfs_battery": "available",
+            "official_prompt_target_changed": true,
+            "only_prompt_target_changed": true,
+            "preexisting_package_manifest_edit_preserved": true,
+            "installed_package_state_preserved": true
+          }
+        },
+        "final_consumer_source_revision": "43d84fe54a8b07c405fc4461fda5fa14f605043e",
+        "shell_adoption_revision": "c8e058ed491b63b734c591c6dcff2d21ede7f03e",
+        "source_status": {
+          "carbon": "clean",
+          "starship": "clean",
+          "snap": "pre-existing package-manifest edit preserved"
+        },
+        "other_normal_use": "Normal new Kitty, tmux, and SSH use on Starship and Snap remains a separate human follow-up."
+      },
       "headless": true,
       "requires_niri_or_wayland": false,
       "startup_installer": false
@@ -50,17 +112,23 @@
         "examples/kitty/neutral-slate.conf",
         "examples/login/derive-theme.py"
       ],
-      "consumer_status": "deployed and converged on Carbon, Starship, and Snap",
-      "evidence": "Thirty-five scoped targets converged with zero drift and repeat runs made no writes. All 39 derived outputs per host matched the same approved receipt byte-for-byte; all 45 pre-change/native comparisons passed. Native process counts (8/8/9), eleven service identities per host, package state, and 25 protected root-owned files with their bytes, modes, ownership, and mtimes were preserved. The greeter hook repeat made no writes; no SDDM restart was needed. Guarded greeter execution passed for all three host profiles with zero privileged-write requests; six isolated toolkit checks and four reviewed images passed.",
+      "consumer_status": "deployed and converged on Carbon, Starship, and Snap; unchanged by 0.3.1",
+      "evidence": "Historical 0.3.0 appearance qualification: thirty-five scoped targets converged with zero drift and repeat runs made no writes; all 39 derived outputs per host matched the approved receipt and all 45 pre-change/native comparisons passed. Native process counts (8/8/9), eleven service identities per host, package state, and 25 protected root-owned files with their bytes, modes, ownership, and mtimes were preserved. The greeter hook repeat made no writes; no SDDM restart was needed. Six isolated toolkit checks and four reviewed images are historical 0.3.0 evidence. In 0.3.1, appearance source and identity were unchanged and all 39 output records per host remained byte-identical. The full consumer suite separately reran guarded greeter checks for three profiles with zero privileged-write requests; no toolkit, image, or physical qualification was rerun.",
       "native_isolated_checks": {
-        "status": "passed",
+        "qualification_release": "0.3.0",
+        "status": "historical 0.3.0 toolkit/image evidence; not rerun for 0.3.1",
         "toolkit_checks": 6,
-        "reviewed_images": 4,
-        "guarded_greeter_profiles": 3,
+        "reviewed_images": 4
+      },
+      "guarded_greeter_checks": {
+        "consumer_source_revision": "c8e058ed491b63b734c591c6dcff2d21ede7f03e",
+        "profiles": 3,
+        "status": "passed in the full consumer suite",
         "privileged_write_requests": 0
       },
       "verified_derived_outputs_per_host": 39,
       "pre_change_native_comparisons": 45,
+      "pre_change_native_comparisons_release": "0.3.0",
       "fleet_rollout_complete": true
     }
   },

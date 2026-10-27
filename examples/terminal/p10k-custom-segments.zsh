@@ -12,7 +12,7 @@ zmodload zsh/datetime 2>/dev/null
 typeset -gi __p10k_bt_cache_until=0 __p10k_bt_cache_available=0
 typeset -gi __p10k_net_cache_until=0 __p10k_net_cache_available=0
 typeset -gi __p10k_bat_cache_until=0 __p10k_bat_cache_available=0
-typeset -gi __p10k_color=252
+typeset -gi __p10k_color=15
 typeset -g __P10K_SYS_PREV_TOTAL= __P10K_SYS_PREV_IDLE_ALL=
 typeset -gi __P10K_CPU_SMOOTH_PCT=-1
 

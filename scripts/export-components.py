@@ -3,6 +3,7 @@
 
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path, PurePosixPath
 import sys
@@ -24,7 +25,7 @@ def read_component(root, relative_path):
     return current.read_bytes()
 
 
-def generated_record(spec, data, version, module):
+def generated_record(spec, data, version, module, generated_from=None, identity_sha256=None):
     record = {
         "path": spec["path"],
         "sha256": hashlib.sha256(data).hexdigest(),
@@ -32,7 +33,7 @@ def generated_record(spec, data, version, module):
         "module": module,
         "generated": True,
         "generated_by": GENERATOR,
-        "generated_from": spec["component"],
+        "generated_from": generated_from or spec["component"],
         "component_version": version,
         "source": f"Niri Plus {module} component module",
     }
@@ -40,7 +41,27 @@ def generated_record(spec, data, version, module):
         record["profile"] = spec["profile"]
     if "notes" in spec:
         record["notes"] = spec["notes"]
+    if identity_sha256 is not None:
+        record["identity_sha256"] = identity_sha256
     return record
+
+
+def load_appearance_renderer(root):
+    renderer_path = Path(root) / "components/appearance/render.py"
+    spec = importlib.util.spec_from_file_location("niri_plus_public_appearance_renderer", renderer_path)
+    if spec is None or spec.loader is None:
+        raise ValueError("could not load the canonical appearance renderer")
+    renderer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(renderer)
+    return renderer.render
+
+
+def validate_export_path(destination):
+    if not isinstance(destination, str) or not destination.startswith("examples/") or "\\" in destination:
+        raise ValueError(f"invalid example export path: {destination!r}")
+    normalized = PurePosixPath(destination)
+    if normalized.is_absolute() or normalized.as_posix() != destination or ".." in normalized.parts:
+        raise ValueError(f"example export path must be normalized and relative: {destination!r}")
 
 
 def render(root=ROOT):
@@ -61,11 +82,7 @@ def render(root=ROOT):
             raise ValueError("each export must define path and component, with optional profile/notes")
         destination = spec["path"]
         component = spec["component"]
-        if not isinstance(destination, str) or not destination.startswith("examples/") or "\\" in destination:
-            raise ValueError(f"invalid example export path: {destination!r}")
-        normalized = PurePosixPath(destination)
-        if normalized.is_absolute() or normalized.as_posix() != destination or ".." in normalized.parts:
-            raise ValueError(f"example export path must be normalized and relative: {destination!r}")
+        validate_export_path(destination)
         if destination in output_files:
             raise ValueError(f"duplicate example export path: {destination}")
         if not isinstance(component, str) or component not in component_paths:
@@ -80,6 +97,39 @@ def render(root=ROOT):
         data = read_component(root, component)
         output_files[destination] = data
         records.append(generated_record(spec, data, metadata["version"], component_modules[component]))
+
+    appearance_exports = metadata.get("appearance_exports")
+    if not isinstance(appearance_exports, list) or not appearance_exports:
+        raise ValueError("components/metadata.json appearance_exports must be a non-empty list")
+    identity_path = root / "design/identity.json"
+    identity_bytes = identity_path.read_bytes()
+    identity = json.loads(identity_bytes)
+    appearance = load_appearance_renderer(root)(identity)
+    identity_sha256 = hashlib.sha256(identity_bytes).hexdigest()
+    appearance_seen = set()
+    for spec in appearance_exports:
+        if not isinstance(spec, dict) or not {"path", "artifact"} <= set(spec) or set(spec) - {"path", "artifact", "notes"}:
+            raise ValueError("each appearance export must define path and artifact, with optional notes")
+        destination = spec["path"]
+        artifact = spec["artifact"]
+        validate_export_path(destination)
+        if destination in output_files or destination in appearance_seen:
+            raise ValueError(f"duplicate appearance export path: {destination}")
+        if not isinstance(artifact, str) or artifact not in appearance:
+            raise ValueError(f"appearance export {destination} refers to unknown artifact {artifact!r}")
+        if "notes" in spec and not isinstance(spec["notes"], str):
+            raise ValueError(f"invalid appearance export notes for {destination}")
+        data = appearance[artifact].encode("utf-8")
+        output_files[destination] = data
+        records.append(generated_record(
+            spec,
+            data,
+            metadata["version"],
+            "appearance",
+            generated_from=f"components/appearance/render.py#{artifact}",
+            identity_sha256=identity_sha256,
+        ))
+        appearance_seen.add(destination)
 
     manifest_data = json.loads((root / MANIFEST).read_text(encoding="utf-8"))
     if not isinstance(manifest_data, dict) or not isinstance(manifest_data.get("files"), list):

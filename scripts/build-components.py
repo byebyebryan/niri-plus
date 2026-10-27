@@ -21,10 +21,12 @@ SUPPORTED_MODES = {0o644, 0o755}
 def load_metadata(root=ROOT):
     metadata_path = Path(root) / METADATA
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    if not isinstance(metadata, dict) or set(metadata) != {"version", "modules", "files", "exports"}:
-        raise ValueError("components/metadata.json must define version, modules, files, and exports")
+    if not isinstance(metadata, dict) or set(metadata) != {"version", "modules", "files", "exports", "appearance_exports"}:
+        raise ValueError("components/metadata.json must define version, modules, files, exports, and appearance_exports")
     if not isinstance(metadata["version"], str) or not VERSION.fullmatch(metadata["version"]):
         raise ValueError("component version must be a numeric major.minor.patch value")
+    if not isinstance(metadata["appearance_exports"], list):
+        raise ValueError("appearance_exports must be a list")
 
     modules = metadata["modules"]
     if not isinstance(modules, dict) or not modules:

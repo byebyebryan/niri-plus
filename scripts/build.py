@@ -13,11 +13,16 @@ import posixpath
 import re
 import shutil
 from string import Template
+import sys
 from urllib.parse import unquote, urljoin, urlsplit
 
 from markdown_it import MarkdownIt
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from components.appearance.render import render as render_appearance
+
 SITE = "https://dev.byebyebryan.com/niri-plus/"
 BASE = urlsplit(SITE).path
 PAGES = {
@@ -57,22 +62,24 @@ def working_identity(source_path="design/identity.json"):
 
 
 def kitty_fragment(identity):
-    terminal = identity["terminal"]
-    lines = ["# Niri Plus / Neutral Slate - Balanced+ terminal appearance.", "# Generated from design/identity.json; preserve your existing Kitty behavior."]
-    lines += [f"{option} {color}" for option, color in terminal["colors"].items()]
-    lines += [f'background_opacity {terminal["background_opacity"]}']
-    lines += [f"color{index} {color}" for index, color in enumerate(terminal["ansi"])]
-    return "\n".join(lines) + "\n"
+    return render_appearance(_appearance_identity(identity))["kitty-neutral-slate.conf"]
 
 
 def identity_css(identity):
-    colors = identity["direction"]["colors"]
-    roles = {"bg": "canvas", "canvas": "canvas", "surface": "surface", "raised": "raised", "input": "input", "line": "separator", "border": "border", "text": "text", "secondary": "secondary", "muted": "muted", "blue": "accent", "accent": "accent", "accent-ink": "accent_ink", "focus": "focus", "selection": "selection", "selection-text": "selection_text", "green": "success", "success": "success", "warning": "warning", "error": "error", "secure-surface": "secure_surface", "secure-input": "secure_input", "secure-button": "secure_button"}
-    values = ";".join(f"--{name}:{colors[role]}" for name, role in roles.items())
-    values += f';--ui-family:"{identity["direction"]["ui_font"]}";--mono-family:"{identity["direction"]["mono_font"]}"'
-    values += ";" + ";".join(f"--ansi-{i}:{c}" for i, c in enumerate(identity["terminal"]["ansi"]))
-    values += ";" + ";".join(f"--terminal-{key.replace('_', '-')}:{color}" for key, color in identity["terminal"]["colors"].items())
-    return "/* Generated from design/identity.json */\n:root{" + values + "}\n"
+    return render_appearance(_appearance_identity(identity))["identity.css"]
+
+
+def _appearance_identity(identity):
+    if "candidates" in identity:
+        return identity
+    return {
+        "schema_version": identity["schema_version"],
+        "status": "selected",
+        "selected_candidate": identity["selected_candidate"],
+        "candidates": [identity["direction"]],
+        "shared": identity["shared"],
+        "terminal": identity["terminal"],
+    }
 
 
 def identity_palette():

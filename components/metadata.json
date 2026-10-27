@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "modules": {
     "desktop": {
       "prerequisites": [
@@ -14,6 +14,12 @@
         "Python 3.10 or newer for the opt-in dependency fetcher",
         "Linux proc/sys interfaces are optional; missing inputs hide their prompt segments",
         "GitHub codeload access is needed only when the fetcher is run"
+      ]
+    },
+    "appearance": {
+      "prerequisites": [
+        "Python 3.11 or newer for schema-2 appearance rendering and SDDM derivation",
+        "An unpacked, separately pinned SDDM theme tree is required only for greeter derivation"
       ]
     }
   },
@@ -40,7 +46,11 @@
     { "path": "components/shell/p10k-custom-segments.zsh", "module": "shell" },
     { "path": "components/shell/p10k.zsh", "module": "shell" },
     { "path": "components/shell/pins.json", "module": "shell" },
-    { "path": "components/shell/zshrc", "module": "shell" }
+    { "path": "components/shell/zshrc", "module": "shell" },
+    { "path": "components/appearance/__init__.py", "module": "appearance" },
+    { "path": "components/appearance/ini_merge.py", "module": "appearance" },
+    { "path": "components/appearance/render.py", "module": "appearance" },
+    { "path": "components/appearance/sddm.py", "module": "appearance" }
   ],
   "exports": [
     { "path": "examples/clipboard/config", "component": "components/desktop/config/cliphist/config" },
@@ -63,6 +73,11 @@
     { "path": "examples/desktop/niri-plus-session.desktop", "component": "components/desktop/share/applications/niri-plus-session.desktop" },
     { "path": "examples/feedback/notify-brightness", "component": "components/desktop/bin/notify-brightness" },
     { "path": "examples/feedback/notify-volume", "component": "components/desktop/bin/notify-volume" },
+    {
+      "path": "examples/login/derive-theme.py",
+      "component": "components/appearance/sddm.py",
+      "notes": "Standalone, generated SDDM preview helper; requires the pinned upstream theme tree and schema-2 identity, and never installs or activates the theme."
+    },
     { "path": "examples/session/desktop-battery.service", "component": "components/desktop/systemd/user/desktop-battery.service" },
     { "path": "examples/session/desktop-idle.service", "component": "components/desktop/systemd/user/desktop-idle.service" },
     {
@@ -92,5 +107,47 @@
     { "path": "examples/terminal/p10k.zsh", "component": "components/shell/p10k.zsh" },
     { "path": "examples/terminal/pins.json", "component": "components/shell/pins.json" },
     { "path": "examples/terminal/zshrc", "component": "components/shell/zshrc" }
+  ],
+  "appearance_exports": [
+    {
+      "path": "examples/theme/NeutralSlate.colors",
+      "artifact": "NeutralSlate.colors",
+      "notes": "Generated KDE color groups; keep unrelated kdeglobals groups and font preferences. not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/gtklock.css",
+      "artifact": "gtklock.css",
+      "notes": "Password-form appearance only; authentication and lock-service ownership remain separate. not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/neutral-slate.rasi",
+      "artifact": "neutral-slate.rasi",
+      "notes": "Rofi appearance only; existing actions and launcher behavior remain separately owned. not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/niri-neutral-slate.kdl",
+      "artifact": "niri-neutral-slate.kdl",
+      "notes": "Canvas and focus-ring appearance fragment for the existing Niri layout block. not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/qt5-palette.conf",
+      "artifact": "qt5-palette.conf",
+      "notes": "Qt 5 QPalette colors only; style and dialog preferences remain separately owned. not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/qt6-palette.conf",
+      "artifact": "qt6-palette.conf",
+      "notes": "Qt 6 QPalette colors only; style and dialog preferences remain separately owned. not a deployed artifact."
+    },
+    {
+      "path": "examples/theme/swaync.css",
+      "artifact": "swaync.css",
+      "notes": "CSS for the selected SwayNC fork; notification behavior remains separately owned. not a deployed artifact."
+    },
+    {
+      "path": "examples/kitty/neutral-slate.conf",
+      "artifact": "kitty-neutral-slate.conf",
+      "notes": "Selected Balanced+ terminal colors only; existing Kitty behavior remains separately owned."
+    }
   ]
 }

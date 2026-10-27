@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "components": {
+    "version": "0.3.1",
+    "api_version": 1,
+    "source_commit": "014a14241bd722186ae9248e71162e75cf7af7b1",
+    "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.3.1/niri-plus-components-0.3.1.tar.gz",
+    "archive_sha256": "868d9de46f54af9b9f563dd52cd94df9358fafaf9c9b33666c557c05d318a843",
+    "manifest_sha256": "de3e981f8bb76d2b4ccfbf7f2722e81fc9f73edf7b62de11cad55f7a209e7ed3"
+  },
+  "identity": {
+    "source_path": "design/identity.json",
+    "sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
+  },
+  "public_source": {
+    "repository": "https://github.com/byebyebryan/niri-plus.git",
+    "commit": "b62df460884b5a4d5e8c7eeb05c132a0b26814ae",
+    "assets": [
+      "design/identity.json",
+      "examples/niri/config.kdl",
+      "examples/portals/niri-portals.conf"
+    ]
+  },
+  "google_chrome_aur": {
+    "repository": "https://aur.archlinux.org/google-chrome.git",
+    "commit": "f0071e0692f4545bcb3e0881ea60c031a9f99343",
+    "version": "156.0.8078.47"
+  }
+}

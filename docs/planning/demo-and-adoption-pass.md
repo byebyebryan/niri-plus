@@ -4,7 +4,7 @@ Revised planning draft, 2026-10-27. Capture and recording come first, followed
 by the full desktop demonstrations and a reader-facing installation walkthrough.
 Virtualization is a retained Starship workstation capability, with VMs used on
 demand and no chezmoi integration for the host tooling.
-Execution started on 2026-10-27 for the host/Arch capture pilot only; see the
+The host/Arch capture pilot completed on 2026-10-27; see the
 [pilot receipt](capture-pilot-receipt.md). Full installation rehearsal, site
 implementation and rollout have not started. Rofi controls remain a separate
 candidate for the following design pass.
@@ -13,8 +13,8 @@ Arch pilot or core media.
 
 ## Immediate milestone
 
-The next implementation pass delivers one current-theme desktop screenshot and
-a 15-30 second browser/terminal clip from the VM, with recorded public inputs
+The first implementation pass delivered one current-theme desktop screenshot and
+a 24.5-second browser/terminal clip from the VM, with recorded public inputs
 and a short assembly/capture receipt. Inspect the result locally on Starship
 for readable text, current colors/fonts, coherent navigation and smooth recording before
 expanding the setup. The [capture-first VM plan](vm-reference-environment.md)

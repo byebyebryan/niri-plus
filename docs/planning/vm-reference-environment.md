@@ -6,9 +6,10 @@ recording first. Use one
 shared libvirt NAT network for that guest and later Ubuntu/Debian trials. Full
 desktop demonstrations and the installation walkthrough remain later milestones.
 Viewing, interaction and playback review take place locally on Starship.
-Execution started on 2026-10-27. The host tools, shared network and clean Arch
-baseline are now established; desktop assembly and capture qualification are
-in progress. See the [pilot receipt](capture-pilot-receipt.md) for measured state.
+Phases 1-2 completed on 2026-10-27: host tools, shared networking, clean Arch
+baseline and the native screenshot/recording pilot are established. The guest
+is stopped and retained. See the [pilot receipt](capture-pilot-receipt.md) for
+measured state, the browser preview and remaining acceptance boundaries.
 
 This is the environment workstream of the
 [demonstration and adoption plan](demo-and-adoption-pass.md). No chezmoi
@@ -23,7 +24,8 @@ no deadline to delete the lab after capture or installation testing.
 
 ## Next implementation milestone
 
-The next pass ends with a usable capture pilot, not the entire workstream.
+The first implementation pass ended with a usable capture pilot. The contract
+below records that completed slice; later milestones remain separate.
 
 | Needed for the pilot | Outside the pilot |
 | --- | --- |
@@ -417,5 +419,5 @@ newly added packages, retaining tools that have acquired another use. Existing
 dnsmasq, Docker and desktop packages are not lab-owned. Keeping the hypervisor,
 shared network and useful guests installed is the default after this pass.
 
-The active implementation slice is phases 1-2 only. Later distro trials,
-complete installation acceptance and site publication remain separate work.
+Phases 1-2 are delivered. Later distro trials, complete installation acceptance
+and public-site publication remain separate work.

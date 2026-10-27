@@ -189,10 +189,13 @@ system `Completion` and `Misc` function trees into an owned mode-0700 path.
 Fixture shells use only that `FPATH`; noninteractive checks reset it after
 `zshenv`, while owned interactive checks use `-d` and reset it at the start of
 their own `.zshrc`. The normal `compinit` security audit remains enabled. The
-optional-tools case still omits unrelated tools and devices. Ubuntu Zsh 5.9
-also reports missing optional sysfs reads on stderr, although the probes fail
-safely and the shell check completes. The selected fleet's Zsh 5.9.2 rollout
-was quiet; this CI-only observation did not change the released shell payload.
+optional-tools case still omits unrelated tools and devices. Normal use on
+Carbon disproved the earlier CI-only interpretation: Zsh 5.9.2 reported
+missing optional sysfs reads on stderr even though the probes failed safely.
+The producer regression now exercises missing, empty and unterminated reads
+and requires quiet stderr with an energy-only battery fixture. The earlier
+fleet rollout's quiet observation did not establish quiet behavior for all
+optional reads.
 
 Keep prompt files at their existing managed paths where possible; a new shared
 entry file can live alongside them. Existing shells, tmux clients and provider

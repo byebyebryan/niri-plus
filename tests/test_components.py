@@ -137,7 +137,7 @@ class ComponentContracts(unittest.TestCase):
             ]
             subprocess.run(command, check=True, capture_output=True, text=True)
             receipt = json.loads((output / "manifest.json").read_text())
-            self.assertEqual(receipt["renderer_version"], "0.3.0")
+            self.assertEqual(receipt["renderer_version"], "0.3.1")
             self.assertEqual(receipt["identity_sha256"], hashlib.sha256(identity.read_bytes()).hexdigest())
             self.assertEqual(set(receipt["code_sha256"]), {
                 "components/appearance/__init__.py",

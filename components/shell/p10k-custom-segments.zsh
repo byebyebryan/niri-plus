@@ -120,7 +120,9 @@ function _battery_icon() {
 # Reads a single-value virtual file without surfacing transient kernel/sysfs errors.
 function _read_file_quiet() {
   local file="$1" value
-  IFS= read -r value 2>/dev/null < "$file" || [[ -n "$value" ]] || return 1
+  # Zsh reports failed input redirections outside the command's own stderr.
+  # Redirect the enclosing group so absent or disappearing sysfs files stay quiet.
+  { IFS= read -r value < "$file"; } 2>/dev/null || [[ -n "$value" ]] || return 1
   [[ -n "$value" ]] || return 1
   print -r -n -- "$value"
 }

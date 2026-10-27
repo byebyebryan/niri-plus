@@ -902,9 +902,16 @@ niri_plus_shell_finish
         put(proc / "stat", "cpu 100 0 100 800 0 0 0 0\n")
         put(proc / "cpuinfo", "processor : 0\n")
         put(sysroot / "devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "3300000\n")
+        # Energy-based battery drivers can omit scope/current/charge files.
+        # Match that layout and require quiet fallback on every prompt refresh.
+        ac = sysroot / "class/power_supply/AC"
+        put(ac / "type", "Mains\n")
+        put(ac / "online", "1\n")
         battery = sysroot / "class/power_supply/BAT0"
-        for field, value in (("type", "Battery"), ("scope", "System"), ("capacity", "75"), ("status", "Discharging"), ("power_now", "10000000"), ("energy_now", "30000000"), ("energy_full", "40000000")):
+        for field, value in (("type", "Battery"), ("capacity", "75"), ("status", "Discharging"), ("power_now", "10000000"), ("energy_now", "30000000"), ("energy_full", "40000000")):
             put(battery / field, value + "\n")
+        put(bundle / "empty-value", "")
+        put(bundle / "unterminated-value", "  42\\watts  ")
         shell_env = os.environ.copy()
         shell_env.update(
             {
@@ -941,8 +948,13 @@ _detect_cpu || exit 34
 _detect_network || exit 37
 [[ "$__p10k_net_type" == off ]] || exit 38
 _detect_bluetooth && exit 39
+if value="$(_read_file_quiet "{bundle / 'missing-value'}")"; then exit 66; fi
+[[ -z "$value" ]] || exit 67
+if value="$(_read_file_quiet "{bundle / 'empty-value'}")"; then exit 68; fi
+[[ -z "$value" ]] || exit 69
+[[ "$(_read_file_quiet "{bundle / 'unterminated-value'}")" == '  42\\watts  ' ]] || exit 70
 _detect_battery || exit 40
-[[ "$__p10k_bat_cap" == 75 && "$__p10k_bat_eta" == 3:00 ]] || exit 41
+[[ "$__p10k_bat_cap" == 75 && "$__p10k_bat_eta" == 3:00 && "$__p10k_bat_power_str" == 10.0W ]] || exit 41
 [[ "$HISTFILE" == "$XDG_STATE_HOME/zsh/history" ]] || exit 42
 [[ "${{options[sharehistory]}}" == on && "${{options[histverify]}}" == on ]] || exit 58
 (( HISTSIZE == 100000 && SAVEHIST == 100000 )) || exit 59
@@ -973,6 +985,7 @@ print -r -- "HUMAN:$POWERLEVEL9K_DIR_FOREGROUND:$POWERLEVEL9K_VCS_CLEAN_FOREGROU
 '''
         started = time.perf_counter()
         result = zsh_run(zsh, code, shell_env)
+        require(result.stderr == "", f"optional prompt inputs leaked errors to the terminal: {result.stderr}")
         probe_ms = (time.perf_counter() - started) * 1000
         require("HUMAN:4:2:3:6:1:2:9" in result.stdout, "portable prompt did not use selected Neutral Slate ANSI role indexes")
         refresh_ms = float(next(line.split(":", 1)[1] for line in result.stdout.splitlines() if line.startswith("PROBE_MS:")))

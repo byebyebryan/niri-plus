@@ -42,6 +42,16 @@ def put(path: Path, text: str, *, executable: bool = False) -> None:
         path.chmod(0o755)
 
 
+def expose_zsh_audit_commands(path: Path) -> None:
+    """Keep distro compinit's security audit usable in restricted PATH tests."""
+    for name in ("getent", "grep"):
+        command = shutil.which(name)
+        require(command is not None, f"{name} is required by the system Zsh completion audit")
+        link = path / name
+        if not link.exists():
+            link.symlink_to(command)
+
+
 def zsh_run(zsh: str, code: str, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
     result = subprocess.run([zsh, "-c", code], text=True, capture_output=True, env=env, timeout=20)
     if result.returncode:
@@ -96,6 +106,7 @@ niri_plus_shell_finish
 
     test_bin = bundle / "interactive-bin"
     test_bin.mkdir()
+    expose_zsh_audit_commands(test_bin)
     mkdir = shutil.which("mkdir")
     mv = shutil.which("mv")
     sleep = shutil.which("sleep")
@@ -260,6 +271,7 @@ def check_watcher_mode_transitions(zsh: str, bundle: Path, home: Path, xdg: Path
 
     test_bin = bundle / "transition-bin"
     test_bin.mkdir()
+    expose_zsh_audit_commands(test_bin)
     mkdir = shutil.which("mkdir")
     mv = shutil.which("mv")
     sleep = shutil.which("sleep")
@@ -732,6 +744,7 @@ def main() -> int:
             put(install / "plugins" / directory / file, content)
         test_bin = bundle / "human-bin"
         test_bin.mkdir()
+        expose_zsh_audit_commands(test_bin)
         mkdir = shutil.which("mkdir")
         mv = shutil.which("mv")
         require(mkdir is not None and mv is not None, "mkdir and mv are required for isolated startup")
@@ -841,6 +854,7 @@ print -r -- "HUMAN:$POWERLEVEL9K_DIR_FOREGROUND:$POWERLEVEL9K_VCS_CLEAN_FOREGROU
         shutil.copyfile(TERMINAL / "p10k-custom-segments.zsh", missing_install / "p10k-custom-segments.zsh")
         missing_env = shell_env | {"PATH": str(test_bin / "empty-path"), "NIRI_PLUS_TEST_PLUGIN_ORDER": str(bundle / "missing-order")}
         (test_bin / "empty-path").mkdir()
+        expose_zsh_audit_commands(test_bin / "empty-path")
         (test_bin / "empty-path" / "mkdir").symlink_to(mkdir)
         empty_sys = bundle / "empty-sys"
         empty_sys.mkdir()

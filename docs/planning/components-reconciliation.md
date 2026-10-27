@@ -183,6 +183,14 @@ Known differences to settle explicitly:
   retain the selected color roles instead of carrying incidental initialization
   differences or string-replacing a live body named `legacy`.
 
+CI portability note: Ubuntu's Zsh completion audit uses `getent` and `grep`.
+Restricted shell fixtures expose those system helpers so the regular `compinit`
+security audit can run; the optional-tools case still omits unrelated tools and
+devices. Ubuntu Zsh 5.9 also reports missing optional sysfs reads on stderr,
+although the probes fail safely and the shell check completes. The selected
+fleet's Zsh 5.9.2 rollout was quiet; this CI-only observation did not change the
+released shell payload.
+
 Keep prompt files at their existing managed paths where possible; a new shared
 entry file can live alongside them. Existing shells, tmux clients and provider
 sessions remain running. New-shell acceptance uses owned PTYs and later normal

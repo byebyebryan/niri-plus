@@ -28,8 +28,10 @@ jobs:
       - name: Check and build
         run: |
           python -B -m unittest discover -s tests -v
+          python -B scripts/export-components.py --check
           python -B scripts/check-desktop.py
           git diff --check
+          python -B scripts/build-components.py --output "${RUNNER_TEMP}/niri-plus-components" --source-commit "$GITHUB_SHA"
           python -B scripts/build.py --output "${RUNNER_TEMP}/niri-plus"
       - name: Check browser behavior
         run: |

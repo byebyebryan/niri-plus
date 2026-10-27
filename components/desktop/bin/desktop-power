@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""Minimal Niri idle policy and system-battery alerts, owned by user systemd."""
+from pathlib import Path
+import os
+import shlex
+import signal
+import subprocess
+import sys
+import threading
+import tomllib
+
+STOP = threading.Event()
+DISPLAY_OFF = "niri msg action power-off-monitors"
+DISPLAY_ON = "niri msg action power-on-monitors"
+LOCK = "systemctl --user start desktop-lock.service"
+LOCKERS = {"swaylock", "gtklock"}
+
+
+def read(path):
+    try:
+        return path.read_text().strip()
+    except OSError:
+        return ""
+
+
+def on_battery(root=Path("/sys/class/power_supply")):
+    """Only system batteries count; USB peripherals never cause suspend."""
+    supplies = list(root.glob("*"))
+    batteries = [p for p in supplies if read(p / "type") == "Battery"
+                 and read(p / "scope") != "Device" and read(p / "present") != "0"]
+    if not batteries:
+        return False
+    if any(read(p / "type") != "Battery" and read(p / "scope") != "Device"
+           and read(p / "online") == "1" for p in supplies):
+        return False
+    return any(read(p / "status") == "Discharging" for p in batteries)
+
+
+def load_policy():
+    config = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config")))
+    policy = tomllib.loads((config / "desktop-session/power.toml").read_text())
+    for key in ("ac_monitor_timeout", "battery_monitor_timeout", "ac_lock_timeout",
+                "battery_lock_timeout", "ac_suspend_timeout", "battery_suspend_timeout",
+                "critical_percent"):
+        if type(policy.get(key)) is not int or policy[key] < 0:
+            raise ValueError(f"Invalid or missing policy: {key}")
+    if policy["critical_percent"] > 100:
+        raise ValueError("critical_percent exceeds 100")
+    for key in ("lock_before_suspend", "loginctl_lock"):
+        if type(policy.get(key)) is not bool:
+            raise ValueError(f"Invalid or missing policy: {key}")
+    if policy.get("locker", "swaylock") not in LOCKERS:
+        raise ValueError("Invalid desktop locker")
+    return policy
+
+
+def idle_command(policy, battery, executable=None):
+    source = "battery" if battery else "ac"
+    helper = shlex.quote(str(executable or Path(__file__).resolve()))
+    # The locker must outlive a restart of this idle service's control group.
+    lock_command = LOCK
+    args = ["swayidle", "-w", "-C", "/dev/null"]
+    monitor, lock, suspend = [policy[f"{source}_{name}_timeout"]
+                              for name in ("monitor", "lock", "suspend")]
+    if lock:
+        args += ["timeout", str(lock), lock_command]
+    if monitor:
+        args += ["timeout", str(monitor), DISPLAY_OFF, "resume", DISPLAY_ON]
+    if suspend:
+        # Recheck the source at execution to close the polling race.
+        args += ["timeout", str(suspend), f"{helper} suspend-{source}"]
+    args += ["before-sleep", f"{lock_command}; {DISPLAY_OFF}" if policy["lock_before_suspend"]
+             else DISPLAY_OFF, "after-resume", DISPLAY_ON]
+    if policy["loginctl_lock"]:
+        args += ["lock", lock_command]
+    return args
+
+
+def stop_child(child):
+    if child.poll() is None:
+        child.terminate()
+        try:
+            child.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            child.kill()
+            child.wait()
+
+
+def supervise_idle(policy, *, power=on_battery, spawn=subprocess.Popen, stop=STOP):
+    """Re-register the Wayland idle timers when the power source changes."""
+    child = None
+    source = None
+    try:
+        while not stop.is_set():
+            current = power()
+            if child is None or current != source:
+                if child is not None:
+                    stop_child(child)
+                source = current
+                child = spawn(idle_command(policy, source))
+                print(f"idle policy: {'battery' if source else 'AC'}", flush=True)
+            if child.poll() is not None:
+                raise RuntimeError(f"swayidle exited unexpectedly: {child.returncode}")
+            stop.wait(5)
+    finally:
+        if child is not None:
+            stop_child(child)
+
+
+def battery_state():
+    result = subprocess.run(["upower", "-i", "/org/freedesktop/UPower/devices/DisplayDevice"],
+                            capture_output=True, text=True, timeout=10,
+                            env=dict(os.environ, LC_ALL="C"), check=True)
+    fields = dict(line.strip().split(":", 1) for line in result.stdout.splitlines()
+                  if ":" in line)
+    return {key: value.strip() for key, value in fields.items()}
+
+
+class BatteryAlert:
+    def __init__(self, threshold):
+        self.threshold = threshold
+        self.sent = False
+
+    def update(self, state, notify):
+        if state.get("present") != "yes":
+            self.sent = False
+            return
+        percentage = float(state["percentage"].removesuffix("%"))
+        discharging = state.get("state") in {"discharging", "pending-discharge"}
+        if not discharging or percentage > self.threshold + 2:
+            self.sent = False
+        if self.threshold and discharging and percentage <= self.threshold and not self.sent:
+            notify(percentage)
+            self.sent = True
+
+
+def notify_critical(percentage):
+    subprocess.run(["notify-send", "--app-name=Battery", "--urgency=critical",
+                    "--expire-time=0", "Battery critical",
+                    f"{percentage:g}% remaining. Connect AC power."], check=True, timeout=10)
+
+
+def watch_battery(policy):
+    alert = BatteryAlert(policy["critical_percent"])
+    while not STOP.is_set():
+        try:
+            alert.update(battery_state(), notify_critical)
+        except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
+            print(f"battery read/notification failed: {error}", file=sys.stderr, flush=True)
+        STOP.wait(30)
+
+
+def maybe_suspend(policy, expected, *, power=on_battery, run=subprocess.run):
+    source = "battery" if expected else "ac"
+    if policy[f"{source}_suspend_timeout"] and power() == expected:
+        run(["systemctl", "suspend"], check=True)
+
+
+def main():
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(sig, lambda *_: STOP.set())
+    policy = load_policy()
+    action = sys.argv[1] if len(sys.argv) == 2 else ""
+    if action == "idle":
+        supervise_idle(policy)
+    elif action == "battery":
+        watch_battery(policy)
+    elif action in {"suspend-battery", "suspend-ac"}:
+        maybe_suspend(policy, action == "suspend-battery")
+    else:
+        raise SystemExit("Usage: desktop-power idle|battery|suspend-battery|suspend-ac")
+
+
+if __name__ == "__main__":
+    main()

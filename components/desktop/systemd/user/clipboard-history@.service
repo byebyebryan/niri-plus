@@ -1,0 +1,12 @@
+[Unit]
+Description=Clipboard history for %i selections in the minimal Niri session
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+ExecCondition=%h/.local/bin/desktop-session-ready
+ExecStart=/usr/bin/wl-paste --type %i --watch /usr/bin/cliphist store
+Restart=on-failure
+RestartSec=3
+UMask=0077

@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""Small Rofi session menu; native services retain locking and power policy."""
+from pathlib import Path
+import os
+import subprocess
+import tomllib
+
+ACTIONS = ("Lock", "Log out", "Suspend", "Restart", "Shut down")
+
+
+def choose(options, prompt, *, run=subprocess.run):
+    result = run(["rofi", "-dmenu", "-i", "-p", prompt, "-selected-row", "0"],
+                 input="\n".join(options) + "\n", text=True, capture_output=True)
+    if result.returncode != 0:
+        return None
+    value = result.stdout.rstrip("\n")
+    return value if value in options else None
+
+
+def dispatch(action, *, run=subprocess.run, picker=choose, lock_before_suspend=False):
+    if action == "Lock":
+        command = ["systemctl", "--user", "start", "desktop-lock.service"]
+    elif action == "Log out":
+        # Niri owns its normal quit confirmation. Never use --skip-confirmation.
+        command = ["niri", "msg", "action", "quit"]
+    elif action == "Suspend":
+        # The same independent unit also makes this idempotent with before-sleep.
+        if lock_before_suspend:
+            run(["systemctl", "--user", "start", "desktop-lock.service"], check=True)
+        command = ["systemctl", "suspend"]
+    elif action in {"Restart", "Shut down"}:
+        if picker(("Cancel", action), "Confirm " + action.lower()) != action:
+            return False
+        command = ["systemctl", "reboot" if action == "Restart" else "poweroff"]
+    else:
+        return False
+    run(command, check=True)
+    return True
+
+
+def read_lock_before_suspend(config_home=None):
+    config_home = Path(config_home or os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    policy = config_home / "desktop-session/power.toml"
+    try:
+        value = tomllib.loads(policy.read_text())["lock_before_suspend"]
+    except (OSError, KeyError, tomllib.TOMLDecodeError) as error:
+        raise SystemExit(
+            "Suspend canceled: set lock_before_suspend as a TOML boolean in "
+            f"{policy}"
+        ) from error
+    if not isinstance(value, bool):
+        raise SystemExit(f"Suspend canceled: invalid lock_before_suspend value in {policy}")
+    return value
+
+
+def main():
+    ready = Path(__file__).resolve().with_name("desktop-session-ready")
+    if subprocess.run([str(ready)]).returncode != 0:
+        raise SystemExit("Session actions require the captured Niri graphical session")
+    action = choose(ACTIONS, "Session")
+    lock_before_suspend = False
+    if action == "Suspend":
+        config_home = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+        lock_before_suspend = read_lock_before_suspend(config_home)
+    dispatch(action, lock_before_suspend=lock_before_suspend)
+
+
+if __name__ == "__main__":
+    main()

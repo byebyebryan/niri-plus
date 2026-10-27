@@ -1,0 +1,10 @@
+[Unit]
+Description=System battery critical warning for the minimal Niri session
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/desktop-power battery
+Restart=on-failure
+RestartSec=10

@@ -22,6 +22,10 @@ distribution's Gtklock PAM setup before relying on it. Do not replace your
 existing working lock path until you have checked authentication and all
 connected displays.
 
+The existing path is an authored portable profile. The generated [minimal Niri
+profile](../../examples/session/profiles/minimal-niri/desktop-lock.service)
+matches the selected session unit and Gtklock executable.
+
 After reviewing both files, install the helper and unit from the clone:
 
 ```sh

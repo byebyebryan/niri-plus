@@ -16,6 +16,12 @@ has separate text and image instances tied to `graphical-session.target`.
 Inspect its commands and the [Cliphist documentation](https://github.com/sentriz/cliphist)
 before adapting it to your session.
 
+That path remains an authored portable profile. The generated [minimal Niri
+profile](../../examples/clipboard/profiles/minimal-niri/clipboard-history@.service)
+is the selected service variant: it relies on the host's graphical-session
+links and the shared config's 200-item cap. Choose the matching unit for your
+session instead of combining both variants.
+
 Copy the example unit into your user-unit directory after reviewing it:
 
 ```sh

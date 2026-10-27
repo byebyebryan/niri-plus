@@ -1,0 +1,74 @@
+{
+  "version": "0.1.0",
+  "modules": {
+    "desktop": {
+      "prerequisites": [
+        "Linux with a Wayland graphical session",
+        "systemd --user for the reusable service units",
+        "Python 3.11 or newer for the Python helpers"
+      ]
+    }
+  },
+  "files": [
+    { "path": "components/desktop/bin/desktop-power", "module": "desktop" },
+    { "path": "components/desktop/bin/desktop-session-menu", "module": "desktop" },
+    { "path": "components/desktop/bin/desktop-session-ready", "module": "desktop" },
+    { "path": "components/desktop/bin/notify-brightness", "module": "desktop" },
+    { "path": "components/desktop/bin/notify-volume", "module": "desktop" },
+    { "path": "components/desktop/bin/rofi-clipboard", "module": "desktop" },
+    { "path": "components/desktop/config/cliphist/config", "module": "desktop" },
+    { "path": "components/desktop/share/applications/niri-plus-audio.desktop", "module": "desktop" },
+    { "path": "components/desktop/share/applications/niri-plus-bluetooth.desktop", "module": "desktop" },
+    { "path": "components/desktop/share/applications/niri-plus-network.desktop", "module": "desktop" },
+    { "path": "components/desktop/share/applications/niri-plus-session.desktop", "module": "desktop" },
+    { "path": "components/desktop/systemd/user/clipboard-history@.service", "module": "desktop" },
+    { "path": "components/desktop/systemd/user/desktop-battery.service", "module": "desktop" },
+    { "path": "components/desktop/systemd/user/desktop-idle.service", "module": "desktop" },
+    { "path": "components/desktop/systemd/user/desktop-lock.service", "module": "desktop" },
+    { "path": "components/desktop/systemd/user/plasma-polkit-agent.service.d/session.conf", "module": "desktop" }
+  ],
+  "exports": [
+    { "path": "examples/clipboard/config", "component": "components/desktop/config/cliphist/config" },
+    {
+      "path": "examples/clipboard/profiles/minimal-niri/clipboard-history@.service",
+      "component": "components/desktop/systemd/user/clipboard-history@.service",
+      "profile": "minimal-niri",
+      "notes": "Selected minimal Niri service; the authored portable collector remains at the existing example path."
+    },
+    { "path": "examples/clipboard/rofi-clipboard", "component": "components/desktop/bin/rofi-clipboard" },
+    { "path": "examples/desktop/desktop-session-menu", "component": "components/desktop/bin/desktop-session-menu" },
+    {
+      "path": "examples/desktop/desktop-session-ready",
+      "component": "components/desktop/bin/desktop-session-ready",
+      "notes": "Checks whether the Wayland display socket accepts a connection; it does not identify the compositor."
+    },
+    { "path": "examples/desktop/niri-plus-audio.desktop", "component": "components/desktop/share/applications/niri-plus-audio.desktop" },
+    { "path": "examples/desktop/niri-plus-bluetooth.desktop", "component": "components/desktop/share/applications/niri-plus-bluetooth.desktop" },
+    { "path": "examples/desktop/niri-plus-network.desktop", "component": "components/desktop/share/applications/niri-plus-network.desktop" },
+    { "path": "examples/desktop/niri-plus-session.desktop", "component": "components/desktop/share/applications/niri-plus-session.desktop" },
+    { "path": "examples/feedback/notify-brightness", "component": "components/desktop/bin/notify-brightness" },
+    { "path": "examples/feedback/notify-volume", "component": "components/desktop/bin/notify-volume" },
+    { "path": "examples/session/desktop-battery.service", "component": "components/desktop/systemd/user/desktop-battery.service" },
+    { "path": "examples/session/desktop-idle.service", "component": "components/desktop/systemd/user/desktop-idle.service" },
+    {
+      "path": "examples/session/desktop-power",
+      "component": "components/desktop/bin/desktop-power",
+      "notes": "Portable policy values remain in the separately authored TOML profile."
+    },
+    {
+      "path": "examples/session/desktop-session-ready",
+      "component": "components/desktop/bin/desktop-session-ready",
+      "notes": "This download and the desktop utility download share one source component."
+    },
+    {
+      "path": "examples/session/polkit-session.conf",
+      "component": "components/desktop/systemd/user/plasma-polkit-agent.service.d/session.conf"
+    },
+    {
+      "path": "examples/session/profiles/minimal-niri/desktop-lock.service",
+      "component": "components/desktop/systemd/user/desktop-lock.service",
+      "profile": "minimal-niri",
+      "notes": "Selected Gtklock service; the authored portable unit remains at the existing example path."
+    }
+  ]
+}

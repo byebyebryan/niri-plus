@@ -1,0 +1,4 @@
+# Bound the shared text/image history; keep previews useful for Rofi filtering.
+max-items 200
+max-dedupe-search 200
+preview-width 160

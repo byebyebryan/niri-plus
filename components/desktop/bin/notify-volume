@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Minimal Niri hardware-key feedback; the notifier replaces each control's popup.
+set -euo pipefail
+export LC_ALL=C
+
+target="@DEFAULT_AUDIO_SINK@"
+label="Volume"
+tag="volume"
+case "${1:-}" in
+    up) wpctl set-volume --limit 1.0 "$target" 5%+ ;;
+    down) wpctl set-volume "$target" 5%- ;;
+    mute) wpctl set-mute "$target" toggle ;;
+    mic-mute|mic-show)
+        target="@DEFAULT_AUDIO_SOURCE@"
+        label="Microphone"
+        tag="microphone"
+        if [[ $1 == mic-mute ]]; then
+            wpctl set-mute "$target" toggle
+        fi
+        ;;
+    show) ;;
+    *) echo "Usage: notify-volume {up|down|mute|mic-mute|show|mic-show}" >&2; exit 2 ;;
+esac
+
+line=$(wpctl get-volume "$target")
+if [[ ! $line =~ ^Volume:[[:space:]]+([0-9]+([.][0-9]+)?) ]]; then
+    echo "notify-volume: cannot read $target volume" >&2
+    exit 1
+fi
+percent=$(awk -v level="${BASH_REMATCH[1]}" 'BEGIN { printf "%.0f", level * 100 }')
+value=$percent
+(( value > 100 )) && value=100
+summary="$label: $percent%"
+if [[ $line == *MUTED* ]]; then
+    summary="$label: Muted ($percent%)"
+    value=0
+elif [[ $tag == microphone ]]; then
+    summary="$label: On ($percent%)"
+fi
+
+notify-send --app-name=desktop-feedback --urgency=low --expire-time=1500 \
+    --hint="string:x-canonical-private-synchronous:$tag" \
+    --hint="int:value:$value" --hint=boolean:transient:true \
+    --hint=boolean:suppress-sound:true "$summary"

@@ -1,0 +1,10 @@
+[Unit]
+Description=Manual screen locker for the minimal Niri session
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+Type=forking
+ExecCondition=%h/.local/bin/desktop-session-ready
+ExecStart=/usr/bin/gtklock --daemonize

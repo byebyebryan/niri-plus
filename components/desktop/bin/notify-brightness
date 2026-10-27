@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Keep brightness changes on the backlight; keyboard LEDs are separate devices.
+set -euo pipefail
+export LC_ALL=C
+
+case "${1:-}" in
+    up|down|show) ;;
+    *) echo "Usage: notify-brightness {up|down|show}" >&2; exit 2 ;;
+esac
+
+# Brightness keys have no target on hosts without a laptop backlight.
+compgen -G '/sys/class/backlight/*' >/dev/null || exit 0
+
+case "$1" in
+    up) brightnessctl --class=backlight set +5% >/dev/null ;;
+    down) brightnessctl --class=backlight --min-value=1 set 5%- >/dev/null ;;
+    show) ;;
+esac
+
+level=$(brightnessctl --class=backlight --machine-readable info)
+IFS=, read -r _ _ _ percent _ <<< "$level"
+percent=${percent%%%}
+if [[ ! $percent =~ ^[0-9]+$ ]] || (( percent > 100 )); then
+    echo "notify-brightness: cannot read backlight percentage" >&2
+    exit 1
+fi
+
+notify-send --app-name=desktop-feedback --urgency=low --expire-time=1500 \
+    --hint=string:x-canonical-private-synchronous:brightness \
+    --hint="int:value:$percent" --hint=boolean:transient:true \
+    --hint=boolean:suppress-sound:true "Brightness: $percent%"

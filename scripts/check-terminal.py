@@ -21,6 +21,10 @@ import types
 ROOT = Path(__file__).resolve().parents[1]
 TERMINAL = ROOT / "examples/terminal"
 DESKTOP = ROOT / "examples/desktop"
+TEST_COMPLETION_FPATH = ""
+TEST_COMPLETION_FPATH_ROOT = Path()
+TEST_COMPINIT_PATH = Path()
+TEST_COMPAUDIT_PATH = Path()
 
 
 def require(condition: bool, message: str) -> None:
@@ -52,11 +56,134 @@ def expose_zsh_audit_commands(path: Path) -> None:
             link.symlink_to(command)
 
 
-def zsh_run(zsh: str, code: str, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run([zsh, "-c", code], text=True, capture_output=True, env=env, timeout=20)
+def prepare_zsh_completion_fpath(zsh: str, destination: Path) -> tuple[str, Path, Path, Path]:
+    """Copy trusted completion and hook functions into a private, audited fpath."""
+    probe_env = os.environ.copy()
+    probe_env.pop("FPATH", None)
+    probe_code = '''
+autoload -Uz compinit compaudit compdump add-zle-hook-widget add-zsh-hook
+autoload +X compinit compaudit compdump add-zle-hook-widget add-zsh-hook
+for function_name in compinit compaudit compdump add-zle-hook-widget add-zsh-hook; do
+  print -r -- "$function_name=$functions_source[$function_name]"
+done
+'''
+    probe = subprocess.run(
+        [zsh, "-dfc", probe_code],
+        text=True,
+        capture_output=True,
+        env=probe_env,
+        timeout=10,
+    )
+    require(probe.returncode == 0, f"could not locate trusted Zsh completion functions: {probe.stderr}")
+    sources = {}
+    for line in probe.stdout.splitlines():
+        name, separator, path = line.partition("=")
+        if separator:
+            sources[name] = Path(path).resolve()
+    required = ("compinit", "compaudit", "compdump", "add-zle-hook-widget", "add-zsh-hook")
+    for name in required:
+        require(name in sources and sources[name].is_file(), f"trusted Zsh function source was not identified: {name}")
+
+    source_roots = []
+    for name in required:
+        source = sources[name]
+        if source.parent not in source_roots:
+            source_roots.append(source.parent)
+    for source_root in source_roots:
+        require(source_root.stat().st_uid == 0, f"Zsh completion source is not system-owned: {source_root}")
+        for path in (source_root, *source_root.rglob("*")):
+            metadata = path.stat()
+            require(metadata.st_uid == 0, f"Zsh function source is not system-owned: {path}")
+            require(not (metadata.st_mode & 0o022), f"Zsh function source is writable by group/others: {path}")
+        source_dir = source_root
+        while source_dir != source_dir.parent:
+            metadata = source_dir.stat()
+            require(metadata.st_uid == 0, f"Zsh completion source parent is not system-owned: {source_dir}")
+            require(not (metadata.st_mode & 0o022), f"Zsh completion source parent is writable by group/others: {source_dir}")
+            source_dir = source_dir.parent
+
+    destination.mkdir(mode=0o700, parents=True)
+    destination.chmod(0o700)
+    copied_roots = {}
+    for index, source_root in enumerate(source_roots):
+        target_root = destination / f"{index:02d}-{source_root.name}"
+        shutil.copytree(source_root, target_root)
+        copied_roots[source_root] = target_root
+    fpath_dirs = []
+    for source_root in source_roots:
+        target_root = copied_roots[source_root]
+        tree_paths = [target_root, *target_root.rglob("*")]
+        for path in tree_paths:
+            if path.is_dir():
+                path.chmod(0o700)
+                fpath_dirs.append(path)
+            elif path.is_file():
+                path.chmod(path.stat().st_mode & ~0o022)
+
+    return (
+        os.pathsep.join(str(path) for path in fpath_dirs),
+        destination,
+        copied_roots[sources["compinit"].parent] / "compinit",
+        copied_roots[sources["compaudit"].parent] / "compaudit",
+    )
+
+
+def isolated_zsh_env(env: dict[str, str], *, ambient_fpath: str | None = None) -> dict[str, str]:
+    if not TEST_COMPLETION_FPATH:
+        return env
+    return env | {
+        "FPATH": ambient_fpath or TEST_COMPLETION_FPATH,
+        "NIRI_PLUS_TEST_COMPLETION_FPATH": TEST_COMPLETION_FPATH,
+        "NIRI_PLUS_TEST_COMPLETION_FPATH_ROOT": str(TEST_COMPLETION_FPATH_ROOT),
+        "NIRI_PLUS_TEST_COMPINIT_PATH": str(TEST_COMPINIT_PATH),
+        "NIRI_PLUS_TEST_COMPAUDIT_PATH": str(TEST_COMPAUDIT_PATH),
+    }
+
+
+def zsh_run(
+    zsh: str,
+    code: str,
+    env: dict[str, str],
+    *,
+    ambient_fpath: str | None = None,
+) -> subprocess.CompletedProcess[str]:
+    isolated_env = isolated_zsh_env(env, ambient_fpath=ambient_fpath)
+    if TEST_COMPLETION_FPATH:
+        code = 'fpath=("${(@s.:.)NIRI_PLUS_TEST_COMPLETION_FPATH}")\n' + code
+    result = subprocess.run([zsh, "-c", code], text=True, capture_output=True, env=isolated_env, timeout=20)
     if result.returncode:
         raise AssertionError(f"zsh failed ({result.returncode}):\n{result.stdout}\n{result.stderr}")
     return result
+
+
+def check_isolated_completion_fpath(zsh: str, bundle: Path, home: Path, xdg: Path) -> int:
+    unsafe_fpath = bundle / "insecure-ambient-fpath"
+    unsafe_fpath.mkdir(mode=0o777)
+    unsafe_fpath.chmod(0o777)
+    require(unsafe_fpath.stat().st_mode & 0o022 != 0, "ambient fpath regression fixture is not writable by group/others")
+    env = os.environ.copy() | {
+        "HOME": str(home),
+        "XDG_STATE_HOME": str(xdg / "audit-state"),
+        "XDG_CACHE_HOME": str(xdg / "audit-cache"),
+        "NIRI_PLUS_TEST_UNSAFE_FPATH": str(unsafe_fpath),
+        "ZSH_FORCE_FULL_PROMPT": "1",
+    }
+    code = f'''source "{TERMINAL / 'init.zsh'}"
+niri_plus_shell_init
+(( $+functions[compdef] == 1 )) || exit 71
+(( $+functions[compaudit] == 1 )) || exit 72
+[[ "$functions_source[compinit]" == "$NIRI_PLUS_TEST_COMPINIT_PATH" ]] || exit 73
+[[ "$functions_source[compaudit]" == "$NIRI_PLUS_TEST_COMPAUDIT_PATH" ]] || exit 74
+(( ${{fpath[(Ie)$NIRI_PLUS_TEST_UNSAFE_FPATH]}} == 0 )) || exit 75
+for directory in $fpath; do
+  [[ "$directory" == "$NIRI_PLUS_TEST_COMPLETION_FPATH_ROOT"/* ]] || exit 76
+done
+compaudit >/dev/null 2>&1 || exit 77
+print -r -- ISOLATED_COMPAUDIT_OK
+'''
+    result = zsh_run(zsh, code, env, ambient_fpath=str(unsafe_fpath))
+    require("ISOLATED_COMPAUDIT_OK" in result.stdout, "isolated completion fpath did not retain the normal compaudit")
+    return 7
 
 
 def wait_for_shell(pid: int, fd: int, timeout: float) -> bytes:
@@ -97,7 +224,8 @@ def check_interactive_watcher(zsh: str, bundle: Path, home: Path, xdg: Path) -> 
             content += "function p10k { : }\n"
         put(path, content)
     (install / ".zshrc").write_text(
-        f'''function niri_plus_shell_pre_init() {{ print -r -- pre >> "$NIRI_PLUS_TEST_PLUGIN_ORDER"; }}
+        f'''fpath=("${{(@s.:.)NIRI_PLUS_TEST_COMPLETION_FPATH}}")
+function niri_plus_shell_pre_init() {{ print -r -- pre >> "$NIRI_PLUS_TEST_PLUGIN_ORDER"; }}
 source "{install / 'zshrc'}"
 niri_plus_shell_init
 niri_plus_shell_finish
@@ -148,7 +276,7 @@ niri_plus_shell_finish
     )
     pid, fd = pty.fork()
     if pid == 0:
-        os.execvpe(zsh, [zsh, "-i"], env)
+        os.execvpe(zsh, [zsh, "-d", "-i"], isolated_zsh_env(env))
     output = bytearray()
     try:
         deadline = time.monotonic() + 8
@@ -287,7 +415,8 @@ def check_watcher_mode_transitions(zsh: str, bundle: Path, home: Path, xdg: Path
     )
 
     (install / ".zshrc").write_text(
-        f'''function niri_plus_test_hook_count() {{
+        f'''fpath=("${{(@s.:.)NIRI_PLUS_TEST_COMPLETION_FPATH}}")
+function niri_plus_test_hook_count() {{
   local hook_type="$1" function_name="$2" hook
   local -a hooks=()
   local -i count=0
@@ -330,7 +459,7 @@ niri_plus_shell_finish
 
     pid, fd = pty.fork()
     if pid == 0:
-        os.execvpe(zsh, [zsh, "-i"], env)
+        os.execvpe(zsh, [zsh, "-d", "-i"], isolated_zsh_env(env))
     checks = 0
     try:
         pty_read_until(fd, b"NIRI_PLUS_TRANSITION_PROMPT_READY", 8, "human watcher did not reach its first prompt")
@@ -610,6 +739,7 @@ def main() -> int:
     ready = load_module("niri_plus_desktop_ready", DESKTOP / "desktop-session-ready")
 
     with tempfile.TemporaryDirectory(prefix="niri-plus-terminal-check-") as temporary:
+        global TEST_COMPLETION_FPATH, TEST_COMPLETION_FPATH_ROOT, TEST_COMPINIT_PATH, TEST_COMPAUDIT_PATH
         base = Path(temporary)
         home = base / "home"
         home.mkdir()
@@ -617,6 +747,13 @@ def main() -> int:
         xdg.mkdir()
         bundle = base / "bundle"
         bundle.mkdir()
+        (
+            TEST_COMPLETION_FPATH,
+            TEST_COMPLETION_FPATH_ROOT,
+            TEST_COMPINIT_PATH,
+            TEST_COMPAUDIT_PATH,
+        ) = prepare_zsh_completion_fpath(zsh, bundle / "owned-completion-fpath")
+        checks += check_isolated_completion_fpath(zsh, bundle, home, xdg)
         checks += check_shell_api(zsh, bundle, home, xdg)
         with mock.patch.dict(os.environ, {"HOME": str(home)}):
             existing = home / "existing"

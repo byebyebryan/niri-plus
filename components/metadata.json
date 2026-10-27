@@ -1,11 +1,19 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "modules": {
     "desktop": {
       "prerequisites": [
         "Linux with a Wayland graphical session",
         "systemd --user for the reusable service units",
         "Python 3.11 or newer for the Python helpers"
+      ]
+    },
+    "shell": {
+      "prerequisites": [
+        "Zsh 5.8 or newer for the shell core",
+        "Python 3.10 or newer for the opt-in dependency fetcher",
+        "Linux proc/sys interfaces are optional; missing inputs hide their prompt segments",
+        "GitHub codeload access is needed only when the fetcher is run"
       ]
     }
   },
@@ -25,7 +33,14 @@
     { "path": "components/desktop/systemd/user/desktop-battery.service", "module": "desktop" },
     { "path": "components/desktop/systemd/user/desktop-idle.service", "module": "desktop" },
     { "path": "components/desktop/systemd/user/desktop-lock.service", "module": "desktop" },
-    { "path": "components/desktop/systemd/user/plasma-polkit-agent.service.d/session.conf", "module": "desktop" }
+    { "path": "components/desktop/systemd/user/plasma-polkit-agent.service.d/session.conf", "module": "desktop" },
+    { "path": "components/shell/THIRD_PARTY_NOTICES.md", "module": "shell" },
+    { "path": "components/shell/fetch.py", "module": "shell" },
+    { "path": "components/shell/init.zsh", "module": "shell" },
+    { "path": "components/shell/p10k-custom-segments.zsh", "module": "shell" },
+    { "path": "components/shell/p10k.zsh", "module": "shell" },
+    { "path": "components/shell/pins.json", "module": "shell" },
+    { "path": "components/shell/zshrc", "module": "shell" }
   ],
   "exports": [
     { "path": "examples/clipboard/config", "component": "components/desktop/config/cliphist/config" },
@@ -69,6 +84,13 @@
       "component": "components/desktop/systemd/user/desktop-lock.service",
       "profile": "minimal-niri",
       "notes": "Selected Gtklock service; the authored portable unit remains at the existing example path."
-    }
+    },
+    { "path": "examples/terminal/THIRD_PARTY_NOTICES.md", "component": "components/shell/THIRD_PARTY_NOTICES.md" },
+    { "path": "examples/terminal/fetch.py", "component": "components/shell/fetch.py" },
+    { "path": "examples/terminal/init.zsh", "component": "components/shell/init.zsh" },
+    { "path": "examples/terminal/p10k-custom-segments.zsh", "component": "components/shell/p10k-custom-segments.zsh" },
+    { "path": "examples/terminal/p10k.zsh", "component": "components/shell/p10k.zsh" },
+    { "path": "examples/terminal/pins.json", "component": "components/shell/pins.json" },
+    { "path": "examples/terminal/zshrc", "component": "components/shell/zshrc" }
   ]
 }

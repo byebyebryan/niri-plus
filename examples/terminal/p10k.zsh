@@ -1,4 +1,4 @@
-# Niri Plus portable adaptation of the selected Powerlevel10k configuration.
+# Shared Niri Plus Powerlevel10k configuration.
 
 'builtin' 'local' '-a' 'p10k_config_opts'
 [[ ! -o 'aliases'         ]] || p10k_config_opts+=('aliases')

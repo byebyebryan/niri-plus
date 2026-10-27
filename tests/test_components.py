@@ -41,17 +41,25 @@ class ComponentContracts(unittest.TestCase):
                 self.assertTrue(all(member.isfile() for member in members))
                 self.assertTrue(all(member.uid == member.gid == member.mtime == 0 for member in members))
                 manifest = json.load(archive.extractfile("manifest.json"))
+                metadata = json.loads((ROOT / "components/metadata.json").read_text())
                 self.assertEqual(manifest["schema_version"], 1)
                 self.assertEqual(manifest["api_version"], 1)
-                self.assertEqual(manifest["version"], "0.1.0")
+                self.assertEqual(manifest["version"], metadata["version"])
                 self.assertEqual(manifest["source_commit"], TEST_COMMIT)
+                self.assertIn("desktop", manifest["modules"])
+                self.assertIn("shell", manifest["modules"])
                 self.assertIn("prerequisites", manifest["modules"]["desktop"])
+                self.assertIn("prerequisites", manifest["modules"]["shell"])
 
                 entries = {item["path"]: item for item in manifest["files"]}
                 self.assertEqual(set(names[1:]), set(entries))
-                self.assertEqual(len(entries), 16)
+                declared = {item["path"]: item["module"] for item in metadata["files"]}
+                self.assertEqual(set(entries), set(declared))
+                for module in manifest["modules"]:
+                    self.assertTrue(any(item["module"] == module for item in entries.values()), module)
                 for member in members[1:]:
                     entry = entries[member.name]
+                    self.assertEqual(entry["module"], declared[member.name])
                     data = archive.extractfile(member).read()
                     self.assertEqual(hashlib.sha256(data).hexdigest(), entry["sha256"])
                     self.assertEqual(member.mode, entry["mode"])
@@ -111,6 +119,15 @@ class ComponentContracts(unittest.TestCase):
             self.assertTrue(record["generated"])
             self.assertEqual(record["generated_by"], "scripts/export-components.py")
             self.assertEqual(record["generated_from"], "components/desktop/bin/desktop-session-ready")
+            self.assertEqual(record["module"], "desktop")
+
+        shell_exports = [item for item in metadata["exports"] if item["path"].startswith("examples/terminal/")]
+        shell_sources = {item["path"] for item in metadata["files"] if item["module"] == "shell"}
+        self.assertEqual({item["component"] for item in shell_exports}, shell_sources)
+        for item in shell_exports:
+            record = records[item["path"]]
+            self.assertEqual(record["module"], "shell")
+            self.assertEqual(record["source"], "Niri Plus shell component module")
 
     def test_portable_unit_urls_are_preserved_as_authored_profiles(self):
         generated = exporter.render(ROOT)

@@ -50,22 +50,57 @@ personal host setup and credentials removed.
 | Location and Git | Host and current directory, branch and concise clean/modified/conflict state. |
 | Prompt | Lean two-line Powerlevel10k prompt with transient history, Emacs keys, and distinct success/error prompt marks. |
 | Right side | Time, CPU frequency/utilization, memory, Bluetooth, network, and battery when available. Wireless and battery probes cache for five seconds. |
-| History and completion | Shared history in the user's XDG state directory, duplicate reduction, command verification, completion menu, and case-insensitive matching. |
+| History and completion | Shared history in the user's XDG state directory, duplicate reduction, command verification, completion menu, and case-insensitive matching. The personal caller can provide its existing history and compdump paths. |
 | Editing | Up/Down substring history search, inline autosuggestions, and syntax highlighting loaded after widget integrations. |
 | Navigation | Zoxide and fzf initialization when their commands are installed. |
-| Agent tool shell | A recognized tool environment gets a hostname-only prompt and returns before history, plugins, custom probes, and the refresh watcher. Force the simple or full prompt with `ZSH_FORCE_SIMPLE_PROMPT` or `ZSH_FORCE_FULL_PROMPT`. |
+| Agent tool shell | A recognized tool environment gets a hostname-only prompt and skips history, completion, plugins, custom probes, and the refresh watcher by default. The private compatibility option can retain history initialization before detection. Force the simple or full prompt with `ZSH_FORCE_SIMPLE_PROMPT` or `ZSH_FORCE_FULL_PROMPT`. |
 
-The portable source files are [Zsh startup core](../../examples/terminal/zshrc),
-[Powerlevel10k configuration](../../examples/terminal/p10k.zsh), and [custom
-status segments](../../examples/terminal/p10k-custom-segments.zsh). The latter
-use only Linux proc/sys interfaces and optional system commands; absent devices
-hide their segments. The watcher refreshes only while ZLE waits for input and
-closes its file descriptor on line completion or shell exit.
+The portable [Zsh starter](../../examples/terminal/zshrc) sources the shared
+[init API](../../examples/terminal/init.zsh), initializes the shell, returns
+for agent mode, and finalizes the human shell. The API file only defines
+`niri_plus_shell_init` and `niri_plus_shell_finish` when sourced. Private
+callers can put their own integrations between those calls and explicitly
+return from their `.zshrc` when `NIRI_PLUS_SHELL_MODE` is `agent`.
+
+The core derives `NIRI_PLUS_ZSH_HOME` from the location of `init.zsh`. Its
+default plugin root is `NIRI_PLUS_ZSH_HOME/plugins`; the theme root defaults to
+the same directory, with Powerlevel10k below `powerlevel10k/`. Set
+`NIRI_PLUS_ZSH_PLUGIN_DIR` and `NIRI_PLUS_ZSH_THEME_DIR` to use a staged
+dependency tree. The portable history and completion defaults use XDG state and
+cache paths. Callers can override them with `NIRI_PLUS_ZSH_HISTORY_FILE` and
+`NIRI_PLUS_ZSH_COMPDUMP` without moving existing data.
+
+`niri_plus_shell_pre_init` is an optional function hook for integrations such
+as Ghostty. It runs for human shells after history setup and before completion
+and plugins. The finalizer runs optional zoxide/fzf initialization and loads
+syntax highlighting last, after caller integrations that may change ZLE widgets.
+
+The [Powerlevel10k configuration](../../examples/terminal/p10k.zsh) and
+[custom status segments](../../examples/terminal/p10k-custom-segments.zsh)
+retain the selected semantic ANSI roles and prompt layout. Proc/sys roots can
+be replaced in isolated fixtures, and the quiet reader plus guarded watcher
+shutdown keep missing hardware and closed pipes harmless. These probes use
+Linux interfaces and optional system commands; absent devices hide their
+segments. The watcher refreshes only while ZLE waits for input and closes its
+file descriptor on line completion or shell exit.
+
+### Native and portable choices
+
+| Difference | Shared-core choice |
+| --- | --- |
+| History is initialized before native agent detection; the portable profile returned first. | `NIRI_PLUS_ZSH_AGENT_HISTORY=skip` is the portable default. The personal compatibility setting `legacy` initializes its supplied history path before agent detection. |
+| Native history and completion paths differ from the portable XDG defaults. | `NIRI_PLUS_ZSH_HISTORY_FILE` and `NIRI_PLUS_ZSH_COMPDUMP` let the caller retain both existing paths. The core does not migrate either file. |
+| Ghostty, SDK, kubectl, pyenv, editor, and browser setup exists only in the personal startup. | Ghostty can use the pre-init hook. Other personal integrations stay in the caller between init and finish. |
+| Native prompt source uses fixed proc/sys paths and the watcher does not guard a failed worker write. | The shared source keeps the portable fixture roots, quiet single-value reads, and worker exit guard. Defaults still read `/proc` and `/sys`; five-second hardware/network caching and the one-second refresh cadence remain. |
+| Native prompt source has raw ANSI values that the managed templates map to the selected palette. | The shared prompt keeps the rendered semantic roles: blue path, green success, yellow warning, red error, and the selected neutral/connected roles. |
+
+`NIRI_PLUS_ZSH_AGENT_HISTORY` accepts only `skip` or `legacy`. `NIRI_PLUS_SHELL_MODE`
+is recomputed by `niri_plus_shell_init` and remains a non-exported shell variable.
 
 ### Requirements and install
 
-Use Zsh, Python 3.11 or later, a working TLS connection to GitHub codeload, and
-MesloLGS Nerd Font installed in Kitty. The [fetcher](../../examples/terminal/fetch.py)
+Use Zsh, Python 3.10 or later for the opt-in fetcher, a working TLS connection
+to GitHub codeload, and MesloLGS Nerd Font installed in Kitty. The [fetcher](../../examples/terminal/fetch.py)
 installs the four pinned upstream trees beside the portable configuration.
 The file [pins and archive hashes](../../examples/terminal/pins.json) records
 the immutable commit and SHA-256 for each tarball; [third-party notices](../../examples/terminal/THIRD_PARTY_NOTICES.md)
@@ -86,6 +121,21 @@ bundle, then source it manually from the shell file you choose:
 ```sh
 source "$HOME/.local/share/niri-plus/zsh-neutral-slate/zshrc"
 ```
+
+To stage only pinned dependencies for a separately selected shell core, use
+the fetcher's `--dependencies-only` mode with another new destination:
+
+```sh
+python3 examples/terminal/fetch.py --dependencies-only "$HOME/.local/share/niri-plus/zsh-plugins-0.2.0"
+```
+
+That leaf contains `plugins/` with all four pinned trees, `pins.json`,
+third-party notices, and `receipt.json`. Receipt schema 1 records the SHA-256
+of the exact pins file, each project's commit and archive digest, and a sorted
+`files` list. Regular-file records include path, mode, and SHA-256; symlink
+records include path, link target, and the target-string SHA-256. The receipt
+does not include a self-hash. The fetcher never merges or replaces an existing
+leaf and does not copy shell startup or prompt files in this mode.
 
 `fzf` and `zoxide` are optional. Without either command, the shell still starts
 and their bindings are simply absent. The package that provides `nmtui`, the

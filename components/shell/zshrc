@@ -1,0 +1,6 @@
+# Portable starter. Private callers can run their own integrations between
+# niri_plus_shell_init and niri_plus_shell_finish.
+source "${${(%):-%x}:A:h}/init.zsh"
+niri_plus_shell_init
+[[ "$NIRI_PLUS_SHELL_MODE" == agent ]] && return
+niri_plus_shell_finish

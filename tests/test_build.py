@@ -175,6 +175,7 @@ class BuildContracts(unittest.TestCase):
         self.assertIn("desktop-lock.service", utilities)
         for relative in (
             "examples/terminal/fetch.py",
+            "examples/terminal/init.zsh",
             "examples/terminal/pins.json",
             "examples/terminal/THIRD_PARTY_NOTICES.md",
             "examples/desktop/desktop-session-menu",
@@ -184,7 +185,9 @@ class BuildContracts(unittest.TestCase):
         ):
             self.assertTrue((self.output / relative).is_file(), relative)
         manifest = json.loads((self.output / "examples/manifest.json").read_text())
-        self.assertEqual(len([item for item in manifest["files"] if item["path"].startswith("examples/terminal/")]), 6)
+        metadata = json.loads((ROOT / "components/metadata.json").read_text())
+        terminal_exports = {item["path"] for item in metadata["exports"] if item["path"].startswith("examples/terminal/")}
+        self.assertEqual({item["path"] for item in manifest["files"] if item["path"].startswith("examples/terminal/")}, terminal_exports)
         self.assertIn("scripts/check-terminal.py", {item["path"] for item in manifest["files"]})
 
     def test_old_slate_blue_terminal_example_remains_a_historical_file(self):

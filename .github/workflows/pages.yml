@@ -23,6 +23,10 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.11'
+      - name: Install Zsh for isolated shell checks
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes zsh
       - name: Install build dependencies
         run: python -m pip install -r requirements.txt
       - name: Check and build
@@ -30,6 +34,7 @@ jobs:
           python -B -m unittest discover -s tests -v
           python -B scripts/export-components.py --check
           python -B scripts/check-desktop.py
+          python -B scripts/check-terminal.py
           git diff --check
           python -B scripts/build-components.py --output "${RUNNER_TEMP}/niri-plus-components" --source-commit "$GITHUB_SHA"
           python -B scripts/build.py --output "${RUNNER_TEMP}/niri-plus"

@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "verified_date": "2026-10-24",
+  "archive_format": "GitHub codeload tar.gz at immutable commit",
+  "plugins": [
+    {
+      "name": "zsh-autosuggestions",
+      "repository": "https://github.com/zsh-users/zsh-autosuggestions",
+      "commit": "85919cd1ffa7d2d5412f6d3fe437ebdbeeec4fc5",
+      "archive_url": "https://codeload.github.com/zsh-users/zsh-autosuggestions/tar.gz/85919cd1ffa7d2d5412f6d3fe437ebdbeeec4fc5",
+      "sha256": "20665e469e720e674964a66854d5534b9af78cdfd438512746ecd1ade8e819ce",
+      "archive_root": "zsh-autosuggestions-85919cd1ffa7d2d5412f6d3fe437ebdbeeec4fc5",
+      "install_directory": "zsh-autosuggestions",
+      "entrypoint": "zsh-autosuggestions.zsh",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "attribution": "Copyright (c) 2013 Thiago de Arruda; Copyright (c) 2016-2021 Eric Freese"
+    },
+    {
+      "name": "zsh-history-substring-search",
+      "repository": "https://github.com/zsh-users/zsh-history-substring-search",
+      "commit": "a0bdb0d47dbaba31dba2db7af8c48a5d9c74049a",
+      "archive_url": "https://codeload.github.com/zsh-users/zsh-history-substring-search/tar.gz/a0bdb0d47dbaba31dba2db7af8c48a5d9c74049a",
+      "sha256": "b9edc11a4a04d2a5cc23bb7bafd8f02935240a45efe8a2fa61605b7636ecb22f",
+      "archive_root": "zsh-history-substring-search-a0bdb0d47dbaba31dba2db7af8c48a5d9c74049a",
+      "install_directory": "zsh-history-substring-search",
+      "entrypoint": "zsh-history-substring-search.zsh",
+      "license": "BSD-3-Clause",
+      "license_file": "zsh-history-substring-search.zsh header",
+      "attribution": "Copyright (c) 2009 Peter Stephenson; contributors named in the upstream source header"
+    },
+    {
+      "name": "zsh-syntax-highlighting",
+      "repository": "https://github.com/zsh-users/zsh-syntax-highlighting",
+      "commit": "e6683f20e5c38d3e5447f45845d04ddda75d0f23",
+      "archive_url": "https://codeload.github.com/zsh-users/zsh-syntax-highlighting/tar.gz/e6683f20e5c38d3e5447f45845d04ddda75d0f23",
+      "sha256": "6e8258a74e6f3cac03e1bb5ee72504bc4d819904e9aa742d62f60833168db265",
+      "archive_root": "zsh-syntax-highlighting-e6683f20e5c38d3e5447f45845d04ddda75d0f23",
+      "install_directory": "zsh-syntax-highlighting",
+      "entrypoint": "zsh-syntax-highlighting.zsh",
+      "license": "BSD-3-Clause",
+      "license_file": "COPYING.md",
+      "attribution": "Copyright (c) 2010-2020 zsh-syntax-highlighting contributors"
+    },
+    {
+      "name": "powerlevel10k",
+      "repository": "https://github.com/romkatv/powerlevel10k",
+      "commit": "d05a1b00f9a61f9578bf9dc19b8451942dde8734",
+      "archive_url": "https://codeload.github.com/romkatv/powerlevel10k/tar.gz/d05a1b00f9a61f9578bf9dc19b8451942dde8734",
+      "sha256": "cc66c800e3ef7e8875916bc2861e2882d337588762418570f1a57c1b4e8ab054",
+      "archive_root": "powerlevel10k-d05a1b00f9a61f9578bf9dc19b8451942dde8734",
+      "install_directory": "powerlevel10k",
+      "entrypoint": "powerlevel10k.zsh-theme",
+      "license": "MIT (Powerlevel10k); GPL-3.0 (bundled gitstatus)",
+      "license_file": "LICENSE; gitstatus/LICENSE",
+      "attribution": "Powerlevel10k copyright notices are retained in LICENSE; bundled gitstatus is separately attributed in its upstream source tree"
+    }
+  ]
+}

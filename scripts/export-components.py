@@ -24,16 +24,17 @@ def read_component(root, relative_path):
     return current.read_bytes()
 
 
-def generated_record(spec, data, version):
+def generated_record(spec, data, version, module):
     record = {
         "path": spec["path"],
         "sha256": hashlib.sha256(data).hexdigest(),
         "kind": "generated first-party component export",
+        "module": module,
         "generated": True,
         "generated_by": GENERATOR,
         "generated_from": spec["component"],
         "component_version": version,
-        "source": "Niri Plus desktop component module",
+        "source": f"Niri Plus {module} component module",
     }
     if "profile" in spec:
         record["profile"] = spec["profile"]
@@ -47,7 +48,8 @@ def render(root=ROOT):
     metadata = json.loads((root / METADATA).read_text(encoding="utf-8"))
     if not isinstance(metadata, dict) or not isinstance(metadata.get("version"), str):
         raise ValueError("components/metadata.json has no component version")
-    component_paths = {item["path"] for item in metadata.get("files", [])}
+    component_modules = {item["path"]: item["module"] for item in metadata.get("files", [])}
+    component_paths = set(component_modules)
     exports = metadata.get("exports")
     if not isinstance(exports, list) or not exports:
         raise ValueError("components/metadata.json exports must be a non-empty list")
@@ -77,7 +79,7 @@ def render(root=ROOT):
             raise ValueError(f"invalid export notes for {destination}")
         data = read_component(root, component)
         output_files[destination] = data
-        records.append(generated_record(spec, data, metadata["version"]))
+        records.append(generated_record(spec, data, metadata["version"], component_modules[component]))
 
     manifest_data = json.loads((root / MANIFEST).read_text(encoding="utf-8"))
     if not isinstance(manifest_data, dict) or not isinstance(manifest_data.get("files"), list):

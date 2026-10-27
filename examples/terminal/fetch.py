@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import shutil
+import stat
 import sys
 import tarfile
 import tempfile
@@ -19,6 +20,7 @@ ROOT = Path(__file__).resolve().parent
 MAX_ARCHIVE_BYTES = 32 * 1024 * 1024
 MAX_UNPACKED_BYTES = 128 * 1024 * 1024
 LOCAL_FILES = (
+    "init.zsh",
     "zshrc",
     "p10k.zsh",
     "p10k-custom-segments.zsh",
@@ -161,15 +163,75 @@ def extract_verified(archive: Path, project: dict[str, str], destination: Path) 
                 shutil.copyfileobj(stream, output)
 
 
-def install(destination: Path, *, projects: list[dict[str, str]] | None = None) -> Path:
+def dependency_receipt(stage: Path, projects: list[dict[str, str]]) -> dict[str, object]:
+    pins_bytes = (ROOT / "pins.json").read_bytes()
+    files: list[dict[str, object]] = []
+    for path in sorted(stage.rglob("*"), key=lambda item: item.relative_to(stage).as_posix()):
+        relative = path.relative_to(stage).as_posix()
+        if path.is_dir() and not path.is_symlink():
+            continue
+        if path.is_symlink():
+            link_target = os.readlink(path)
+            files.append(
+                {
+                    "path": relative,
+                    "type": "symlink",
+                    "target": link_target,
+                    "sha256": hashlib.sha256(os.fsencode(link_target)).hexdigest(),
+                }
+            )
+        elif path.is_file():
+            files.append(
+                {
+                    "path": relative,
+                    "type": "file",
+                    "mode": stat.S_IMODE(path.stat().st_mode),
+                    "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                }
+            )
+        else:
+            raise ValueError(f"unsupported dependency payload: {relative}")
+
+    plugins = [
+        {
+            "name": project["name"],
+            "commit": project["commit"],
+            "archive_sha256": project["sha256"],
+            "install_directory": project["install_directory"],
+            "entrypoint": project["entrypoint"],
+        }
+        for project in sorted(projects, key=lambda item: item["name"])
+    ]
+    return {
+        "schema_version": 1,
+        "pins_sha256": hashlib.sha256(pins_bytes).hexdigest(),
+        "plugins": plugins,
+        "files": files,
+    }
+
+
+def install(
+    destination: Path,
+    *,
+    projects: list[dict[str, str]] | None = None,
+    dependencies_only: bool = False,
+) -> Path:
     projects = read_pins() if projects is None else projects
+    if dependencies_only:
+        names = {project.get("name") for project in projects}
+        if len(projects) != 4 or len(names) != 4 or "powerlevel10k" not in names:
+            raise ValueError("dependency-only mode requires all four pinned trees, including Powerlevel10k")
     destination = safe_destination(str(destination))
     destination.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".niri-plus-terminal-fetch-", dir=destination.parent))
     created_destination = False
     try:
-        for name in LOCAL_FILES:
-            shutil.copyfile(ROOT / name, stage / name)
+        if dependencies_only:
+            shutil.copyfile(ROOT / "pins.json", stage / "pins.json")
+            shutil.copyfile(ROOT / "THIRD_PARTY_NOTICES.md", stage / "THIRD_PARTY_NOTICES.md")
+        else:
+            for name in LOCAL_FILES:
+                shutil.copyfile(ROOT / name, stage / name)
 
         for project in projects:
             archive = stage / f"{project['name']}.tar.gz"
@@ -182,6 +244,10 @@ def install(destination: Path, *, projects: list[dict[str, str]] | None = None) 
             archive.unlink()
             if not (target / project["entrypoint"]).is_file():
                 raise ValueError(f"missing plugin entrypoint for {project['name']}")
+
+        if dependencies_only:
+            receipt = dependency_receipt(stage, projects)
+            (stage / "receipt.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
 
         # Create the selected leaf exclusively. A previous installation is
         # never merged, replaced, or deleted.
@@ -205,14 +271,24 @@ def install(destination: Path, *, projects: list[dict[str, str]] | None = None) 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("destination", help="new directory below your home directory")
+    parser.add_argument(
+        "--dependencies-only",
+        action="store_true",
+        help="install only verified plugins, pins, notices, and a SHA-256 receipt",
+    )
     args = parser.parse_args(argv)
     try:
-        installed = install(Path(args.destination))
+        installed = install(Path(args.destination), dependencies_only=args.dependencies_only)
     except (OSError, ValueError, tarfile.TarError) as error:
         print(f"fetch.py: {error}", file=sys.stderr)
         return 1
-    print(f"Installed the pinned Zsh bundle at {installed}")
-    print("No shell startup file was changed. Review the recipe before sourcing zshrc.")
+    if args.dependencies_only:
+        print(f"Installed the pinned dependency tree at {installed}")
+        print(f"Receipt: {installed / 'receipt.json'}")
+        print("No shell startup or configuration files were copied.")
+    else:
+        print(f"Installed the pinned Zsh bundle at {installed}")
+        print("No shell startup file was changed. Review the recipe before sourcing zshrc.")
     return 0
 
 

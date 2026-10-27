@@ -11,6 +11,11 @@ trees (including license material) in the selected installation directory.
 | [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) | `e6683f20e5c38d3e5447f45845d04ddda75d0f23` | BSD-3-Clause. Copyright (c) 2010-2020 zsh-syntax-highlighting contributors. The archive contains `COPYING.md`. |
 | [Powerlevel10k](https://github.com/romkatv/powerlevel10k) | `d05a1b00f9a61f9578bf9dc19b8451942dde8734` | MIT. The archive also contains the bundled `gitstatus` component under GPL-3.0; both upstream `LICENSE` files are retained. Powerlevel10k and earlier Powerlevel9k copyright notices remain in the top-level license. |
 
-The exported Zsh and Powerlevel10k files are portable adaptations of a private
-configuration. They are not upstream files. The custom prompt functions retain
-their own Niri Plus attribution in this repository.
+The shared Zsh core and exported Powerlevel10k files are first-party Niri Plus
+source. The prompt preserves the selected native semantic color roles. Its
+portable proc/sys roots and quiet file reader make status probes testable; they
+default to the ordinary Linux interfaces. Caller-specific history and cache
+paths, Ghostty, SDK, CLI, editor, and browser setup remain caller-owned.
+
+These files are not upstream files. The custom prompt functions retain their
+own Niri Plus attribution in this repository.

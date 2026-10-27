@@ -73,7 +73,7 @@ def wait_for_shell(pid: int, fd: int, timeout: float) -> bytes:
 def check_interactive_watcher(zsh: str, bundle: Path, home: Path, xdg: Path) -> int:
     install = bundle / "interactive"
     install.mkdir(parents=True)
-    for name in ("zshrc", "p10k.zsh", "p10k-custom-segments.zsh"):
+    for name in ("zshrc", "init.zsh", "p10k.zsh", "p10k-custom-segments.zsh"):
         shutil.copyfile(TERMINAL / name, install / name)
     for directory, file, label in (
         ("zsh-autosuggestions", "zsh-autosuggestions.zsh", "autosuggestions"),
@@ -86,7 +86,13 @@ def check_interactive_watcher(zsh: str, bundle: Path, home: Path, xdg: Path) -> 
         if label == "powerlevel10k":
             content += "function p10k { : }\n"
         put(path, content)
-    shutil.copyfile(install / "zshrc", install / ".zshrc")
+    (install / ".zshrc").write_text(
+        f'''function niri_plus_shell_pre_init() {{ print -r -- pre >> "$NIRI_PLUS_TEST_PLUGIN_ORDER"; }}
+source "{install / 'zshrc'}"
+niri_plus_shell_init
+niri_plus_shell_finish
+'''
+    )
 
     test_bin = bundle / "interactive-bin"
     test_bin.mkdir()
@@ -101,6 +107,16 @@ def check_interactive_watcher(zsh: str, bundle: Path, home: Path, xdg: Path) -> 
         "#!/bin/sh\nprintf '%s\\n' \"$$\" >> \"$NIRI_PLUS_TEST_SLEEP_PID_FILE\"\nexec "
         + sleep
         + ' "$@"\n',
+        executable=True,
+    )
+    put(
+        test_bin / "zoxide",
+        "#!/bin/sh\nprintf '%s\\n' zoxide >> \"$NIRI_PLUS_TEST_PLUGIN_ORDER\"\nprintf '%s\\n' 'typeset -g NIRI_PLUS_TEST_ZOXIDE=1'\n",
+        executable=True,
+    )
+    put(
+        test_bin / "fzf",
+        "#!/bin/sh\n[ \"$1\" = --zsh ] && { printf '%s\\n' fzf >> \"$NIRI_PLUS_TEST_PLUGIN_ORDER\"; printf '%s\\n' 'typeset -g NIRI_PLUS_TEST_FZF=1'; }\n",
         executable=True,
     )
     sleep_log = bundle / "sleep-pids"
@@ -161,6 +177,11 @@ def check_interactive_watcher(zsh: str, bundle: Path, home: Path, xdg: Path) -> 
         except OSError:
             pass
 
+    order = (bundle / "interactive-plugin-order").read_text().splitlines()
+    require(
+        order == ["pre", "autosuggestions", "substring", "powerlevel10k", "zoxide", "fzf", "syntax"],
+        f"interactive starter or repeated init/finish changed order or ran twice: {order}",
+    )
     pids = {int(value) for value in sleep_log.read_text().splitlines() if value.isdigit()}
     require(bool(pids), "refresh watcher never launched its timer")
     deadline = time.monotonic() + 3
@@ -184,12 +205,380 @@ def check_interactive_watcher(zsh: str, bundle: Path, home: Path, xdg: Path) -> 
     return len(pids)
 
 
+def pty_read_until(fd: int, marker: bytes, timeout: float, context: str) -> bytes:
+    output = bytearray()
+    deadline = time.monotonic() + timeout
+    while marker not in output and time.monotonic() < deadline:
+        ready, _, _ = select.select([fd], [], [], 0.1)
+        if not ready:
+            continue
+        try:
+            chunk = os.read(fd, 8192)
+        except OSError:
+            break
+        if not chunk:
+            break
+        output.extend(chunk)
+    require(marker in output, f"{context}: {output.decode(errors='replace')}")
+    return bytes(output)
+
+
+def sleep_log_count(path: Path) -> int:
+    return len(path.read_text().splitlines()) if path.exists() else 0
+
+
+def wait_for_sleep_log_growth(path: Path, previous_count: int, context: str) -> int:
+    deadline = time.monotonic() + 3
+    while time.monotonic() < deadline:
+        count = sleep_log_count(path)
+        if count > previous_count:
+            return count
+        time.sleep(0.05)
+    raise AssertionError(f"{context}: refresh watcher did not start")
+
+
+def require_sleep_log_stable(path: Path, context: str) -> int:
+    time.sleep(0.25)
+    first = sleep_log_count(path)
+    time.sleep(0.25)
+    second = sleep_log_count(path)
+    require(first == second, f"{context}: watcher restarted in agent mode ({first} -> {second})")
+    return second
+
+
+def check_watcher_mode_transitions(zsh: str, bundle: Path, home: Path, xdg: Path) -> int:
+    install = bundle / "watcher-transitions"
+    install.mkdir()
+    shutil.copyfile(TERMINAL / "init.zsh", install / "init.zsh")
+    (install / "p10k.zsh").write_text("# isolated watcher transition fixture\n")
+    plugin_root = install / "plugins"
+    finish_log = bundle / "transition-finish-log"
+    put(
+        plugin_root / "zsh-syntax-highlighting" / "zsh-syntax-highlighting.zsh",
+        'print -r -- finish >> "$NIRI_PLUS_TEST_FINISH_LOG"\n',
+    )
+
+    test_bin = bundle / "transition-bin"
+    test_bin.mkdir()
+    mkdir = shutil.which("mkdir")
+    mv = shutil.which("mv")
+    sleep = shutil.which("sleep")
+    require(mkdir is not None and mv is not None and sleep is not None, "mkdir, mv, and sleep are required for watcher transition checks")
+    (test_bin / "mkdir").symlink_to(mkdir)
+    (test_bin / "mv").symlink_to(mv)
+    put(
+        test_bin / "sleep",
+        "#!/bin/sh\nprintf '%s\\n' \"$$\" >> \"$NIRI_PLUS_TEST_SLEEP_PID_FILE\"\nexec "
+        + sleep
+        + ' "$@"\n',
+        executable=True,
+    )
+
+    (install / ".zshrc").write_text(
+        f'''function niri_plus_test_hook_count() {{
+  local hook_type="$1" function_name="$2" hook
+  local -a hooks=()
+  local -i count=0
+  zstyle -a "zle-$hook_type" widgets hooks 2>/dev/null || hooks=()
+  for hook in "${{hooks[@]}}"; do
+    [[ "${{hook#*:}}" == "$function_name" ]] && (( ++count ))
+  done
+  print -r -- "$count"
+}}
+function precmd() {{ print -r -- NIRI_PLUS_TRANSITION_PROMPT_READY; }}
+source "{install / 'init.zsh'}"
+ZSH_FORCE_FULL_PROMPT=1
+niri_plus_shell_init
+niri_plus_shell_finish
+niri_plus_shell_finish
+[[ "$(niri_plus_test_hook_count line-init _rp_line_init)" == 1 ]] || exit 81
+[[ "$(niri_plus_test_hook_count line-finish _rp_line_finish)" == 1 ]] || exit 82
+'''
+    )
+
+    sleep_log = bundle / "transition-sleep-pids"
+    env = os.environ.copy()
+    env.update(
+        {
+            "HOME": str(home),
+            "ZDOTDIR": str(install),
+            "XDG_CONFIG_HOME": str(xdg / "transition-config"),
+            "XDG_STATE_HOME": str(xdg / "transition-state"),
+            "XDG_CACHE_HOME": str(xdg / "transition-cache"),
+            "NIRI_PLUS_ZSH_PLUGIN_DIR": str(plugin_root),
+            "NIRI_PLUS_ZSH_THEME_DIR": str(plugin_root),
+            "NIRI_PLUS_ZSH_AGENT_HISTORY": "skip",
+            "ZSH_FORCE_FULL_PROMPT": "1",
+            "ZSH_RIGHT_PROMPT_REFRESH_INTERVAL": "0.08",
+            "NIRI_PLUS_TEST_FINISH_LOG": str(finish_log),
+            "NIRI_PLUS_TEST_SLEEP_PID_FILE": str(sleep_log),
+            "PATH": str(test_bin),
+        }
+    )
+
+    pid, fd = pty.fork()
+    if pid == 0:
+        os.execvpe(zsh, [zsh, "-i"], env)
+    checks = 0
+    try:
+        pty_read_until(fd, b"NIRI_PLUS_TRANSITION_PROMPT_READY", 8, "human watcher did not reach its first prompt")
+        initial_count = wait_for_sleep_log_growth(sleep_log, 0, "initial human mode")
+        require(finish_log.read_text().splitlines() == ["finish"], "initial finish was not idempotent")
+        checks += 2
+
+        def run_to_prompt(command: str, context: str) -> None:
+            os.write(fd, command.encode() + b"\n")
+            pty_read_until(fd, b"NIRI_PLUS_TRANSITION_PROMPT_READY", 5, context)
+
+        run_to_prompt(
+            '''export NIRI_PLUS_AGENT_TOOL=1
+ZSH_FORCE_FULL_PROMPT=
+NIRI_PLUS_ZSH_AGENT_HISTORY=skip
+niri_plus_shell_init
+niri_plus_shell_finish
+[[ "$NIRI_PLUS_SHELL_MODE" == agent && "$__NIRI_PLUS_SHELL_INITIALIZED_MODE" == agent ]] || exit 83
+[[ -z "${__NIRI_PLUS_SHELL_FINISHED:-}" ]] || exit 84
+[[ "$(niri_plus_test_hook_count line-init _rp_line_init)" == 0 ]] || exit 85
+[[ "$(niri_plus_test_hook_count line-finish _rp_line_finish)" == 0 ]] || exit 86''',
+            "skip agent transition did not return to an agent prompt",
+        )
+        stable_count = require_sleep_log_stable(sleep_log, "skip agent transition")
+        require(finish_log.read_text().splitlines() == ["finish"], "agent finish ran human integrations")
+        checks += 3
+
+        run_to_prompt(
+            '''unset NIRI_PLUS_AGENT_TOOL
+ZSH_FORCE_FULL_PROMPT=1
+NIRI_PLUS_ZSH_AGENT_HISTORY=skip
+niri_plus_shell_init
+[[ "$NIRI_PLUS_SHELL_MODE" == human && "$__NIRI_PLUS_SHELL_INITIALIZED_MODE" == human ]] || exit 87
+[[ -z "${__NIRI_PLUS_SHELL_FINISHED:-}" ]] || exit 88
+[[ "$(niri_plus_test_hook_count line-init _rp_line_init)" == 1 ]] || exit 89
+[[ "$(niri_plus_test_hook_count line-finish _rp_line_finish)" == 1 ]] || exit 90
+niri_plus_shell_init
+[[ "$(niri_plus_test_hook_count line-init _rp_line_init)" == 1 ]] || exit 91
+niri_plus_shell_finish
+niri_plus_shell_finish''',
+            "human re-entry after skip did not restore one watcher",
+        )
+        stable_count = wait_for_sleep_log_growth(sleep_log, stable_count, "human re-entry after skip")
+        require(finish_log.read_text().splitlines() == ["finish", "finish"], "human re-entry inherited stale finish state")
+        checks += 3
+
+        legacy_history = home / "legacy-history" / "history"
+        run_to_prompt(
+            f'''export NIRI_PLUS_AGENT_TOOL=1
+ZSH_FORCE_FULL_PROMPT=
+NIRI_PLUS_ZSH_AGENT_HISTORY=legacy
+NIRI_PLUS_ZSH_HISTORY_FILE="{legacy_history}"
+niri_plus_shell_init
+niri_plus_shell_finish
+[[ "$NIRI_PLUS_SHELL_MODE" == agent && "$__NIRI_PLUS_SHELL_INITIALIZED_MODE" == agent ]] || exit 92
+[[ "$HISTFILE" == "{legacy_history}" ]] || exit 93
+[[ -z "${{__NIRI_PLUS_SHELL_FINISHED:-}}" ]] || exit 94
+[[ "$(niri_plus_test_hook_count line-init _rp_line_init)" == 0 ]] || exit 95
+[[ "$(niri_plus_test_hook_count line-finish _rp_line_finish)" == 0 ]] || exit 96''',
+            "legacy agent transition did not return to an agent prompt",
+        )
+        stable_count = require_sleep_log_stable(sleep_log, "legacy agent transition")
+        require(legacy_history.parent.is_dir(), "legacy agent transition did not initialize its history parent")
+        require(finish_log.read_text().splitlines() == ["finish", "finish"], "legacy agent finish ran human integrations")
+        checks += 3
+
+        run_to_prompt(
+            '''unset NIRI_PLUS_AGENT_TOOL NIRI_PLUS_ZSH_HISTORY_FILE
+ZSH_FORCE_FULL_PROMPT=1
+NIRI_PLUS_ZSH_AGENT_HISTORY=skip
+niri_plus_shell_init
+[[ "$NIRI_PLUS_SHELL_MODE" == human && "$__NIRI_PLUS_SHELL_INITIALIZED_MODE" == human ]] || exit 97
+[[ -z "${__NIRI_PLUS_SHELL_FINISHED:-}" ]] || exit 98
+[[ "$(niri_plus_test_hook_count line-init _rp_line_init)" == 1 ]] || exit 99
+[[ "$(niri_plus_test_hook_count line-finish _rp_line_finish)" == 1 ]] || exit 100
+niri_plus_shell_init
+[[ "$(niri_plus_test_hook_count line-init _rp_line_init)" == 1 ]] || exit 101
+niri_plus_shell_finish
+niri_plus_shell_finish''',
+            "human re-entry after legacy did not restore one watcher",
+        )
+        stable_count = wait_for_sleep_log_growth(sleep_log, stable_count, "human re-entry after legacy")
+        require(finish_log.read_text().splitlines() == ["finish", "finish", "finish"], "legacy re-entry inherited stale finish state")
+        checks += 3
+
+        os.write(fd, b"exit\n")
+        wait_for_shell(pid, fd, 8)
+        pid = -1
+    finally:
+        if pid > 0:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            try:
+                os.waitpid(pid, 0)
+            except ChildProcessError:
+                pass
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+
+    pids = {int(value) for value in sleep_log.read_text().splitlines() if value.isdigit()}
+    deadline = time.monotonic() + 3
+    alive = set(pids)
+    while alive and time.monotonic() < deadline:
+        alive = set()
+        for child_pid in pids:
+            try:
+                os.kill(child_pid, 0)
+            except ProcessLookupError:
+                continue
+            status = Path(f"/proc/{child_pid}/stat")
+            if status.exists() and status.read_text().split()[2] == "Z":
+                continue
+            alive.add(child_pid)
+        if alive:
+            time.sleep(0.05)
+    require(not alive, f"transition watcher processes remained after shell exit: {sorted(alive)}")
+    return checks + 1
+
+
+def check_shell_api(zsh: str, bundle: Path, home: Path, xdg: Path) -> int:
+    checks = 0
+    source_state = xdg / "api-source-state"
+    source_cache = xdg / "api-source-cache"
+    source_env = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "HOME": str(home),
+        "TERM_PROGRAM": "",
+        "XDG_STATE_HOME": str(source_state),
+        "XDG_CACHE_HOME": str(source_cache),
+        "NIRI_PLUS_ZSH_AGENT_HISTORY": "skip",
+    }
+    source_code = f'''PROMPT=before-source
+RPROMPT=before-right
+source "{TERMINAL / 'init.zsh'}"
+niri_plus_shell_finish
+[[ $+functions[niri_plus_shell_init] == 1 && $+functions[niri_plus_shell_finish] == 1 ]] || exit 61
+[[ "$PROMPT" == before-source && "$RPROMPT" == before-right ]] || exit 62
+[[ -z "${{NIRI_PLUS_SHELL_MODE:-}}" && -z "${{NIRI_PLUS_ZSH_HOME:-}}" ]] || exit 63
+[[ ! -e "$XDG_STATE_HOME" && ! -e "$XDG_CACHE_HOME" ]] || exit 64
+print -r -- SOURCE_ONLY_API_OK
+'''
+    result = zsh_run(zsh, source_code, source_env)
+    require("SOURCE_ONLY_API_OK" in result.stdout, "sourcing init.zsh performed initialization instead of defining the API")
+    checks += 1
+
+    caller = bundle / "outer-caller.zsh"
+    caller.write_text(
+        f'''source "{TERMINAL / 'init.zsh'}"
+niri_plus_shell_init
+niri_plus_shell_finish
+[[ "$NIRI_PLUS_SHELL_MODE" == agent ]] || print -r -- OUTER_MODE_FAILURE
+[[ "$NIRI_PLUS_SHELL_MODE" == agent ]] && return
+print -r -- HUMAN_ONLY_SECTION_RAN
+'''
+    )
+    caller_env = source_env | {
+        "NIRI_PLUS_AGENT_TOOL": "1",
+        "NIRI_PLUS_ZSH_AGENT_HISTORY": "skip",
+        "ZSH_FORCE_FULL_PROMPT": "",
+        "ZSH_FORCE_SIMPLE_PROMPT": "",
+    }
+    result = zsh_run(zsh, f'source "{caller}"; print -r -- OUTER_CALLER_CONTINUED', caller_env)
+    require("OUTER_CALLER_CONTINUED" in result.stdout, "outer .zshrc did not continue after its own return")
+    require("HUMAN_ONLY_SECTION_RAN" not in result.stdout and "OUTER_MODE_FAILURE" not in result.stdout, "agent shell ran caller-owned human hooks")
+    require(not (source_state / "zsh").exists() and not (source_cache / "niri-plus-zsh").exists(), "agent skip mode initialized history or completion")
+    checks += 3
+
+    override_home = bundle / "override-home"
+    override_home.mkdir()
+    override_env = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "HOME": str(override_home),
+        "TERM_PROGRAM": "",
+        "XDG_STATE_HOME": str(xdg / "override-state"),
+        "XDG_CACHE_HOME": str(xdg / "override-cache"),
+        "NIRI_PLUS_AGENT_TOOL": "1",
+        "NIRI_PLUS_SHELL_MODE": "stale-exported-value",
+        "NIRI_PLUS_ZSH_AGENT_HISTORY": "skip",
+        "NIRI_PLUS_ZSH_PLUGIN_DIR": "",
+        "NIRI_PLUS_ZSH_THEME_DIR": "",
+        "NIRI_PLUS_ZSH_HISTORY_FILE": "",
+        "NIRI_PLUS_ZSH_COMPDUMP": "",
+        "ZSH_FORCE_FULL_PROMPT": "1",
+        "ZSH_FORCE_SIMPLE_PROMPT": "1",
+    }
+    override_code = f'''source "{TERMINAL / 'init.zsh'}"
+niri_plus_shell_init
+[[ "$NIRI_PLUS_SHELL_MODE" == human ]] || exit 65
+[[ "${{(t)NIRI_PLUS_SHELL_MODE}}" != *export* ]] || exit 66
+[[ "$NIRI_PLUS_ZSH_HOME" == "{TERMINAL}" ]] || exit 67
+[[ "$NIRI_PLUS_ZSH_PLUGIN_DIR" == "$NIRI_PLUS_ZSH_HOME/plugins" ]] || exit 68
+[[ "$NIRI_PLUS_ZSH_THEME_DIR" == "$NIRI_PLUS_ZSH_PLUGIN_DIR" ]] || exit 69
+[[ "$NIRI_PLUS_ZSH_HISTORY_FILE" == "$XDG_STATE_HOME/zsh/history" ]] || exit 70
+[[ "$NIRI_PLUS_ZSH_COMPDUMP" == "$XDG_CACHE_HOME/niri-plus-zsh/zcompdump-$ZSH_VERSION" ]] || exit 71
+ZSH_FORCE_FULL_PROMPT=
+ZSH_FORCE_SIMPLE_PROMPT=1
+unset NIRI_PLUS_AGENT_TOOL
+niri_plus_shell_init
+[[ "$NIRI_PLUS_SHELL_MODE" == agent && "$PROMPT" == '%m%# ' ]] || exit 72
+print -r -- MODE_OVERRIDES_OK:${{NIRI_PLUS_SHELL_MODE}}:${{(t)NIRI_PLUS_SHELL_MODE}}
+'''
+    result = zsh_run(zsh, override_code, override_env)
+    require("MODE_OVERRIDES_OK:agent:scalar" in result.stdout, "mode overrides or non-exported computed mode changed")
+    checks += 1
+
+    explicit_compdump = bundle / "native-cache" / "zsh" / "zcompdump"
+    explicit_cache_env = source_env | {
+        "HOME": str(bundle / "compdump-home"),
+        "XDG_CACHE_HOME": str(bundle / "unused-cache"),
+        "XDG_STATE_HOME": str(bundle / "compdump-state"),
+        "NIRI_PLUS_ZSH_COMPDUMP": str(explicit_compdump),
+        "ZSH_FORCE_FULL_PROMPT": "1",
+    }
+    result = zsh_run(
+        zsh,
+        f'''source "{TERMINAL / 'init.zsh'}"
+niri_plus_shell_init
+[[ "$NIRI_PLUS_ZSH_COMPDUMP" == "{explicit_compdump}" ]] || exit 73
+[[ "$ZSH_CACHE_DIR" == "{explicit_compdump.parent}" ]] || exit 74
+print -r -- EXPLICIT_COMPDUMP_OK
+''',
+        explicit_cache_env,
+    )
+    require("EXPLICIT_COMPDUMP_OK" in result.stdout, "explicit compdump path was not retained")
+    require(explicit_compdump.parent.is_dir(), "explicit compdump parent was not created")
+    require(not (bundle / "unused-cache").exists(), "explicit compdump also created the unused portable cache")
+    checks += 3
+
+    legacy_history = override_home / ".local/state/zsh/history"
+    legacy_env = source_env | {
+        "NIRI_PLUS_AGENT_TOOL": "1",
+        "NIRI_PLUS_ZSH_AGENT_HISTORY": "legacy",
+        "NIRI_PLUS_ZSH_HISTORY_FILE": str(legacy_history),
+        "ZSH_FORCE_FULL_PROMPT": "",
+        "ZSH_FORCE_SIMPLE_PROMPT": "",
+        "XDG_STATE_HOME": str(xdg / "legacy-state"),
+        "XDG_CACHE_HOME": str(xdg / "legacy-cache"),
+    }
+    result = zsh_run(
+        zsh,
+        f'source "{TERMINAL / "zshrc"}"; print -r -- "LEGACY:$NIRI_PLUS_SHELL_MODE:$HISTFILE"',
+        legacy_env,
+    )
+    require(f"LEGACY:agent:{legacy_history}" in result.stdout, "legacy agent history path was not preserved")
+    require(legacy_history.parent.is_dir(), "legacy agent history initialization did not create its existing parent")
+    require(not (xdg / "legacy-cache").exists(), "legacy agent mode initialized the completion cache")
+    checks += 3
+    return checks
+
+
 def main() -> int:
     zsh = shutil.which("zsh")
     require(zsh is not None, "Zsh is required for the isolated terminal checks")
     checks = 0
 
-    for path in (TERMINAL / "zshrc", TERMINAL / "p10k.zsh", TERMINAL / "p10k-custom-segments.zsh"):
+    for path in (TERMINAL / "zshrc", TERMINAL / "init.zsh", TERMINAL / "p10k.zsh", TERMINAL / "p10k-custom-segments.zsh"):
         result = subprocess.run([zsh, "-n", str(path)], text=True, capture_output=True)
         require(result.returncode == 0, f"Zsh syntax failed for {path}: {result.stderr}")
         checks += 1
@@ -216,6 +605,7 @@ def main() -> int:
         xdg.mkdir()
         bundle = base / "bundle"
         bundle.mkdir()
+        checks += check_shell_api(zsh, bundle, home, xdg)
         with mock.patch.dict(os.environ, {"HOME": str(home)}):
             existing = home / "existing"
             existing.mkdir()
@@ -327,7 +717,7 @@ def main() -> int:
         # depending on globally installed plugins or reaching hardware services.
         install = bundle / "human"
         install.mkdir()
-        for name in ("zshrc", "p10k.zsh", "p10k-custom-segments.zsh"):
+        for name in ("zshrc", "init.zsh", "p10k.zsh", "p10k-custom-segments.zsh"):
             shutil.copyfile(TERMINAL / name, install / name)
         plugin_order = bundle / "plugin-order"
         for directory, file, label in (
@@ -347,9 +737,15 @@ def main() -> int:
         require(mkdir is not None and mv is not None, "mkdir and mv are required for isolated startup")
         (test_bin / "mkdir").symlink_to(mkdir)
         (test_bin / "mv").symlink_to(mv)
-        put(test_bin / "zoxide", "#!/bin/sh\nprintf '%s\\n' 'typeset -g NIRI_PLUS_TEST_ZOXIDE=1'\n", executable=True)
-        put(test_bin / "fzf", "#!/bin/sh\n[ \"$1\" = --zsh ] && printf '%s\\n' 'typeset -g NIRI_PLUS_TEST_FZF=1'\n", executable=True)
-        (install / ".zshrc").write_text((install / "zshrc").read_text())
+        put(test_bin / "zoxide", "#!/bin/sh\nprintf '%s\\n' zoxide >> \"$NIRI_PLUS_TEST_PLUGIN_ORDER\"\nprintf '%s\\n' 'typeset -g NIRI_PLUS_TEST_ZOXIDE=1'\n", executable=True)
+        put(test_bin / "fzf", "#!/bin/sh\n[ \"$1\" = --zsh ] && { printf '%s\\n' fzf >> \"$NIRI_PLUS_TEST_PLUGIN_ORDER\"; printf '%s\\n' 'typeset -g NIRI_PLUS_TEST_FZF=1'; }\n", executable=True)
+        (install / ".zshrc").write_text(
+            f'''function niri_plus_shell_pre_init() {{ print -r -- pre >> "$NIRI_PLUS_TEST_PLUGIN_ORDER"; }}
+source "{install / 'zshrc'}"
+niri_plus_shell_init
+niri_plus_shell_finish
+'''
+        )
         proc = bundle / "proc"
         sysroot = bundle / "sys"
         put(proc / "meminfo", "MemTotal: 1000 kB\nMemAvailable: 300 kB\n")
@@ -374,7 +770,17 @@ def main() -> int:
                 "ZSH_FORCE_FULL_PROMPT": "1",
             }
         )
-        code = f'''source "{install / 'zshrc'}"
+        code = f'''function niri_plus_shell_pre_init() {{ print -r -- pre >> "$NIRI_PLUS_TEST_PLUGIN_ORDER"; }}
+source "{install / 'init.zsh'}"
+niri_plus_shell_init
+print -r -- private-cli-integration >> "$NIRI_PLUS_TEST_PLUGIN_ORDER"
+niri_plus_shell_finish
+niri_plus_shell_finish
+[[ "$NIRI_PLUS_SHELL_MODE" == human && "${{(t)NIRI_PLUS_SHELL_MODE}}" != *export* ]] || exit 61
+[[ "$NIRI_PLUS_ZSH_HOME" == "{install}" ]] || exit 62
+[[ "$NIRI_PLUS_ZSH_PLUGIN_DIR" == "$NIRI_PLUS_ZSH_HOME/plugins" ]] || exit 63
+[[ "$NIRI_PLUS_ZSH_THEME_DIR" == "$NIRI_PLUS_ZSH_PLUGIN_DIR" ]] || exit 64
+[[ "$NIRI_PLUS_ZSH_COMPDUMP" == "$XDG_CACHE_HOME/niri-plus-zsh/zcompdump-$ZSH_VERSION" ]] || exit 65
 _detect_memory || exit 31
 (( __p10k_mem_pct == 70 )) || exit 32
 _detect_cpu && exit 33
@@ -420,13 +826,17 @@ print -r -- "HUMAN:$POWERLEVEL9K_DIR_FOREGROUND:$POWERLEVEL9K_VCS_CLEAN_FOREGROU
         probe_ms = (time.perf_counter() - started) * 1000
         require("HUMAN:4:2:3:6:1:2:9" in result.stdout, "portable prompt did not use selected Neutral Slate ANSI role indexes")
         refresh_ms = float(next(line.split(":", 1)[1] for line in result.stdout.splitlines() if line.startswith("PROBE_MS:")))
-        require(plugin_order.read_text().splitlines() == ["autosuggestions", "substring", "powerlevel10k", "syntax"], "plugin source order changed")
+        require(
+            plugin_order.read_text().splitlines() == ["pre", "autosuggestions", "substring", "powerlevel10k", "private-cli-integration", "zoxide", "fzf", "syntax"],
+            "pre-init, CLI integration, or syntax-highlighting order changed",
+        )
         checks += 10
 
         # Missing optional commands and devices remain a supported startup.
         missing_install = bundle / "missing"
         missing_install.mkdir()
         shutil.copyfile(TERMINAL / "zshrc", missing_install / "zshrc")
+        shutil.copyfile(TERMINAL / "init.zsh", missing_install / "init.zsh")
         shutil.copyfile(TERMINAL / "p10k.zsh", missing_install / "p10k.zsh")
         shutil.copyfile(TERMINAL / "p10k-custom-segments.zsh", missing_install / "p10k-custom-segments.zsh")
         missing_env = shell_env | {"PATH": str(test_bin / "empty-path"), "NIRI_PLUS_TEST_PLUGIN_ORDER": str(bundle / "missing-order")}
@@ -451,6 +861,7 @@ print -r -- MISSING_TOOLS_OK
 
         timer_count = check_interactive_watcher(zsh, bundle, home, xdg)
         checks += 3
+        checks += check_watcher_mode_transitions(zsh, bundle, home, xdg)
 
     print(json.dumps({"checks": checks, "plugins": 4, "watcher_processes_started_and_reaped": timer_count, "fixture_startup_ms": round(probe_ms, 2), "fixture_status_refresh_ms_per_call": round(refresh_ms, 3), "live_desktop_operations": 0}, sort_keys=True))
     return 0

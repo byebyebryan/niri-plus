@@ -1,4 +1,4 @@
-# Niri Plus portable adaptation of the selected custom status segments.
+# Shared Niri Plus custom Powerlevel10k status segments.
 # Right prompt: time, cpu, memory, bluetooth, network, battery.
 # Shared utils: semantic colors, circle/wifi/battery gauge icons.
 # Segments split into detection (data + status) and rendering (icon + color + p10k segment).

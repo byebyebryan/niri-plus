@@ -20,7 +20,7 @@ class BuildContracts(unittest.TestCase):
 
     def test_complete_site_has_checked_links_and_no_planning_material(self):
         result = builder.build(self.output)
-        self.assertEqual(result["pages"], 19)
+        self.assertEqual(result["pages"], 20)
         self.assertGreater(result["local_links"], 200)
         self.assertFalse((self.output / "docs").exists())
         self.assertFalse((self.output / "AGENTS.md").exists())
@@ -28,6 +28,33 @@ class BuildContracts(unittest.TestCase):
         self.assertIn("Illustrated walkthrough", (self.output / "index.html").read_text())
         for page in self.output.rglob("*.html"):
             self.assertNotIn("https://github.com/byebyebryan/dotfiles", page.read_text())
+
+    def test_component_source_map_pins_the_release_and_records_appearance_closeout(self):
+        producer = json.loads((ROOT / "data/components.json").read_text())
+        self.assertEqual(producer["producer"]["version"], "0.3.0")
+        self.assertEqual(producer["producer"]["api_version"], 1)
+        self.assertEqual(producer["producer"]["archive_sha256"], "7ac7ca4494826c37e364343838681320dfa759e8a12969f07c4200f10be75d1d")
+        self.assertEqual(producer["consumer"]["final_source_revision"], "e8a11e79b3009bebf1d931c5d3e64982692e2f25")
+        appearance = producer["modules"]["appearance"]
+        self.assertTrue(appearance["fleet_rollout_complete"])
+        self.assertIn("converged", appearance["consumer_status"])
+        self.assertEqual(producer["consumer"]["appearance_adoption_revision"], "9f2bf9689d27a5698c25c0e604a835b5370b0624")
+        self.assertEqual(appearance["verified_derived_outputs_per_host"], 39)
+        self.assertTrue(producer["modules"]["shell"]["headless"])
+        self.assertFalse(producer["modules"]["shell"]["requires_niri_or_wayland"])
+        self.assertIn("every loaded byte", producer["modules"]["shell"]["runtime_cache_evidence"])
+        self.assertIn("alignment bytes", producer["modules"]["shell"]["runtime_cache_evidence"])
+
+        builder.build(self.output)
+        self.assertEqual(
+            (self.output / "data/components.json").read_bytes(),
+            (ROOT / "data/components.json").read_bytes(),
+        )
+        source_map = (self.output / "components/index.html").read_text()
+        self.assertIn("independent selections", source_map.lower())
+        self.assertIn("private chezmoi", source_map.lower())
+        self.assertIn("Applied at adoption revision", source_map)
+        self.assertIn("generated files keep their existing public paths", source_map.lower())
 
     def test_broken_local_anchor_is_rejected(self):
         builder.build(self.output)

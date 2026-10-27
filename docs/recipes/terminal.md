@@ -53,7 +53,7 @@ personal host setup and credentials removed.
 | History and completion | Shared history in the user's XDG state directory, duplicate reduction, command verification, completion menu, and case-insensitive matching. The personal caller can provide its existing history and compdump paths. |
 | Editing | Up/Down substring history search, inline autosuggestions, and syntax highlighting loaded after widget integrations. |
 | Navigation | Zoxide and fzf initialization when their commands are installed. |
-| Agent tool shell | A recognized tool environment gets a hostname-only prompt and skips history, completion, plugins, custom probes, and the refresh watcher by default. The private compatibility option can retain history initialization before detection. Force the simple or full prompt with `ZSH_FORCE_SIMPLE_PROMPT` or `ZSH_FORCE_FULL_PROMPT`. |
+| Agent tool shell | A recognized tool environment gets a hostname-only prompt and skips history, completion, plugins, custom probes, and the refresh watcher by default. The private compatibility option retains history initialization before returning in agent mode. Force the simple or full prompt with `ZSH_FORCE_SIMPLE_PROMPT` or `ZSH_FORCE_FULL_PROMPT`. |
 
 The portable [Zsh starter](../../examples/terminal/zshrc) sources the shared
 [init API](../../examples/terminal/init.zsh), initializes the shell, returns
@@ -88,7 +88,7 @@ file descriptor on line completion or shell exit.
 
 | Difference | Shared-core choice |
 | --- | --- |
-| History is initialized before native agent detection; the portable profile returned first. | `NIRI_PLUS_ZSH_AGENT_HISTORY=skip` is the portable default. The personal compatibility setting `legacy` initializes its supplied history path before agent detection. |
+| Native Zsh initializes history before agent detection; the shared API computes mode first. | `NIRI_PLUS_ZSH_AGENT_HISTORY=skip` is the portable default. The personal compatibility setting `legacy` retains history initialization before returning in agent mode. |
 | Native history and completion paths differ from the portable XDG defaults. | `NIRI_PLUS_ZSH_HISTORY_FILE` and `NIRI_PLUS_ZSH_COMPDUMP` let the caller retain both existing paths. The core does not migrate either file. |
 | Ghostty, SDK, kubectl, pyenv, editor, and browser setup exists only in the personal startup. | Ghostty can use the pre-init hook. Other personal integrations stay in the caller between init and finish. |
 | Native prompt source uses fixed proc/sys paths and the watcher does not guard a failed worker write. | The shared source keeps the portable fixture roots, quiet single-value reads, and worker exit guard. Defaults still read `/proc` and `/sys`; five-second hardware/network caching and the one-second refresh cadence remain. |

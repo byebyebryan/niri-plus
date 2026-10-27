@@ -31,6 +31,7 @@ PAGES = {
     "story/": ("docs/story.md", "The personal story behind a desktop shaped around Chrome, terminals, and coding agents."),
     "tour/": ("docs/tour.md", "Explore browser, terminal, notification, clipboard, and remote-host workflows."),
     "architecture/": ("docs/architecture.md", "How Niri, SwayNC, Rofi, Kitty, and small session services fit together."),
+    "components/": ("docs/components.md", "Canonical Niri Plus component sources, public exports, consumer boundaries, and release status."),
     "setup/": ("docs/setup.md", "Assemble the parts you want with portable examples and focused Arch Linux recipes."),
     "recipes/notifications/": ("docs/recipes/notifications.md", "SwayNC, the custom system panel, and notification integration under Niri."),
     "recipes/clipboard/": ("docs/recipes/clipboard.md", "Text and image clipboard history with Cliphist, Rofi, and session-scoped collectors."),
@@ -199,7 +200,7 @@ def public_files():
     for name in examples:
         if not (name.startswith("examples/") or name in PUBLIC_TOOLS) or ".." in Path(name).parts:
             raise ValueError(f"invalid public example/tool path: {name}")
-    return {"assets/" + x for x in ASSETS} | {"data/setup.json", "examples/manifest.json"} | examples | FONT_ASSETS | GENERATED
+    return {"assets/" + x for x in ASSETS} | {"data/setup.json", "data/components.json", "examples/manifest.json"} | examples | FONT_ASSETS | GENERATED
 
 
 def validate_identity_associations(records):

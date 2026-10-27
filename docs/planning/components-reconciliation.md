@@ -1,11 +1,25 @@
 # Reconcile reusable Niri Plus components
 
-Planning pass: 2026-10-26. The direction is agreed: Niri Plus should own the
+Planning origin: 2026-10-26. The direction is agreed: Niri Plus should own the
 reusable custom desktop and shell pieces, chezmoi should consume them and supply
 personal configuration, and established component repositories should retain
-their implementation and release ownership. The detailed contracts below are
-the proposed execution plan. This document does not change an active selector,
-installed file, release, or service.
+their implementation and release ownership. The contracts below record the
+accepted scope; current producer and consumer status is summarized here.
+
+## Current checkpoint status
+
+| Checkpoint | Status | Evidence and remaining boundary |
+| --- | --- | --- |
+| A. Desktop source and bundle | Complete | Public desktop module and reproducible exports are included in the versioned bundle. |
+| B. Desktop consumer | Complete | Deployed on Carbon, Starship and Snap; 16 shared files matched byte-for-byte, scoped repeats were no-ops, and services, processes and captured policy were preserved. |
+| C. Shared shell candidate | Complete | Shared init/finish, prompt and dependency pins are published; the personal shim remains in chezmoi. |
+| D. Shell consumer | Complete | Applied and PTY-qualified on all three hosts; repeat applies were no-ops and existing sessions were preserved. The cache verifier validates known `.zwc` headers/layouts and compares every loaded byte and mode with a fresh native Zsh compilation, normalizing only validated unused alignment padding. |
+| E. Appearance reconciliation | Complete | The [0.3.0 producer record](../../data/components.json) pins the verified archive, appearance adoption revision and final consumer source revision. All three hosts converged across 35 scoped targets with zero drift; repeated runs made no writes. All 39 derived outputs per host matched the approved receipt, and all 45 pre-change/native comparisons passed. Six toolkit checks, four reviewed images and guarded greeter execution for all profiles passed with zero privileged-write requests. Native processes, service identities, packages and protected root files were preserved. |
+| F. Public ownership map | Complete | The [component source map](../components.md) and [producer record](../../data/components.json) identify the canonical owners, immutable bundle, personal consumer boundary and deployment evidence. |
+
+`data/setup.json` remains the dated record of the earlier desktop and utility
+delivery. Current shared appearance qualification and rollout are recorded in
+the [producer record](../../data/components.json).
 
 ## Outcome
 
@@ -40,7 +54,7 @@ planning observations, not permission to overwrite later work.
 
 ## Ownership and migration inventory
 
-| Piece | Proposed authoritative owner | Consumer boundary |
+| Piece | Current authoritative owner | Consumer boundary |
 | --- | --- | --- |
 | `desktop-power`, `desktop-session-ready`, `desktop-session-menu` | Niri Plus desktop module | Chezmoi supplies the captured policy and existing service wiring. |
 | `notify-volume`, `notify-brightness`, `rofi-clipboard` | Niri Plus desktop module | Existing command names, tools, state paths and key bindings remain. |
@@ -61,7 +75,7 @@ pairings, dictionaries and hardware identifiers remain outside public artifacts.
 
 ## Public source layout
 
-Proposed additions within the existing repository:
+Implemented layout within the existing repository:
 
 ```text
 components/
@@ -80,8 +94,8 @@ without Niri, a graphical session, wireless tools or a battery; missing optional
 integrations must remain harmless. Do not introduce a new repository or a
 desktop installation framework for these pieces.
 
-At implementation, update both repositories' ownership instructions so shared
-logic is edited in Niri Plus and private wrappers contain only integration.
+The public and private ownership instructions identify Niri Plus as the source
+for reusable modules; private wrappers contain personal integration.
 
 ## Bundle and chezmoi delivery contract
 
@@ -91,7 +105,7 @@ paths, SHA-256 values, executable modes, API version and prerequisites. Retain
 upstream attribution/pins; third-party source trees are separate verified inputs.
 Do not release a whole workstation configuration or embed host state.
 
-Proposed private selector: `deployments/niri-plus-components.json`. It records
+The private selector `deployments/niri-plus-components.json` records
 the exact published artifact URL, commit, archive/manifest digests and explicit
 module admission for each host. Keep it independent from the existing
 `deployments/niri-plus.json` identity pin and utility admission. Installing
@@ -138,7 +152,7 @@ and portable versions before selecting the shared implementation. Record each
 difference as a personal parameter, portability/testability improvement or
 intentional behavior choice; do not choose either whole file blindly.
 
-Proposed entry points are `niri_plus_shell_init` and `niri_plus_shell_finish`,
+The shared shell entry points are `niri_plus_shell_init` and `niri_plus_shell_finish`,
 with a computed, non-exported `NIRI_PLUS_SHELL_MODE=agent|human`. Source loading
 defines the interface; initialization selects the mode and base setup. The
 personal `.zshrc` explicitly returns in agent mode before its human-only hooks.
@@ -153,11 +167,11 @@ conversation lifecycle moves into the shell module.
 
 Known differences to settle explicitly:
 
-- Native Zsh initializes history before agent detection; the portable version
-  returns first. Proposed shared option: preserve native agent-history behavior
-  in the initial personal compatibility profile, while the portable profile
-  keeps its current early return. One implementation supports the declared
-  choice; changing the personal default is separate work.
+- Native Zsh initializes history before its agent detection. The shared API
+  computes mode first; `NIRI_PLUS_ZSH_AGENT_HISTORY=skip|legacy` keeps the
+  behavior explicit. Public default `skip` leaves history uninitialized in
+  agent mode; private compatibility selection `legacy` retains history
+  initialization before returning in agent mode.
 - The native history path and completion cache differ from the portable XDG
   choices. The personal shim supplies existing paths. Do not move, clear or
   rewrite history/completion state as part of extraction.
@@ -268,6 +282,6 @@ repeat-apply behavior and preserved native state. Physical login, device,
 scaling/docking and fresh-install acceptance stay explicitly separate from
 source, package and isolated rendering evidence.
 
-This planning pass should leave only planning documents as local changes.
-Implementation starts with the reviewed ownership/contract changes and baseline
-capture; it does not begin by deleting private originals or changing live shells.
+This document preserves the original contracts and rollout boundaries. The
+source and host evidence now lives in the component map and producer record;
+future acceptance updates should add evidence at the level actually observed.

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "producer": {
+    "repository": "https://github.com/byebyebryan/niri-plus",
+    "version": "0.3.0",
+    "api_version": 1,
+    "source_commit": "975eab393d2c4e920448eda888d2dc8f0242b396",
+    "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.3.0/niri-plus-components-0.3.0.tar.gz",
+    "archive_sha256": "7ac7ca4494826c37e364343838681320dfa759e8a12969f07c4200f10be75d1d",
+    "manifest_sha256": "f10fceaa07eb4e9d62e0afef9fe8339bfab09c34d8c9528db962ea4d9e67bf76",
+    "publication_status": "published and direct-download verified"
+  },
+  "identity": {
+    "path": "design/identity.json",
+    "schema_version": 2,
+    "sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
+    "selection_owner": "private chezmoi consumer; independent of the code bundle pin"
+  },
+  "consumer": {
+    "final_source_revision": "e8a11e79b3009bebf1d931c5d3e64982692e2f25",
+    "appearance_adoption_revision": "9f2bf9689d27a5698c25c0e604a835b5370b0624"
+  },
+  "modules": {
+    "desktop": {
+      "source": "components/desktop/",
+      "examples": [
+        "examples/desktop/",
+        "examples/feedback/",
+        "examples/session/"
+      ],
+      "consumer_status": "deployed and converged on Carbon, Starship, and Snap",
+      "evidence": "16 shared files were byte-identical; scoped repeats were no-ops; services, processes, and captured policy were preserved."
+    },
+    "shell": {
+      "source": "components/shell/",
+      "examples": [
+        "examples/terminal/"
+      ],
+      "consumer_status": "deployed and PTY-qualified on Carbon, Starship, and Snap",
+      "evidence": "Owned full-prompt PTY checks passed on all three hosts; scoped repeats were no-ops and existing sessions were preserved.",
+      "runtime_cache_evidence": "The private verifier validates each known Powerlevel10k .zwc single-file header and layout, then compares every loaded byte and mode against a fresh compilation. Only validated 0-3 unused alignment bytes at the end of each endian half are normalized. Extra caches and loaded-byte, metadata, or mode changes are rejected; upstream caching is retained.",
+      "headless": true,
+      "requires_niri_or_wayland": false,
+      "startup_installer": false
+    },
+    "appearance": {
+      "source": "components/appearance/",
+      "examples": [
+        "examples/theme/",
+        "examples/kitty/neutral-slate.conf",
+        "examples/login/derive-theme.py"
+      ],
+      "consumer_status": "deployed and converged on Carbon, Starship, and Snap",
+      "evidence": "Thirty-five scoped targets converged with zero drift and repeat runs made no writes. All 39 derived outputs per host matched the same approved receipt byte-for-byte; all 45 pre-change/native comparisons passed. Native process counts (8/8/9), eleven service identities per host, package state, and 25 protected root-owned files with their bytes, modes, ownership, and mtimes were preserved. The greeter hook repeat made no writes; no SDDM restart was needed. Guarded greeter execution passed for all three host profiles with zero privileged-write requests; six isolated toolkit checks and four reviewed images passed.",
+      "native_isolated_checks": {
+        "status": "passed",
+        "toolkit_checks": 6,
+        "reviewed_images": 4,
+        "guarded_greeter_profiles": 3,
+        "privileged_write_requests": 0
+      },
+      "verified_derived_outputs_per_host": 39,
+      "pre_change_native_comparisons": 45,
+      "fleet_rollout_complete": true
+    }
+  },
+  "independent_selections": {
+    "code_bundle": "The consumer pins one immutable archive and manifest; module admission is selected separately by host.",
+    "appearance_identity": "The schema-2 identity has its own SHA-256 and can change independently of renderer code.",
+    "utility_admission": "Private chezmoi owns utility host selection; publishing the desktop module does not enroll a host.",
+    "shell_dependencies": "components/shell/pins.json records upstream revisions; dependency staging is explicit and separate from shell startup.",
+    "personal_environment_and_policy": "Private chezmoi owns user environment, machine policy, host admission, native preference projection, and privileged root greeter installation."
+  }
+}

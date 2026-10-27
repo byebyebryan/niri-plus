@@ -4,17 +4,14 @@ A personal Niri desktop shaped around Chrome, terminals, and coding agents.
 
 **[Explore Niri Plus →](https://dev.byebyebryan.com/niri-plus/)**
 
-Read [the story behind the setup](docs/story.md) for the personal workflow and
-motivations, [take the tour](docs/tour.md), or start with the
-[setup guide](docs/setup.md). The [project brief](docs/planning/project-brief.md)
-preserves the original context and proposals.
-
-The existing chezmoi source manages Bryan's machines. Component implementations
-and releases remain in their own repositories.
+Read [the story](docs/story.md), [take the tour](docs/tour.md), or start with the
+[setup guide](docs/setup.md). The [component source map](docs/components.md)
+explains reusable public code, portable exports and private consumer ownership.
+Chezmoi remains the authority for personal machine configuration and deployment.
 
 ## Local development
 
-Requires Python 3.11+ and Node.js for the owned browser checks.
+Requires Python 3.11+ and Node.js for browser checks.
 
 ```sh
 python3 -m venv .venv
@@ -22,92 +19,64 @@ python3 -m venv .venv
 npm ci
 npx playwright install chromium
 .venv/bin/python -B -m unittest discover -s tests -v
+.venv/bin/python -B scripts/export-components.py --check
 .venv/bin/python -B scripts/check-desktop.py
+.venv/bin/python -B scripts/check-terminal.py
 .venv/bin/python -B scripts/build.py --output /tmp/niri-plus-site
 node scripts/check-browser.mjs /tmp/niri-plus-site
 ```
 
-The output must be empty. Choose a new directory for each build, or remove only
-your previous generated output. To preview with the site's project path, build
-to an empty `/tmp/niri-plus-preview/niri-plus`, then serve its parent:
+Choose a new empty output directory for each site build. To preview the public
+project path locally, build into `/tmp/niri-plus-preview/niri-plus`, serve its
+parent, then open `http://127.0.0.1:8000/niri-plus/`.
 
-```sh
-python3 -m http.server 8000 --bind 127.0.0.1 --directory /tmp/niri-plus-preview
-```
-
-Open `http://127.0.0.1:8000/niri-plus/`. The build works offline once dependencies
-are installed. It does not contact desktop runtimes or inspect the current host.
+The build and module checks work offline after dependencies are installed. They
+use declared repository inputs; they do not inspect or operate a desktop.
 
 ## Repository layout
 
-- `docs/`: readable story, tour, architecture, setup recipes, and reference.
-- `site/`: layout, presentation enhancements, CSS, and browser interactions.
-- `examples/`: portable configuration, frozen helpers, and a source/hash manifest.
-- `data/setup.json`: dated managed-source selections and personal policy context.
-- `assets/`: reviewed application renders, attribution, and media provenance.
-- `scripts/`: builder, owned headless browser checks, and social-image renderer.
-- `tests/`: build and publication-boundary checks.
-- `docs/planning/`: project brief and v1 delivery record; excluded from the site.
+- `docs/`: story, tour, architecture, setup, component ownership and recipes.
+- `site/`: page layout, CSS, and small browser enhancements.
+- `components/`: reusable desktop, shell and appearance sources.
+- `components/metadata.json`: explicit bundle inputs, module prerequisites and
+  generated public exports.
+- `examples/`: portable profiles, generated downloads, historical examples and
+  their source/hash manifest.
+- `data/components.json`: immutable producer version, checksums and current
+  consumer qualification status.
+- `data/setup.json`: dated managed-source and personal deployment evidence.
+- `assets/`: reviewed media, attribution and licenses.
+- `scripts/` and `tests/`: site, archive, export and headless checks.
 
-## Updating content and assets
+## Updating sources and examples
 
-The website uses the same Markdown as GitHub. The `niri-plus` enhancement comments
-surround readable fallbacks that the builder upgrades into visual controls.
-Keep both representations useful. Update the route map in `scripts/build.py`
-when adding pages.
+Edit shared code in its canonical `components/` module. Regenerate public
+examples with `scripts/export-components.py --write`; keep authored portable
+profiles and historical specimens separately labeled. Run the exporter in
+`--check` mode before publishing.
 
-Record every reused image's source, license, and SHA-256 in
-`assets/provenance.json` and retain `assets/LICENSES.txt`. The desktop walkthrough
-is an illustration. The Rofi image uses fictional data in the real renderer;
-SwayNC screenshots use an isolated native session. Their captions describe the
-differences. Fresh daily-desktop recordings remain a future addition.
+Build a component bundle from a reviewed full commit with
+`scripts/build-components.py`. Its archive is independent from the website
+build, uses only declared inputs, and carries file hashes and modes in a root
+manifest. Publish a new immutable version, record its archive and manifest
+hashes in `data/components.json`, then update the consumer's exact code pin.
+The [source map](docs/components.md) describes staging, separate identity and
+utility selection, and scoped application. Shell startup does not install
+components or fetch dependencies.
 
-Update `examples/manifest.json` when intentionally changing an example. Keep
-adaptations distinguishable from copied helpers. Refresh `data/setup.json` from
-reviewed source selections rather than claiming a fresh-machine installation.
-Regenerate the original social graphic with `node scripts/render-social.mjs`.
+Keep public example provenance current in `examples/manifest.json`. Record
+reused media in `assets/provenance.json`, retain licenses, and keep generated
+site output and local environments untracked.
 
 ## Publishing
 
-`.github/workflows/pages.yml` checks and publishes `main` with GitHub Pages.
-Pages uses the GitHub Actions build type. The project inherits the portfolio
-domain and needs no project CNAME or DNS change.
+GitHub Actions checks and publishes the site from `main` through GitHub Pages.
+The site build verifies local links, page metadata, public inventory and
+example/media hashes. Browser checks cover responsive pages, keyboard behavior,
+and use with JavaScript disabled. Component archives have their own immutable
+release and SHA-256; publishing the site does not publish or select a machine
+configuration.
 
-The build checks local links and anchors, metadata, public file inventory, and
-media/example hashes. Browser checks cover nineteen pages at four widths,
-keyboard operation, motion preferences, and reading without JavaScript. The
-assembly guides cover outputs, login, power/services, hardware feedback, input
-and file defaults; `python3 scripts/check-desktop.py --native` checks their
-portable helpers and installed native validators without desktop actions. To save
-local captures, set `NIRI_SCREENSHOTS=/absolute/directory` for the browser check.
-Keep generated output and captures untracked.
-
-See the [v1 delivery record](docs/planning/v1-delivery.md) for the first edition's
-scope, verification, public-delivery evidence, and remaining media/target-machine
-acceptance work.
-
-The [Neutral Slate pass checkpoint](docs/planning/neutral-slate-pass.md) records
-the prepared source and remaining host/publication gates. The
-[coverage and coherence review](docs/planning/desktop-review.md) is its baseline.
-
-The [Neutral Slate Design page](docs/design.md) is a permanent part of the site,
-alongside the [Kitty and Zsh guide](docs/recipes/terminal.md). The canonical
-`design/identity.json` supplies the selected profile, public identity export,
-site colors, specimens, and generated Kitty fragment. The internal
-[design package](docs/design/README.md) retains palette-comparison history and
-implementation/verification plans. Desktop adoption and public deployment are
-separate from these source changes.
-
-The [contrast study](docs/design/contrast.md) retains the preceding baseline and
-terminal alternatives, marking the crisper desktop and Balanced+ terminal as
-selected. `design/contrast-study.json` owns the comparisons; the canonical
-schema-2 identity owns the selected desktop and independent terminal values.
-The old baseline is frozen under `design/history/`. A portable site build can
-be published as an HTML report with `design/contrast/index.html` as its entrypoint.
-
-The site packages the selected Noto Sans UI weights, Meslo terminal face, and
-Source Han CJK fallback as WOFF2 files with their upstream licenses and generated
-provenance. The build exports only this explicit subset, rather than the whole
-design-review tree.
-Use `--portable` with `scripts/build.py` for a review snapshot with relative
-links; canonical URLs continue to describe the public Pages destination.
+The [Neutral Slate design](docs/design.md) and [contrast study](docs/design/contrast.md)
+retain the selected desktop specimen and design history. The public page is the
+main walkthrough; this README covers repository work and release maintenance.

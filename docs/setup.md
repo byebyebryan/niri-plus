@@ -8,6 +8,11 @@ The examples are a portable starting point adapted from my configuration. They
 are not a copy of my entire home directory. See [the working setup record](reference.md#working-setup)
 for versions, provenance, and what has been checked.
 
+For reusable code, generated downloads and the private integration boundary,
+start with the [component source map](components.md). Shared shell code can run
+without Niri or a graphical session; the public bundle and consumer checks do
+not require access to the private chezmoi checkout.
+
 ## Assembly map
 
 For the complete desktop, work through these stages in order. Each recipe

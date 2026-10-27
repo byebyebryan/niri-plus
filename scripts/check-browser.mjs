@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 
 const output = path.resolve(process.argv[2] || "dist");
 const prefix = "/niri-plus/";
-const routes = ["", "story/", "tour/", "design/", "design/contrast/", "architecture/", "setup/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
+const routes = ["", "story/", "tour/", "design/", "design/contrast/", "architecture/", "components/", "setup/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
 const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
 const server = http.createServer(async (request, response) => {
   try {
@@ -176,7 +176,7 @@ try {
   checks += 2;
   const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 900 } });
   const staticPage = await noScript.newPage();
-  for (const route of ["", "story/", "tour/", "design/", "design/contrast/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "reference/"]) {
+  for (const route of ["", "story/", "tour/", "design/", "design/contrast/", "components/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "reference/"]) {
     await staticPage.goto(origin + route);
     assert.ok((await staticPage.locator("main").innerText()).length > 400);
     assert.equal(await staticPage.locator("[data-scene-controls]:visible").count(), 0);

@@ -3,6 +3,11 @@
 The bindings below describe my managed Niri desktop. Portable examples and
 component guides let you adopt the parts you want.
 
+The [component source map](components.md) records the current immutable bundle
+and adoption evidence. The earlier appearance delivery in the setup record is
+historical context; the shared 0.3.0 appearance module is now deployed and
+converged on all three selected hosts.
+
 ## Keyboard reference
 
 `Mod` is Niri's compositor modifier, normally Super on a regular session.

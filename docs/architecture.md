@@ -64,14 +64,18 @@ examples without requiring my personal deployment system.
 
 | Owner | Responsibility |
 | --- | --- |
-| [Niri Plus](https://github.com/byebyebryan/niri-plus) | This desktop story, demonstrations, assembly recipes, and public examples. |
-| Private chezmoi source | My managed configuration and deployment selections. The portable examples are included in Niri Plus. |
+| [Niri Plus](https://github.com/byebyebryan/niri-plus) | This desktop story, assembly guides, reusable desktop/shell/appearance modules, and generated public examples. See the [component source map](components.md). |
+| Private chezmoi source | My personal environment, machine and utility admission, policies, native preference projection, and deployment. |
 | [SwayNC fork](https://github.com/byebyebryan/SwayNotificationCenter) | The panel implementation, activation behavior, and fork packaging. |
-| [Fleet Plus](https://dev.byebyebryan.com/fleet-plus/) | Shared presentation and cross-project guidance for the SSH, Tmux, Agent, Observer, and Mesh tools. |
-| Individual component repositories | Their implementations, releases, detailed installation guides, and public contracts. |
+| [Rofi SSH Plus](https://github.com/byebyebryan/rofi-ssh-plus), [Rofi Tmux Plus](https://github.com/byebyebryan/rofi-tmux-plus), [Rofi Agent Plus](https://github.com/byebyebryan/rofi-agent-plus) | Each picker owns its launch contract, action behavior, and implementation. |
+| [Agent Observer](https://github.com/byebyebryan/agent-observer), [Mesh Plus](https://github.com/byebyebryan/mesh-plus) | Runtime observation and peer/transport contracts; their state and route selection stay separate. |
+| [Niri](https://github.com/niri-wm/niri), [Kanshi](https://github.com/emersion/kanshi), [ESP32-RLCD](https://github.com/byebyebryan/esp32-rlcd), [349d](https://github.com/byebyebryan/esp32-349) | Compositor/output-profile behavior and independent display/notification-mirror firmware. |
+| [Fleet Plus](https://dev.byebyebryan.com/fleet-plus/) | Cross-project presentation and guidance for the optional tools. |
 
-The fleet tools and external displays are optional integrations. The browser,
-terminal, and basic desktop remain understandable without them.
+The external tools and displays are optional integrations. The browser,
+terminal, and basic desktop remain understandable without them. The source map
+shows which public downloads come from shared modules and which decisions stay
+in private chezmoi or the independent projects.
 
 ## A shared visual identity
 

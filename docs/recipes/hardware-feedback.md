@@ -9,12 +9,13 @@ the popups are transient and do not enter SwayNC history.
 The [volume helper](../../examples/feedback/notify-volume) uses WirePlumber's
 `wpctl` and `notify-send` from `libnotify`. The
 [brightness helper](../../examples/feedback/notify-brightness) uses
-`brightnessctl` and the same notifier. On Arch:
+`brightnessctl` and the same notifier. In the main walkthrough, `SOURCE` names
+the verified example tree. On Arch:
 
 ```sh
 sudo pacman -S --needed wireplumber libnotify brightnessctl
-install -Dm755 examples/feedback/notify-volume "$HOME/.local/bin/notify-volume"
-install -Dm755 examples/feedback/notify-brightness "$HOME/.local/bin/notify-brightness"
+install -Dm755 "$SOURCE/examples/feedback/notify-volume" "$HOME/.local/bin/notify-volume"
+install -Dm755 "$SOURCE/examples/feedback/notify-brightness" "$HOME/.local/bin/notify-brightness"
 ```
 
 Inspect any existing files with these names before installing. A running audio
@@ -23,8 +24,20 @@ must already be selected. `~/.local/bin` must be available in Niri's `PATH`.
 
 ## Bind and inspect
 
-Merge the six entries from the [Niri binding fragment](../../examples/feedback/binds.kdl)
-into the existing `binds` block, replacing existing bindings for those keys.
+Inspect the six entries in the [Niri binding fragment](../../examples/feedback/binds.kdl)
+from the verified `SOURCE` tree, then merge them into the existing `binds`
+block, replacing existing bindings for those keys. The fragment is:
+
+```kdl
+XF86AudioLowerVolume allow-when-locked=true { spawn "notify-volume" "down"; }
+XF86AudioRaiseVolume allow-when-locked=true { spawn "notify-volume" "up"; }
+XF86AudioMute allow-when-locked=true { spawn "notify-volume" "mute"; }
+XF86AudioMicMute allow-when-locked=true { spawn "notify-volume" "mic-mute"; }
+XF86MonBrightnessDown allow-when-locked=true { spawn "notify-brightness" "down"; }
+XF86MonBrightnessUp allow-when-locked=true { spawn "notify-brightness" "up"; }
+```
+
+Keep one `binds` block and preserve the existing layout and unrelated keys.
 Validate the complete configuration with `niri validate`. These bindings retain
 the personal behavior of allowing hardware controls while locked.
 

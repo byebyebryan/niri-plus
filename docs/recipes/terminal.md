@@ -107,10 +107,12 @@ the immutable commit and SHA-256 for each tarball; [third-party notices](../../e
 records license and attribution details. The selected versions follow the
 existing public checkouts rather than a floating branch.
 
-From a Niri Plus checkout, choose a new directory below your home directory:
+The main walkthrough exports `SOURCE` as the verified examples tree. Choose a
+new directory below your home directory and run the staged fetcher manually:
 
 ```sh
-python3 examples/terminal/fetch.py "$HOME/.local/share/niri-plus/zsh-neutral-slate"
+ZSH_BUNDLE="$HOME/.local/share/niri-plus/zsh-neutral-slate"
+python3 "$SOURCE/examples/terminal/fetch.py" "$ZSH_BUNDLE"
 ```
 
 The fetcher verifies HTTPS archives and SHA-256 before extraction. It refuses
@@ -119,14 +121,44 @@ and does not edit `.zshrc`, `.zshenv`, `ZDOTDIR`, or your login shell. Review th
 bundle, then source it manually from the shell file you choose:
 
 ```sh
-source "$HOME/.local/share/niri-plus/zsh-neutral-slate/zshrc"
+source "$ZSH_BUNDLE/zshrc"
 ```
+
+For a fresh account with no `.zshrc`, create a small user-owned source shim. If
+one already exists, inspect it and merge only the `source` line; do not replace
+its other integrations:
+
+```sh
+ZSHRC="$HOME/.zshrc"
+if [ -e "$ZSHRC" ] || [ -L "$ZSHRC" ]; then
+  printf '%s\n' "Inspect and merge this line into $ZSHRC:"
+  printf 'source "%s/zshrc"\n' "$ZSH_BUNDLE"
+else
+  install -Dm600 /dev/stdin "$ZSHRC" <<EOF
+source "$ZSH_BUNDLE/zshrc"
+EOF
+fi
+```
+
+The reference keeps Bash as the account login shell and starts Zsh only in
+Kitty. Merge this line into the existing Kitty config; the appearance recipe
+already shows it with the font and palette entries:
+
+```conf
+shell /usr/bin/zsh --login
+```
+
+New Kitty windows then read the `.zshrc` shim and start a Zsh login shell. If
+you want Zsh for every terminal and console login instead, make that a separate
+account-level choice with `chsh -s /usr/bin/zsh`; log out and back in to test it.
+The guide's reference route does not change the account shell.
 
 To stage only pinned dependencies for a separately selected shell core, use
 the fetcher's `--dependencies-only` mode with another new destination:
 
 ```sh
-python3 examples/terminal/fetch.py --dependencies-only "$HOME/.local/share/niri-plus/zsh-plugins-0.2.0"
+python3 "$SOURCE/examples/terminal/fetch.py" --dependencies-only \
+  "$HOME/.local/share/niri-plus/zsh-plugins-0.2.0"
 ```
 
 That leaf contains `plugins/` with all four pinned trees, `pins.json`,

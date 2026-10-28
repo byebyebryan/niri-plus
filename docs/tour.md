@@ -36,7 +36,7 @@ Niri gives the browser room, then lets me return to a terminal without navigatin
 a stack of overlapping windows. My preference for terminal operations still
 leaves plenty of useful work for the mouse.
 
-**Try the pieces:** start with [the base desktop](setup.md#start-with-a-working-niri-session)
+**Try the pieces:** start with [the base desktop](setup.md#3-install-the-first-session-packages)
 and its portal and file-dialog checks.
 
 <!-- niri-plus:demo-browser-files -->

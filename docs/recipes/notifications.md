@@ -2,127 +2,127 @@
 
 `Mod+N` opens notification history and system information through SwayNC. The
 desktop has no permanent bar. Volume and brightness feedback appear briefly
-when their keys are used.
+when their keys are used; those helpers are covered by the
+[hardware-feedback recipe](hardware-feedback.md).
 
-The [hardware-feedback recipe](hardware-feedback.md) includes those helpers,
-their Niri bindings, dependencies and internal/external brightness distinction.
+## Build the selected Arch package
 
-## Start with upstream SwayNC
+The Arch reference uses the existing `swaync-bryan` fork because its dashboard
+and notification activation behavior are part of the selected panel. Upstream
+SwayNC remains a smaller alternative, but it does not provide these dashboard
+widgets.
 
-On Arch, install `swaync` and `libnotify` (for the `notify-send` check), and follow its
-[configuration guide](https://github.com/ErikReider/SwayNotificationCenter#configuring).
-Use a single notification daemon in the session. Keep the old daemon's
-configuration until the new one is working.
+| Input | Pin |
+| --- | --- |
+| Arch recipe revision | `cd1038d1c824f256ecb5a448d78df9f71b64850a` |
+| Recipe archive SHA-256 | `297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0` |
+| SwayNC source revision | `4114c9cd56f086e166253880d0c96c6c5212e4aa` |
+| Source archive SHA-256 | `8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83` |
+| Runtime package | `swaync-bryan 0.12.6-15` |
 
-Add this to Niri's `binds` block:
+Fetch and verify the immutable Arch recipe archive before extracting it:
+
+```sh
+SWAYNC_BUILD=$(mktemp -d)
+curl --fail --location --output "$SWAYNC_BUILD/recipe.tar.gz" \
+  https://codeload.github.com/byebyebryan/SwayNotificationCenter/tar.gz/cd1038d1c824f256ecb5a448d78df9f71b64850a
+printf '%s  %s\n' \
+  297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0 \
+  "$SWAYNC_BUILD/recipe.tar.gz" | sha256sum --check
+mkdir "$SWAYNC_BUILD/source"
+tar -xzf "$SWAYNC_BUILD/recipe.tar.gz" --strip-components=1 -C "$SWAYNC_BUILD/source"
+cd "$SWAYNC_BUILD/source/packaging/arch"
+less PKGBUILD
+```
+
+The recipe pins the SwayNC source archive and its checksum. Preinstall the
+runtime libraries before allowing `makepkg` to remove temporary build
+dependencies:
+
+```sh
+sudo pacman -S --needed \
+  base-devel gtk4 gtk4-layer-shell libadwaita glib2 libgee \
+  json-glib libpulse granite7 libnotify
+makepkg --verifysource
+makepkg --syncdeps --rmdeps
+```
+
+Build as your ordinary user. Inspect the resulting runtime package with
+`pacman -Qip`, then install that exact package with `sudo pacman -U`. Review the
+transaction: the fork replaces upstream `swaync`.
+
+## Install the reference config and rendered stylesheet
+
+The small [`reference.json`](../../examples/notifications/reference.json) is an
+authored Arch walkthrough candidate, recorded separately from the 0.3.1
+component bundle and the pinned public example snapshot. Its SHA-256 is
+`da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577`. Verify it
+from the candidate checkout; do not fetch it from the older pinned source
+commit. Keep using the `NIRI_PLUS_CHECKOUT` path exported by the main guide,
+since the build above changes the current directory. If running this recipe in
+a separate shell, export that variable from the candidate checkout before
+building. The config selects the dashboard and the same 1/2/5-second widget
+refresh intervals as the existing panel design.
+
+With the verified stager output from the
+[Arch walkthrough](../setup.md#2-stage-the-reviewed-inputs), set `STAGE` to that
+directory and install only after backing up any existing SwayNC files:
+
+```sh
+printf '%s  %s\n' \
+  da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577 \
+  "$NIRI_PLUS_CHECKOUT/examples/notifications/reference.json" | sha256sum --check
+install -Dm644 "$NIRI_PLUS_CHECKOUT/examples/notifications/reference.json" \
+  "$HOME/.config/swaync/config.json"
+install -Dm644 "$STAGE/appearance/swaync.css" \
+  "$HOME/.config/swaync/style.css"
+```
+
+The stylesheet is rendered from the separately pinned Neutral Slate identity.
+It imports the fork's packaged base stylesheet. The config requires the fork;
+the older `examples/notifications/config.json` remains a historical portable
+specimen, not the selected Arch dashboard config.
+
+## Start one session owner
+
+The package supplies `swaync.service`. Inspect it, confirm the selected Niri
+session targets are active, then add exactly one Niri dependency and start the
+unit in the current session:
+
+```sh
+systemctl --user cat swaync.service
+systemctl --user is-active niri.service graphical-session.target
+systemctl --user add-wants niri.service swaync.service
+systemctl --user daemon-reload
+systemctl --user start swaync.service
+```
+
+Add this binding to the existing Niri `binds` block and validate the complete
+configuration:
 
 ```kdl
 Mod+N repeat=false { spawn "swaync-client" "-t" "-sw"; }
 ```
 
-If your package supplies `swaync.service`, inspect it before enabling or adding
-session dependencies:
+Do not also start a separate `spawn-at-startup` SwayNC process. To undo the new
+session dependency, stop the unit and remove only the exact
+`~/.config/systemd/user/niri.service.wants/swaync.service` link you created.
 
-```sh
-systemctl --user cat swaync.service
-systemctl --user status swaync.service
-```
+## Verify the panel
 
-Follow [Niri's systemd setup](https://niri-wm.github.io/niri/Example-systemd-Setup.html)
-to scope it to the session. Do not start both a service and a separate
-`spawn-at-startup` instance.
-
-The packaged service is already part of `graphical-session.target`. After
-stopping your previous notifier through its existing startup mechanism, add
-SwayNC to Niri's startup and start it in your running Niri session:
-
-```sh
-systemctl --user add-wants niri.service swaync.service
-systemctl --user start swaync.service
-```
-
-This adds a user-unit dependency for future sessions. To undo that addition,
-stop SwayNC and remove only the `niri.service.wants/swaync.service` link created
-under your user-unit directory, then restore your previous notifier's startup.
-
-## What the fork adds
-
-My [SwayNC fork](https://github.com/byebyebryan/SwayNotificationCenter) adds the
-Niri notification activation work and a native dashboard. Its cards cover
-system resources, the primary network connection, connected Bluetooth devices,
-and battery state. Missing hardware hides; battery estimates respect reported
-charge limits.
+Open and close the panel with `Mod+N`. Send a disposable notification with
+`notify-send`; test application focus separately with an action-bearing
+notification from a real application. Check the System, Network, Bluetooth,
+and Battery cards against available devices. Missing hardware should remain
+hidden rather than be represented with fixture values.
 
 CPU and RAM refresh every second, active GPU information every two seconds, and
 battery information every five seconds while open. Network and Bluetooth use
 D-Bus snapshots and signals. Closing the panel cancels reads, timers, and
-subscriptions. These features need the fork's implementation.
+subscriptions. NetworkManager and BlueZ keep their native service ownership;
+GPU metrics require supported NVIDIA hardware and `nvidia-utils`.
 
-Network and Bluetooth cards use existing NetworkManager and BlueZ services.
-GPU queries support NVIDIA hardware with `nvidia-utils`; other GPU vendors do
-not get this metrics row. Install optional integrations only where they apply.
-
-The managed setup builds the exact source and recipe recorded in the
-[working setup](../reference.md#working-setup) as `swaync-bryan`. The packaging
-replaces upstream SwayNC in one package transaction. It is not an AUR package
-selected by a general update command.
-
-Read the fork's source and packaging instructions before adopting it. Its
-configuration and CSS are selected together in the managed source; a theme
-alone does not add the dashboard widgets.
-
-The pinned Arch recipe can be inspected before building:
-
-```sh
-mkdir -p swaync-build
-cd swaync-build
-curl --fail --location --output PKGBUILD \
-  https://raw.githubusercontent.com/byebyebryan/SwayNotificationCenter/cd1038d1c824f256ecb5a448d78df9f71b64850a/packaging/arch/PKGBUILD
-less PKGBUILD
-```
-
-That recipe pins its source archive and checksum. Read it before executing it.
-Preinstall its runtime dependencies so temporary build dependencies can be
-removed safely:
-
-```sh
-sudo pacman -S --needed base-devel gtk4 gtk4-layer-shell libadwaita glib2 libgee json-glib libpulse granite7
-makepkg --syncdeps --rmdeps
-```
-
-Build as your ordinary user. Inspect the runtime package with `pacman -Qip`,
-then install that exact `swaync-bryan-0.12.6-15` package with `sudo pacman -U`.
-If a debug package is also produced, it is separate from the runtime package.
-Review the replacement transaction; the fork conflicts with upstream `swaync`.
-
-After installing the fork, the [dashboard configuration](../../examples/notifications/config.json)
-and [charcoal/blue stylesheet](../../examples/notifications/style.css) remain
-the earlier historical baseline. For the selected Neutral Slate candidate, use
-the [appearance recipe](appearance.md); its SwayNC file is a frozen CSS render,
-not a deployed stylesheet. Back up your existing SwayNC files before merging
-under `~/.config/swaync`. The stylesheet imports the package's default styles.
-The configuration requires this fork; upstream SwayNC does not have its dashboard.
-
-Installing the replacement package does not replace an already running process.
-After installing and merging configuration, restart only SwayNC, or load it on
-your next Niri login:
-
-```sh
-systemctl --user restart swaync.service
-```
-
-A restart clears its in-memory notification history. Use this same scoped
-restart when adopting the fork from a running upstream SwayNC instance.
-
-## Verify the behavior
-
-Open and close the panel with `Mod+N`. Send a sample notification using a tool
-such as `notify-send` to check delivery. Test application focus separately with
-an action-bearing notification from a real application, such as your terminal;
-a plain `notify-send` message does not supply a focus action. Test network,
-Bluetooth, and battery cards against the hardware your machine actually has.
-
-On my desktop, notification configuration can reload independently of idle and
-locking. Keep that separation when adding your own services. Restore your
-previous notifier and session wiring if the replacement does not work as
-expected.
+When replacing a running upstream SwayNC process, restart only its service
+after reviewing the new package/config. A restart clears in-memory notification
+history. Keep the previous daemon's configuration and startup path until the
+fork works through logout and login.

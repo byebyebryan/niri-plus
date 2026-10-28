@@ -1,9 +1,10 @@
 # Text and image clipboard history
 
 Cliphist stores recent text and images, and a Rofi picker lets me retrieve the
-original item. `Mod+Y` opens it. My managed history is capped at 200 entries.
+original item. `Mod+Y` opens it. The selected minimal-Niri profile caps history
+at 200 items through its shared Cliphist config.
 
-## Install the pieces
+## Install one collector profile
 
 On Arch:
 
@@ -11,69 +12,78 @@ On Arch:
 sudo pacman -S --needed cliphist wl-clipboard rofi python
 ```
 
-The [example collector service](../../examples/clipboard/clipboard-history@.service)
-has separate text and image instances tied to `graphical-session.target`.
-Inspect its commands and the [Cliphist documentation](https://github.com/sentriz/cliphist)
-before adapting it to your session.
+Use the verified Arch walkthrough output in `$STAGE`. It contains the selected
+generated unit, its 200-item config, and the shared readiness helper. This
+service variant relies on Niri's graphical-session links and has no independent
+`[Install]` target:
 
-That path remains an authored portable profile. The generated [minimal Niri
-profile](../../examples/clipboard/profiles/minimal-niri/clipboard-history@.service)
-is the selected service variant: it relies on the host's graphical-session
-links and the shared config's 200-item cap. Choose the matching unit for your
-session instead of combining both variants.
-
-Copy the example unit into your user-unit directory after reviewing it:
+Inspect the config and unit targets before installing. Back up and merge any
+existing files at those paths rather than replacing their settings.
 
 ```sh
-mkdir -p ~/.config/systemd/user
-mkdir -p ~/.local/bin ~/.config/cliphist
-install -m 755 examples/session/desktop-session-ready ~/.local/bin/desktop-session-ready
-cp examples/clipboard/config ~/.config/cliphist/config
-cp examples/clipboard/clipboard-history@.service ~/.config/systemd/user/
-systemd-analyze --user verify ~/.config/systemd/user/clipboard-history@.service
+install -Dm755 "$STAGE/source/examples/session/desktop-session-ready" \
+  "$HOME/.local/bin/desktop-session-ready"
+install -Dm644 "$STAGE/source/examples/clipboard/config" \
+  "$HOME/.config/cliphist/config"
+install -Dm644 \
+  "$STAGE/source/examples/clipboard/profiles/minimal-niri/clipboard-history@.service" \
+  "$HOME/.config/systemd/user/clipboard-history@.service"
+systemd-analyze --user verify \
+  "$HOME/.config/systemd/user/clipboard-history@.service"
 systemctl --user daemon-reload
-systemctl --user start clipboard-history@text.service clipboard-history@image.service
 ```
 
-Starting the services above runs the collectors in your current session. To
-start them with Niri on future logins, add the session dependencies as described
-in [Niri's systemd guide](https://niri-wm.github.io/niri/Example-systemd-Setup.html).
-Avoid enabling an additional collector if one is already running.
+Do not also install the authored portable
+[`clipboard-history@.service`](../../examples/clipboard/clipboard-history@.service).
+That unit is a separate profile and starts a different collector command.
 
-## Add the picker
+## Add the picker and session dependencies
 
-The [picker example](../../examples/clipboard/rofi-clipboard) is a frozen copy of
-the small helper used by my managed desktop. Its actions are Enter to copy,
-Delete to remove one item, and Ctrl+Shift+Delete to request a confirmed clear.
+Install the generated picker from the same verified source snapshot:
 
 ```sh
-mkdir -p ~/.local/bin
-install -m 755 examples/clipboard/rofi-clipboard ~/.local/bin/rofi-clipboard
+install -Dm755 "$STAGE/source/examples/clipboard/rofi-clipboard" \
+  "$HOME/.local/bin/rofi-clipboard"
 ```
 
-Ensure `~/.local/bin` is on your session's PATH and add this to Niri's `binds`:
+Confirm Niri's systemd user units are active, add only the two clipboard
+instances to `niri.service`, and start them in the current session:
+
+```sh
+systemctl --user is-active niri.service graphical-session.target
+systemctl --user add-wants niri.service \
+  clipboard-history@text.service clipboard-history@image.service
+systemctl --user daemon-reload
+systemctl --user start \
+  clipboard-history@text.service clipboard-history@image.service
+```
+
+Add this binding to the existing Niri `binds` block and validate the complete
+configuration:
 
 ```kdl
 Mod+Y repeat=false { spawn "rofi-clipboard"; }
 ```
 
-The helper uses your normal Rofi configuration. A custom theme is optional. The
-shared `desktop-session-ready` helper checks the captured Wayland socket before
-a collector starts.
+The shared readiness helper checks that the captured Wayland socket responds;
+it does not identify the compositor. Keep `~/.local/bin` in the graphical
+session `PATH`.
 
-## Check both kinds of content
+## Check and recover
 
-Copy sample text, choose it through the picker, and paste it into a scratch
-document. Repeat with a sample image. Check Delete, cancel, and Clear all using
-disposable content.
+Copy disposable text and an image, select each from the picker, and paste the
+original into a scratch document. Check Delete, cancel, and Clear all with
+disposable history entries. Clipboard history stays local and can contain
+sensitive content copied during normal use.
 
-Clipboard history remains local state, and can contain sensitive content copied
-during normal use. Choose whether to use history on your machine accordingly.
-
-To stop the example collectors:
+To back out, stop the two instances and remove only the exact wants links and
+files you introduced:
 
 ```sh
 systemctl --user stop clipboard-history@text.service clipboard-history@image.service
+rm -f "$HOME/.config/systemd/user/niri.service.wants/clipboard-history@text.service"
+rm -f "$HOME/.config/systemd/user/niri.service.wants/clipboard-history@image.service"
 ```
 
-Remove only the session links and files you introduced when undoing the recipe.
+Retain or remove the Cliphist database separately if you want to keep or erase
+the local history.

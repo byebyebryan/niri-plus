@@ -1,111 +1,122 @@
-# xdg-desktop-portal-wlr VM compatibility candidate
+# xdg-desktop-portal-wlr VirtIO compatibility candidate
+
+This is a local Arch package candidate for a specific whole-monitor sharing
+failure in a VirtIO/VirGL guest. It is not part of the normal Arch desktop
+installation route, a new portal backend, or a general replacement for the
+distribution package. On a physical desktop or a guest where the stock portal
+works, keep the repository package.
 
 ## Source and behavior
 
-This local Arch recipe builds upstream xdg-desktop-portal-wlr commit
-`01171a150b705cf07066ebc0fb7e1ff537027bec` (version 0.8.2) against the guest's
-current libraries. The immutable GitHub archive SHA-256 is
-`04ad0e4a7717265475fd394b614092d70909ff2089c08bb2b90adde9e8c436cd`. Package
-`xdg-desktop-portal-wlr 0.8.2-1.3` keeps Arch's package name and portal
-implementation provide, plus the local system portal defaults.
+The recipe builds upstream xdg-desktop-portal-wlr commit
+`01171a150b705cf07066ebc0fb7e1ff537027bec` (version 0.8.2) against the
+installed Arch libraries. The immutable GitHub archive SHA-256 is
+`04ad0e4a7717265475fd394b614092d70909ff2089c08bb2b90adde9e8c436cd`. The
+resulting package is `xdg-desktop-portal-wlr 0.8.2-1.3`; it keeps Arch's package
+name and portal implementation provide.
 
 The two local patches are pinned in `PKGBUILD`:
 
 - `trace-buffer-constraints.patch`, SHA-256
-  `5e5d82645eb2e6e4eba23b472dc29b43e01a653da228c4a7fdcaef9349a43c0b`, prints
-  actual GBM buffer dimensions, fourcc and modifier, then the advertised
+  `5e5d82645eb2e6e4eba23b472dc29b43e01a653da228c4a7fdcaef9349a43c0b`, records
+  the actual GBM buffer dimensions, fourcc and modifier, plus the advertised
   DMA-BUF pairs when xdpw rejects a pair.
 - `fallback-unsupported-dmabuf.patch`, SHA-256
   `b719065f86a917de28ab633f82c4ee44035f5afec9a4863526b05893a354c10c`, keeps
-  exact pair matching and switches this stream to the existing SHM formats
-  only when dimensions still match and the actual DMA-BUF pair is not
-  advertised. Size changes and SHM mismatches keep the existing behavior.
+  exact pair matching and uses the existing SHM formats only when dimensions
+  still match and the actual DMA-BUF pair is not advertised. Size changes and
+  SHM mismatches keep the existing behavior.
 
-The trace found VirGL GBM returning a 1920x1080 XRGB8888 buffer
+In the guest, VirGL supplied a 1920x1080 XRGB8888 buffer
 (`0x34325258`) with `DRM_FORMAT_MOD_LINEAR` (`0x0000000000000000`), while Niri
-advertises the same fourcc with `DRM_FORMAT_MOD_INVALID`
-(`0x00ffffffffffffff`). The exact pair check rejects that buffer before a frame
-is copied.
+advertised that fourcc with `DRM_FORMAT_MOD_INVALID`
+(`0x00ffffffffffffff`). The exact pair check rejected the buffer before a frame
+was copied.
 
-## Guest result and scope
+## Latest guest result and limits
 
-In the already assembled Arch VM, Chrome's whole-monitor share produced a live
-1920x1080 track. The trace observed 8 video callbacks and 7 frame advances;
-sampling found 80 distinct colors. xdg-desktop-portal-wlr kept the same PID for
-30 seconds. Its measured `MemoryCurrent` maximum was 16.8 MiB and `MemoryPeak`
-was 80.3 MiB. TRACE confirmed PipeWire buffer type `0 (4)` (SHM/MemFd). After
-Stop, Chrome's `Video/Source` and `ChromeInput` nodes were removed. The retained
-0.8.4 package and unpatched upstream 0.8.2 both failed this share test.
+The Arch 0.8.4 repository package under the guest's existing 512 MiB unit cap
+created a live 1920x1080 Chrome track but produced zero frames and width zero;
+the provider later aborted while handling a non-null zero-sized allocation.
+The host showed no OOM event. Treat this as a VirtIO guest observation, not a
+claim about other machines or an uncapped stock package.
 
-This result was recorded with temporary TRACE and per-unit resource-guard
-overrides (`MemoryMax=512M`, `MemorySwapMax=0`). A second share pass then
-passed with the TRACE drop-in removed, both memory limits restored to
-`infinity`, and the package's normal `ExecStart`
-(`/usr/libexec/xdg-desktop-portal-wlr`, no extra arguments). It again produced
-a 1920x1080 monitor track with 8 video callbacks and 7 frame advances. Measured
-`MemoryCurrent` was about 6.9 MiB and `MemoryPeak` about 70.1 MiB. Stop ended
-the track and released the preview; `pw-dump` showed no remaining Video capture
-or input nodes.
+After installing the compatibility candidate with its normal service command,
+no TRACE flags, and no memory limit, Chrome displayed a live 1920x1080 monitor
+preview. The capture recorded eight callbacks and frame advances from 291 to
+298 over 42.10–42.57 seconds, with 608 sampled colors. Portal memory peaked at
+79.9 MiB (`MemoryCurrent` 16.1 MiB). Stopping the share ended all tracks; a
+`pw-dump` check found no capture or input nodes left behind. This confirms the
+tested guest capture path only. It is not fresh-install, physical-device, fleet,
+or full-desktop acceptance.
 
-This records the tested screen-share path in this VM only. It is not a fresh
-installation result, a full desktop acceptance, or a fleet/default adoption.
-The desktop assembler does not select or install this candidate. Keep it as an
-explicit VM compatibility step.
+For Chrome's preview check, scroll the preview into view before judging its
+image. An off-viewport preview can show a black canvas even while media frame
+counters advance. Chrome 156 passed without `--disable-gpu`; the observed test
+used the native Wayland route `--ozone-platform=wayland` only.
 
-## Build, install and recovery order
+## Optional Arch walkthrough branch
 
-Run the core desktop assembler first. It installs Arch's repository
-`xdg-desktop-portal-wlr`; rerunning it can replace this local candidate with the
-repository package. After every core assembler rerun, reinstall this candidate
-explicitly if the VM share test needs it.
+The main [Arch walkthrough](../../../../docs/setup.md) installs Arch's repository
+portal as part of its package group. Use this candidate only if a VirtIO/VirGL
+guest reproduces the exact whole-monitor failure above. It is built from the
+reviewed checkout and is not downloaded from the pilot guest or its cache.
 
-Run the assembler from the ordinary guest account:
+Keep a console available. Save the exact currently installed repository package
+outside Pacman's cache before replacing it. If that exact archive is not
+available, stop and obtain the matching package before continuing:
 
 ```sh
-bash /tmp/niri-plus-vm/desktop/assemble-desktop.sh
+REPOSITORY_VERSION="$(pacman -Q xdg-desktop-portal-wlr | cut -d' ' -f2)"
+REPOSITORY_ARCHIVE="/var/cache/pacman/pkg/xdg-desktop-portal-wlr-${REPOSITORY_VERSION}-x86_64.pkg.tar.zst"
+test -r "$REPOSITORY_ARCHIVE"
+RECOVERY="$HOME/.local/share/niri-plus/recovery"
+install -Dm644 "$REPOSITORY_ARCHIVE" "$RECOVERY/$(basename "$REPOSITORY_ARCHIVE")"
 ```
 
-Before replacing the repository package, record its installed version and save
-the exact package archive outside `/var/cache/pacman/pkg/`:
+Build the candidate as the ordinary account from this checkout's existing
+recipe. The main guide exports `NIRI_PLUS_CHECKOUT`; no desktop assembler or
+pilot path is needed:
 
 ```sh
+WLR_CANDIDATE="$NIRI_PLUS_CHECKOUT/tools/vm/desktop/wlr-compat"
+(
+  cd "$WLR_CANDIDATE"
+  makepkg --verifysource
+  makepkg --syncdeps --rmdeps
+)
+WLR_PACKAGE="$WLR_CANDIDATE/xdg-desktop-portal-wlr-0.8.2-1.3-x86_64.pkg.tar.zst"
+pacman -Qip "$WLR_PACKAGE"
+```
+
+Review the package metadata, then install the exact built archive:
+
+```sh
+sudo pacman -U "$WLR_PACKAGE"
 pacman -Q xdg-desktop-portal-wlr
 ```
 
-Confirm the saved archive matches that installed version. If its archive is not
-cached, obtain and save that exact version before continuing. Restore it with:
+Use the portal through Chrome's ordinary whole-monitor sharing flow. Keep the
+package's normal `ExecStart` (`/usr/libexec/xdg-desktop-portal-wlr`), avoid
+TRACE/runtime resource overrides, and verify that the preview is live. If the
+stock package works or the candidate does not fix the exact failure, restore
+the saved repository package:
 
 ```sh
-sudo pacman -U /path/to/saved-repository-package.pkg.tar.zst
-```
-
-The two package builds install the executable at different paths. The [Arch
-repository package file list](https://archlinux.org/packages/extra/x86_64/xdg-desktop-portal-wlr/files/)
-places it at `/usr/lib/xdg-desktop-portal-wlr`. This recipe leaves Meson's
-`libexecdir` unset; its [built-in default](https://mesonbuild.com/Builtin-options.html)
-is `libexec`, so the candidate uses `/usr/libexec/xdg-desktop-portal-wlr` and
-its D-Bus service entry points there. Temporary runtime guards or TRACE
-overrides must match the currently installed package path. Remove or restore
-those overrides after the diagnostic, and check the service entry when
-switching packages.
-
-The runtime dependencies in `PKGBUILD` should already be installed so
-`--rmdeps` removes only build dependencies. Build as the ordinary guest user
-after the core assembler:
-
-```sh
-cd /tmp/niri-plus-vm/desktop/wlr-compat
-makepkg --syncdeps --rmdeps
-```
-
-Save the repository recovery package before installing the candidate, then:
-
-```sh
-sudo pacman -U ./xdg-desktop-portal-wlr-0.8.2-1.3-x86_64.pkg.tar.zst
+sudo pacman -U "$RECOVERY/$(basename "$REPOSITORY_ARCHIVE")"
 pacman -Q xdg-desktop-portal-wlr
 ```
 
-The expected package query is `xdg-desktop-portal-wlr 0.8.2-1.3`. Keep the
-same PipeWire, WirePlumber, Niri, Mesa, Chrome and resource cap during any
-repeat trial. Afterward restore the saved repository package and its matching
-service path/overrides.
+The Arch repository package installs its executable at
+`/usr/lib/xdg-desktop-portal-wlr`; this candidate's Meson default installs at
+`/usr/libexec/xdg-desktop-portal-wlr`. The package carries its matching D-Bus
+service entry. Do not leave service overrides from another package path in
+place when switching back.
+
+## Retained capture-pilot route
+
+The old retained-guest workflow remains optional for that specific guest. Its
+desktop assembler installs the repository portal package, so a rerun replaces
+this candidate; reinstall it afterward only if the retained VM share test still
+needs it. The regular Arch walkthrough above does not call the assembler or
+depend on `/tmp/niri-plus-vm`.

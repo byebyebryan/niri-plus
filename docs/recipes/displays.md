@@ -1,14 +1,17 @@
 # Displays and docking
 
-Kanshi owns output profiles in this setup. Niri owns windows and workspaces;
-changing the connected displays should leave those workflows intact. The
+Kanshi owns output profiles in this setup. On the current Arch package there is
+no packaged user service, so the single startup owner is Niri's
+`spawn-at-startup` entry. Niri owns windows and workspaces; changing the
+connected displays should leave those workflows intact. The
 personal profiles include an ultrawide at scale 1, Carbon's internal panel at
 scale 1.5, and laptop home/work combinations. Connector names, available modes
 and monitor identities are machine-specific.
 
 ## Inspect the outputs
 
-Install `kanshi`, then inspect the outputs from a terminal inside Niri:
+The main walkthrough installs `kanshi`. Inspect the outputs from a terminal
+inside Niri:
 
 ```sh
 niri msg outputs
@@ -23,10 +26,21 @@ serial number is unnecessary.
 ## Adapt the profiles
 
 The [profile skeleton](../../examples/displays/kanshi.conf) has a specific
-two-display profile followed by an internal-only fallback. Replace its output
-names, mode, scale and positions before installing it at
-`~/.config/kanshi/config`. Its `1280,0` position is an example: a 1920-pixel-wide
-panel at scale 1.5 occupies 1280 logical pixels. Calculate from your actual mode.
+two-display profile followed by an internal-only fallback. For a fresh account,
+install that staged file only when the target does not exist, then replace its
+output names, mode, scale and positions before starting Kanshi:
+
+```sh
+KANSHI_CONFIG="$HOME/.config/kanshi/config"
+if [ -e "$KANSHI_CONFIG" ] || [ -L "$KANSHI_CONFIG" ]; then
+  printf '%s\n' "Inspect and merge the staged profile into: $KANSHI_CONFIG"
+else
+  install -Dm644 "$SOURCE/examples/displays/kanshi.conf" "$KANSHI_CONFIG"
+fi
+```
+
+Its `1280,0` position is an example: a 1920-pixel-wide panel at scale 1.5
+occupies 1280 logical pixels. Calculate from your actual mode.
 On a desktop without an internal panel, replace both profiles with the outputs
 that exist there. Keep at least one display enabled in each usable profile.
 
@@ -38,8 +52,8 @@ choices; the former also affects application readability.
 
 ## Start one owner
 
-Merge this top-level statement into Niri only if Kanshi is not already started
-by another hook or service:
+Merge this top-level statement into Niri's existing config only if Kanshi is not
+already started by another hook or user service:
 
 ```kdl
 spawn-at-startup "kanshi"

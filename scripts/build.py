@@ -77,6 +77,7 @@ FONT_ASSETS = {f"assets/{directory}/{font}.{suffix}" for font in ["noto", "noto-
 GENERATED = {"data/identity.json", "data/contrast-study.json", "assets/identity.css", "assets/fonts/provenance.json", "examples/kitty/neutral-slate.conf"}
 PUBLIC_TOOLS = {"scripts/check-terminal.py", "scripts/check-desktop.py"}
 PUBLIC_LOCAL_DOCS = {
+    "LICENSE",
     "docs/planning/desktop-demonstration-receipt.md",
     "tools/vm/desktop/wlr-compat/README.md",
 }
@@ -92,7 +93,7 @@ DEMO_CLIPS = {
             "Open the SwayNC panel and clipboard picker in the staged Niri guest.",
             "Use the focused recordings below for the full task sequences.",
         ],
-        "setup": [("Start with a working Niri session", "setup.md#start-with-a-working-niri-session")],
+        "setup": [("Install the Arch reference desktop", "setup.md#3-install-the-first-session-packages")],
     },
     "browser-files": {
         "video": "assets/demo-browser-files.mp4",
@@ -495,6 +496,8 @@ def link(source, target):
     suffix = ("?" + parsed.query if parsed.query else "") + ("#" + parsed.fragment if parsed.fragment else "")
     if resolved == "design/identity.json":
         return BASE + "data/identity.json" + suffix
+    if resolved.startswith("design/") and resolved.removeprefix("design/") in FONT_ASSETS:
+        return BASE + resolved.removeprefix("design/") + suffix
     if resolved in SOURCES:
         return BASE + SOURCES[resolved] + suffix
     if resolved in public_files():

@@ -11,7 +11,7 @@ not proof of native installation or deployment.
 To stage all renderer outputs for review, use a new output directory:
 
 ```sh
-python3 components/appearance/render.py \
+python3 -B components/appearance/render.py \
   --identity design/identity.json \
   --output /tmp/niri-plus-appearance
 ```
@@ -42,8 +42,8 @@ and root installation remain separate from these user appearance files.
 Use Noto Sans at 11pt for UI text, Source Han Sans CN as the CJK fallback, and
 MesloLGS Nerd Font at 11pt for terminal text. Breeze Dark icons and
 `breeze_cursors` are separate dependencies; the Niri fragment does not select
-or install them. The website exports the [Noto Sans license](../../assets/licenses/noto.txt),
-[Meslo license](../../assets/licenses/meslo.txt), and [Source Han license](../../assets/licenses/source-han.txt).
+or install them. The website exports the [Noto Sans license](../../design/assets/licenses/noto.txt),
+[Meslo license](../../design/assets/licenses/meslo.txt), and [Source Han license](../../design/assets/licenses/source-han.txt).
 
 The SwayNC stylesheet targets the selected fork and its dashboard widgets. It
 does not recolor other GTK programs. Applications that follow Adwaita or
@@ -54,24 +54,181 @@ password surface.
 Qt palettes set `QPalette` roles; they do not set Qt style, icon theme, portal
 dialogs, or KDE's named focus colors. KDE also reads its owned `[Colors:*]`
 groups from `kdeglobals`. Install `NeutralSlate.colors` under
-`${XDG_DATA_HOME:-$HOME/.local/share}/color-schemes/`. Merge its `[Colors:*]` and
-`[ColorEffects:*]` sections into your existing
-`${XDG_CONFIG_HOME:-$HOME/.config}/kdeglobals`, keeping unrelated groups and
-preferences. If KDE System Settings is already available, selecting the scheme
-there can perform the native color-group update. The corresponding targeted
-font and scheme values are:
+`~/.local/share/color-schemes/` and merge the generated
+`kdeglobals-managed.json` values into the current `kdeglobals`. The renderer's
+`fonts.json` supplies font names and sizes; do not duplicate generated palette
+or font values by hand.
 
-```ini
-[General]
-ColorScheme=NeutralSlate
-font=Noto Sans,11,-1,5,50,0,0,0,0,0
-fixed=MesloLGS Nerd Font,11,-1,5,50,0,0,0,0,0
+## Apply the staged files on Arch
+
+The main [Arch walkthrough](../setup.md) exports `BUNDLE` and `APPEARANCE`
+after verifying the published component archive, identity, and public examples.
+Use those rendered files for this install. Inspect existing target paths and
+back up any files you will change; the merge below retains unrelated INI keys,
+comments, and groups while replacing only its explicit appearance keys.
+
+Copy the palette and stylesheet leaves to ordinary user paths:
+
+```sh
+install -Dm644 "$APPEARANCE/qt5-palette.conf" \
+  "$HOME/.config/qt5ct/colors/NeutralSlate.conf"
+install -Dm644 "$APPEARANCE/qt6-palette.conf" \
+  "$HOME/.config/qt6ct/colors/NeutralSlate.conf"
+install -Dm644 "$APPEARANCE/NeutralSlate.colors" \
+  "$HOME/.local/share/color-schemes/NeutralSlate.colors"
+install -Dm644 "$APPEARANCE/neutral-slate.rasi" \
+  "$HOME/.config/rofi/neutral-slate.rasi"
+install -Dm644 "$APPEARANCE/gtklock.css" \
+  "$HOME/.config/gtklock/style.css"
+install -Dm644 "$APPEARANCE/kitty-neutral-slate.conf" \
+  "$HOME/.config/kitty/neutral-slate.conf"
 ```
 
-Merge only those keys into the existing `[General]` group if you edit the file
-by hand. Keep the `[Colors:*]` groups produced by the selected `.colors` file;
-do not replace the whole `kdeglobals` file. The serialized font weight `50` is
-the legacy Qt value used by these ten-field strings.
+Merge GTK3, Qt5/Qt6, KDE, and Gtklock settings with the `ini_merge.py` helper
+from the verified bundle. The Qt font strings are generated from
+`fonts.json`; `kdeglobals-managed.json` supplies KDE's scheme, font, icon, and
+color groups:
+
+```sh
+python3 -B - "$BUNDLE" "$APPEARANCE" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+bundle, appearance = map(Path, sys.argv[1:])
+sys.path.insert(0, str(bundle / "components/appearance"))
+from ini_merge import merge_ini
+
+home = Path.home()
+fonts = json.loads((appearance / "fonts.json").read_text(encoding="utf-8"))
+
+def merge(relative, values):
+    path = home / relative
+    if path.is_symlink():
+        raise SystemExit(f"inspect symlink before merging: {path}")
+    original = path.read_text(encoding="utf-8") if path.exists() else ""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(merge_ini(original, values), encoding="utf-8")
+
+merge(".config/gtk-3.0/settings.ini", {
+    "Settings": {
+        "gtk-theme-name": "adw-gtk3-dark",
+        "gtk-icon-theme-name": "breeze-dark",
+        "gtk-cursor-theme-name": "breeze_cursors",
+        "gtk-cursor-theme-size": "24",
+        "gtk-font-name": f"{fonts['ui_font']} {fonts['ui_pt']}",
+    },
+})
+
+for version, style in ((5, "Fusion"), (6, "Breeze")):
+    base = home / f".config/qt{version}ct"
+    qt_fonts = {
+        "general": f"\"{fonts['ui_font']},{fonts['ui_pt']},-1,5,50,0,0,0,0,0\"",
+        "fixed": f"\"{fonts['mono_font']},{fonts['terminal_pt']},-1,5,50,0,0,0,0,0\"",
+    }
+    merge(f".config/qt{version}ct/qt{version}ct.conf", {
+        "Appearance": {
+            "color_scheme_path": str(base / "colors/NeutralSlate.conf"),
+            "custom_palette": "true",
+            "icon_theme": "breeze-dark",
+            "style": style,
+        },
+        "Fonts": qt_fonts,
+    })
+
+merge(".config/kdeglobals", json.loads(
+    (appearance / "kdeglobals-managed.json").read_text(encoding="utf-8")
+))
+merge(".config/gtklock/config.ini", {
+    "main": {"style": str(home / ".config/gtklock/style.css")},
+})
+PY
+```
+
+For SwayNC, use the rendered stylesheet and the selected dashboard config from
+the [notification recipe](notifications.md); that recipe installs the CSS at
+`~/.config/swaync/style.css` after the pinned fork is installed.
+
+Preview Rofi before selecting it in the existing `~/.config/rofi/config.rasi`:
+
+```sh
+rofi -show drun -theme "$HOME/.config/rofi/neutral-slate.rasi"
+```
+
+In `~/.config/rofi/config.rasi`, add this directive; preserve the file's other
+launcher settings and actions:
+
+```rasi
+@theme "~/.config/rofi/neutral-slate.rasi"
+```
+
+In the existing Kitty config, include `neutral-slate.conf` and set its font
+from `fonts.json` (the installed Meslo face resolves as
+`MesloLGS Nerd Font Mono` at 11pt). Merge these lines while retaining other
+Kitty options. The [terminal recipe](terminal.md) selects `/usr/bin/zsh --login`
+for new Kitty windows; that does not change the account's login shell:
+
+```conf
+font_family MesloLGS Nerd Font Mono
+font_size 11.0
+shell /usr/bin/zsh --login
+include neutral-slate.conf
+```
+
+Keep the current shell, input, paste, glyph, and window behavior. The palette
+can be previewed without making it the default:
+
+```sh
+kitty --config "$HOME/.config/kitty/kitty.conf" \
+  --config "$HOME/.config/kitty/neutral-slate.conf"
+```
+
+In the existing Niri `layout` block, set the background to `#111213`, the
+active focus color to `#a6ceff`, and the inactive focus color to `#81878c`.
+Merge the renderer's `niri-neutral-slate.kdl` fragment into that block; keep
+its proportional widths, gaps, focus-ring width, binds, and other behavior.
+Add the cursor selection only if the current config has no cursor block:
+
+```kdl
+cursor {
+    xcursor-theme "breeze_cursors"
+    xcursor-size 24
+}
+```
+
+Validate the complete file before reloading Niri:
+
+```sh
+niri validate --config "$HOME/.config/niri/config.kdl"
+```
+
+Install the static toolkit environment for applications launched as systemd
+user services, then reload the user manager so subsequently started units
+receive it:
+
+```sh
+install -Dm644 /dev/stdin \
+  "$HOME/.config/environment.d/90-niri-plus-appearance.conf" <<'EOF'
+GTK_THEME=adw-gtk3-dark
+QT_QPA_PLATFORMTHEME=qt5ct:qt6ct
+EOF
+systemctl --user daemon-reload
+systemctl --user show-environment | grep -E '^(GTK_THEME|QT_QPA_PLATFORMTHEME)='
+```
+
+Already-running processes keep their current environment. Direct children
+launched by Niri use Niri's `environment` block rather than the user-manager
+environment. Merge these appearance keys into that same existing Niri block;
+the native Chrome and Kitty composition checks passed without changing their
+input-method route:
+
+```kdl
+GTK_THEME "adw-gtk3-dark"
+QT_QPA_PLATFORMTHEME "qt5ct:qt6ct"
+```
+
+Keep the input-method values in the input recipe, and do not add a global
+`GTK_IM_MODULE` here.
 
 ## Merge and preview
 
@@ -90,14 +247,13 @@ the legacy Qt value used by these ten-field strings.
    by that component, then preview through its normal owner-managed reload or
    isolated session. Do not alter the independent lock unit or authentication
    configuration to preview colors.
-4. For Qt 5/6, place each palette under the corresponding `qt5ct/colors` or
-   `qt6ct/colors` directory and select it through that settings tool. Restart a
-   test Qt application to inspect focus, selected, disabled, and dialog states.
-   Keep the existing platform styles and portal choices.
-5. For KDE, install and merge the `.colors` file as described above, then confirm its `Colors:*`
-   groups and the selected fonts in the existing `kdeglobals`. For Niri, merge
-   the fragment into the current `layout` block and validate the full config
-   before using the normal reload path.
+4. For Qt 5/6, install the generated palette and merge the style/font settings
+   above. Restart a test Qt application to inspect focus, selected, disabled,
+   and dialog states; keep the selected platform styles and portal choices.
+5. For KDE, install and merge the generated `.colors` mapping above, then
+   confirm its `Colors:*` groups and the selected fonts in `kdeglobals`. For
+   Niri, merge the fragment into the current `layout` block and validate the
+   full config before using the normal reload path.
 
 Apply one surface at a time and review its active, inactive, focused, selected,
 and disabled states. These files contain no input bindings, service startup,

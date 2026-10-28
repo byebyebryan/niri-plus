@@ -116,7 +116,7 @@ boundaries.
 
 ## Examples and verification
 
-The [assembly map](setup.md#assembly-map) gives the order. Focused guides cover
+The [Arch walkthrough](setup.md) gives the order. Focused guides cover
 [display profiles](recipes/displays.md), [SDDM login](recipes/login.md),
 [idle/power and authorization](recipes/session.md),
 [hardware feedback](recipes/hardware-feedback.md), [input methods](recipes/input.md),

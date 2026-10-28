@@ -1,281 +1,251 @@
 # Demonstrations and public adoption walkthrough
 
-Revised planning draft, 2026-10-27. Capture and recording come first, followed
-by the full desktop demonstrations and a reader-facing installation walkthrough.
-Virtualization is a retained Starship workstation capability, with VMs used on
-demand and no chezmoi integration for the host tooling.
-The host/Arch capture pilot completed on 2026-10-27; see the
-[pilot receipt](capture-pilot-receipt.md). Full installation rehearsal, site
-implementation and rollout have not started. Rofi controls remain a separate
-candidate for the following design pass.
-Later Ubuntu/Debian trials share the VM lab but are not prerequisites for the
-Arch pilot or core media.
+Revised plan, 2026-10-27, after the successful Arch capture pilot. Arch Linux
+x86-64 is the only reference target for this work. Ubuntu/Debian are deferred
+for much later, with no scheduled trial, guest preparation or compatibility
+work. Reconsider them only through a separately scoped future decision.
 
-## Immediate milestone
+The [pilot receipt](capture-pilot-receipt.md) records the completed host/Arch
+capture milestone. The next proposed implementation slice is core desktop
+assembly and real site demonstrations (C-D below). A complete Arch installation
+rehearsal follows separately, then the Rofi controls design pass. This revision
+records the plan; it does not start guest changes, publication or fleet rollout.
 
-The first implementation pass delivered one current-theme desktop screenshot and
-a 24.5-second browser/terminal clip from the VM, with recorded public inputs
-and a short assembly/capture receipt. Inspect the result locally on Starship
-for readable text, current colors/fonts, coherent navigation and smooth recording before
-expanding the setup. The [capture-first VM plan](vm-reference-environment.md)
-contains the concrete pilot sequence and acceptance criteria.
-
-Full installation qualification, detailed workflow clips and site integration
-follow as distinct milestones. Preparing the first recording does not require
-a finished guide or SDDM/locking/power testing.
-
-## Outcome and inspected baseline
+## Outcome and current baseline
 
 Give a visitor a connected route: watch a task, understand the pieces behind it,
 assemble those pieces, and verify the same result. Preserve the personal story:
-Chrome and ordinary file interaction alongside keyboard-driven terminal and
-agent work. Keep maintenance appropriate for a personal desktop.
+Chrome and ordinary file interaction beside keyboard-driven terminal and agent
+work, with information available on demand and no permanent bar.
 
-The current site has four illustrated tour scenes, an Agent Plus native sample
-image, and isolated SwayNC images. Those images use preview/default themes or
-sample hardware data; they do not show the complete current Neutral Slate
-desktop. There is no current full desktop recording. Keep the existing labels
-and attribution accurate when adding new media.
+The pilot established native Niri/Chrome/Kitty/Zsh, selected fonts and colors,
+a current-theme still and a 24.5-second recording. It did not qualify the full
+desktop or replay the final instructions from a fresh base. Manual local viewer
+key grab/release remains distinct from the tested guest virtual-keyboard input.
+
+The site baseline has illustrated tour scenes, an Agent Plus native sample and
+isolated SwayNC images. They do not show the complete current desktop. The new
+pilot exists in its separate local review report and has not been integrated
+into the public tour. Preserve accurate illustration/sample labels.
 
 The setup page links a seven-stage assembly map to focused recipes. It starts
-from a working Niri session and explicitly has no clean-install acceptance.
-The portable base Niri configuration intentionally omits service startup and
-several integration bindings. These choices need an explicit assembly path
-before the complete result can be described as reproducible.
+from a working Niri session and has no clean-install acceptance. The portable
+base config intentionally omits service startup and several integration binds.
+Public components exist; the reference assembly still needs to connect them.
 
-Reusable desktop, shell and appearance code is public in immutable component
-bundles; freeze the published tuple before implementation rather than coupling
-the plan to a version that may change during concurrent work. Current examples
-regenerate from those owners. Personal policy, environment,
-machine selection and fleet deployment remain in private chezmoi. Existing
-independent projects keep their own release authority.
+## Next milestone: core desktop and real demonstrations
 
-## Recommended shared reference environment
+Deliver browser/files, terminal and information/clipboard workflows on the Arch
+reference guest, with recorded public inputs, assembly notes, reviewed native
+media and locally reviewed site changes.
 
-Use a versioned public reference setup for media capture and the later
-installation rehearsal. Record the component, identity and independent project
-pins used by each milestone. It must be possible to build using the public
-repository, release artifacts and documented prerequisites alone.
+Keep the selected Crisper Neutral Slate/Clear Blue desktop, pure-black Balanced+
+terminal and Noto/Meslo typography. Resolve cross-application inconsistencies
+within that identity rather than starting another palette design.
 
-First assemble and record the demonstrated workflows, keeping notes as we go.
-Then use those notes to finish the guide and repeat it from a clean baseline.
-Native demonstration evidence and clean-install acceptance remain separate;
-recordings can be published before the complete installation route is qualified.
+### Work packages and task acceptance
 
-Target one documented Arch Linux baseline first: an installed system, ordinary
-user account and working network. Document any required graphics/login
-prerequisites before starting. OS partitioning and maintaining a distribution
-are outside this walkthrough. EndeavourOS differences can be recorded after
-the first route is rehearsed.
+| Order | Work | Reviewable result and gate |
+| --- | --- | --- |
+| 0. Inputs and recovery | Recheck guest/network state, storage and local viewing. Freeze the public source commit, component bundle/hash, independent identity/hash, shell pins, SwayNC recipe/source pins and package versions. Qualify an offline working copy. | Recovery copy boots; protected checkpoints remain intact; every task maps to a public recipe/input. Record manual viewer key handling as pending if it has not been exercised. |
+| 1. Browser and files | Restore the Dolphin binding omitted by the pilot. Add MIME/default applications, explicit GTK/WLR routing and the PipeWire/session requirements for browser sharing. Use local sample download/upload pages. | Download a sample, reveal/open it in Dolphin, open through the default handler and upload the same file through the GTK picker. Separately start/stop a whole-monitor WLR browser share. Inspect GTK, Qt and browser appearance together. |
+| 2. Information and clipboard | Build/install the pinned SwayNC fork through its public recipe. Add dashboard configuration, Cliphist collectors, the Rofi picker and Mod+N/Mod+Y. | Sample notification/history and panel toggle work; CPU/RAM and actual network state are fresh; missing hardware hides naturally. Text/image selection preserves original content; Delete and confirmed Clear all work, with a 200-item cap. |
+| 3. Lifecycle and terminal regression | Establish one session owner for each new daemon/collector. Retain the guest-only login harness for this slice. Check Kitty/Zsh, Rofi drun and current utility entry points without redesigning them. | Fresh Niri sessions start required processes once; ending the session stops them; repeat login works. New Kitty shells retain prompt, history, completion and appearance. Missing hardware/services produce understandable results. |
+| 4. Native media and site | Record accepted tasks and make the overview, focused clips, posters, captions, setup links and provenance. Update tour/home entry points. | Actual tasks are visible in reviewed encoded playback; the local site passes build/browser and media checks; task results and remaining gaps are recorded. |
 
-After the Arch recording pilot, Ubuntu LTS and Debian stable are additional
-compatibility candidates. Select and record one exact release per distro when
-its trial starts. Check dependencies and capture/session viability first;
-record gaps and tested tasks separately. A distro trial does not imply a
-supported installation guide until its own clean-base replay passes.
+The pilot package set did not install NetworkManager. Inspect the cloud
+image's current network owner before expanding it: the dashboard and Network
+launcher need NetworkManager to own the guest's virtual Ethernet connection,
+with a real PrimaryConnection. If a handover is needed, preserve the reserved
+address and guest SSH/console recovery, avoid competing network managers and
+verify DHCP/DNS/downloads afterward. Installing a package alone is insufficient.
+This changes only the guest; Starship's network ownership stays intact.
 
-Keep the existing path for adding individual components to an already working
-Niri session. The complete reference walkthrough supplies the missing glue;
-it does not replace personal configuration with a wholesale dotfiles copy.
-Power, locking and output profiles remain explicit reader choices.
+Use the selected appearance renderer/output with the dashboard configuration,
+not the historical preview stylesheet. Preinstall the fork's runtime
+dependencies before its ordinary-user package build so temporary build
+dependency removal cannot remove needed runtime libraries. Keep portal
+providers explicitly GTK + WLR; guest-side recording is not evidence of browser
+sharing, and no GNOME/KDE portal migration belongs in this slice.
 
-Use a local Starship QEMU/KVM VM as the primary reference environment, with
-recoverable checkpoints and resettable working clones. Keep the tools, VM
-definitions and useful guest images between uses; stop VMs when their work is
-finished. No cleanup deadline follows capture or setup testing. First verify that it can
-run the actual Niri/application stack, display the selected appearance and be
-viewed and recorded reliably. VM-only evidence cannot establish physical radio,
-backlight, dock or authentication behavior on Bryan's machines.
+Keep a command transcript and assembly notes while doing each package. When a
+step is missing, correct its owning source/recipe before calling the task
+complete. A required task that fails remains a gap; do not silently substitute
+an illustration or drop its acceptance check.
 
-## VM reference environment
+The slice ends with a named assembled-desktop checkpoint, reviewed media, site
+changes and a dated execution receipt containing exact versions and per-task
+results. Distinguish source checks, native guest tests, site checks and human
+review. Do not imply that a site browser suite is a desktop integration suite.
 
-Read-only preflight on 2026-10-26 compared Starship with the existing PVE host.
-Both options use QEMU/KVM; the practical differences are the available graphics
-path, management and where the demo is viewed.
+SDDM/password login, wallet/PAM, locking/idle/power, full audio/input/output
+coverage and clean-base replay belong to the later installation milestone.
+Optional agent authentication, remote endpoints and new Rofi controls do not
+block this slice. Briefly show current utility launchers; detailed controls
+demonstrations should follow their later design.
 
-- Starship: `/dev/kvm` is accessible, approximately 80 GiB RAM was available,
-  and AMD Radeon 610M/NVIDIA render nodes are accessible. The normal QEMU/libvirt
-  tools are not installed. The AMD integrated GPU is the preferred candidate
-  for a shared virtual 3D device, subject to a small guest rendering test.
-- PVE: 9.2.21, approximately 20 GiB RAM available, storage below one-third used,
-  with NAS and Docker guests running. Only the ASPEED display controller and
-  a card node were discovered; no GPU render node was present. It has capacity
-  for an install-test guest, but accelerated desktop capture would require a
-  separately qualified graphics path. Software rendering is not ruled out.
+## Environment, recovery and ownership
 
-The selected direction is a VM for the combined walkthrough and demonstration
-work. Plan one local Starship guest through libvirt: four vCPUs, 8 GiB RAM,
-64 GiB thin disk, UEFI and VirtIO graphics/storage/network. Use the AMD render
-device for shared acceleration; Nvidia passthrough is unnecessary for this
-scope. Graphics horsepower is not the reason to choose Starship: available
-CPU/RAM and an accessible rendering path make it a practical first host.
+Reuse local Starship libvirt/QEMU, the existing AMD-backed VirtIO graphics,
+local SPICE/OpenGL viewer, guest-side capture and host-to-guest SSH. Preserve
+the tested Docker/firewalld integration, host networking, Tailscale and native
+desktop. No remote/Carbon access, PVE migration or parallel container desktop
+is needed. Host virtualization remains outside chezmoi.
 
-Use one named libvirt NAT network, `niri-plus-lab`, for Arch and later distro
-guests, with reserved guest IPs. Starship connects directly and owns all viewing,
-interaction and recording review. The virtual bridge does not attach the physical
-Wi-Fi interface. Check subnet overlap and firewalld/Docker forwarding behavior
-before activation, then verify host and guest connectivity. Brief setup-related
-network disruption is acceptable; preserve the host's existing configuration
-and record recovery. There is no requirement to engineer zero interruption.
+Preserve `arch-base`, the existing pilot-only `niri-plus` checkpoint and original
+media. Use an offline working copy and run one Arch guest at a time. Preserve
+disk, UEFI variables and domain definition together; verify identity and access
+after restoring a copy. Save the next assembled checkpoint under a distinct
+name rather than relabeling the pilot as full-desktop evidence. The
+[VM plan](vm-reference-environment.md) owns the detailed recovery/storage rules.
 
-The [VM reference plan](vm-reference-environment.md) defines host setup,
-local Starship access, the guest baseline, checkpoint recovery, desktop coverage
-and the implementation gates. Host virtualization stays installed locally with
-short setup/operation/recovery notes; it adds no chezmoi selectors or fleet
-package hooks.
-The first deliverable is one current-theme browser/terminal recording,
-qualifying accelerated Niri, local viewer input and guest-side recording
-together. Use native local SPICE/OpenGL viewing on Starship; remote viewing,
-SSH console tunnels and EGL-headless rendering are outside this scope. Actual
-usability remains to be tested.
+- Niri Plus owns shared first-party implementation in `components/`, generated
+  exports, the reference assembly, fixtures, recipes and site.
+- Independent projects, including SwayNC and the Plus launchers, retain their
+  implementation/release authority. Use public pins and installation contracts.
+- Private chezmoi owns personal policy, host admission and deployment. Public
+  inputs must suffice for the guest; do not import a personal home or copy a
+  shared fix into a chezmoi fallback.
+- Guest-only SSH, login, virtual-output and fixture settings stay distinct from
+  portable desktop behavior. Keep small reviewable assembly steps rather than
+  building a distribution image pipeline or generic installer/VM framework.
 
-Containers remain useful for isolated component checks, but a second full
-desktop harness is outside this pass. PVE remains a fallback if there is a
-measured reason to move the guest. No virtualization package, VM, bridge,
-device assignment or PVE guest configuration has been changed.
+If a shared fix needs a new artifact, validate and prepare its release
+separately. Do not label an unpublished artifact as a published pin or silently
+roll it out to the personal hosts. Prepare local commits and previews; push,
+release, site publication and personal-host apply remain separate actions.
 
-## Demonstration set
+Stop the guest when work ends; retain useful tools, images and checkpoints.
+Deleting the lab is not a completion condition.
 
-Start with the pilot still and short clip. After capture quality passes, expand
-to a 45-75 second overview and focused clips of roughly 20-45 seconds. Browser,
-terminal and information/clipboard scenes form the core; authenticated agent
-and cross-host sequences follow when their separate prerequisites are met.
-Final durations follow clarity and readability, rather than becoming quotas.
+## Demonstrations and site presentation
 
-| Scene | Task to show | What the viewer should learn | Instruction destination |
-| --- | --- | --- | --- |
-| Browser and files | Navigate Chrome beside a terminal; download and open a harmless sample in Dolphin; select a local file through a browser file picker. | The graphical half is useful and comfortable; Niri navigation connects it to terminal work. | Base session, browser/files, portal and MIME steps. |
-| Building in terminals | Navigate a small public/sample project, show the prompt and editing workflow, then open and return to a dedicated agent TUI through Agent Plus. | Keyboard work, readable terminal colors and native agent ownership are central to the setup. | Kitty/Zsh and optional Agent Plus steps. |
-| Information and clipboard | Open/close SwayNC, inspect sample notifications and available cards, then retrieve text and an image with the clipboard picker. | Information appears on demand; there is no permanent bar; clipboard content keeps its original form. | Notification and clipboard steps. |
-| Work across hosts | Use SSH Plus and Tmux Plus to reach or return to a session on an owned demo endpoint. | Remote work remains close to the keyboard and is an optional extension. | Remote prerequisites and the maintained component guides. |
+| Scene | Actual task | Instruction destination |
+| --- | --- | --- |
+| Browser and files | Move between Chrome and terminal; download/open a sample in Dolphin and select it through a browser upload picker. | Base session, browser/files, portals and MIME recipes. |
+| Building in terminals | Navigate a public/sample project, run a harmless command and show readable prompt/output and keyboard navigation. | Kitty/Zsh and the design page. |
+| Information and clipboard | Open/close SwayNC, inspect sample notifications and real available cards, then retrieve text and an image. | Notification, clipboard and session-wiring recipes. |
+| Optional later agent/remote work | Open a dedicated native agent TUI or an owned sample SSH/tmux session when its separate prerequisites are met. | Maintained Plus guides and explicit access prerequisites. |
 
-The overview introduces the browser/terminal split, navigation and on-demand
-information. Focused clips explain individual tasks, with a small action/key
-caption and a direct setup link. Start terminal capture with a sample repository;
-add a harmless guest-only native agent sequence later when its prerequisites
-are met. Do not use private work or existing native conversations.
-If a particular action is not actually exercised, explain it as an illustration
-or omit it from the recording rather than implying it occurred.
+Aim for one readable 45-75 second overview and focused clips of roughly
+20-45 seconds for the three core scenes. Reuse pilot footage only when its
+versions and behavior still match; durations follow clarity rather than quotas.
+Agent/remote demonstrations are not required deliverables for this slice.
 
-Use a fresh demo browser profile, local sample download/upload pages, sample
-documents and isolated clipboard/notification state. Remote demonstrations use
-an explicitly owned endpoint and sample sessions. No private browser accounts,
-passwords, real notifications or existing agent/tmux sessions enter the media.
+Use an unsigned-in demo browser profile, local sample pages/documents, a sample
+project and isolated notification/clipboard state. Use the VM's actual system
+and virtual Ethernet information. Missing GPU/battery/Bluetooth cards should
+hide; any separate fixture rendering must be visibly labeled as sample data.
+No personal accounts, private files, real notifications or native conversations
+enter the recordings.
 
-These are recordings of real software in a staged native demo session. Label
-that setting at the point of use, identify fixture hardware data, and distinguish
-it from Bryan's daily desktop. Any later daily-session recording needs a
-separately agreed capture scope. Respect the repository's existing boundary
-against operating the user's desktop, devices, locks or native sessions.
+Put the overview on the tour with a prominent route from the home page. Place
+focused clips beside their task explanations and link to the relevant setup
+step. Preserve the first-person story. Keep the design page as the
+palette/typography reference, showing the same identity on actual GTK, Qt,
+browser and terminal surfaces rather than repeating the selection debate.
 
-Deliver a readable poster and browser-playable video with native controls,
-textual steps/captions and keyboard/mobile access. Keep explicit playback
-available from the overview and tour. Any short hover preview is a separate,
-deferred silent derivative with reduced-motion/data-saving/touch fallbacks.
-Extend the existing media provenance record with source versions, session
-scope, fixture labels, dimensions and file hashes; keep original captures and
-editing notes outside generated site output.
+Each media item needs a poster, native controls, explicit playback, readable
+action/key captions or equivalent textual steps, a useful no-JavaScript path
+and a setup link. No autoplay is required. Any hover preview remains a separate
+deferred derivative with reduced-motion/data-saving/touch fallbacks.
 
-## Guided installation route
+Extend `assets/provenance.json` with source versions, staged-VM/fixture labels,
+dimensions, processing notes and hashes. Keep original captures and private
+receipts outside Git; commit only reviewed site derivatives and public evidence
+without private guest keys, credentials, addresses or workstation paths.
 
-Rewrite the main setup page as one ordered route, retaining focused recipes for
-detail and selective adoption. Each stage needs prerequisites, exact public
-inputs, scoped commands, a visible expected result, a troubleshooting pointer
-and a way back.
+Decode each full video, inspect dimensions/frame timing and readability at
+the intended playback size, and compare encoded terminal black with its PNG
+reference. Run the required repository build/browser checks. Explicitly check
+playback/seek, keyboard access, narrow screens, reduced motion and textual/poster
+fallbacks without JavaScript. Record human review as pending when it has not
+occurred. Prepare a reviewable local site; publishing is a separate step.
 
-1. Establish the baseline and recovery point. Record the tested environment,
-   release tuple, optional components and explicit policy choices.
-2. Start Niri with Kitty and Rofi. Verify navigation, the application launcher,
-   session PATH and the intended login/startup path.
-3. Add Chrome or the reader's chosen browser, Dolphin, GTK/WLR portal routing,
-   application defaults and the download/open/upload-file task.
-4. Apply the selected desktop and terminal identity, fonts, cursor and icons.
-   Explain what is generated and which native preferences are merged.
-5. Add SwayNC and Cliphist. Wire and verify the actual launch bindings,
-   collectors, session services and notification behavior used in the tour.
-6. Add authorization, manual locking, explicit idle/power policy, hardware-key
-   feedback and the current common utility entries. Keep greeter/root changes
-   separately inspectable and preserve a working login path.
-7. Add the shared Zsh core and pinned upstream plugins. Verify a new shell,
-   prompt/history/completion and missing optional tools. Keep personal SDK and
-   environment customization outside the generic instructions.
-8. Offer SSH/Tmux/Agent Plus as an optional extension, including the real launch
-   contracts and explicit access prerequisites. The core desktop must remain
-   useful without that ecosystem.
+## Following milestone: complete Arch guide and replay
 
-Audit every demonstrated entry point against this route: bindings, helper
-locations and executable modes, dependencies, session PATH/environment,
-configuration files, service activation/teardown, fonts and policy inputs.
-Reconcile the base example with the selected appearance merge and the extra
-integration bindings. A file existing in the repository is not proof that the
-reader has installed or enabled it.
+Target an installed Arch Linux x86-64 system, ordinary account, working network
+and package access. OS partitioning and maintaining an OS image are outside the
+walkthrough. Existing selective recipes stay useful, but this plan qualifies
+Arch only; no other distribution qualification is scheduled.
 
-During rehearsal, follow the written steps in a clean account, keep a command
-transcript and checkpoints, and record every undocumented adjustment. Repeat
-the corrected route from the initial snapshot. Require a new graphical session
-and the browser/file, launcher, terminal, notification and clipboard tasks to
-work using public inputs. Record unsupported hardware/authentication checks
-separately instead of calling the whole fleet physically accepted.
+Turn the captured assembly notes into one ordered route, retaining focused
+recipes. Each stage needs prerequisites, exact public inputs, scoped commands,
+a visible expected result, troubleshooting and recovery:
+
+1. Establish baseline/recovery and record source/package versions.
+2. Start Niri with Kitty/Rofi and document login, PATH and session startup.
+3. Add browser/Dolphin, explicit portals, MIME defaults and download/open/upload.
+4. Apply desktop/terminal identity, fonts, cursor/icons and native preference merges.
+5. Add the pinned SwayNC fork, Cliphist, bindings and session-owned services.
+6. Complete authorization, manual locking, explicit idle/power policy, hardware
+   feedback and the current utility launchers.
+7. Add the shared Zsh core and pinned plugins, verifying a new shell, prompt,
+   history and completion; keep personal SDK/environment choices separate.
+8. Offer SSH/Tmux/Agent Plus as optional extensions using their maintained
+   contracts. The core desktop must work independently.
+
+Finish the wider [VM coverage checklist](vm-reference-environment.md#desktop-coverage-and-evidence):
+SDDM password login and guest wallet choice, Gtklock, independent idle/power,
+polkit, one-output Kanshi, input/Fcitx5, PipeWire/audio and volume feedback,
+ordinary file/media handlers and current utilities. State demo power policy
+explicitly and restore it after idle/lock tests. Real Wi-Fi/BT, brightness,
+lid/docks and physical suspend remain hardware follow-ups, not passed VM tests.
+
+Carry pilot lessons into the instructions: explicit portal providers and
+session ownership, minimal-base command prerequisites, safe existing-profile
+handling, an explicit terminal shell and fresh browser preferences. Document
+first-shell network behavior, including Powerlevel10k's optional `gitstatusd`
+fetch; staged plugin sources or a warmed prompt do not establish an offline
+first run. Arch package evidence describes the tested rolling-release baseline
+without promising byte-identical future rebuilds.
+
+Qualify restoration, then follow the written route from a fresh `arch-base`
+working copy without private imports. Retain a transcript and task results.
+Test reboot, password login, core tasks, logout/teardown and repeat login.
+Every manual repair must be incorporated into the guide and the corrected
+route replayed from a fresh base before installation qualification. Update
+affected clips or their version labels when a repair changes shown behavior.
+VM acceptance does not establish physical-host PAM/wallet or hardware behavior.
 
 ## Work order and exit gates
 
-| Phase | Reviewable result | Gate |
+| Phase and status | Deliverable | Gate |
 | --- | --- | --- |
-| A. Capture scope and workstation lab | Small storyboard, recorded public input versions and a reusable Starship VM. | A usable isolated desktop is viewable locally on Starship; host setup and recovery are recorded. |
-| B. Capture pilot, end of next implementation pass | One still, a 15-30 second browser/terminal recording and its receipt. | Current appearance, readable motion/text, reliable capture and sample content; inspect the retrieved file before expanding the environment. |
-| C. Demonstrated desktop assembly | Add SwayNC/clipboard and other pieces needed for the scenes; keep assembly notes. | Every shown workflow actually works and has recorded public inputs; complete installation acceptance is not claimed. |
-| D. Focused media and site integration | Overview/focused clips, posters, captions, setup links and provenance. | Real native output is labeled correctly; playback, keyboard/mobile, reduced-motion and no-JavaScript reading work. Optional remote/agent prerequisites do not block core media. |
-| E. Public installation walkthrough, later | Gap audit, corrected ordered guide, scoped examples and a clean-base rehearsal. | Rebuild from the initial snapshot, boot/login and complete the documented core tasks without undocumented fixes. |
-| F. Later distro trials | Ubuntu/Debian guests on the shared lab network, with per-release dependency and task receipts. | Arch pilot already delivered; record gaps and installation acceptance independently for each distro. |
-| G. Publication and continued reuse | Independently checked media/guide updates, retained artifacts and an available workstation VM lab. | Publish checked milestones independently; do not hold Arch media for later distro trials. Stop guests when idle, retaining useful images/checkpoints; deletion is optional future maintenance. |
+| A. Workstation lab — complete | Retained Starship tools/network and clean Arch checkpoint. | Measured results and recovery inputs are in the pilot receipt. |
+| B. Capture pilot — complete | Still, 24.5-second browser/terminal clip and receipt. | Native rendering/capture passed; full desktop and clean-install acceptance remain separate. |
+| C. Desktop assembly — next | Browser/files/portal tasks, SwayNC/clipboard, service wiring and assembly notes. | Work packages 0-3 pass with recorded public inputs. |
+| D. Media/site — next, after each task passes | Overview/focused clips, posters, captions, setup links and provenance. | Work package 4 passes; locally reviewed changes are ready for a separate publication decision. |
+| E. Complete Arch guide/replay — following milestone | Wider desktop coverage, corrected guide and clean-base replay. | Documented tasks plus reboot/login/teardown/relogin pass without undocumented fixes. |
+| F. Rofi controls design — after the Arch guide | Network-first interaction/state design and bounded implementation plan. | Actions, credentials, cancellation, errors, pending state, ownership and delivery are settled before implementation. |
+| Publication/reuse — per accepted milestone | Checked media/guide updates and retained lab artifacts. | Publish within authorization; stop guests when idle and retain useful images. |
 
-A-B are the next implementation slice. Once the capture pilot passes, media,
-guide and distro trials can proceed as separate follow-ons; later rows are not
-a requirement to finish every branch before publishing an earlier milestone.
+C-D are the next proposed implementation slice. They do not depend on E/F,
+and accepted media can be published independently of the complete guide.
+Keep implementation, local review and publication statuses distinct.
 
-The captured setup and assembly notes become the guide's source of truth.
-Keep their versions aligned, but do not delay recording for a complete guide,
-SDDM/lock/power acceptance, or an unattended installer. Add those installation
-checks in the later rehearsal. Keep the existing theme and component baseline
-while preparing demonstrations.
+Ubuntu/Debian and other distribution trials are outside this sequence. Do not
+create guests, select releases, add dependency abstractions or delay Arch work
+for compatibility. A future request may reopen that scope; there is no automatic
+distro trial after the guide or Rofi pass.
 
-If the later rehearsal changes a demonstrated behavior, update the affected
-clip or identify its earlier tested version. A clip proves the shown workflow;
-only the clean-base replay establishes installation acceptance. Publish those
-statuses separately rather than holding core media for the complete guide.
+## Following design pass: coherent Rofi controls
 
-## Follow-on candidate: coherent Rofi controls
+Bryan finds `nmtui` unpleasant and wants direct Rofi controls for routine
+desktop actions. Current Network opens `nmtui` in Kitty, Bluetooth opens
+`bluetoothctl` in Kitty, Audio opens graphical `pavucontrol`, and Session already
+uses Rofi. Keep that distinction accurate in the present guide.
 
-Bryan finds `nmtui` unpleasant and wants to consider direct Rofi controls instead
-of opening a separate interface for routine desktop actions. This is an
-experience direction to design next, not an approved implementation or a
-change to the current entry points.
+Design Network first: current status, connection selection/management,
+credential prompting, pending operations, errors and cancellation. Inspect
+existing tools before choosing reuse or custom code. Then define common visual
+and keyboard conventions, using Session as a starting point; retain familiar
+Network/Bluetooth/Audio/Session launcher names and advanced-tool handoffs.
+Evaluate Audio and Bluetooth next; scanning/pairing needs explicit asynchronous
+state and cleanup.
 
-Current behavior is mixed: Network opens `nmtui` in Kitty; Bluetooth opens
-`bluetoothctl` in Kitty; Audio opens the graphical `pavucontrol`; Session already
-uses a Rofi menu. Keep this distinction accurate in the current walkthrough.
-
-Proposed priority for the next design pass:
-
-1. Network first: current connection/status and a clear route to select or
-   manage a connection. Settle credential prompting, errors and pending state
-   before implementation; inspect existing tools before choosing reuse or
-   custom code.
-2. Define shared interaction and visual conventions, using the existing Session
-   menu as a starting point. Keep the familiar Network/Bluetooth/Audio/Session
-   names reachable through the application launcher.
-3. Evaluate Audio and Bluetooth next. Establish their common actions and
-   advanced-tool handoffs; Bluetooth scanning/pairing needs its own asynchronous
-   state, confirmation and cleanup design.
-
-Keep native NetworkManager, BlueZ, audio and session owners authoritative.
-Preserve existing authorization, credentials/pairings and policy; menus need
-fresh state, visible pending/error results and cancellation without accidental
-actions. Retain independent locking, native logout confirmation and Cancel-first
-restart/shutdown behavior. Decide code ownership and delivery after the Network
-scope is clear, before starting a writer.
-
-The media/walkthrough pass can proceed against the current released baseline.
-Show the common utility entry points briefly; reserve detailed control-flow
-demonstrations for the selected Rofi design. A later controls release updates
-the affected guide section and clip without reworking the whole desktop tour.
+Keep NetworkManager, BlueZ, audio and session owners authoritative. Preserve
+credentials/pairings, power policy, independent locking and Cancel-first
+restart/shutdown. Decide code ownership and delivery before implementation.
+The later controls release updates affected recipes/clips without reworking the
+whole tour; it does not reopen palette design or multi-distro support.

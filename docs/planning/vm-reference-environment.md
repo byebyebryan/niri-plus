@@ -1,11 +1,10 @@
 # Capture-first VM plan for Niri Plus
 
-Revised planning draft, 2026-10-27. Establish reusable virtualization on Starship,
-starting with an Arch VM, and deliver a representative screenshot and short
-recording first. Use one
-shared libvirt NAT network for that guest and later Ubuntu/Debian trials. Full
-desktop demonstrations and the installation walkthrough remain later milestones.
-Viewing, interaction and playback review take place locally on Starship.
+Revised plan, 2026-10-27, after the successful capture pilot. Reuse the
+Starship workstation lab for Arch Linux x86-64 only. Ubuntu/Debian are deferred
+for much later, with no guest preparation, release selection or compatibility
+work in the current sequence. Viewing, interaction and playback review remain
+local to Starship.
 Phases 1-2 completed on 2026-10-27: host tools, shared networking, clean Arch
 baseline and the native screenshot/recording pilot are established. The guest
 is stopped and retained. See the [pilot receipt](capture-pilot-receipt.md) for
@@ -24,8 +23,21 @@ no deadline to delete the lab after capture or installation testing.
 
 ## Next implementation milestone
 
-The first implementation pass ended with a usable capture pilot. The contract
-below records that completed slice; later milestones remain separate.
+The parent plan's work packages 0-4 define the next proposed slice: browser/file
+and portal tasks, SwayNC/clipboard, session wiring, native media and local site
+integration. Preserve both existing checkpoints, boot an offline working copy
+before modifying it, and run one Arch guest at a time. Use the established
+local capture path; do not repeat host installation or broaden lab access.
+
+Full SDDM/lock/power/audio/input/output qualification and replay from
+`arch-base` follow as a separate Arch installation milestone. The Rofi controls
+design comes after that guide. A plan revision does not start live work.
+
+## Completed pilot contract
+
+The first implementation pass ended with the native screenshot and recording.
+The table and storyboard below describe that completed scope, not remaining
+desktop acceptance.
 
 | Needed for the pilot | Outside the pilot |
 | --- | --- |
@@ -33,7 +45,7 @@ below records that completed slice; later milestones remain separate.
 | Arch, Niri, Chrome, Kitty/Zsh and an application-launch path. | SwayNC, Cliphist, Dolphin and detailed workflow scenes. |
 | Current desktop/terminal colors, Noto/Meslo fonts, sample page/project and guest-side recording. | SDDM, lock/power acceptance, audio and complete installation qualification. |
 | One screenshot, one 15-30 second clip, and a short assembly/capture receipt. | Full overview/focused clips, site integration, public guide and clean-base replay. |
-| One shared lab network, initially with only the Arch guest attached. | Ubuntu/Debian guests and cross-guest tests, after the Arch capture pilot. |
+| One retained lab network with the Arch guest attached. | Other distribution guests and cross-guest tests; deferred without a scheduled trial. |
 
 Use a published immutable component bundle and the independently pinned
 identity from [the component record](../../data/components.json). Freeze a
@@ -82,42 +94,35 @@ not block this baseline and must not silently replace current utilities during
 the initial rehearsal. Containers can continue to serve component tests; no
 parallel containerized desktop or homelab migration is needed here.
 
-## Distro scope and scheduling
+## Arch scope
 
-| Guest | Purpose | Admission |
-| --- | --- | --- |
-| `niri-plus-arch` | Primary capture desktop and first complete installation walkthrough. | Create first; its screenshot/clip is the next deliverable. |
-| `niri-plus-ubuntu` | Explore the same desktop on one Ubuntu LTS baseline. | Follow-on trial after the Arch pilot; record the exact release when selected. |
-| `niri-plus-debian` | Explore the same desktop on one Debian stable baseline. | Follow-on trial after the Arch pilot; record the exact release when selected. |
+The sole active reference target is installed Arch Linux x86-64 with an ordinary
+account, network and package access. The retained `niri-plus-arch` guest supplies
+capture and a fresh-base installation rehearsal; preparing an Arch OS baseline
+is lab work rather than a partitioning/install-Arch product.
 
-Networking is shared, but guest disks, accounts, configuration and evidence are
-separate. Keep comparable virtual hardware and record necessary differences.
-Run one guest at a time by default; start a second only for a defined cross-host
-demonstration or connectivity test. Additional distro installations must not
-compete with the recording pilot for resources or become its completion gates.
+Only one working Arch guest runs at a time. Offline recovery copies do not
+imply extra running desktops. Ubuntu/Debian and other distributions have no
+scheduled milestone, guest definitions, reserved resources or compatibility
+abstraction work. Reopen them only through a future scope decision.
 
-For each later distro, first check Niri and recorder availability, release
-compatibility, Python/toolkit versions and public fork/bundle installation.
-Record package-name, unit-name and session differences before expanding into
-full assembly. A source build or unavailable dependency is a documented gap,
-not a reason to upgrade unrelated components or claim support prematurely.
-Status progresses from not tested, to explored with gaps, to the specific tasks
-actually verified. Only a clean-base replay qualifies an installation guide for
-that exact distro/release. No multi-distro support promise is part of this pilot.
+An Arch task receipt establishes only the tested task and baseline. Public
+component availability, native media, clean-install replay and physical-device
+acceptance remain different evidence.
 
-## Proposed machine and host changes
+## Retained machine and host contract
 
-| Item | Initial choice |
+| Item | Contract and measured baseline |
 | --- | --- |
 | Host | Starship, local QEMU/KVM managed through system libvirt. |
-| Guest | Initially `niri-plus-arch`, Arch Linux x86-64; add the other distro guests later. Offline checkpoints are not additional running desktops. |
+| Guest | `niri-plus-arch`, Arch Linux x86-64; one active working guest. Offline checkpoints are not additional running desktops. |
 | Compute | Initially four vCPUs with host CPU support and 8 GiB fixed RAM per guest; increase only when a test demonstrates a need. |
-| Storage | Initially one 64 GiB sparse qcow2 disk per guest, VirtIO storage, under a dedicated `niri-plus` libvirt storage directory; allocate later guests only when used. |
+| Storage | One working 64 GiB sparse qcow2 disk plus bounded offline checkpoints under the dedicated `niri-plus` libvirt storage directory. No other distro allocations are scheduled. |
 | Firmware | Q35 machine, UEFI/OVMF, guest-specific writable variables; Secure Boot is outside this first baseline. |
 | Graphics | VirtIO with 3D enabled, explicitly using the AMD render device. No PCI assignment or Nvidia changes. |
 | Console | Native local SPICE/OpenGL viewer using a Unix socket or libvirt graphics file descriptor; qualify the local path before proceeding. |
 | Display | One virtual output, initially 1920x1080 at scale 1; freeze a readable capture mode after the pilot. |
-| Network | One VirtIO NIC per guest on the shared libvirt NAT network `niri-plus-lab`; guest NetworkManager owns Arch's virtual Ethernet connection. |
+| Network | One VirtIO NIC on `niri-plus-lab`. Inspect the pilot's cloud-image network owner; the expanded desktop adopts NetworkManager for its virtual Ethernet connection with SSH/console recovery and no competing owner. |
 | Audio | Add one virtual sound device and guest PipeWire/WirePlumber for later audio/portal checks; the first recording is silent. |
 | Access | From Starship only: local SPICE viewer for guest screen/input, and direct host-to-guest SSH for commands and file export. |
 | Account | Ordinary `demo` user with a guest-only password and sudo; `niri-session` is sufficient for the capture pilot, with SDDM added for the installation walkthrough. |
@@ -129,15 +134,15 @@ has the stable path `/dev/dri/by-path/pci-0000:11:00.0-render`; confirm its PCI
 identity again before writing the domain. Never rely on `renderD128` numbering
 to choose the GPU.
 
-Normal QEMU/libvirt management packages are not installed; dnsmasq is already
-installed. The expected starting package set is `qemu-desktop`, `libvirt`,
-`virt-install` and `edk2-ovmf`, with existing `dnsmasq` for the managed network
-and `virt-viewer` on Starship.
-`virt-manager` is optional. Inspect the actual package transaction and existing
-service/socket ownership before installation. Do not perform an Arch partial
-upgrade; resolve any required system-upgrade scope explicitly before proceeding.
+The pilot installed the required QEMU/libvirt, virt-install, OVMF and local
+viewer tooling, using the existing dnsmasq package for the managed network.
+Its package transaction added 89 packages without changing existing package
+versions or removing packages; normal package hooks ran. See the receipt for
+exact versions and retained logs. Do not repeat installation or add
+`virt-manager` without a concrete need. Any later package change needs a reviewed
+transaction; do not perform an Arch partial upgrade.
 
-Install and retain the needed host tools as a Starship-local workstation
+Retain the installed host tools as a Starship-local workstation
 capability. Keep short setup/operation/recovery notes and the reusable VM
 definition with this workstream; package receipts, local paths, credentials and
 images stay outside Git. Add no
@@ -146,8 +151,8 @@ The actual desktop components keep their existing public ownership and personal
 chezmoi delivery.
 
 Record which packages were already present and which services/network/storage
-objects this lab introduces. Retain the lab for capture, setup testing, distro
-experiments and later Rofi controls work. Its normal idle state is stopped VMs
+objects this lab introduces. Retain the lab for Arch capture, installation
+rehearsal and later Rofi controls work. Its normal idle state is stopped VMs
 with their disks and checkpoints retained, rather than an uninstalled hypervisor
 or deleted guests. Keeping it available does not add a fleet-deployment
 requirement or reopen the decision to keep the host setup outside chezmoi.
@@ -173,11 +178,16 @@ host connection. This is not a bridge onto the home LAN. See
 [libvirt's NAT example](https://libvirt.org/formatnetwork.html#nat-based-network)
 and [network filtering description](https://libvirt.org/firewall.html).
 
-Choose an unused private IPv4 subnet after checking all host/VPN route tables,
-existing virtual networks and Docker ranges. Use a distinct short bridge name,
-such as `virbr-np`, and the network name `niri-plus-lab`. Add DHCP reservations
-for each guest as it is created; keep the selected addresses in the local lab
-inventory. There is one shared network, not one network per distro.
+The pilot selected `niri-plus-lab`, bridge `virbr-np`, subnet
+`192.168.124.0/24` and Arch reservation `192.168.124.10`. Reuse that definition;
+recheck host/VPN routes and Docker ranges before changing it. Keep the live
+network inventory and recovery preimages privately with the lab.
+
+The accepted integration loaded firewalld's packaged libvirt zone and selected
+libvirt's supported iptables network backend to coexist with Docker forwarding.
+Do not reapply old firewall preimages over later host state. The pilot verified
+host/guest connectivity and preserved service PIDs; later host boots or
+Docker/firewall restarts remain separate lifecycle checks.
 
 Starship reaches guests directly at their reserved IPs, for example
 `ssh demo@GUEST_IP`. Viewing and operation remain local to Starship. No remote
@@ -199,8 +209,7 @@ a hard requirement. Prefer managed activation and only the necessary service
 reloads. Preserve the existing Wi-Fi profile, host default route/DNS, Docker
 networks and Tailscale configuration. After activation, check host SSH, DNS,
 Wi-Fi, Docker and Tailscale health, then guest DHCP/DNS, outbound downloads and
-SSH from Starship. When a second guest is added, also check guest-to-guest
-connectivity. Recover the prior lab-network/firewall state if an existing host
+SSH from Starship. Recover the prior lab-network/firewall state if an existing host
 path fails; do not continue the recording with a broken host network.
 
 NAT is not an isolation guarantee against guest access to the LAN. It also does
@@ -210,9 +219,10 @@ rendering and recording consume host resources regardless of network mode.
 ## Local graphics, viewing and capture pilot
 
 Niri's [VM guidance](https://niri-wm.github.io/niri/Getting-Started.html#virtual-machines)
-requires 3D acceleration. The AMD iGPU is expected to be adequate for ordinary
-desktop composition; performance is not yet measured. Using it as a shared
-render device does not require detaching it from the host.
+requires 3D acceleration. The pilot established AMD-backed VirGL and readable
+1920x1080 recording at a measured average of about 30 fps. This qualifies that
+capture workload rather than general graphics performance. The shared render
+device remains attached to the host.
 
 Use native SPICE OpenGL with a local viewer on Starship, explicitly selecting
 the AMD render node. Choose a managed Unix socket or libvirt's graphics file
@@ -270,15 +280,17 @@ PVE migration. Choose a fallback after the failure is understood.
 
 ## Public guest baseline and dependency record
 
-Create the Arch baseline from verified official installation media, recording
-the ISO/version/hash and installation choices. Include a bootable disk, ordinary
-user, locale/timezone, working virtual network, sudo, SSH and a console recovery
-path. It must contain no Niri Plus desktop, private chezmoi checkout or personal
-home-directory import.
+The retained baseline came from the verified official Arch cloud image
+recorded in the pilot receipt, with its published checksum and detached
+signature checked using an isolated keyring. NoCloud prepared the ordinary
+account, locale/timezone, network, sudo, SSH and console recovery. The clean
+checkpoint contains no Niri Plus desktop, private chezmoi or personal home
+import. Reuse it for the installation rehearsal rather than introducing a new
+ISO-install workstream.
 
 Track the guest's package versions and package sources, the public Niri Plus
 source commit, immutable component bundle/hash, identity/hash and independent
-project release pins. Arch is rolling release: a package list and ISO alone are
+project release pins. Arch is rolling release: a package list and image alone are
 not a promise of byte-for-byte future rebuilds. Keep the tested images and
 package evidence locally; describe the actual tested baseline on the site.
 
@@ -309,15 +321,21 @@ inactive disk snapshots from crash-consistent live ones in its
 | Checkpoint | Contents | Use |
 | --- | --- | --- |
 | `arch-base` | Installed Arch, account, network, SSH and console recovery; no desktop. | Authoritative start for the complete Niri Plus installation rehearsal. |
-| `niri-base` (optional) | Basic Niri, terminal and working graphics; SDDM is not required yet. | Recording pilot and debugging later stages. |
-| `niri-plus` (later) | Assembled desktop with the demonstrated workflows checked. | Further capture work and later controls; installation acceptance is recorded separately. |
+| `niri-plus` (existing pilot) | Basic Niri/Chrome/Kitty/Zsh, appearance and capture harness. | Protected recovery point for the accepted pilot; not full-desktop acceptance. |
+| `desktop-demo` (next) | Expanded desktop with core workflow results and media/input receipt. | Reference for site demonstrations and later work; clean-install qualification remains separate. |
 
-Save `arch-base` before desktop assembly so the later rehearsal has a clean
-starting point. Add the other checkpoints only when useful, rather than
-building a checkpoint framework before the first recording. The final guide
-must pass from `arch-base`; starting at `niri-base` would skip the login/session
-work. Media can use the working desktop before that later rehearsal passes;
-its label must not imply clean-install acceptance.
+The pilot already saved `arch-base` before desktop assembly and `niri-plus`
+after capture/recovery checks. Preserve both with their original meaning.
+Create an offline working copy of the pilot for the next slice, retaining disk,
+UEFI variables and domain XML together; establish that it boots and its guest
+guard/access still work before desktop changes. Initially reuse the same owned
+guest identity with only one active instance; never boot duplicate identities
+concurrently.
+
+Save `desktop-demo` only after its native tasks pass. The final guide must
+later pass from a fresh `arch-base` copy; starting at a desktop checkpoint would
+skip installation/session work. Media can precede that replay, with labels
+that do not imply clean-install acceptance.
 
 For each checkpoint preserve disk contents, domain XML, UEFI variables, package
 and source receipt, and verification results. Keep the source checkpoint off
@@ -326,11 +344,10 @@ host keys if a clone will coexist with its source. Initially run only one clone
 at a time and verify its identity after every restore.
 
 Keep images under the dedicated libvirt storage area, outside Git. Limit the
-initial Arch pass to one working image and at most these three checkpoints.
-Create later distro images only when starting their trials, initially with one
-clean base and one working image each; do not replicate every Arch intermediate
-checkpoint. Prefer sparse independent copies or filesystem reflinks when
-supported; qualify the restore procedure before each clean-install rehearsal.
+Arch sequence to one working image and at most these three checkpoints.
+Allocate no Ubuntu/Debian images. Prefer sparse independent copies or filesystem
+reflinks when supported; qualify restoration before modifying a working copy
+and before the clean-install rehearsal.
 Avoid a growing backing-file chain in this first pass.
 
 Monitor actual allocated image/capture space. Stop creating images or recording
@@ -376,33 +393,31 @@ the three desktop hosts or homelab services.
 
 ## Execution order and completion gates
 
-| Phase | Result | Gate before proceeding |
+| Phase and status | Result | Gate before proceeding |
 | --- | --- | --- |
-| 1. Workstation VM capability | Retained Starship tools, shared `niri-plus-lab` NAT network, Arch domain/storage and short setup/operation notes. | Subnet/firewall integration checked; host connectivity restored/verified after any brief setup disruption; no guest/network autostart or exposed console. |
-| 2. Recording pilot, end of next implementation pass | Basic Arch/Niri/Chrome/Kitty/Zsh with current appearance; one still, a 15-30 second recording and its receipt. | Usable local Starship viewer/input, intended renderer, readable exported recording and representative motion/colors. |
-| 3. Demonstration assembly | Add the pieces needed for the parent plan's remaining scenes and record assembly steps. | Each demonstrated task actually works; public input versions and any additional fixes are recorded. |
-| 4. Media and site | Overview/focused clips, posters, captions and provenance. | Sample data, truthful labels and reviewed playback; core media can ship before optional agent/remote prerequisites or the full guide. |
-| 5. Installation rehearsal, later | Guide gap audit and corrected public instructions followed from a fresh `arch-base` clone. | Restore works; cold boot/SDDM login, core tasks, service teardown and repeat login pass without undocumented steps. |
-| 6. Later distro trials | Add Ubuntu/Debian separately on the same network, recording exact releases, prerequisites and gaps. | Arch capture already delivered; each distro has its own task/install status and bounded disk/resource use. |
-| 7. Retain for reuse | Accepted media/notes plus retained VM definitions, useful guest disks and clean checkpoints. | Guests stopped when idle; storage use recorded; deleting the lab is not a completion requirement. |
+| 1. Workstation lab — complete | Retained tools, NAT network, Arch guest/storage and operating notes. | Pilot receipt records connectivity and host preservation; later host reboot/firewall lifecycle checks remain explicit. |
+| 2. Capture pilot — complete | Current-theme Niri/Chrome/Kitty/Zsh, screenshot, 24.5-second clip and receipt. | Native rendering/encoding passed; manual viewer key handling and complete desktop acceptance remain distinct. |
+| 3. Core desktop assembly — next | Browser/files/portals, SwayNC/clipboard, session wiring and notes. | Parent work packages 0-3 pass on a protected working copy using public inputs. |
+| 4. Media/local site — next | Overview/focused clips, posters, captions, links and provenance. | Parent work package 4 passes; reviewable local changes are ready for separate publication. |
+| 5. Complete Arch guide/replay — following milestone | Wider desktop checklist and corrected instructions from a fresh `arch-base` copy. | Password login, core tasks, reboot and service teardown/relogin pass without undocumented repairs. |
+| Retain for reuse — throughout | Accepted evidence plus retained definitions/images/checkpoints. | Guests stopped when idle; images remain useful; deletion is not a completion requirement. |
 
-Phases 1-2 are the next implementation slice. After that pilot, media/guide work
-and distro trials are independent follow-ons; Ubuntu/Debian exploration need not
-wait for the complete Arch guide, and it cannot block the Arch media. The table
-does not require completing every later branch before delivering a milestone.
+Phases 1-2 are delivered. Phases 3-4 are the next proposed implementation
+slice; full Arch installation acceptance follows separately. The parent plan
+then schedules a Network-first Rofi controls design, not automatic controls
+implementation. Ubuntu/Debian are deferred for much later with no scheduled
+trial or current compatibility work.
 
-Planning review, 2026-10-27: the shared-network lifecycle, local Starship access,
-accepted brief setup disruption and per-distro resource/evidence boundaries
-are now explicit. Runtime questions remain guest NAT/firewall compatibility,
-local viewer key capture, rendering/encoding quality and later distro
-dependencies.
-The first pilot resolves the Arch networking/capture questions; it does not
-claim those runtime checks have passed already.
+The pilot resolved Arch networking/rendering/capture viability. Keep pending
+checks specific: physical viewer key handling, later host/network lifecycle,
+the expanded native tasks and the fresh-base installation replay. A successful
+recording does not resolve those by implication.
 
 Keep small recipes and reviewable definitions rather than building a generic
-VM orchestrator or unattended distro installer. Stop the VM between work
-sessions unless a bounded recording/test needs it running. Keep the tools and
-images available for the next use, with no automatic expiry or deletion policy.
+VM orchestrator or unattended distro installer. Stop the VM between sessions
+and retain useful tools/images, with no automatic expiry. Prepare local source
+and media; push, release, site publication and fleet deployment remain separate
+actions within authorization.
 
 ## Optional future maintenance
 
@@ -419,5 +434,6 @@ newly added packages, retaining tools that have acquired another use. Existing
 dnsmasq, Docker and desktop packages are not lab-owned. Keeping the hypervisor,
 shared network and useful guests installed is the default after this pass.
 
-Phases 1-2 are delivered. Later distro trials, complete installation acceptance
-and public-site publication remain separate work.
+Phases 1-2 are delivered. The next work is Arch desktop demonstrations;
+complete installation acceptance and public-site publication remain separate.
+Ubuntu/Debian remain deferred without a scheduled trial.

@@ -361,6 +361,11 @@ files and retain the last verified recovery point.
 
 ## Desktop coverage and evidence
 
+The accepted [Arch installation pass](arch-installation-pass.md) owns the next
+guide/development/fresh-replay sequence and its task-level acceptance gates.
+Preserve the existing `desktop-demo` checkpoint as well as the earlier pilot
+and base while qualifying that separate working copy.
+
 This is the eventual coverage checklist, not a prerequisite for the first
 recording. Initially qualify Niri/Chrome/Kitty and the current appearance, then
 add notifications/clipboard and other demonstrated flows. The installation

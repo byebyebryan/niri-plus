@@ -165,6 +165,10 @@ occurred. Prepare a reviewable local site; publishing is a separate step.
 
 ## Following milestone: complete Arch guide and replay
 
+The accepted [Arch installation pass](arch-installation-pass.md) expands this
+milestone into guide, missing-integration and fresh-replay gates, with a native
+task matrix and explicit VM/hardware limits. Execution results remain separate.
+
 Target an installed Arch Linux x86-64 system, ordinary account, working network
 and package access. OS partitioning and maintaining an OS image are outside the
 walkthrough. Existing selective recipes stay useful, but this plan qualifies

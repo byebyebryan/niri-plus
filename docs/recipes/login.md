@@ -130,6 +130,17 @@ Do not restart SDDM while using the desktop. Reboot or use a planned login
 opportunity to test the real greeter, password login, logout, and return to
 SDDM, then retain the prior theme for recovery.
 
+The second fresh replay returned to this installed greeter after reboot:
+
+![The actual themed SDDM greeter with the demo account, password field, clock, and session controls.](../../assets/arch-reference/themed-greeter-after-reboot.png)
+
+Fresh E3 replay, staged Arch guest, captured 2026-10-28 after reboot. The
+[installation receipt](../planning/arch-installation-receipt.md) records the
+native password-login and wallet checks; this still shows the real greeter, not
+the separate test-mode preview. See the [media provenance](../../assets/provenance.json)
+and [license notes](../../assets/LICENSES.txt) for the still's source and
+attribution.
+
 ## Wallet and Secret Service wiring
 
 Keep SDDM's installed PAM stack. The development copy's packaged PAM file

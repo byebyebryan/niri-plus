@@ -191,11 +191,21 @@ returned `中文你好`. This route needed no `--enable-wayland-ime`,
 per-application Fcitx override. Keep Chrome on this native route; do not add
 legacy flags based on older Chromium guidance.
 
-These are targeted development-copy results with Niri 26.04, Fcitx5 5.1.23,
-Kitty 0.49.2, and Chrome 156.0.8078.47. They do not establish every
-GTK/Qt/XWayland client or a completed fresh installation replay. Recheck the
-profile, one-owner autostart, candidate position, and committed text through
-the walkthrough's fresh replay.
+![Chrome showing committed 你好latin in the first local fixture field and a live Pinyin candidate popup at the second field.](../../assets/arch-reference/chrome-ime-replay-fractional-preedit.png)
+
+Fresh E3 replay, staged Arch guest, captured 2026-10-28 at scale 1.5. Chrome is
+showing the local `127.0.0.1` reference fixture, not a remote page or account;
+the candidate popup is the live Fcitx interface in a real Chrome text area, not
+a mockup. The [installation receipt](../planning/arch-installation-receipt.md)
+records the native composition checks and their scope. See the
+[media provenance](../../assets/provenance.json) and
+[license notes](../../assets/LICENSES.txt) for source and attribution.
+
+These checks passed again through the fresh installation replay with Niri
+26.04, Fcitx5 5.1.23, Kitty 0.49.2, and Chrome 156.0.8078.47. Kitty returned
+`你好latin` at scale 1 and `中文latin` at scale 1.5; Chrome returned `你好latin`
+and `中文你好`. The profile retained one packaged autostart owner. These results
+do not establish every GTK/Qt/XWayland client or physical display combination.
 
 To recover, restore only the Niri environment entries and any optional
 `classicui.conf` values you changed. Keep the generated profile, dictionaries,

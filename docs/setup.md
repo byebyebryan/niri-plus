@@ -11,7 +11,7 @@ Run the following commands from the reviewed Niri Plus checkout root and keep
 that path in a task-specific variable; package builds below change directories:
 
 ```sh
-export NIRI_PLUS_CHECKOUT="$(git rev-parse --show-toplevel)"
+export NIRI_PLUS_CHECKOUT="$PWD"
 test -f "$NIRI_PLUS_CHECKOUT/tools/reference/inputs.json"
 ```
 
@@ -29,12 +29,14 @@ recipe](recipes/notifications.md); fetched Zsh dependencies include their own
 fonts, GTK themes, and icon themes remain governed by their upstream terms and
 package notices; Chrome presents its own terms on first run.
 
-> **Candidate status:** Targeted native checks passed for stock SDDM/Niri login,
-> KWallet/Secret Service, packaged Fcitx5 autostart, polkit authorization,
-> Gtklock locking/unlocking, and native Wayland input composition in Chrome and
-> Kitty. Guest playback passed through a virtual HDA device. Fresh-guide and
-> cold-boot replay remain open; physical/SPICE audibility and microphone signal
-> are not claimed. A dated acceptance receipt is pending primary review.
+> **Locally qualified reference, 2026-10-28:** The written route passed from a
+> fresh installed-Arch base, including password login, wallet unlock, locking,
+> input, files, clipboard, audio feedback, reboot and logout/relogin. Whole-monitor
+> sharing passed again after a full guest power-off/start using the documented
+> VirtIO compatibility branch. This is a local candidate; publication, physical
+> hardware and human acceptance remain separate. The
+> [installation receipt](planning/arch-installation-receipt.md) records exact
+> inputs, results, recovery and limits.
 
 ## 1. Prepare the account and record the starting state
 
@@ -365,17 +367,16 @@ socket may still be inactive for this boot. Starting the packaged
 activated after boot, so do not enable the static unit or change its packaged
 permissions. Run a graphical `pkexec /usr/bin/true` check and authenticate to
 confirm the prompt and allow path. Cancelling denies the action; the
-development-copy test returned 127 on cancel and 0 after authentication, with
+fresh-replay test returned 127 on cancel and 0 after authentication, with
 the packaged polkit files unchanged.
 
 The KWallet/Secret Service path, manual Gtklock password check, SDDM-session
 lock request, idle restart with an existing locker, polkit prompt/allow path,
 native Chrome/Kitty input composition, and guest playback through its virtual
-HDA device passed targeted development-copy checks. Repeat them through a fresh
-guide replay and cold boot before accepting the complete loop. Physical/SPICE
-audibility and microphone signal are not established. Restart cancellation
-preserved the same boot ID, and the confirmed Session Shut down action stopped
-the development guest normally.
+HDA device passed the fresh-guide replay. Physical/SPICE audibility and
+microphone signal are not established. Restart cancellation preserved the same
+boot ID; confirmed Restart rebooted the guest, and confirmed Shut down powered
+it off. A later full power-on, logout and relogin restored the expected owners.
 
 ## 8. Add display, input, audio, and shell workflows
 
@@ -419,11 +420,11 @@ customize `PATH`, retain its other required directories:
 printf 'PATH "%s/.local/bin:/usr/local/bin:/usr/bin"\n' "$HOME"
 ```
 
-Targeted development-copy checks passed for native composition in Chrome 156
+Fresh-guide checks passed for native composition in Chrome 156
 launched with `--ozone-platform=wayland` only and Kitty 0.49.2 using native
 Wayland text input. Preedit, cancellation, candidate selection, commit, and
 `Super+Space` Latin switching worked; the candidate popup followed fields at
-scale 1.5. These checks need a fresh-guide replay before E3 acceptance. Do not
+scale 1.5. See the receipt for exact committed text and versions. Do not
 add `GTK_IM_MODULE`, `--enable-wayland-ime`, or a forced text-input version to
 these tested routes.
 
@@ -437,7 +438,7 @@ systemctl --user is-active pipewire.socket pipewire-pulse.socket wireplumber.ser
 wpctl status
 ```
 
-On the latest development-copy pass, an attached virtual ICH9 HDA device
+On the fresh-guide replay, an attached virtual ICH9 HDA device
 produced the real PipeWire sink
 `alsa_output.pci-0000_00_1b.0.analog-stereo`; a three-second test tone reached
 the ALSA PCM (`RUNNING`) and its monitor. This checks the guest playback path
@@ -473,9 +474,11 @@ secret-tool lookup service niri-plus-reference account disposable
 secret-tool clear service niri-plus-reference account disposable
 ```
 
-The targeted development-copy pass opened the wallet without a second password
-prompt. Repeat this sequence on a fresh guide installation before calling E3
-complete; do not change PAM if the normal package handoff is still being tested.
+The fresh-guide replay opened the wallet without a second password prompt and
+read the disposable secret after password login following reboot. A later cold
+power-on and final relogin also retained the native provider and passed a new
+disposable store/read/clear check. Keep PAM unchanged while testing its normal
+package handoff.
 
 Stage the four pinned shell dependency trees manually from the verified
 examples. Choose a new leaf, then follow the [terminal recipe](recipes/terminal.md)
@@ -488,10 +491,10 @@ python3 "$SOURCE/examples/terminal/fetch.py" "$ZSH_BUNDLE"
 
 This fetcher requires network access and runs only when invoked; it is not a
 shell-startup installer. Do not copy prompt caches from another home. On the
-targeted development-copy check, the first Kitty Git prompt fetched the pinned
-Powerlevel10k `gitstatusd` binary, completion selected `alpha-reference` from
-`completion-check/al`, and Up/Enter repeated the prior command. Repeat those
-checks after a fresh guide replay.
+fresh-guide check, the first Kitty Git prompt fetched the pinned Powerlevel10k
+`gitstatusd` binary, Tab completed a partial directory path, and Up/Enter repeated
+the prior command. This first prompt needs network access; it is not an offline
+startup guarantee.
 
 ## 9. Replay the task checklist and recover cleanly
 

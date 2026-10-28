@@ -57,7 +57,7 @@ used the native Wayland route `--ozone-platform=wayland` only.
 
 ## Optional Arch walkthrough branch
 
-The main [Arch walkthrough](../../../../docs/setup.md) installs Arch's repository
+The main [Arch walkthrough](https://dev.byebyebryan.com/niri-plus/setup/) installs Arch's repository
 portal as part of its package group. Use this candidate only if a VirtIO/VirGL
 guest reproduces the exact whole-monitor failure above. It is built from the
 reviewed checkout and is not downloaded from the pilot guest or its cache.

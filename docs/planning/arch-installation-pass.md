@@ -8,6 +8,11 @@ starting evidence. Execution was authorized through the Luna goal loop on
 separate dated receipt; this plan is not an execution result. Public release,
 site deployment and fleet application remain separate.
 
+Execution completed locally on 2026-10-28. The corrected frozen candidate passed
+the separate fresh-base replay and required applicable native tasks. See the
+[installation receipt](arch-installation-receipt.md) for evidence, the retained
+stopped `arch-guide` checkpoint and explicit hardware/publication limits.
+
 ## Outcome and starting point
 
 A reader with installed Arch Linux x86-64, an ordinary sudo-capable account,

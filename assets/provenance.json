@@ -1,6 +1,38 @@
 {
   "files": [
     {
+      "path": "assets/arch-reference/themed-greeter-after-reboot.png",
+      "sha256": "497aba37c8b92a3cb64440987498b2d58143bafce955552d07e14f8ccab84fcc",
+      "source": "Unedited still from the second fresh Arch guide replay, captured after reboot; see docs/planning/arch-installation-receipt.md.",
+      "license": "MIT",
+      "description": "The actual installed Neutral Slate SDDM greeter with the disposable demo account; not a test-mode preview.",
+      "capture_date": "2026-10-28",
+      "capture_label": "Staged Arch Linux x86_64 guest, fresh E3 replay",
+      "captured_components": "SDDM 0.21.0-7; Catppuccin SDDM 1.1.2, Mocha Blue, archive SHA-256 a68fbed896d3066aec1fdaded561e8d20c855f0de4e193bdca4bc0d59ac1e333"
+    },
+    {
+      "path": "assets/arch-reference/gtklock-replay-neutral-slate.png",
+      "sha256": "7f9e0bb6bbf5e59da71952401fbf5ae8aa5626a0aa2da65adf95543e78c57f6c",
+      "source": "Unedited still from the second fresh Arch guide replay; see docs/planning/arch-installation-receipt.md.",
+      "license": "GPL-3.0-only",
+      "description": "The actual Gtklock surface in the Neutral Slate guest session, with an empty password field; appearance still, not authentication evidence.",
+      "capture_date": "2026-10-28",
+      "capture_label": "Staged Arch Linux x86_64 guest, fresh E3 replay",
+      "captured_component": "gtklock 5.0.0-1, Arch package license GPL-3.0-only",
+      "component_source": "https://github.com/jovanlanik/gtklock"
+    },
+    {
+      "path": "assets/arch-reference/chrome-ime-replay-fractional-preedit.png",
+      "sha256": "cf3b011f4d111cc3bd767adde484b28b3fb6ce7e7414b49d0f6269e653ca66ef",
+      "source": "Unedited still from the second fresh Arch guide replay; Chrome displays the local Niri Plus reference fixture and live Fcitx composition.",
+      "license": "MIT",
+      "description": "Native Chrome Wayland text input at scale 1.5. The first fixture field contains committed 你好latin; a live Pinyin candidate popup is open at the second field. The local fixture uses no account or external service.",
+      "capture_date": "2026-10-28",
+      "capture_label": "Staged Arch Linux x86_64 guest, fresh E3 replay",
+      "captured_components": "Chrome 156.0.8078.47-1; Fcitx5 5.1.23-1; fcitx5-chinese-addons 5.1.15-2",
+      "component_license_sources": "Arch package metadata: fcitx5 LGPL-2.1-or-later and Unicode-DFS-2016; fcitx5-chinese-addons GPL-2.0-or-later. Upstream Chinese Addons COPYING/README identifies LGPL-2.1+; see assets/LICENSES.txt for the observed packaging discrepancy."
+    },
+    {
       "path": "assets/agent-plus.png",
       "sha256": "7feaee0de386b96d89d017b3e793e77ba3dc25aa8d36f3e5f631d57b2b3f69e7",
       "source": "https://github.com/byebyebryan/rofi-agent-plus/blob/35eeadaff286f20ee631c2240587536647c8248d/docs/assets/picker.png",

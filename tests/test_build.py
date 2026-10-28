@@ -73,13 +73,16 @@ class BuildContracts(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
         self.output = Path(self.directory.name) / "site"
 
-    def test_complete_site_has_checked_links_and_no_planning_material(self):
+    def test_complete_site_has_checked_links_and_only_allowlisted_planning_docs(self):
         result = builder.build(self.output)
         self.assertEqual(result["pages"], 20)
         self.assertGreater(result["local_links"], 200)
         self.assertEqual(
             {path.relative_to(self.output).as_posix() for path in (self.output / "docs").rglob("*") if path.is_file()},
-            {"docs/planning/desktop-demonstration-receipt.md"},
+            {
+                "docs/planning/arch-installation-receipt.md",
+                "docs/planning/desktop-demonstration-receipt.md",
+            },
         )
         self.assertTrue((self.output / "tools/vm/desktop/wlr-compat/README.md").is_file())
         self.assertFalse((self.output / "AGENTS.md").exists())
@@ -88,6 +91,39 @@ class BuildContracts(unittest.TestCase):
         self.assertIn('href="/niri-plus/tour/#native-reference-demo"', (self.output / "index.html").read_text())
         for page in self.output.rglob("*.html"):
             self.assertNotIn("https://github.com/byebyebryan/dotfiles", page.read_text())
+
+    def test_fresh_replay_evidence_stills_are_public_and_hashed(self):
+        builder.build(self.output)
+        provenance = json.loads((self.output / "assets/provenance.json").read_text())
+        records = {item["path"]: item for item in provenance["files"]}
+        captures = {
+            "assets/arch-reference/themed-greeter-after-reboot.png": "MIT",
+            "assets/arch-reference/gtklock-replay-neutral-slate.png": "GPL-3.0-only",
+            "assets/arch-reference/chrome-ime-replay-fractional-preedit.png": "MIT",
+        }
+        for path, license_name in captures.items():
+            record = records[path]
+            self.assertEqual(record["capture_date"], "2026-10-28")
+            self.assertEqual(record["capture_label"], "Staged Arch Linux x86_64 guest, fresh E3 replay")
+            self.assertEqual(record["license"], license_name)
+            self.assertEqual(hashlib.sha256((self.output / path).read_bytes()).hexdigest(), record["sha256"])
+        login = (self.output / "recipes/login/index.html").read_text()
+        self.assertIn(f'src="{builder.BASE}assets/arch-reference/themed-greeter-after-reboot.png"', login)
+        self.assertIn("installation receipt", login)
+        session = (self.output / "recipes/session/index.html").read_text()
+        self.assertIn(f'src="{builder.BASE}assets/arch-reference/gtklock-replay-neutral-slate.png"', session)
+        self.assertIn("password field", session)
+        input_recipe = (self.output / "recipes/input/index.html").read_text()
+        self.assertIn(f'src="{builder.BASE}assets/arch-reference/chrome-ime-replay-fractional-preedit.png"', input_recipe)
+        self.assertIn("not a remote page or account", input_recipe)
+        ime = records["assets/arch-reference/chrome-ime-replay-fractional-preedit.png"]
+        self.assertEqual(ime["captured_components"], "Chrome 156.0.8078.47-1; Fcitx5 5.1.23-1; fcitx5-chinese-addons 5.1.15-2")
+        self.assertIn("observed packaging discrepancy", ime["component_license_sources"])
+        setup = (self.output / "setup/index.html").read_text()
+        self.assertIn(f'href="{builder.BASE}docs/planning/arch-installation-receipt.md"', setup)
+        receipt = (self.output / "docs/planning/arch-installation-receipt.md").read_text()
+        self.assertIn("https://dev.byebyebryan.com/niri-plus/setup/", receipt)
+        self.assertNotIn("arch-installation-pass.md", receipt)
 
     def test_native_demo_provenance_contract_requires_measured_public_evidence(self):
         manifest = demo_provenance_fixture()

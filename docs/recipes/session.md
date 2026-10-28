@@ -22,6 +22,15 @@ distribution's Gtklock PAM setup before relying on it. Do not replace your
 existing working lock path until you have checked authentication and all
 connected displays.
 
+![Neutral Slate Gtklock screen showing the clock, empty password field, and Unlock button.](../../assets/arch-reference/gtklock-replay-neutral-slate.png)
+
+Fresh E3 replay, staged Arch guest, captured 2026-10-28 before entering a
+password. The [installation receipt](../planning/arch-installation-receipt.md)
+records the tested wrong-password rejection, unlock, and session-lock listener;
+this still documents the running lock surface. See the
+[media provenance](../../assets/provenance.json) and
+[license notes](../../assets/LICENSES.txt) for source and attribution.
+
 The existing path is an authored portable profile. The generated [minimal Niri
 profile](../../examples/session/profiles/minimal-niri/desktop-lock.service)
 matches the selected session unit and Gtklock executable.

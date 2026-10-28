@@ -1,5 +1,36 @@
 Niri Plus site code and documentation: MIT, Copyright 2026 Bryan Bai.
 
+assets/arch-reference/themed-greeter-after-reboot.png: original still from the
+2026-10-28 fresh staged Arch replay, MIT, Copyright 2026 Bryan Bai. The captured
+greeter theme is derived from Catppuccin SDDM 1.1.2, Mocha Blue, MIT, Copyright
+2021 Catppuccin. Source: https://github.com/catppuccin/sddm/tree/v1.1.2
+License: https://github.com/catppuccin/sddm/blob/v1.1.2/LICENSE
+This is a still of the running theme, not a copy of its source; SDDM, Qt and
+other independent components retain their own terms.
+
+assets/arch-reference/gtklock-replay-neutral-slate.png: fresh staged Arch
+guest still, captured 2026-10-28. It shows Gtklock 5.0.0-1; the installed Arch
+package identifies its license as GPL-3.0-only. The interface is attributed to
+Jovan Lanik and contributors. Source and license:
+https://github.com/jovanlanik/gtklock
+https://github.com/jovanlanik/gtklock/blob/master/LICENSE
+This is a still of the running lock screen, not a copy of its source.
+
+assets/arch-reference/chrome-ime-replay-fractional-preedit.png: original still
+from the 2026-10-28 fresh staged Arch replay, MIT, Copyright 2026 Bryan Bai.
+It shows Chrome's local reference fixture and the live Fcitx Pinyin candidate
+interface; the fixture uses no account or external service. Chrome and Fcitx
+retain their own terms. The installed Arch guest reported fcitx5 5.1.23-1 as
+LGPL-2.1-or-later plus Unicode-DFS-2016, and fcitx5-chinese-addons 5.1.15-2 as
+GPL-2.0-or-later. Arch package records:
+https://archlinux.org/packages/extra/x86_64/fcitx5/
+https://archlinux.org/packages/extra/x86_64/fcitx5-chinese-addons/
+The upstream Chinese Addons README and COPYING identify LGPL-2.1+, so the
+upstream and package metadata differ; both are recorded rather than assigning
+one license to Fcitx as a whole:
+https://github.com/fcitx/fcitx5-chinese-addons
+https://github.com/fcitx/fcitx5-chinese-addons/blob/master/COPYING
+
 agent-plus.png: MIT, Copyright 2026 Bryan Bai.
 Source: https://github.com/byebyebryan/rofi-agent-plus
 The full MIT license is in the repository LICENSE.

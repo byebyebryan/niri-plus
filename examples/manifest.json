@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-26",
+  "date": "2026-10-28",
   "files": [
     {
       "path": "examples/clipboard/clipboard-history@.service",
@@ -226,6 +226,13 @@
       "source": "Personal chezmoi source at revision 861861eaa3ff67ca65ce4577318fd52135917620",
       "notes": "Authored portable example; not byte-identical to the personal managed source. Portal choices follow upstream Niri guidance.",
       "source_visibility": "private"
+    },
+    {
+      "path": "examples/notifications/reference.json",
+      "sha256": "da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577",
+      "kind": "authored Arch reference configuration candidate",
+      "source": "Niri Plus Arch reference walkthrough candidate, 2026-10-28",
+      "notes": "Dashboard configuration for the existing pinned SwayNC fork. This candidate file is separate from components 0.3.1 and the pinned public example snapshot; review its fork version and schema before use."
     },
     {
       "path": "examples/notifications/style.css",

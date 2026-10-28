@@ -51,6 +51,11 @@ Libadwaita keep their own supported colors and may look different from the
 specimens. Gtklock has its own explicit stylesheet because it owns a separate
 password surface.
 
+For this reference account, GTK appearance uses the `org.gnome.desktop.interface`
+GSettings values below. Leave `GTK_THEME` unset: GTK documents it as a theme
+debug override that can take precedence over the selected system color
+preference ([GTK environment-variable reference](https://docs.gtk.org/gtk4/running.html#GTK_THEME)).
+
 Qt palettes set `QPalette` roles; they do not set Qt style, icon theme, portal
 dialogs, or KDE's named focus colors. KDE also reads its owned `[Colors:*]`
 groups from `kdeglobals`. Install `NeutralSlate.colors` under
@@ -92,6 +97,8 @@ color groups:
 ```sh
 python3 -B - "$BUNDLE" "$APPEARANCE" <<'PY'
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -101,6 +108,32 @@ from ini_merge import merge_ini
 
 home = Path.home()
 fonts = json.loads((appearance / "fonts.json").read_text(encoding="utf-8"))
+schema = "org.gnome.desktop.interface"
+gsettings_keys = (
+    "gtk-theme", "color-scheme", "icon-theme", "cursor-theme",
+    "cursor-size", "font-name", "monospace-font-name",
+)
+state_path = home / ".local/state/niri-plus/appearance-gsettings-before.json"
+state_path.parent.mkdir(parents=True, exist_ok=True)
+if state_path.exists():
+    raise SystemExit(
+        f"preserve existing GSettings snapshot and choose a new path: {state_path}"
+    )
+before = {}
+for key in gsettings_keys:
+    value = subprocess.run(
+        ["gsettings", "get", schema, key], check=True, text=True,
+        capture_output=True,
+    ).stdout.removesuffix("\n")
+    explicit = subprocess.run(
+        ["dconf", "read", f"/org/gnome/desktop/interface/{key}"],
+        check=True, text=True, capture_output=True,
+    ).stdout.removesuffix("\n")
+    before[key] = {"gvariant": value, "dconf": explicit or None}
+fd = os.open(state_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+with os.fdopen(fd, "w", encoding="utf-8") as stream:
+    json.dump({"schema": schema, "values": before}, stream, indent=2)
+    stream.write("\n")
 
 def merge(relative, values):
     path = home / relative
@@ -142,8 +175,25 @@ merge(".config/kdeglobals", json.loads(
 merge(".config/gtklock/config.ini", {
     "main": {"style": str(home / ".config/gtklock/style.css")},
 })
+
+gsettings_values = {
+    "gtk-theme": "adw-gtk3-dark",
+    "color-scheme": "prefer-dark",
+    "icon-theme": "breeze-dark",
+    "cursor-theme": "breeze_cursors",
+    "cursor-size": "24",
+    "font-name": f"{fonts['ui_font']} {fonts['ui_pt']}",
+    "monospace-font-name": f"{fonts['mono_font']} {fonts['terminal_pt']}",
+}
+for key, value in gsettings_values.items():
+    subprocess.run(["gsettings", "set", schema, key, value], check=True)
+print(f"Saved prior GSettings and dconf values to {state_path}")
 PY
 ```
+
+The mode-0600 snapshot is created without overwriting an existing file. If it
+already exists, preserve it and choose a new matching path in the apply and
+restore blocks before retrying.
 
 For SwayNC, use the rendered stylesheet and the selected dashboard config from
 the [notification recipe](notifications.md); that recipe installs the CSS at
@@ -202,28 +252,27 @@ Validate the complete file before reloading Niri:
 niri validate --config "$HOME/.config/niri/config.kdl"
 ```
 
-Install the static toolkit environment for applications launched as systemd
-user services, then reload the user manager so subsequently started units
-receive it:
+Install the Qt platform setting for applications launched as systemd user
+services, then reload the user manager so subsequently started units receive it.
+GTK's theme and dark preference come from the GSettings values above:
 
 ```sh
 install -Dm644 /dev/stdin \
   "$HOME/.config/environment.d/90-niri-plus-appearance.conf" <<'EOF'
-GTK_THEME=adw-gtk3-dark
 QT_QPA_PLATFORMTHEME=qt5ct:qt6ct
 EOF
 systemctl --user daemon-reload
-systemctl --user show-environment | grep -E '^(GTK_THEME|QT_QPA_PLATFORMTHEME)='
+systemctl --user unset-environment GTK_THEME
+systemctl --user show-environment | grep '^QT_QPA_PLATFORMTHEME='
 ```
 
 Already-running processes keep their current environment. Direct children
 launched by Niri use Niri's `environment` block rather than the user-manager
-environment. Merge these appearance keys into that same existing Niri block;
-the native Chrome and Kitty composition checks passed without changing their
-input-method route:
+environment. Merge the Qt platform value into that same existing Niri block;
+leave `GTK_THEME` unset. The native Chrome and Kitty composition checks passed
+without changing their input-method route:
 
 ```kdl
-GTK_THEME "adw-gtk3-dark"
 QT_QPA_PLATFORMTHEME "qt5ct:qt6ct"
 ```
 
@@ -258,3 +307,31 @@ Keep the input-method values in the input recipe, and do not add a global
 Apply one surface at a time and review its active, inactive, focused, selected,
 and disabled states. These files contain no input bindings, service startup,
 power policy, session ownership, or application action changes.
+
+## Restore GTK preferences
+
+Use this recovery step only when backing out the reference appearance.
+
+The JSON stores each exact `gsettings get` GVariant value and whether dconf had
+an explicit value for that key. Restore only those seven keys; unset keys return
+to their prior default state, while explicit values are written back exactly:
+
+```sh
+python3 - "$HOME/.local/state/niri-plus/appearance-gsettings-before.json" <<'PY'
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+state = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+schema = state["schema"]
+for key, saved in state["values"].items():
+    if saved["dconf"] is None:
+        subprocess.run(["gsettings", "reset", schema, key], check=True)
+    else:
+        subprocess.run(
+            ["dconf", "write", f"/org/gnome/desktop/interface/{key}", saved["dconf"]],
+            check=True,
+        )
+PY
+```

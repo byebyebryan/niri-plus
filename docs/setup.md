@@ -185,10 +185,12 @@ when the host has supported NVIDIA hardware.
 Use the rendered files under `$APPEARANCE` as appearance-only layers. The
 [appearance recipe](recipes/appearance.md) gives ordinary GTK3, Qt5/Qt6, KDE,
 Rofi, Kitty, and Gtklock targets, the `fonts.json` and `kdeglobals-managed.json`
-merge, and the static systemd user-service environment profile. The notification
-recipe owns the selected SwayNC stylesheet target. Merge the Niri fragment into
-the starter's existing `layout` block, keep its proportional columns and
-bindings, and validate the complete file after each change. Use the
+merge, a reversible GSettings profile for GTK appearance, and the Qt-only
+systemd user-service environment profile. The pavucontrol GTK4 dark-surface
+check passed through the selected GSettings preference with `GTK_THEME` unset.
+The notification recipe owns the selected SwayNC stylesheet target. Merge the
+Niri fragment into the starter's existing `layout` block, keep its proportional
+columns and bindings, and validate the complete file after each change. Use the
 [login recipe](recipes/login.md) to preview the pinned greeter theme and install
 it only after the stock password login passed. Use the matching renderer
 outputs in `$APPEARANCE`; do not download or copy a second palette snapshot.
@@ -425,12 +427,22 @@ scale 1.5. These checks need a fresh-guide replay before E3 acceptance. Do not
 add `GTK_IM_MODULE`, `--enable-wayland-ime`, or a forced text-input version to
 these tested routes.
 
-Install PipeWire/WirePlumber and use their native user units. On the latest
-development-copy pass, an attached virtual ICH9 HDA device produced the real
-PipeWire sink `alsa_output.pci-0000_00_1b.0.analog-stereo`; a three-second test
-tone reached the ALSA PCM (`RUNNING`) and its monitor. This checks the guest
-playback path only. It does not establish physical or SPICE audibility or
-microphone signal. Do not substitute a dummy sink for playback acceptance. The
+PipeWire and WirePlumber keep their packaged socket/session ownership. If their
+packages were installed after this user manager was already running, start the
+standard units for the current session before checking audio:
+
+```sh
+systemctl --user start pipewire.socket pipewire-pulse.socket wireplumber.service
+systemctl --user is-active pipewire.socket pipewire-pulse.socket wireplumber.service
+wpctl status
+```
+
+On the latest development-copy pass, an attached virtual ICH9 HDA device
+produced the real PipeWire sink
+`alsa_output.pci-0000_00_1b.0.analog-stereo`; a three-second test tone reached
+the ALSA PCM (`RUNNING`) and its monitor. This checks the guest playback path
+only. It does not establish physical or SPICE audibility or microphone signal.
+Do not substitute a dummy sink for playback acceptance. The
 [hardware-feedback recipe](recipes/hardware-feedback.md) verifies volume and
 notification controls. Check brightness and radio features only when the
 corresponding hardware exists.

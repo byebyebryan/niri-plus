@@ -1,0 +1,71 @@
+# One-off VM compatibility candidate; this is not selected by the desktop assembler.
+pkgname=xdg-desktop-portal-wlr
+pkgver=0.8.2
+pkgrel=1.3
+pkgdesc='xdg-desktop-portal backend for wlroots (Niri Plus VM compatibility candidate)'
+arch=('x86_64')
+url='https://github.com/emersion/xdg-desktop-portal-wlr'
+license=('MIT')
+depends=(
+  'glibc'
+  'grim'
+  'libdrm'
+  'libinih'
+  'libpipewire'
+  'mesa'
+  'pipewire'
+  'pipewire-session-manager'
+  'slurp'
+  'systemd-libs'
+  'wayland'
+  'xdg-desktop-portal'
+)
+makedepends=(
+  'meson'
+  'scdoc'
+  'wayland-protocols'
+)
+provides=('xdg-desktop-portal-impl')
+
+_commit=01171a150b705cf07066ebc0fb7e1ff537027bec
+_srcname="$pkgname-$_commit"
+source=(
+  "$url/archive/$_commit.tar.gz"
+  'wlr-portals.conf'
+  'trace-buffer-constraints.patch'
+  'fallback-unsupported-dmabuf.patch'
+)
+sha256sums=(
+  '04ad0e4a7717265475fd394b614092d70909ff2089c08bb2b90adde9e8c436cd'
+  '85b84ba8ba69e41295e7f02045c67b547df6eab1b137502b089ddf354f2a04de'
+  '5e5d82645eb2e6e4eba23b472dc29b43e01a653da228c4a7fdcaef9349a43c0b'
+  'b719065f86a917de28ab633f82c4ee44035f5afec9a4863526b05893a354c10c'
+)
+
+prepare() {
+  cd "$_srcname"
+  patch -Np1 -i "$srcdir/trace-buffer-constraints.patch"
+  patch -Np1 -i "$srcdir/fallback-unsupported-dmabuf.patch"
+}
+
+build() {
+  cd "$_srcname"
+  meson setup \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --libdir=lib \
+    --buildtype=plain \
+    -Dauto_features=enabled \
+    -Dsd-bus-provider=libsystemd \
+    -Dwrap_mode=nodownload \
+    build
+  ninja -C build
+}
+
+package() {
+  cd "$_srcname"
+  DESTDIR="$pkgdir" ninja -C build install
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 "$srcdir/wlr-portals.conf" \
+    "$pkgdir/usr/share/xdg-desktop-portal/wlr-portals.conf"
+}

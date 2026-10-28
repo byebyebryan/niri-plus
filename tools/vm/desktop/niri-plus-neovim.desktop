@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Neovim in Kitty
+Comment=Open text files in Neovim inside Kitty
+Exec=kitty -e nvim %F
+TryExec=nvim
+Icon=utilities-terminal
+Terminal=false
+Categories=Utility;TextEditor;
+MimeType=text/plain;text/markdown;application/json;text/csv;text/x-python;text/x-shellscript;
+Keywords=text;code;editor;

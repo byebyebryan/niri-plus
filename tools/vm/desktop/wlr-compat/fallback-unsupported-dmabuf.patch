@@ -1,0 +1,29 @@
+--- a/src/screencast/wlr_screencopy.c
++++ b/src/screencast/wlr_screencopy.c
+@@ -95,0 +96,10 @@
++static bool has_matching_dmabuf_pair(struct xdpw_buffer_constraints *constraints, struct xdpw_buffer *buffer) {
++	struct xdpw_format_modifier_pair *fm_pair;
++	wl_array_for_each(fm_pair, &constraints->dmabuf_format_modifier_pairs) {
++		if (buffer->format == fm_pair->fourcc && buffer->modifier == fm_pair->modifier) {
++			return true;
++		}
++	}
++	return false;
++}
++
+@@ -106,4 +116,2 @@
+-		wl_array_for_each(fm_pair, &constraints->dmabuf_format_modifier_pairs) {
+-			if (buffer->format == fm_pair->fourcc && buffer->modifier == fm_pair->modifier) {
+-				return true;
+-			}
++		if (has_matching_dmabuf_pair(constraints, buffer)) {
++			return true;
+@@ -154,0 +163,8 @@
++		struct xdpw_buffer *buffer = cast->current_frame.xdpw_buffer;
++		if (buffer->buffer_type == DMABUF &&
++				cast->current_constraints.width == buffer->width &&
++				cast->current_constraints.height == buffer->height &&
++				!has_matching_dmabuf_pair(&cast->current_constraints, buffer)) {
++			logprint(DEBUG, "wlroots: DMA-BUF pair rejected at matching size; falling back to SHM");
++			cast->avoid_dmabufs = true;
++		}

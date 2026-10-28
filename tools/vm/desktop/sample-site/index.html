@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>Niri Plus local desktop tasks</title>
+  <style>
+    :root { color-scheme: dark; font: 16px/1.55 system-ui, sans-serif; background: #1b1d1f; color: #efefec; }
+    body { max-width: 58rem; margin: 0 auto; padding: 2rem clamp(1rem, 4vw, 3rem); }
+    h1, h2 { line-height: 1.2; }
+    h1 { margin-bottom: .35rem; }
+    .intro, .hint { color: #c9cbc8; }
+    main { display: grid; gap: 1rem; }
+    section { border: 1px solid #454b50; background: #25282a; padding: 1rem 1.2rem; }
+    a, button { color: #efefec; }
+    a { text-decoration-thickness: .1em; text-underline-offset: .18em; }
+    button, input::file-selector-button { border: 1px solid #81878c; background: #303336; border-radius: .2rem; padding: .55rem .8rem; font: inherit; }
+    button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid #a6ceff; outline-offset: 2px; }
+    button:hover, input::file-selector-button:hover { background: #294e75; }
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; margin: .8rem 0; }
+    output, code { overflow-wrap: anywhere; }
+    output { display: block; min-height: 1.6em; margin-top: .5rem; }
+    video { display: block; width: min(100%, 52rem); max-height: 55vh; margin-top: .8rem; background: #111315; }
+    .status { border-left: 3px solid #6eafff; padding: .3rem .7rem; }
+    .sample-note { color: #aaaeac; font-size: .9rem; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="sample-note">Local reference guest fixture · no account or external service</p>
+    <h1>Browser and desktop tasks</h1>
+    <p class="intro">Use this page to exercise Chrome downloads, Dolphin, the GTK file picker, and a real WLR monitor-share request.</p>
+  </header>
+  <main>
+    <section aria-labelledby="files-title">
+      <h2 id="files-title">Download, open, and upload</h2>
+      <p><a href="/sample/niri-plus-desktop-sample.md" download>Download the sample Markdown file</a>. Open it from Dolphin, then choose that same file below.</p>
+      <p><a href="/sample/niri-plus-desktop-sample.svg" download>Download a small SVG sample for Gwenview</a>.</p>
+      <p><img src="/assets/niri-plus-desktop-sample.svg" width="320" height="180" alt="Charcoal desktop card with a clear blue focus accent"></p>
+      <form id="upload-form" enctype="multipart/form-data">
+        <div class="row">
+          <label for="upload-file">Choose the downloaded sample</label>
+          <input id="upload-file" name="file" type="file" accept=".md,text/markdown" required>
+          <button type="submit">Upload sample</button>
+        </div>
+      </form>
+      <output id="upload-status" class="status" aria-live="polite">No file uploaded.</output>
+      <p class="sample-note">The local server checks the received bytes against the sample and keeps the upload in memory only.</p>
+    </section>
+
+    <section aria-labelledby="share-title">
+      <h2 id="share-title">Whole-monitor browser sharing</h2>
+      <p>Start sharing with the browser button, then choose the full monitor in Chrome's system chooser. The page reports the selected track's actual surface and state.</p>
+      <div class="row">
+        <button id="start-share" type="button">Start whole-monitor share</button>
+        <button id="stop-share" type="button" disabled>Stop sharing</button>
+      </div>
+      <output id="share-status" class="status" aria-live="polite">Sharing is stopped. No display capture has been requested.</output>
+      <video id="share-preview" autoplay muted playsinline hidden></video>
+    </section>
+  </main>
+  <script>
+    const uploadForm = document.querySelector("#upload-form");
+    const uploadStatus = document.querySelector("#upload-status");
+    uploadForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const file = document.querySelector("#upload-file").files[0];
+      if (!file) return;
+      uploadStatus.textContent = `Uploading ${file.name} (${file.size} bytes)…`;
+      try {
+        const response = await fetch("/upload", { method: "POST", body: new FormData(uploadForm) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || `Upload failed (${response.status})`);
+        uploadStatus.textContent = `${result.message} · SHA-256 ${result.sha256}`;
+      } catch (error) {
+        uploadStatus.textContent = `Upload failed: ${error.message}`;
+      }
+    });
+
+    const startButton = document.querySelector("#start-share");
+    const stopButton = document.querySelector("#stop-share");
+    const shareStatus = document.querySelector("#share-status");
+    const preview = document.querySelector("#share-preview");
+    let displayStream = null;
+    let startedAt = null;
+    let stoppedAt = null;
+
+    function reportShare(state) {
+      const track = displayStream?.getVideoTracks()[0];
+      const settings = track?.getSettings?.() || {};
+      const surface = settings.displaySurface || "not reported by this browser";
+      const trackState = track?.readyState || "no video track";
+      const liveTracks = displayStream?.getTracks().filter((item) => item.readyState === "live").length || 0;
+      const selected = surface === "monitor" ? "whole monitor confirmed" : `selected surface: ${surface}`;
+      const started = startedAt ? `started ${startedAt}` : "not started";
+      const stopped = stoppedAt ? `stopped ${stoppedAt}` : "not stopped";
+      shareStatus.textContent = `Capture ${state}; video track ${trackState}; ${liveTracks} live track(s); ${selected}; ${started}; ${stopped}.`;
+    }
+
+    function stopDisplayStream() {
+      if (!displayStream) return;
+      for (const track of displayStream.getTracks()) track.stop();
+      stoppedAt = new Date().toLocaleTimeString();
+      preview.srcObject = null;
+      preview.hidden = true;
+      stopButton.disabled = true;
+      startButton.disabled = false;
+      reportShare("stopped by page");
+      displayStream = null;
+    }
+
+    startButton.addEventListener("click", async () => {
+      if (!navigator.mediaDevices?.getDisplayMedia) {
+        shareStatus.textContent = "Display capture is unavailable in this browser context.";
+        return;
+      }
+      startButton.disabled = true;
+      startedAt = null;
+      stoppedAt = null;
+      shareStatus.textContent = "Waiting for Chrome's screen chooser…";
+      try {
+        displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        startedAt = new Date().toLocaleTimeString();
+        const track = displayStream.getVideoTracks()[0];
+        if (!track) throw new Error("The browser returned no video track.");
+        track.addEventListener("ended", () => {
+          preview.srcObject = null;
+          preview.hidden = true;
+          stopButton.disabled = true;
+          startButton.disabled = false;
+          stoppedAt = new Date().toLocaleTimeString();
+          reportShare("ended by browser or chooser");
+          displayStream = null;
+        }, { once: true });
+        preview.srcObject = displayStream;
+        preview.hidden = false;
+        stopButton.disabled = false;
+        reportShare("live");
+      } catch (error) {
+        displayStream = null;
+        startButton.disabled = false;
+        shareStatus.textContent = `Capture did not start: ${error.name}: ${error.message}`;
+      }
+    });
+    stopButton.addEventListener("click", stopDisplayStream);
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+--- a/src/screencast/screencast_common.c
++++ b/src/screencast/screencast_common.c
+@@ -3,0 +4 @@
++#include <inttypes.h>
+@@ -198,0 +200,3 @@
++		logprint(TRACE, "xdpw: GBM buffer %ux%u fourcc 0x%08x modifier 0x%016" PRIx64,
++			gbm_bo_get_width(bo), gbm_bo_get_height(bo), gbm_bo_get_format(bo),
++			gbm_bo_get_modifier(bo));
+--- a/src/screencast/wlr_screencopy.c
++++ b/src/screencast/wlr_screencopy.c
+@@ -7,0 +8 @@
++#include <inttypes.h>
+@@ -96,0 +98,2 @@
++		logprint(TRACE, "wlroots: buffer dimensions %ux%u do not match constraints %ux%u",
++			buffer->width, buffer->height, constraints->width, constraints->height);
+@@ -106,0 +110,6 @@
++		}
++		logprint(TRACE, "wlroots: no matching DMA-BUF pair for %ux%u fourcc 0x%08x modifier 0x%016" PRIx64,
++			buffer->width, buffer->height, buffer->format, buffer->modifier);
++		wl_array_for_each(fm_pair, &constraints->dmabuf_format_modifier_pairs) {
++			logprint(TRACE, "wlroots: advertised DMA-BUF pair fourcc 0x%08x modifier 0x%016" PRIx64,
++				fm_pair->fourcc, fm_pair->modifier);

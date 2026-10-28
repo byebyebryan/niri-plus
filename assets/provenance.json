@@ -20,8 +20,302 @@
       "source": "https://github.com/byebyebryan/SwayNotificationCenter/tree/4114c9cd56f086e166253880d0c96c6c5212e4aa",
       "license": "GPL-3.0-only",
       "description": "Actual isolated native rendering with fictional wireless and GPU values; actual CPU/RAM; default theme; no Battery card, title, DND or volume. Site displays the panel region through CSS, preserving original screenshot bytes."
+    },
+    {
+      "path": "assets/demo-terminal.mp4",
+      "sha256": "b6c3c63e3d60b0fe079d8d3a74f0f8a038813c16fa27453838c77cb1f43aa240",
+      "source": "Exact-byte reuse of the accepted staged Arch pilot capture; see the public capture-pilot receipt.",
+      "license": "MIT",
+      "description": "Silent 1920x1080 Chrome and Kitty/Zsh terminal scene with public local sample content; reused focused scene, not the later complete desktop demonstration."
+    },
+    {
+      "path": "assets/demo-terminal.png",
+      "sha256": "3d8c156294659affa640589dd974e7057257c2515ffca9fe1e80ddc77a57c1bb",
+      "source": "Original still from the accepted staged Arch pilot capture; see the public capture-pilot receipt.",
+      "license": "MIT",
+      "description": "Unedited 1920x1080 poster for the reused Chrome and Kitty/Zsh terminal scene."
+    },
+    {
+      "path": "assets/demo-overview.mp4",
+      "sha256": "d4a0711365a39a778fc9e214d2d4728a77bec74b80916a4cd823cbc7ae62c5ad",
+      "source": "2026-10-28 staged Arch guest composite of the three focused native captures listed in desktop_demos.clips[overview].source_captures.",
+      "license": "GPL-3.0-only",
+      "description": "Silent native desktop overview; includes the SwayNC interface in its information segment. Other application interfaces retain their own licenses."
+    },
+    {
+      "path": "assets/demo-overview.png",
+      "sha256": "5bb397bc7fd496188c4272deceb1ff6b4c3321f68c2e1efd88ff47c375eeaf05",
+      "source": "Decoded 4-second frame from the native SwayNC information capture used in the overview; see desktop_demos.clips[overview].poster_source.",
+      "license": "GPL-3.0-only",
+      "description": "Unedited 1920x1080 SwayNC poster frame used for the overview; source UI attribution is in assets/LICENSES.txt."
+    },
+    {
+      "path": "assets/demo-browser-files.mp4",
+      "sha256": "7ec18b9dd5a19e7a5bf713ac13452e4eac491636e97d5acf670801912e72eeba",
+      "source": "Unaltered 2026-10-28 native staged Arch guest screen recording.",
+      "license": "MIT",
+      "description": "Silent native Chrome, Dolphin and GTK file chooser scene with public sample content; original recording, not a recording of a personal desktop."
+    },
+    {
+      "path": "assets/demo-browser-files.png",
+      "sha256": "0c45b2293df36ad02c37df75749de1666180541367490e9dffbbaa41eafc3e21",
+      "source": "Decoded 17-second frame from the unaltered 2026-10-28 native browser/files recording.",
+      "license": "MIT",
+      "description": "Unedited 1920x1080 poster showing the native GTK chooser and Dolphin with the public sample file."
+    },
+    {
+      "path": "assets/demo-information.mp4",
+      "sha256": "3888e940564828c7382e41272109c83d12602c4e82acb1a2b53d1c992f834a33",
+      "source": "Unaltered 2026-10-28 native staged Arch guest screen recording.",
+      "license": "GPL-3.0-only",
+      "description": "Silent native SwayNC and Rofi clipboard scene with actual available guest metrics and public sample text/image. SwayNC UI attribution is in assets/LICENSES.txt."
+    },
+    {
+      "path": "assets/demo-information.png",
+      "sha256": "5bb397bc7fd496188c4272deceb1ff6b4c3321f68c2e1efd88ff47c375eeaf05",
+      "source": "Decoded 4-second frame from the unaltered 2026-10-28 native information recording.",
+      "license": "GPL-3.0-only",
+      "description": "Unedited 1920x1080 SwayNC poster frame; source UI attribution is in assets/LICENSES.txt."
     }
   ],
+  "desktop_demos": {
+    "capture_label": "Staged Arch Linux x86_64 guest",
+    "source_versions": {
+      "public_source_commit": "b62df460884b5a4d5e8c7eeb05c132a0b26814ae",
+      "components": {
+        "version": "0.3.1",
+        "source_commit": "014a14241bd722186ae9248e71162e75cf7af7b1",
+        "archive_sha256": "868d9de46f54af9b9f563dd52cd94df9358fafaf9c9b33666c557c05d318a843",
+        "manifest_sha256": "de3e981f8bb76d2b4ccfbf7f2722e81fc9f73edf7b62de11cad55f7a209e7ed3"
+      },
+      "identity": {
+        "source_commit": "b62df460884b5a4d5e8c7eeb05c132a0b26814ae",
+        "sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
+      },
+      "guest_software": {
+        "niri": "26.04-1",
+        "chrome": "156.0.8078.47-1",
+        "kitty": "0.49.2-1",
+        "zsh": "5.9.2-1",
+        "rofi": "2.0.0-1",
+        "dolphin": "26.08.2-1",
+        "gwenview": "26.08.2-1",
+        "ark": "26.08.2-1",
+        "neovim": "0.12.6-1",
+        "cliphist": "1:0.7.0-2",
+        "network_manager": "1.58.1-2",
+        "pipewire": "1:1.6.10-1",
+        "wireplumber": "0.5.18-1",
+        "xdg_desktop_portal": "1.22.1-2",
+        "xdg_desktop_portal_gtk": "1.15.3-2",
+        "mesa": "1:26.2.5-1",
+        "noto_fonts": "1:2026.10.01-1",
+        "meslo_nerd_font": "3.5.1-2"
+      }
+    },
+    "separate_guest_checks": [
+      {
+        "id": "wlr-whole-monitor-sharing",
+        "status": "passed in the staged Arch guest with the explicit compatibility package",
+        "package": {
+          "name": "xdg-desktop-portal-wlr",
+          "version": "0.8.2-1.3",
+          "upstream_commit": "01171a150b705cf07066ebc0fb7e1ff537027bec",
+          "upstream_archive_sha256": "04ad0e4a7717265475fd394b614092d70909ff2089c08bb2b90adde9e8c436cd",
+          "patches": [
+            {
+              "name": "trace-buffer-constraints.patch",
+              "sha256": "5e5d82645eb2e6e4eba23b472dc29b43e01a653da228c4a7fdcaef9349a43c0b"
+            },
+            {
+              "name": "fallback-unsupported-dmabuf.patch",
+              "sha256": "b719065f86a917de28ab633f82c4ee44035f5afec9a4863526b05893a354c10c"
+            }
+          ]
+        },
+        "observed_result": "Chrome getDisplayMedia produced a live 1920x1080 whole-monitor track with advancing frames; Stop ended the track and released the preview and capture nodes.",
+        "recorded_in_clips": false,
+        "scope": "Staged Arch QEMU/VirtIO guest only. Installed explicitly after the core assembler; not selected by the assembler, not a fleet/default adoption, and not a fresh-install qualification. The repository 0.8.4 package and unmodified upstream 0.8.2 failed this VM share test.",
+        "recipe_path": "tools/vm/desktop/wlr-compat/README.md",
+        "receipt_path": "docs/planning/desktop-demonstration-receipt.md#virtio-wlr-sharing-compatibility"
+      }
+    ],
+    "clips": [
+      {
+        "id": "overview",
+        "video": "assets/demo-overview.mp4",
+        "poster": "assets/demo-overview.png",
+        "width": 1920,
+        "height": 1080,
+        "duration_seconds": 62.1,
+        "frame_count": 1863,
+        "average_frame_rate": "30/1",
+        "video_codec": "h264",
+        "pixel_format": "yuv420p",
+        "capture_date": "2026-10-28",
+        "source_capture_sha256": null,
+        "source_captures": [
+          {
+            "path": "assets/demo-browser-files.mp4",
+            "sha256": "7ec18b9dd5a19e7a5bf713ac13452e4eac491636e97d5acf670801912e72eeba",
+            "trim_range_seconds": [
+              0,
+              26.733333
+            ]
+          },
+          {
+            "path": "assets/demo-terminal.mp4",
+            "sha256": "b6c3c63e3d60b0fe079d8d3a74f0f8a038813c16fa27453838c77cb1f43aa240",
+            "trim_range_seconds": [
+              3,
+              15
+            ]
+          },
+          {
+            "path": "assets/demo-information.mp4",
+            "sha256": "3888e940564828c7382e41272109c83d12602c4e82acb1a2b53d1c992f834a33",
+            "trim_range_seconds": [
+              0,
+              23.366667
+            ]
+          }
+        ],
+        "poster_source": {
+          "path": "assets/demo-information.png",
+          "sha256": "5bb397bc7fd496188c4272deceb1ff6b4c3321f68c2e1efd88ff47c375eeaf05",
+          "time_seconds": 4
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Public local sample content; actual guest CPU/RAM/network readings; overview includes a 12-second reused terminal excerpt.",
+        "processing_notes": [
+          "Composite of the entire browser/files capture, terminal seconds 3 through 15, and the entire information capture, in that order with hard cuts.",
+          "Source captures are identified by path, SHA-256 and trim range; no single raw source capture exists for this composite.",
+          "Re-encoded as constant 30 fps H.264 using libx264 CRF 18, yuv420p limited/video range and fast-start MP4 metadata.",
+          "Silent; no burn-in, retouching or composited telemetry. Full video decode passed.",
+          "Poster is the unedited 4-second frame from the SwayNC information capture."
+        ],
+        "additional_source_versions": {
+          "swaync": {
+            "package": "swaync-bryan",
+            "version": "0.12.6-15",
+            "recipe_revision": "cd1038d1c824f256ecb5a448d78df9f71b64850a",
+            "recipe_archive_sha256": "297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0",
+            "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
+            "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83"
+          }
+        },
+        "agent_review": "passed",
+        "automated_review": "passed",
+        "human_review": "pending"
+      },
+      {
+        "id": "browser-files",
+        "video": "assets/demo-browser-files.mp4",
+        "poster": "assets/demo-browser-files.png",
+        "width": 1920,
+        "height": 1080,
+        "duration_seconds": 26.733333,
+        "frame_count": 802,
+        "average_frame_rate": "12045/401",
+        "video_codec": "h264",
+        "pixel_format": "yuv420p",
+        "capture_date": "2026-10-28",
+        "source_capture_sha256": "7ec18b9dd5a19e7a5bf713ac13452e4eac491636e97d5acf670801912e72eeba",
+        "poster_source": {
+          "path": "assets/demo-browser-files.png",
+          "sha256": "0c45b2293df36ad02c37df75749de1666180541367490e9dffbbaa41eafc3e21",
+          "time_seconds": 17
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Public Markdown and SVG samples; no account data.",
+        "processing_notes": [
+          "Unaltered native staged Arch guest take 2, captured 2026-10-28; public MP4 bytes match the raw capture SHA-256.",
+          "The take shows the Chrome download, Dolphin file/default interactions, the actual GTK upload chooser, and the successful sample upload response.",
+          "Poster is an unedited decoded frame at 17 seconds with the GTK chooser and Dolphin visible.",
+          "Silent 1920x1080 H.264/yuv420p; 802 decoded frames at average rate 12045/401 fps; full video decode passed."
+        ],
+        "agent_review": "passed",
+        "automated_review": "passed",
+        "human_review": "pending"
+      },
+      {
+        "id": "terminal",
+        "video": "assets/demo-terminal.mp4",
+        "poster": "assets/demo-terminal.png",
+        "width": 1920,
+        "height": 1080,
+        "duration_seconds": 24.467,
+        "frame_count": 735,
+        "average_frame_rate": "11025/367",
+        "video_codec": "h264",
+        "pixel_format": "yuv420p",
+        "capture_date": "2026-10-27",
+        "source_capture_sha256": "b6c3c63e3d60b0fe079d8d3a74f0f8a038813c16fa27453838c77cb1f43aa240",
+        "poster_source": {
+          "path": "assets/demo-terminal.png",
+          "sha256": "3d8c156294659affa640589dd974e7057257c2515ffca9fe1e80ddc77a57c1bb",
+          "description": "Original still from the accepted pilot capture"
+        },
+        "reuse_reason": "Reused because Niri 26.04, Chrome 156.0.8078.47, Kitty 0.49.2, Zsh 5.9.2, components 0.3.1 and the selected Neutral Slate identity remain unchanged; the clip remains a focused terminal/browser view.",
+        "audio": "none",
+        "fixture_label": "Public local sample content; actual staged guest software and shell output.",
+        "processing_notes": [
+          "Exact-byte reuse of the accepted 2026-10-27 staged Arch pilot terminal/browser scene; this is not a fresh capture from the later desktop demonstration.",
+          "Source capture SHA-256: b6c3c63e3d60b0fe079d8d3a74f0f8a038813c16fa27453838c77cb1f43aa240. The public MP4 is byte-identical to the pilot capture.",
+          "The MP4 and poster were copied without re-encoding, cropping, subtitle burn-in or frame editing.",
+          "Silent 1920x1080 H.264/yuv420p; 735 frames at average rate 11025/367 fps; full FFmpeg decode passed.",
+          "Targeted terminal-black check matched the still and decoded video at pixel (1440, 810), RGB (0, 0, 0); this is not full color calibration."
+        ],
+        "agent_review": "passed",
+        "automated_review": "passed",
+        "human_review": "pending"
+      },
+      {
+        "id": "information",
+        "video": "assets/demo-information.mp4",
+        "poster": "assets/demo-information.png",
+        "width": 1920,
+        "height": 1080,
+        "duration_seconds": 23.366667,
+        "frame_count": 701,
+        "average_frame_rate": "21060/701",
+        "video_codec": "h264",
+        "pixel_format": "yuv420p",
+        "capture_date": "2026-10-28",
+        "source_capture_sha256": "3888e940564828c7382e41272109c83d12602c4e82acb1a2b53d1c992f834a33",
+        "poster_source": {
+          "path": "assets/demo-information.png",
+          "sha256": "5bb397bc7fd496188c4272deceb1ff6b4c3321f68c2e1efd88ff47c375eeaf05",
+          "time_seconds": 4
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Actual guest CPU/RAM/Ethernet readings; public text and image clipboard samples; absent hardware cards hide.",
+        "processing_notes": [
+          "Unaltered native staged Arch guest capture from 2026-10-28; public MP4 bytes match the raw capture SHA-256.",
+          "Shows SwayNC and Rofi clipboard operations; whole-monitor sharing is not shown in this clip.",
+          "Poster is an unedited decoded frame at 4 seconds showing the SwayNC panel.",
+          "Silent 1920x1080 H.264/yuv420p; 701 decoded frames at average rate 21060/701 fps; full video decode passed."
+        ],
+        "additional_source_versions": {
+          "swaync": {
+            "package": "swaync-bryan",
+            "version": "0.12.6-15",
+            "recipe_revision": "cd1038d1c824f256ecb5a448d78df9f71b64850a",
+            "recipe_archive_sha256": "297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0",
+            "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
+            "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83"
+          }
+        },
+        "agent_review": "passed",
+        "automated_review": "passed",
+        "human_review": "pending"
+      }
+    ],
+    "capture_receipt_path": "docs/planning/desktop-demonstration-receipt.md"
+  },
   "swaync_render": {
     "created_date": "2026-10-24",
     "source_repository": "https://github.com/byebyebryan/SwayNotificationCenter",

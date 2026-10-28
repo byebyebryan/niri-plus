@@ -25,6 +25,18 @@ The overview shows browser work beside a terminal, with focus on the terminal.
 It is an illustration; no desktop action is performed.
 <!-- /niri-plus:overview -->
 
+The frame below is a poster from the native staged Arch overview. The recording
+shows actual Chrome, Kitty/Zsh, and SwayNC surfaces with public local sample
+content; its 12-second terminal excerpt reuses the earlier pilot. It is not a
+recording of my daily desktop. [Watch the native overview](tour.md#native-reference-demo)
+or see the focused [browser and files](tour.md#browser-and-files),
+[terminal](tour.md#terminals-and-agents), and
+[information and clipboard](tour.md#information-when-i-want-it) demonstrations.
+
+![Native staged Arch overview poster, showing Chrome beside Kitty/Zsh and the SwayNC panel with public local sample content](../assets/demo-overview.png)
+
+*Native staged guest capture · overview poster · public local sample content. The terminal excerpt is reused pilot footage.*
+
 ## Surface gallery
 
 Inspect Launch, Information, Terminal, and Login/lock. The examples show a

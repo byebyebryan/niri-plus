@@ -4,11 +4,39 @@ agent-plus.png: MIT, Copyright 2026 Bryan Bai.
 Source: https://github.com/byebyebryan/rofi-agent-plus
 The full MIT license is in the repository LICENSE.
 
+demo-terminal.mp4 and demo-terminal.png: native Niri Plus capture and original
+poster from the staged Arch guest, MIT, Copyright 2026 Bryan Bai. The clip
+contains public local sample content and recordings of Niri, Chrome, and Kitty;
+it does not include third-party application source code. The source run and
+version details are recorded in provenance.json.
+
 panel.png and panel-ethernet.png: screenshots of SwayNotificationCenter,
 GPL-3.0-only, Erik Reider and contributors, including Bryan Bai.
 Source and license: https://github.com/byebyebryan/SwayNotificationCenter/tree/4114c9cd56f086e166253880d0c96c6c5212e4aa
 License text: https://github.com/byebyebryan/SwayNotificationCenter/blob/4114c9cd56f086e166253880d0c96c6c5212e4aa/COPYING
 See provenance.json for native rendering setup and fixture-data limitations.
+
+demo-information.mp4, demo-information.png, demo-overview.mp4 and
+demo-overview.png include captured SwayNotificationCenter interface content.
+The SwayNC-derived interface material is attributed to Erik Reider and
+contributors, GPL-3.0-only. Source and license:
+https://github.com/byebyebryan/SwayNotificationCenter/tree/4114c9cd56f086e166253880d0c96c6c5212e4aa
+https://github.com/byebyebryan/SwayNotificationCenter/blob/4114c9cd56f086e166253880d0c96c6c5212e4aa/COPYING
+These are captures of running software, not copies of its source. The notices
+for Chrome, GTK, Dolphin, Kitty, Rofi, Niri and other independent software remain
+with their respective projects; the capture attribution does not change them.
+
+demo-browser-files.mp4 and demo-browser-files.png, plus demo-terminal.mp4 and
+demo-terminal.png: original silent staged-guest recordings/posters under the
+repository MIT license, Copyright 2026 Bryan Bai. They contain public sample
+content and recordings of independent applications; this MIT notice applies to
+the original capture media and does not relicense those applications.
+
+demo-overview.mp4 and demo-overview.png: the overall capture also contains the
+browser/files and terminal scenes. Its per-asset GPL-3.0-only attribution
+context is limited to the included SwayNC interface material; independent
+applications retain their own licenses. See provenance.json for exact source
+captures, segments, processing and output hashes.
 
 The interactive desktop illustration and social image are original code-rendered
 Niri Plus artwork under the repository MIT license.

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+from datetime import date
+from fractions import Fraction
 import hashlib
 from html import escape
 from html.parser import HTMLParser
@@ -48,9 +50,282 @@ PAGES = {
 }
 SOURCES = {source: route for route, (source, _) in PAGES.items()}
 ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt"}
+DEMO_ASSETS = {
+    f"assets/demo-{scene}.{suffix}"
+    for scene in ("overview", "browser-files", "terminal", "information")
+    for suffix in ("mp4", "png")
+}
+SWAYNC_DEMO_ASSETS = {
+    "assets/demo-overview.mp4",
+    "assets/demo-overview.png",
+    "assets/demo-information.mp4",
+    "assets/demo-information.png",
+}
+SWAYNC_PIN = {
+    "package": "swaync-bryan",
+    "version": "0.12.6-15",
+    "recipe_revision": "cd1038d1c824f256ecb5a448d78df9f71b64850a",
+    "recipe_archive_sha256": "297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0",
+    "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
+    "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83",
+}
+DEMO_ASSET_LICENSES = {
+    path: "GPL-3.0-only" if path in SWAYNC_DEMO_ASSETS else "MIT"
+    for path in DEMO_ASSETS
+}
 FONT_ASSETS = {f"assets/{directory}/{font}.{suffix}" for font in ["noto", "noto-medium", "noto-semibold", "meslo", "source-han"] for directory, suffix in [("fonts", "woff2"), ("licenses", "txt")]}
 GENERATED = {"data/identity.json", "data/contrast-study.json", "assets/identity.css", "assets/fonts/provenance.json", "examples/kitty/neutral-slate.conf"}
 PUBLIC_TOOLS = {"scripts/check-terminal.py", "scripts/check-desktop.py"}
+PUBLIC_LOCAL_DOCS = {
+    "docs/planning/desktop-demonstration-receipt.md",
+    "tools/vm/desktop/wlr-compat/README.md",
+}
+DEMO_CLIPS = {
+    "overview": {
+        "video": "assets/demo-overview.mp4",
+        "poster": "assets/demo-overview.png",
+        "id": "demo-overview",
+        "title": "The native desktop, in motion",
+        "description": "A 62-second staged Arch guest composite follows browser and file work, a short reused terminal scene, and on-demand information and clipboard tools.",
+        "steps": [
+            "See the full browser/files scene followed by a 12-second excerpt from the earlier terminal pilot.",
+            "Open the SwayNC panel and clipboard picker in the staged Niri guest.",
+            "Use the focused recordings below for the full task sequences.",
+        ],
+        "setup": [("Start with a working Niri session", "setup.md#start-with-a-working-niri-session")],
+    },
+    "browser-files": {
+        "video": "assets/demo-browser-files.mp4",
+        "poster": "assets/demo-browser-files.png",
+        "id": "demo-browser-files",
+        "title": "Browser and files",
+        "description": "Chrome downloads a public sample; Dolphin opens it and an SVG; the native GTK chooser returns the original file to the upload sample page.",
+        "steps": [
+            "Download the public Markdown sample and SVG in Chrome.",
+            "Open the Markdown file through Dolphin with the guest Neovim default, and open the SVG in Gwenview.",
+            "Choose the original Markdown sample in Chrome's GTK file chooser and verify the returned bytes.",
+        ],
+        "setup": [("Browser, MIME, and file-dialog recipe", "recipes/files.md")],
+    },
+    "terminal": {
+        "video": "assets/demo-terminal.mp4",
+        "poster": "assets/demo-terminal.png",
+        "id": "demo-terminal",
+        "title": "Kitty and Zsh beside a browser",
+        "description": "The exact-byte reused pilot capture keeps a local Chrome sample page beside Kitty while Zsh runs a guest-guarded sample check.",
+        "steps": [
+            "Keep the local sample page and Kitty project side by side.",
+            "Move focus between Niri columns, then run the guest-guarded check in Zsh.",
+            "Scroll the local page with Page Down and Page Up, then return focus to Kitty.",
+        ],
+        "setup": [("Kitty and Zsh setup", "recipes/terminal.md")],
+    },
+    "information": {
+        "video": "assets/demo-information.mp4",
+        "poster": "assets/demo-information.png",
+        "id": "demo-information",
+        "title": "Information and clipboard, on demand",
+        "description": "SwayNC displays the guest's available CPU, RAM and Ethernet information; Rofi restores public text and image samples and exercises Delete, Cancel and confirmed Clear all.",
+        "steps": [
+            "Open SwayNC with Mod+N and inspect the CPU, RAM and Ethernet values available in this guest.",
+            "Open clipboard history with Mod+Y and restore the exact public text and image samples.",
+            "Delete one selected item, Cancel a clear to preserve history, then confirm Clear all.",
+        ],
+        "setup": [
+            ("Notification panel setup", "recipes/notifications.md"),
+            ("Clipboard history setup", "recipes/clipboard.md"),
+        ],
+    },
+}
+
+
+def validate_desktop_demo_manifest(provenance, *, require_complete=False):
+    """Validate public capture metadata before copying native demo assets."""
+    demos = provenance.get("desktop_demos")
+    if not isinstance(demos, dict):
+        raise ValueError("desktop demo provenance is missing desktop_demos")
+    capture_label = demos.get("capture_label")
+    if not isinstance(capture_label, str) or "staged" not in capture_label.lower() or "arch" not in capture_label.lower():
+        raise ValueError("desktop demos must carry a staged Arch capture label")
+    versions = demos.get("source_versions")
+    if not isinstance(versions, dict) or not versions:
+        raise ValueError("desktop demos must record exact source_versions")
+    component_pin = versions.get("components")
+    current_components = json.loads((ROOT / "data/components.json").read_text())["producer"]
+    component_fields = ("version", "source_commit", "archive_sha256", "manifest_sha256")
+    if not isinstance(component_pin, dict) or any(component_pin.get(key) != current_components[key] for key in component_fields):
+        raise ValueError("desktop demos must use the current verified component bundle")
+    identity_pin = versions.get("identity")
+    current_identity_hash = hashlib.sha256((ROOT / "design/identity.json").read_bytes()).hexdigest()
+    if not isinstance(identity_pin, dict) or identity_pin.get("sha256") != current_identity_hash:
+        raise ValueError("desktop demo identity hash differs from the selected source")
+    clips = demos.get("clips")
+    if not isinstance(clips, list) or not clips or any(not isinstance(item, dict) or not isinstance(item.get("id"), str) for item in clips):
+        raise ValueError("desktop demo provenance must define clip records")
+    clip_ids = [item["id"] for item in clips]
+    if len(clip_ids) != len(set(clip_ids)) or set(clip_ids) - set(DEMO_CLIPS):
+        raise ValueError("desktop demo provenance has duplicate or unknown clips")
+    if require_complete and set(clip_ids) != set(DEMO_CLIPS):
+        raise ValueError("desktop demo provenance must define exactly the four site clips")
+    file_records = provenance.get("files")
+    if not isinstance(file_records, list):
+        raise ValueError("asset provenance files must be a list")
+    records_by_path = {}
+    for item in file_records:
+        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+            continue
+        path = item["path"]
+        if path in records_by_path:
+            raise ValueError(f"duplicate asset provenance: {path}")
+        records_by_path[path] = item
+    for clip in clips:
+        if not isinstance(clip, dict):
+            raise ValueError("desktop demo clip records must be objects")
+        expected = DEMO_CLIPS[clip["id"]]
+        if clip.get("video") != expected["video"] or clip.get("poster") != expected["poster"]:
+            raise ValueError(f"desktop demo paths differ from the site contract: {clip['id']}")
+        if clip.get("width") != 1920 or clip.get("height") != 1080:
+            raise ValueError(f"desktop demo must record 1920x1080 dimensions: {clip['id']}")
+        duration = clip.get("duration_seconds")
+        if not isinstance(duration, (int, float)) or isinstance(duration, bool) or duration <= 0:
+            raise ValueError(f"desktop demo must record its measured duration: {clip['id']}")
+        frame_count = clip.get("frame_count")
+        if not isinstance(frame_count, int) or isinstance(frame_count, bool) or frame_count <= 0:
+            raise ValueError(f"desktop demo must record its decoded frame count: {clip['id']}")
+        frame_rate = clip.get("average_frame_rate")
+        try:
+            measured_frame_rate = Fraction(str(frame_rate))
+        except (ValueError, ZeroDivisionError):
+            measured_frame_rate = Fraction(0)
+        if measured_frame_rate <= 0:
+            raise ValueError(f"desktop demo must record its measured average frame rate: {clip['id']}")
+        if not isinstance(clip.get("video_codec"), str) or not clip["video_codec"].strip():
+            raise ValueError(f"desktop demo must record its video codec: {clip['id']}")
+        if not isinstance(clip.get("pixel_format"), str) or not clip["pixel_format"].strip():
+            raise ValueError(f"desktop demo must record its pixel format: {clip['id']}")
+        if clip["id"] in {"overview", "information"}:
+            swaync_pin = clip.get("additional_source_versions", {}).get("swaync")
+            if not isinstance(swaync_pin, dict) or any(swaync_pin.get(key) != value for key, value in SWAYNC_PIN.items()):
+                raise ValueError(f"SwayNC-containing clip must record the exact fork and recipe source tuple: {clip['id']}")
+        capture_date = clip.get("capture_date")
+        try:
+            date.fromisoformat(capture_date)
+        except (TypeError, ValueError):
+            raise ValueError(f"desktop demo must record its capture date: {clip['id']}") from None
+        source_capture_hash = clip.get("source_capture_sha256")
+        source_captures = clip.get("source_captures")
+        if source_capture_hash is not None:
+            if not isinstance(source_capture_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", source_capture_hash):
+                raise ValueError(f"desktop demo source_capture_sha256 must be a SHA-256 hash or null: {clip['id']}")
+        elif not isinstance(source_captures, list) or not source_captures:
+            raise ValueError(f"desktop demo must identify its raw source capture(s): {clip['id']}")
+        reuse_reason = clip.get("reuse_reason")
+        if reuse_reason is not None and (not isinstance(reuse_reason, str) or not reuse_reason.strip()):
+            raise ValueError(f"desktop demo reuse_reason must be null or explanatory text: {clip['id']}")
+        if clip.get("audio") != "none":
+            raise ValueError(f"desktop demo must be silent: {clip['id']}")
+        fixture_label = clip.get("fixture_label")
+        if not isinstance(fixture_label, str) or not fixture_label.strip():
+            raise ValueError(f"desktop demo must identify its sample/fixture content: {clip['id']}")
+        notes = clip.get("processing_notes")
+        if not isinstance(notes, list) or not notes or any(not isinstance(note, str) or not note.strip() for note in notes):
+            raise ValueError(f"desktop demo must record its processing notes: {clip['id']}")
+        human_review = clip.get("human_review")
+        if not isinstance(human_review, str) or not human_review.strip():
+            raise ValueError(f"desktop demo must record its human-review status: {clip['id']}")
+        for review_name in ("agent_review", "automated_review"):
+            review_status = clip.get(review_name)
+            if not isinstance(review_status, str) or not review_status.strip():
+                raise ValueError(f"desktop demo must record its {review_name} status: {clip['id']}")
+    required_paths = {path for clip in clips for path in (clip["video"], clip["poster"])}
+    missing = required_paths - records_by_path.keys()
+    if missing:
+        raise ValueError(f"desktop demo assets lack provenance hashes: {', '.join(sorted(missing))}")
+    for path in required_paths:
+        record = records_by_path[path]
+        asset_hash = record.get("sha256")
+        if not isinstance(asset_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", asset_hash):
+            raise ValueError(f"desktop demo asset needs a SHA-256 hash: {path}")
+        if record.get("license") != DEMO_ASSET_LICENSES[path]:
+            raise ValueError(f"desktop demo asset license must be {DEMO_ASSET_LICENSES[path]}: {path}")
+        if not isinstance(record.get("source"), str) or not record["source"].strip():
+            raise ValueError(f"desktop demo asset must identify its source: {path}")
+        if not isinstance(record.get("description"), str) or not record["description"].strip():
+            raise ValueError(f"desktop demo asset must describe its content: {path}")
+    for clip in clips:
+        poster_source = clip.get("poster_source")
+        poster_record = records_by_path[clip["poster"]]
+        source_path = poster_source.get("path") if isinstance(poster_source, dict) else None
+        source_record = records_by_path.get(source_path)
+        if (
+            not isinstance(poster_source, dict)
+            or source_path not in DEMO_ASSETS
+            or not source_path.endswith(".png")
+            or not source_record
+            or poster_source.get("sha256") != source_record.get("sha256")
+            or source_record.get("sha256") != poster_record.get("sha256")
+        ):
+            raise ValueError(f"desktop demo must identify the exact poster source and hash: {clip['id']}")
+    if require_complete and required_paths != DEMO_ASSETS:
+        raise ValueError("desktop demo source and poster inventory must match the explicit site inventory")
+    for clip in clips:
+        clip_record = records_by_path[clip["video"]]
+        source_capture_hash = clip.get("source_capture_sha256")
+        if source_capture_hash is not None:
+            if source_capture_hash != clip_record["sha256"]:
+                raise ValueError(f"desktop demo focused capture must be byte-identical to its recorded source: {clip['id']}")
+        else:
+            for source in clip["source_captures"]:
+                if not isinstance(source, dict):
+                    raise ValueError(f"desktop demo source capture records must be objects: {clip['id']}")
+                source_path = source.get("path")
+                source_hash = source.get("sha256")
+                trim = source.get("trim_range_seconds")
+                if source_path not in DEMO_ASSETS or not source_path.endswith(".mp4"):
+                    raise ValueError(f"desktop demo composite source must be an inventoried MP4: {clip['id']}")
+                if source_path not in records_by_path or records_by_path[source_path].get("sha256") != source_hash:
+                    raise ValueError(f"desktop demo composite source hash differs from asset provenance: {clip['id']}")
+                if not isinstance(trim, list) or len(trim) != 2 or any(not isinstance(value, (int, float)) for value in trim) or trim[0] < 0 or trim[1] <= trim[0]:
+                    raise ValueError(f"desktop demo composite source must record a valid trim range: {clip['id']}")
+    separate_checks = demos.get("separate_guest_checks")
+    if not isinstance(separate_checks, list):
+        raise ValueError("desktop demos must distinguish separately tested guest checks")
+    sharing = next((item for item in separate_checks if isinstance(item, dict) and item.get("id") == "wlr-whole-monitor-sharing"), None)
+    if not sharing or sharing.get("recorded_in_clips") is not False:
+        raise ValueError("whole-monitor sharing evidence must remain separate from the recordings")
+    if not isinstance(sharing.get("scope"), str) or "guest" not in sharing["scope"].lower() or "not a fleet/default" not in sharing["scope"].lower():
+        raise ValueError("whole-monitor sharing evidence must retain its guest-only compatibility scope")
+    return demos
+
+
+def desktop_demo_provenance():
+    return validate_desktop_demo_manifest(json.loads((ROOT / "assets/provenance.json").read_text()))
+
+
+def validate_desktop_demo_sources():
+    """Verify the staged public media against its manifest before the build."""
+    missing = [path for path in sorted(DEMO_ASSETS) if not (ROOT / path).is_file()]
+    if missing:
+        raise ValueError(f"desktop demo assets are not staged yet: {', '.join(missing)}")
+    provenance = json.loads((ROOT / "assets/provenance.json").read_text())
+    validate_desktop_demo_manifest(provenance, require_complete=True)
+    records = {item["path"]: item for item in provenance["files"]}
+    for path in sorted(DEMO_ASSETS):
+        source = ROOT / path
+        payload = source.read_bytes()
+        if hashlib.sha256(payload).hexdigest() != records[path]["sha256"]:
+            raise ValueError(f"desktop demo source hash mismatch: {path}")
+        if path.endswith(".png"):
+            header = payload[:24]
+            if len(header) != 24 or header[:8] != b"\x89PNG\r\n\x1a\n" or header[12:16] != b"IHDR":
+                raise ValueError(f"desktop demo poster is not a PNG: {path}")
+            width = int.from_bytes(header[16:20], "big")
+            height = int.from_bytes(header[20:24], "big")
+            if (width, height) != (1920, 1080):
+                raise ValueError(f"desktop demo poster must be 1920x1080: {path}")
+        elif len(payload) < 12 or payload[4:8] != b"ftyp":
+            raise ValueError(f"desktop demo video is not an MP4 file: {path}")
+    return provenance
 
 
 def working_identity(source_path="design/identity.json"):
@@ -200,7 +475,7 @@ def public_files():
     for name in examples:
         if not (name.startswith("examples/") or name in PUBLIC_TOOLS) or ".." in Path(name).parts:
             raise ValueError(f"invalid public example/tool path: {name}")
-    return {"assets/" + x for x in ASSETS} | {"data/setup.json", "data/components.json", "examples/manifest.json"} | examples | FONT_ASSETS | GENERATED
+    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/components.json", "examples/manifest.json"} | examples | FONT_ASSETS | GENERATED
 
 
 def validate_identity_associations(records):
@@ -231,6 +506,59 @@ def partial(name):
     return (ROOT / "site" / name).read_text().replace("@@BASE@@", BASE)
 
 
+def demo(name):
+    clip = DEMO_CLIPS[name]
+    provenance = desktop_demo_provenance()
+    record = next(item for item in provenance["clips"] if item["id"] == name)
+    video = link("docs/tour.md", "../" + clip["video"])
+    poster = link("docs/tour.md", "../" + clip["poster"])
+    capture_label = escape(provenance["capture_label"])
+    codec = "H.264" if record["video_codec"].lower() == "h264" else record["video_codec"]
+    file_records = {item["path"]: item for item in json.loads((ROOT / "assets/provenance.json").read_text())["files"]}
+    video_hash = file_records[clip["video"]]["sha256"]
+    poster_hash = file_records[clip["poster"]]["sha256"]
+    if record.get("source_capture_sha256"):
+        source_details = f'<li>Raw source capture SHA-256: <code>{escape(record["source_capture_sha256"])}</code>.</li>'
+    else:
+        source_details = "".join(
+            f'<li><code>{escape(source["path"])}</code>, source SHA-256 <code>{escape(source["sha256"])}</code>, seconds {source["trim_range_seconds"][0]}–{source["trim_range_seconds"][1]}.</li>'
+            for source in record["source_captures"]
+        )
+    steps = "".join(f"<li>{escape(step)}</li>" for step in clip["steps"])
+    processing_notes = "".join(f"<li>{escape(note)}</li>" for note in record["processing_notes"])
+    receipt_path = provenance["capture_receipt_path"].removeprefix("docs/")
+    receipt_link = link("docs/tour.md", receipt_path)
+    setup_links = " · ".join(
+        f'<a href="{escape(link("docs/tour.md", target), quote=True)}">{escape(label)}</a>'
+        for label, target in clip["setup"]
+    )
+    return f'''<figure class="native-demo" id="{clip['id']}" data-native-demo="{name}">
+  <video class="native-demo-video" controls preload="none" playsinline width="{record['width']}" height="{record['height']}" poster="{poster}" aria-label="{escape(clip['title'], quote=True)} video" aria-describedby="{clip['id']}-summary">
+    <source src="{video}" type="video/mp4">
+    <a class="native-demo-fallback" href="{video}"><img src="{poster}" width="{record['width']}" height="{record['height']}" alt="{escape(clip['title'], quote=True)} poster; open the video file to play the native desktop recording">Open or download the video.</a>
+  </video>
+  <figcaption class="native-demo-caption" id="{clip['id']}-summary">
+    <p class="eyebrow">{capture_label}</p>
+    <h3>{escape(clip['title'])}</h3>
+    <p>{escape(clip['description'])}</p>
+    <p class="native-demo-fixture">Sample content and guest readings: {escape(record['fixture_label'])}</p>
+    <p class="native-demo-duration">{record['duration_seconds']} seconds</p>
+    <ol class="native-demo-steps">{steps}</ol>
+    <p class="native-demo-links"><span>Setup:</span> {setup_links} <span class="native-demo-provenance">· <a class="native-demo-download" href="{escape(video, quote=True)}">Open or download MP4</a> · <a href="{BASE}assets/provenance.json">Media provenance</a> · <a href="{escape(receipt_link, quote=True)}">Capture receipt</a></span></p>
+    <details class="native-demo-details">
+      <summary>Capture details</summary>
+      <p>Captured {escape(record['capture_date'])}{' · exact-byte reused pilot scene' if record.get('reuse_reason') else ''}. Silent {escape(codec)}/{escape(record['pixel_format'])}, {record['width']}×{record['height']}, {record['frame_count']} decoded frames at {escape(str(record['average_frame_rate']))} fps.</p>
+      <p>Output SHA-256: <code>{escape(video_hash)}</code>. Poster SHA-256: <code>{escape(poster_hash)}</code>.</p>
+      {f'<p>Reuse reason: {escape(record["reuse_reason"])}</p>' if record.get('reuse_reason') else ''}
+      <ul>{source_details}</ul>
+      <p>Processing notes:</p>
+      <ul>{processing_notes}</ul>
+      <p>Review status: agent {escape(record['agent_review'])}; automated {escape(record['automated_review'])}; human {escape(record['human_review'])}.</p>
+    </details>
+  </figcaption>
+</figure>'''
+
+
 def panel():
     return f'''<figure class="panel-shot"><div class="media-label"><span>Native SwayNC fork</span><span>Actual rendering ↗</span></div><a class="panel-frame" href="{BASE}assets/panel.png" aria-label="Open the full isolated SwayNC screenshot" style="display:block"><img src="{BASE}assets/panel.png" alt="System, Network, and Bluetooth cards in the actual SwayNC fork" width="1280" height="800" loading="lazy"></a><figcaption>Actual fork in an isolated session, using its default theme. Sample wireless/GPU values; local CPU/RAM. Battery hides on this hardware. <a href="{BASE}assets/provenance.json">Media source</a>.</figcaption></figure>'''
 
@@ -248,11 +576,11 @@ def render_markdown(source):
     text = (ROOT / source).read_text()
     parser = MarkdownIt("commonmark", {"html": False}).enable("table")
     enhancements = {}
-    pattern = re.compile(r"^<!-- niri-plus:([a-z]+) -->\n(.*?)\n<!-- /niri-plus:\1 -->$", re.M | re.S)
+    pattern = re.compile(r"^<!-- niri-plus:([a-z-]+) -->\n(.*?)\n<!-- /niri-plus:\1 -->$", re.M | re.S)
 
     def slot(match):
         name, fallback = match.groups()
-        if name not in {"workbench", "architecture", "keys", "snapshot", "panel", "overview", "gallery", "palette", "typography", "contrast"} or name in enhancements.values():
+        if name not in {"workbench", "architecture", "keys", "snapshot", "panel", "overview", "gallery", "palette", "typography", "contrast", *(f"demo-{clip}" for clip in DEMO_CLIPS)} or name in enhancements.values():
             raise ValueError(f"{source}: invalid enhancement {name}")
         if not fallback.strip():
             raise ValueError(f"{source}: empty Markdown fallback")
@@ -289,6 +617,7 @@ def render_markdown(source):
     parser.renderer.rules["table_close"] = lambda *_: '</table></div>\n'
     body = parser.renderer.render(tokens, parser.options, {})
     replacements = {"workbench": partial("workbench.html"), "architecture": partial("architecture.html"), "snapshot": snapshot(), "panel": panel(), "overview": partial("identity-overview.html"), "gallery": identity_gallery(), "palette": identity_palette(), "typography": identity_typography(), "contrast": contrast_html()}
+    replacements.update({f"demo-{name}": demo(name) for name in DEMO_CLIPS})
     for key, name in enhancements.items():
         if name != "keys":
             body = body.replace(f"<p>{key}</p>", replacements[name])
@@ -327,7 +656,7 @@ class Page(HTMLParser):
             self.ids.append(attrs["id"])
         if tag == "link" and attrs.get("rel") == "canonical":
             self.canonicals.append(attrs.get("href"))
-        for attribute in ("src", "href"):
+        for attribute in ("src", "href", "poster"):
             if attrs.get(attribute):
                 self.links.append(attrs[attribute])
         if tag == "img" and not attrs.get("alt"):
@@ -335,6 +664,7 @@ class Page(HTMLParser):
 
 
 def validate(output):
+    validate_desktop_demo_sources()
     inventory = {"index.html", *(route + "index.html" for route in PAGES), *public_files(), "sitemap.xml", ".nojekyll"}
     actual = {p.relative_to(output).as_posix() for p in output.rglob("*") if p.is_file()}
     if actual != inventory:
@@ -374,6 +704,20 @@ def validate(output):
     return {"pages": len(pages), "files": len(actual), "local_links": links}
 
 
+def portable_links(content, parent):
+    """Rewrite public-path media and navigation attributes for review snapshots."""
+    def relative(match):
+        target = match[2][len(BASE):]
+        url = urlsplit(target)
+        path = posixpath.relpath(url.path or ".", parent)
+        if not url.path or url.path.endswith("/"):
+            path += "/"
+        suffix = ("?" + url.query if url.query else "") + ("#" + url.fragment if url.fragment else "")
+        return match[1] + '="' + path + suffix + '"'
+
+    return re.sub(r'(href|src|poster)="(' + re.escape(BASE) + r'[^\"]*)"', relative, content)
+
+
 def build(output, portable=False):
     output = output.absolute()
     if output.is_symlink() or output.resolve() in {ROOT, ROOT.parent}:
@@ -382,6 +726,7 @@ def build(output, portable=False):
         raise ValueError("only dist may be used as an in-checkout output")
     if output.exists() and any(output.iterdir()):
         raise ValueError("output must be empty; choose a new directory")
+    validate_desktop_demo_sources()
     output.mkdir(parents=True, exist_ok=True)
     identity = working_identity()
     fonts = json.loads((ROOT / "design/assets/provenance.json").read_text())
@@ -411,14 +756,7 @@ def build(output, portable=False):
     if portable:
         for page in output.rglob("*.html"):
             parent = page.parent.relative_to(output).as_posix()
-            def relative(match):
-                target = match[2][len(BASE):]
-                url = urlsplit(target)
-                path = posixpath.relpath(url.path or ".", parent)
-                if not url.path or url.path.endswith("/"):
-                    path += "/"
-                return match[1] + '="' + path + ("#" + url.fragment if url.fragment else "") + '"'
-            page.write_text(re.sub(r'(href|src)="(' + re.escape(BASE) + r'[^\"]*)"', relative, page.read_text()))
+            page.write_text(portable_links(page.read_text(), parent))
     return validate(output)
 
 

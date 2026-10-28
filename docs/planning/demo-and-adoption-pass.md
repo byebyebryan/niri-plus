@@ -1,15 +1,15 @@
 # Demonstrations and public adoption walkthrough
 
-Revised plan, 2026-10-27, after the successful Arch capture pilot. Arch Linux
+Updated 2026-10-28 after the Arch core desktop and media pass. Arch Linux
 x86-64 is the only reference target for this work. Ubuntu/Debian are deferred
 for much later, with no scheduled trial, guest preparation or compatibility
 work. Reconsider them only through a separately scoped future decision.
 
 The [pilot receipt](capture-pilot-receipt.md) records the completed host/Arch
-capture milestone. The next proposed implementation slice is core desktop
-assembly and real site demonstrations (C-D below). A complete Arch installation
-rehearsal follows separately, then the Rofi controls design pass. This revision
-records the plan; it does not start guest changes, publication or fleet rollout.
+capture milestone. The [desktop demonstration receipt](desktop-demonstration-receipt.md) records
+core desktop assembly and real site demonstrations (C–D below). A complete Arch
+installation rehearsal follows separately, then the Rofi controls design pass.
+Public publication and fleet rollout remain separate.
 
 ## Outcome and current baseline
 
@@ -23,17 +23,18 @@ a current-theme still and a 24.5-second recording. It did not qualify the full
 desktop or replay the final instructions from a fresh base. Manual local viewer
 key grab/release remains distinct from the tested guest virtual-keyboard input.
 
-The site baseline has illustrated tour scenes, an Agent Plus native sample and
-isolated SwayNC images. They do not show the complete current desktop. The new
-pilot exists in its separate local review report and has not been integrated
-into the public tour. Preserve accurate illustration/sample labels.
+The local site candidate adds an actual Arch overview and focused browser/files,
+terminal and information recordings beside the existing illustrations and isolated
+samples. The terminal scene reuses the accepted pilot. Public deployment has not
+changed; preserve the separate native/sample/illustration labels.
 
 The setup page links a seven-stage assembly map to focused recipes. It starts
 from a working Niri session and has no clean-install acceptance. The portable
 base config intentionally omits service startup and several integration binds.
-Public components exist; the reference assembly still needs to connect them.
+The guarded reference assembly now connects the demonstrated subset; the wider
+installation guide still needs a clean-base replay.
 
-## Next milestone: core desktop and real demonstrations
+## Completed local milestone: core desktop and real demonstrations
 
 Deliver browser/files, terminal and information/clipboard workflows on the Arch
 reference guest, with recorded public inputs, assembly notes, reviewed native
@@ -214,14 +215,15 @@ VM acceptance does not establish physical-host PAM/wallet or hardware behavior.
 | --- | --- | --- |
 | A. Workstation lab — complete | Retained Starship tools/network and clean Arch checkpoint. | Measured results and recovery inputs are in the pilot receipt. |
 | B. Capture pilot — complete | Still, 24.5-second browser/terminal clip and receipt. | Native rendering/capture passed; full desktop and clean-install acceptance remain separate. |
-| C. Desktop assembly — next | Browser/files/portal tasks, SwayNC/clipboard, service wiring and assembly notes. | Work packages 0-3 pass with recorded public inputs. |
-| D. Media/site — next, after each task passes | Overview/focused clips, posters, captions, setup links and provenance. | Work package 4 passes; locally reviewed changes are ready for a separate publication decision. |
+| C. Desktop assembly — complete locally | Browser/files/portal tasks, SwayNC/clipboard, service wiring and assembly notes. | Work packages 0-3 pass with recorded public inputs. |
+| D. Media/site — complete locally | Overview/focused clips, posters, captions, setup links and provenance. | Work package 4 passes; locally reviewed changes are ready for a separate publication decision. |
 | E. Complete Arch guide/replay — following milestone | Wider desktop coverage, corrected guide and clean-base replay. | Documented tasks plus reboot/login/teardown/relogin pass without undocumented fixes. |
 | F. Rofi controls design — after the Arch guide | Network-first interaction/state design and bounded implementation plan. | Actions, credentials, cancellation, errors, pending state, ownership and delivery are settled before implementation. |
 | Publication/reuse — per accepted milestone | Checked media/guide updates and retained lab artifacts. | Publish within authorization; stop guests when idle and retain useful images. |
 
-C-D are the next proposed implementation slice. They do not depend on E/F,
-and accepted media can be published independently of the complete guide.
+C–D are complete locally as recorded in the [desktop receipt](desktop-demonstration-receipt.md).
+They do not depend on E/F, and accepted media can be published independently
+of the complete guide.
 Keep implementation, local review and publication statuses distinct.
 
 Ubuntu/Debian and other distribution trials are outside this sequence. Do not

@@ -7,7 +7,24 @@ import { chromium } from "playwright";
 const output = path.resolve(process.argv[2] || "dist");
 const prefix = "/niri-plus/";
 const routes = ["", "story/", "tour/", "design/", "design/contrast/", "architecture/", "components/", "setup/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
-const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
+const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".mp4": "video/mp4", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
+
+function parseByteRange(header, size) {
+  const match = /^bytes=(\d*)-(\d*)$/.exec(header || "");
+  if (!match) return null;
+  const [, first, last] = match;
+  if (!first && !last) return { unsatisfiable: true };
+  if (!first) {
+    const suffixLength = Number(last);
+    if (!Number.isSafeInteger(suffixLength) || suffixLength <= 0 || size <= 0) return { unsatisfiable: true };
+    return { start: Math.max(0, size - suffixLength), end: size - 1 };
+  }
+  const start = Number(first);
+  const requestedEnd = last ? Number(last) : size - 1;
+  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(requestedEnd) || start >= size || requestedEnd < start) return { unsatisfiable: true };
+  return { start, end: Math.min(requestedEnd, size - 1) };
+}
+
 const server = http.createServer(async (request, response) => {
   try {
     let url = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
@@ -17,8 +34,30 @@ const server = http.createServer(async (request, response) => {
     const file = path.resolve(output, url);
     if (!file.startsWith(output + path.sep)) { response.writeHead(404).end(); return; }
     const bytes = await fs.readFile(file);
-    response.writeHead(200, { "Content-Type": mime[path.extname(file)] || "text/plain" });
-    response.end(bytes);
+    const contentType = mime[path.extname(file)] || "text/plain";
+    if (path.extname(file) === ".mp4") {
+      const range = parseByteRange(request.headers.range, bytes.length);
+      if (range?.unsatisfiable) {
+        response.writeHead(416, { "Accept-Ranges": "bytes", "Content-Range": `bytes */${bytes.length}`, "Content-Type": contentType }).end();
+        return;
+      }
+      if (range) {
+        const body = bytes.subarray(range.start, range.end + 1);
+        response.writeHead(206, {
+          "Accept-Ranges": "bytes",
+          "Content-Range": `bytes ${range.start}-${range.end}/${bytes.length}`,
+          "Content-Length": body.length,
+          "Content-Type": contentType,
+        });
+        response.end(request.method === "HEAD" ? undefined : body);
+        return;
+      }
+      response.writeHead(200, { "Accept-Ranges": "bytes", "Content-Length": bytes.length, "Content-Type": contentType });
+      response.end(request.method === "HEAD" ? undefined : bytes);
+      return;
+    }
+    response.writeHead(200, { "Content-Type": contentType });
+    response.end(request.method === "HEAD" ? undefined : bytes);
   } catch { response.writeHead(404).end(); }
 });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -40,15 +79,115 @@ try {
       assert.equal(await page.locator("h1").count(), 1);
       assert.ok(await page.locator("main").innerText());
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `horizontal overflow at ${width}: ${route}`);
-      assert.equal(await page.locator("img").evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).length), 0, `broken image: ${route}`);
+      await page.locator("img").evaluateAll((images) => images.filter((image) => !image.closest("video")).forEach((image) => { image.loading = "eager"; }));
+      await page.waitForFunction(() => [...document.images].filter((image) => !image.closest("video")).every((image) => image.complete && image.naturalWidth > 0), null, { timeout: 10000 });
+      const brokenImages = await page.locator("img").evaluateAll((images) => images.filter((image) => !image.closest("video") && (!image.complete || image.naturalWidth === 0)).map((image) => ({src: image.getAttribute("src"), complete: image.complete, width: image.naturalWidth})));
+      assert.deepEqual(brokenImages, [], `broken image: ${route}`);
       checks += 6;
-      if (process.env.NIRI_SCREENSHOTS && ["", "design/", "design/contrast/", "recipes/terminal/", "setup/", "recipes/login/", "recipes/desktop-utilities/"].includes(route) && [375, 1280].includes(width)) {
+      if (process.env.NIRI_SCREENSHOTS && ["", "tour/", "design/", "design/contrast/", "recipes/terminal/", "setup/", "recipes/login/", "recipes/desktop-utilities/"].includes(route) && [375, 1280].includes(width)) {
         await page.evaluate(() => document.fonts.ready);
         await fs.mkdir(process.env.NIRI_SCREENSHOTS, { recursive: true });
         await page.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `${route.replaceAll("/", "-") || "home"}-${width}.png`), fullPage: true });
       }
     }
   }
+  await page.goto(origin);
+  const nativeDemoLink = page.locator('a[href$="tour/#native-reference-demo"]');
+  assert.equal(await nativeDemoLink.count(), 1);
+  await nativeDemoLink.click();
+  assert.match(page.url(), /tour\/#native-reference-demo$/);
+  assert.equal(await page.locator("[data-native-demo]").count(), 4);
+  const provenanceResponse = await page.request.get(origin + "assets/provenance.json");
+  assert.equal(provenanceResponse.status(), 200);
+  const provenance = await provenanceResponse.json();
+  const clipsById = Object.fromEntries(provenance.desktop_demos.clips.map((clip) => [clip.id, clip]));
+  const inventoriedAssets = new Set(provenance.files.map((file) => file.path));
+  checks += 3;
+  const rangeResponse = await page.request.get(origin + "assets/demo-overview.mp4", { headers: { Range: "bytes=0-99" } });
+  assert.equal(rangeResponse.status(), 206);
+  assert.equal(rangeResponse.headers()["accept-ranges"], "bytes");
+  assert.equal(rangeResponse.headers()["content-type"], "video/mp4");
+  assert.match(rangeResponse.headers()["content-range"], /^bytes 0-99\/\d+$/);
+  assert.equal((await rangeResponse.body()).length, 100);
+  const invalidRange = await page.request.get(origin + "assets/demo-overview.mp4", { headers: { Range: "bytes=999999999999999-" } });
+  assert.equal(invalidRange.status(), 416);
+  checks += 5;
+  for (const name of ["overview", "browser-files", "terminal", "information"]) {
+    const selector = `[data-native-demo="${name}"] video`;
+    const video = page.locator(selector);
+    assert.equal(await video.count(), 1);
+    assert.equal(await video.evaluate((element) => element.controls), true);
+    assert.equal(await video.evaluate((element) => element.autoplay), false);
+    assert.equal(await video.evaluate((element) => element.preload), "none");
+    assert.equal(await video.evaluate((element) => element.playsInline), true);
+    const clip = clipsById[name];
+    assert.ok(clip, `missing provenance record: ${name}`);
+    assert.equal(clip.human_review, "pending", "automated playback does not substitute for human review");
+    const mediaPaths = await video.evaluate((element) => ({
+      poster: new URL(element.getAttribute("poster"), document.baseURI).pathname.replace(/^\/niri-plus\//, ""),
+      source: new URL(element.querySelector("source")?.getAttribute("src"), document.baseURI).pathname.replace(/^\/niri-plus\//, ""),
+      fallback: new URL(element.querySelector("a")?.getAttribute("href"), document.baseURI).pathname.replace(/^\/niri-plus\//, ""),
+      download: new URL(element.closest("[data-native-demo]")?.querySelector(".native-demo-download")?.getAttribute("href"), document.baseURI).pathname.replace(/^\/niri-plus\//, ""),
+    }));
+    assert.equal(mediaPaths.poster, clip.poster);
+    assert.equal(mediaPaths.source, clip.video);
+    assert.equal(mediaPaths.fallback, clip.video);
+    assert.equal(mediaPaths.download, clip.video);
+    assert.ok(inventoriedAssets.has(mediaPaths.poster), `poster is outside explicit inventory: ${name}`);
+    assert.ok(inventoriedAssets.has(mediaPaths.source), `video is outside explicit inventory: ${name}`);
+    const [posterResponse, sourceResponse] = await Promise.all([
+      page.request.head(origin + mediaPaths.poster),
+      page.request.head(origin + mediaPaths.source),
+    ]);
+    assert.equal(posterResponse.status(), 200);
+    assert.equal(posterResponse.headers()["content-type"], "image/png");
+    assert.equal(sourceResponse.status(), 200);
+    assert.equal(sourceResponse.headers()["content-type"], "video/mp4");
+    assert.equal(await video.locator("source").getAttribute("type"), "video/mp4");
+    assert.ok(await page.locator(`[data-native-demo="${name}"] .native-demo-steps li`).count() >= 3);
+    await video.evaluate((element) => element.load());
+    await page.waitForFunction((selector) => document.querySelector(selector)?.readyState >= 1, selector, { timeout: 15000 });
+    const metadata = await video.evaluate((element) => ({ width: element.videoWidth, height: element.videoHeight, duration: element.duration, paused: element.paused }));
+    assert.deepEqual([metadata.width, metadata.height], [1920, 1080]);
+    assert.ok(metadata.duration > 0 && Number.isFinite(metadata.duration));
+    assert.ok(Math.abs(metadata.duration - clip.duration_seconds) < 0.1, `duration differs from measured provenance for ${name}`);
+    assert.equal(metadata.paused, true, "native clips must wait for explicit playback");
+    const poster = await page.evaluate((url) => new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
+      image.onerror = () => resolve(null);
+      image.src = url;
+    }), await video.getAttribute("poster"));
+    assert.deepEqual(poster, { width: 1920, height: 1080 });
+    if (name === "overview") {
+      await video.evaluate((element) => element.focus());
+      assert.equal(await video.evaluate((element) => document.activeElement === element), true);
+      await page.keyboard.press("Space");
+      await page.waitForFunction((selector) => {
+        const element = document.querySelector(selector);
+        return element && !element.paused && element.currentTime > 0.1;
+      }, selector, { timeout: 10000 });
+      const beforeSeek = await video.evaluate((element) => element.currentTime);
+      await video.evaluate((element) => { element.currentTime = Math.min(element.duration / 2, element.currentTime + 1); });
+      await page.waitForFunction(({ selector, before }) => {
+        const element = document.querySelector(selector);
+        return element && !element.seeking && element.currentTime > before + 0.5;
+      }, { selector, before: beforeSeek }, { timeout: 10000 });
+      await page.keyboard.press("Space");
+      await page.waitForFunction((selector) => document.querySelector(selector)?.paused, selector);
+    }
+    checks += name === "overview" ? 13 : 11;
+  }
+  await page.setViewportSize({ width: 375, height: 900 });
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  for (const video of await page.locator(".native-demo-video").all()) {
+    assert.ok((await video.boundingBox()).width <= 375);
+    assert.equal(await video.evaluate((element) => element.paused), true);
+  }
+  assert.equal(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches), true);
+  assert.equal(await page.locator(".native-demo-video").evaluateAll((nodes) => nodes.every((node) => getComputedStyle(node).animationDuration === "0s")), true);
+  checks += 7;
+  await page.setViewportSize({ width: 1280, height: 1000 });
   await page.goto(origin + "design/");
   const identity = await (await page.request.get(origin + "data/identity.json")).json();
   assert.equal(identity.selected_candidate, "neutral-slate");
@@ -184,6 +323,12 @@ try {
     assert.ok(await staticPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     checks += 4;
   }
+  await staticPage.goto(origin + "tour/");
+  assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 4);
+  assert.equal(await staticPage.locator("[data-native-demo] video[autoplay]").count(), 0);
+  assert.ok((await staticPage.locator("[data-native-demo]").allInnerTexts()).join(" ").includes("Mod+Y"));
+  assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 12);
+  checks += 4;
   await staticPage.goto(origin + "design/");
   assert.equal(await staticPage.locator("[data-surface-panel]:visible").count(), 4);
   assert.equal(await staticPage.locator("[data-surface-button]:visible").count(), 0);

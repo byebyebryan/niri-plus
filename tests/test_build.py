@@ -12,6 +12,61 @@ builder = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(builder)
 
 
+def demo_provenance_fixture():
+    producer = json.loads((ROOT / "data/components.json").read_text())["producer"]
+    identity_hash = hashlib.sha256((ROOT / "design/identity.json").read_bytes()).hexdigest()
+    files = [
+        {"path": path, "sha256": "0" * 64, "license": builder.DEMO_ASSET_LICENSES[path], "source": "staged Arch guest", "description": "demo media"}
+        for path in builder.DEMO_ASSETS
+    ]
+    clips = []
+    for name, contract in builder.DEMO_CLIPS.items():
+        clips.append({
+            "id": name,
+            "video": contract["video"],
+            "poster": contract["poster"],
+            "width": 1920,
+            "height": 1080,
+            "duration_seconds": 30.0,
+            "frame_count": 900,
+            "average_frame_rate": "30000/1001",
+            "video_codec": "h264",
+            "pixel_format": "yuv420p",
+            "capture_date": "2026-10-27",
+            "source_capture_sha256": None if name == "overview" else "0" * 64,
+            "source_captures": [
+                {"path": "assets/demo-browser-files.mp4", "sha256": "0" * 64, "trim_range_seconds": [0, 30]}
+            ] if name == "overview" else None,
+            "poster_source": {"path": contract["poster"], "sha256": "0" * 64},
+            "reuse_reason": "Reuse fixture reason",
+            "audio": "none",
+            "fixture_label": "Public sample content; guest CPU/RAM/network readings are actual",
+            "processing_notes": ["site-ready H.264 derivative"],
+            "agent_review": "passed",
+            "automated_review": "passed",
+            "human_review": "pending",
+            **({"additional_source_versions": {"swaync": builder.SWAYNC_PIN}} if name in {"overview", "information"} else {}),
+        })
+    return {
+        "files": files,
+        "desktop_demos": {
+            "capture_label": "Staged Arch Linux x86_64 guest",
+            "source_versions": {
+                "niri": "26.04",
+                "components": {key: producer[key] for key in ("version", "source_commit", "archive_sha256", "manifest_sha256")},
+                "identity": {"sha256": identity_hash},
+            },
+            "capture_receipt_path": "docs/planning/desktop-demonstration-receipt.md",
+            "separate_guest_checks": [{
+                "id": "wlr-whole-monitor-sharing",
+                "recorded_in_clips": False,
+                "scope": "Staged guest only; not a fleet/default adoption",
+            }],
+            "clips": clips,
+        },
+    }
+
+
 class BuildContracts(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory(prefix="niri-plus-check-")
@@ -22,12 +77,96 @@ class BuildContracts(unittest.TestCase):
         result = builder.build(self.output)
         self.assertEqual(result["pages"], 20)
         self.assertGreater(result["local_links"], 200)
-        self.assertFalse((self.output / "docs").exists())
+        self.assertEqual(
+            {path.relative_to(self.output).as_posix() for path in (self.output / "docs").rglob("*") if path.is_file()},
+            {"docs/planning/desktop-demonstration-receipt.md"},
+        )
+        self.assertTrue((self.output / "tools/vm/desktop/wlr-compat/README.md").is_file())
         self.assertFalse((self.output / "AGENTS.md").exists())
         self.assertIn("I love terminal life", (self.output / "story/index.html").read_text())
         self.assertIn("Illustrated walkthrough", (self.output / "index.html").read_text())
+        self.assertIn('href="/niri-plus/tour/#native-reference-demo"', (self.output / "index.html").read_text())
         for page in self.output.rglob("*.html"):
             self.assertNotIn("https://github.com/byebyebryan/dotfiles", page.read_text())
+
+    def test_native_demo_provenance_contract_requires_measured_public_evidence(self):
+        manifest = demo_provenance_fixture()
+        self.assertEqual(builder.validate_desktop_demo_manifest(manifest)["capture_label"], "Staged Arch Linux x86_64 guest")
+        manifest["desktop_demos"]["clips"][0]["human_review"] = ""
+        with self.assertRaisesRegex(ValueError, "human-review status"):
+            builder.validate_desktop_demo_manifest(manifest)
+        manifest = demo_provenance_fixture()
+        manifest["desktop_demos"]["clips"][0]["human_review"] = "accepted after later review"
+        builder.validate_desktop_demo_manifest(manifest)
+        manifest = demo_provenance_fixture()
+        manifest["desktop_demos"]["clips"][0]["duration_seconds"] = 0
+        with self.assertRaisesRegex(ValueError, "measured duration"):
+            builder.validate_desktop_demo_manifest(manifest)
+        manifest = demo_provenance_fixture()
+        manifest["desktop_demos"]["source_versions"]["identity"]["sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "identity hash differs"):
+            builder.validate_desktop_demo_manifest(manifest)
+        manifest = demo_provenance_fixture()
+        manifest["files"] = manifest["files"][:-1]
+        with self.assertRaisesRegex(ValueError, "lack provenance hashes"):
+            builder.validate_desktop_demo_manifest(manifest)
+        manifest = demo_provenance_fixture()
+        next(item for item in manifest["files"] if item["path"] == "assets/demo-information.mp4")["license"] = "MIT"
+        with self.assertRaisesRegex(ValueError, "license must be GPL-3.0-only"):
+            builder.validate_desktop_demo_manifest(manifest)
+        manifest = demo_provenance_fixture()
+        manifest["desktop_demos"]["clips"] = [next(item for item in manifest["desktop_demos"]["clips"] if item["id"] == "terminal")]
+        manifest["files"] = [item for item in manifest["files"] if "demo-terminal." in item["path"]]
+        self.assertEqual([item["id"] for item in builder.validate_desktop_demo_manifest(manifest)["clips"]], ["terminal"])
+        with self.assertRaisesRegex(ValueError, "exactly the four site clips"):
+            builder.validate_desktop_demo_manifest(manifest, require_complete=True)
+
+    def test_reused_terminal_pilot_assets_match_their_source_receipt(self):
+        provenance = builder.desktop_demo_provenance()
+        clip = next(item for item in provenance["clips"] if item["id"] == "terminal")
+        self.assertEqual(clip["capture_date"], "2026-10-27")
+        self.assertEqual(clip["source_capture_sha256"], "b6c3c63e3d60b0fe079d8d3a74f0f8a038813c16fa27453838c77cb1f43aa240")
+        self.assertEqual(clip["reuse_reason"].startswith("Reused because Niri 26.04"), True)
+        self.assertEqual((clip["width"], clip["height"], clip["duration_seconds"], clip["frame_count"], clip["average_frame_rate"]), (1920, 1080, 24.467, 735, "11025/367"))
+        self.assertEqual((clip["agent_review"], clip["automated_review"], clip["human_review"]), ("passed", "passed", "pending"))
+        records = {item["path"]: item for item in json.loads((ROOT / "assets/provenance.json").read_text())["files"]}
+        for path in (clip["video"], clip["poster"]):
+            self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), records[path]["sha256"])
+            self.assertEqual(records[path]["license"], "MIT")
+
+    def test_native_demos_have_static_steps_controls_and_staged_provenance(self):
+        builder.build(self.output)
+        tour = (self.output / "tour/index.html").read_text()
+        self.assertEqual(tour.count("<video "), 4)
+        self.assertEqual(tour.count('controls preload="none"'), 4)
+        self.assertEqual(tour.count('type="video/mp4"'), 4)
+        self.assertEqual(tour.count('class="native-demo-download"'), 4)
+        self.assertEqual(tour.count("Open or download MP4"), 4)
+        self.assertNotIn(" autoplay", tour)
+        self.assertIn("Mod+N", tour)
+        self.assertIn("Mod+Y", tour)
+        self.assertIn("public sample content", tour)
+        self.assertIn("Media provenance", tour)
+        self.assertIn("Capture receipt", tour)
+        self.assertIn("sharing is not shown in any clip", tour)
+        self.assertIn('href="/niri-plus/recipes/files/"', tour)
+        self.assertIn('href="/niri-plus/recipes/terminal/"', tour)
+        self.assertIn('href="/niri-plus/recipes/notifications/"', tour)
+        self.assertIn('href="/niri-plus/recipes/clipboard/"', tour)
+        design = (self.output / "design/index.html").read_text()
+        self.assertIn('src="/niri-plus/assets/demo-overview.png"', design)
+        self.assertIn('href="/niri-plus/tour/#native-reference-demo"', design)
+        provenance = json.loads((self.output / "assets/provenance.json").read_text())
+        self.assertEqual(len(provenance["desktop_demos"]["clips"]), 4)
+        self.assertTrue(all(item["human_review"] == "pending" for item in provenance["desktop_demos"]["clips"]))
+        self.assertTrue(all(item["automated_review"] == "passed" for item in provenance["desktop_demos"]["clips"]))
+        sharing = provenance["desktop_demos"]["separate_guest_checks"][0]
+        self.assertFalse(sharing["recorded_in_clips"])
+        self.assertIn("not a fleet/default", sharing["scope"])
+        self.assertEqual(provenance["desktop_demos"]["clips"][0]["source_capture_sha256"], None)
+        self.assertEqual(len(provenance["desktop_demos"]["clips"][0]["source_captures"]), 3)
+        for path in builder.DEMO_ASSETS:
+            self.assertTrue((self.output / path).is_file(), path)
 
     def test_component_source_map_pins_the_release_and_records_appearance_closeout(self):
         producer = json.loads((ROOT / "data/components.json").read_text())
@@ -232,6 +371,39 @@ class BuildContracts(unittest.TestCase):
         self.assertIn('href="../recipes/terminal/"', text)
         self.assertIn('href="../recipes/appearance/"', text)
         self.assertIn('href="https://dev.byebyebryan.com/niri-plus/design/"', text)
+        tour = (self.output / "tour/index.html").read_text()
+        self.assertIn('poster="../assets/demo-overview.png"', tour)
+        self.assertIn('src="../assets/demo-overview.mp4"', tour)
+        self.assertIn('href="../assets/demo-overview.mp4"', tour)
+        self.assertIn('href="../docs/planning/desktop-demonstration-receipt.md"', tour)
+        self.assertIn('href="../tools/vm/desktop/wlr-compat/README.md"', tour)
+        self.assertIn('href="https://dev.byebyebryan.com/niri-plus/tour/"', tour)
+        for path in ("docs/planning/desktop-demonstration-receipt.md", "tools/vm/desktop/wlr-compat/README.md"):
+            self.assertTrue((self.output / path).is_file(), path)
+
+    def test_portable_native_media_rewrites_and_validates_source_fallback_and_poster(self):
+        media_paths = {"assets/demo-terminal.mp4", "assets/demo-terminal.png"}
+        self.assertTrue(media_paths <= builder.public_files())
+        source = f'''<video poster="{builder.BASE}assets/demo-terminal.png"><source src="{builder.BASE}assets/demo-terminal.mp4" type="video/mp4"><a href="{builder.BASE}assets/demo-terminal.mp4"><img src="{builder.BASE}assets/demo-terminal.png" alt="Native sample"></a></video><link rel="canonical" href="{builder.SITE}tour/">'''
+        portable = builder.portable_links(source, "tour")
+        self.assertIn('poster="../assets/demo-terminal.png"', portable)
+        self.assertIn('src="../assets/demo-terminal.mp4"', portable)
+        self.assertIn('href="../assets/demo-terminal.mp4"', portable)
+        self.assertIn('src="../assets/demo-terminal.png"', portable)
+        self.assertIn(f'href="{builder.SITE}tour/"', portable)
+        self.assertNotIn(builder.BASE + "assets/demo-terminal", portable)
+        page = builder.Page(portable)
+        media_links = [target for target in page.links if "demo-terminal." in target]
+        self.assertCountEqual(media_links, [
+            "../assets/demo-terminal.png",
+            "../assets/demo-terminal.mp4",
+            "../assets/demo-terminal.mp4",
+            "../assets/demo-terminal.png",
+        ])
+        for target in media_links:
+            url = builder.urlsplit(builder.urljoin(builder.SITE + "tour/", target))
+            destination = builder.unquote(url.path[len(builder.BASE):])
+            self.assertIn(destination, builder.public_files())
 
     def test_terminal_and_utility_recipes_export_pinned_sources_and_isolated_check(self):
         builder.build(self.output)

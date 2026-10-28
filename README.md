@@ -47,9 +47,9 @@ use declared repository inputs; they do not inspect or operate a desktop.
 - `data/setup.json`: dated managed-source and personal deployment evidence.
 - `assets/`: reviewed media, attribution and licenses.
 - `scripts/` and `tests/`: site, archive, export and headless checks.
-- `tools/vm/`: guarded Arch guest setup, sample fixtures and the native capture
-  pilot. VM definitions and original media stay outside Git; see the
-  [execution receipt](docs/planning/capture-pilot-receipt.md).
+- `tools/vm/`: guarded Arch guest assembly, sample fixtures and native capture
+  tools. VM definitions and original media stay outside Git; see the
+  [desktop demonstration receipt](docs/planning/desktop-demonstration-receipt.md).
 
 ## Updating sources and examples
 

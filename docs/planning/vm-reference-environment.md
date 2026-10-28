@@ -1,6 +1,6 @@
 # Capture-first VM plan for Niri Plus
 
-Revised plan, 2026-10-27, after the successful capture pilot. Reuse the
+Updated 2026-10-28 after the core desktop/media pass. Reuse the
 Starship workstation lab for Arch Linux x86-64 only. Ubuntu/Debian are deferred
 for much later, with no guest preparation, release selection or compatibility
 work in the current sequence. Viewing, interaction and playback review remain
@@ -9,6 +9,9 @@ Phases 1-2 completed on 2026-10-27: host tools, shared networking, clean Arch
 baseline and the native screenshot/recording pilot are established. The guest
 is stopped and retained. See the [pilot receipt](capture-pilot-receipt.md) for
 measured state, the browser preview and remaining acceptance boundaries.
+Phases 3–4 completed locally on 2026-10-28; their
+[desktop receipt](desktop-demonstration-receipt.md) records the expanded tasks
+and separate stopped `desktop-demo` checkpoint.
 
 This is the environment workstream of the
 [demonstration and adoption plan](demo-and-adoption-pass.md). No chezmoi
@@ -21,17 +24,18 @@ tools, VM definitions, guest disks and useful checkpoints available between
 uses. Start VMs on demand and stop them when their work is finished; there is
 no deadline to delete the lab after capture or installation testing.
 
-## Next implementation milestone
+## Core desktop milestone
 
-The parent plan's work packages 0-4 define the next proposed slice: browser/file
-and portal tasks, SwayNC/clipboard, session wiring, native media and local site
-integration. Preserve both existing checkpoints, boot an offline working copy
-before modifying it, and run one Arch guest at a time. Use the established
-local capture path; do not repeat host installation or broaden lab access.
+The parent plan's work packages 0–4 are complete locally: browser/files and
+portal tasks, SwayNC/clipboard, session wiring, native media and site integration.
+The [desktop receipt](desktop-demonstration-receipt.md) records the conditional
+VM portal build and remaining boundaries. Preserve both earlier checkpoints and
+the separate `desktop-demo` checkpoint; use an offline working copy for future
+changes and run one Arch guest at a time.
 
 Full SDDM/lock/power/audio/input/output qualification and replay from
 `arch-base` follow as a separate Arch installation milestone. The Rofi controls
-design comes after that guide. A plan revision does not start live work.
+design comes after that guide. Public publication and fleet rollout remain separate.
 
 ## Completed pilot contract
 
@@ -397,13 +401,14 @@ the three desktop hosts or homelab services.
 | --- | --- | --- |
 | 1. Workstation lab — complete | Retained tools, NAT network, Arch guest/storage and operating notes. | Pilot receipt records connectivity and host preservation; later host reboot/firewall lifecycle checks remain explicit. |
 | 2. Capture pilot — complete | Current-theme Niri/Chrome/Kitty/Zsh, screenshot, 24.5-second clip and receipt. | Native rendering/encoding passed; manual viewer key handling and complete desktop acceptance remain distinct. |
-| 3. Core desktop assembly — next | Browser/files/portals, SwayNC/clipboard, session wiring and notes. | Parent work packages 0-3 pass on a protected working copy using public inputs. |
-| 4. Media/local site — next | Overview/focused clips, posters, captions, links and provenance. | Parent work package 4 passes; reviewable local changes are ready for separate publication. |
+| 3. Core desktop assembly — complete locally | Browser/files/portals, SwayNC/clipboard, session wiring and notes. | Parent work packages 0-3 pass on a protected working copy using public inputs. |
+| 4. Media/local site — complete locally | Overview/focused clips, posters, captions, links and provenance. | Parent work package 4 passes; reviewable local changes are ready for separate publication. |
 | 5. Complete Arch guide/replay — following milestone | Wider desktop checklist and corrected instructions from a fresh `arch-base` copy. | Password login, core tasks, reboot and service teardown/relogin pass without undocumented repairs. |
 | Retain for reuse — throughout | Accepted evidence plus retained definitions/images/checkpoints. | Guests stopped when idle; images remain useful; deletion is not a completion requirement. |
 
-Phases 1-2 are delivered. Phases 3-4 are the next proposed implementation
-slice; full Arch installation acceptance follows separately. The parent plan
+Phases 1–4 are delivered locally; the [desktop receipt](desktop-demonstration-receipt.md)
+records the tasks, VM portal compatibility build and limits. Full Arch
+installation acceptance follows separately. The parent plan
 then schedules a Network-first Rofi controls design, not automatic controls
 implementation. Ubuntu/Debian are deferred for much later with no scheduled
 trial or current compatibility work.
@@ -434,6 +439,6 @@ newly added packages, retaining tools that have acquired another use. Existing
 dnsmasq, Docker and desktop packages are not lab-owned. Keeping the hypervisor,
 shared network and useful guests installed is the default after this pass.
 
-Phases 1-2 are delivered. The next work is Arch desktop demonstrations;
-complete installation acceptance and public-site publication remain separate.
+Phases 1–4 are delivered locally. The next work is the complete Arch guide and
+fresh-base replay; public-site publication remains separate.
 Ubuntu/Debian remain deferred without a scheduled trial.

@@ -88,7 +88,9 @@ test -f "$NIRI_PLUS_CHECKOUT/tools/reference/inputs.json"
 ```
 
 The selected reference is Neutral Slate with Clear Blue focus, a pure-black
-Balanced+ Kitty palette, and Noto Sans/Meslo typography. The session uses SDDM
+workspace and Balanced+ Kitty palette, and Noto Sans/Meslo typography. Its
+overview retains a charcoal surround so empty black workspaces have visible
+boundaries. The session uses SDDM
 and Niri, GTK portals for file/access/settings/notification interfaces, WLR for
 whole-monitor capture, and the pinned SwayNC fork for the on-demand dashboard.
 The focused [recipes](#focused-recipes) retain the details for each part.
@@ -142,7 +144,7 @@ published 0.4.1 component archive. It runs as your user and writes only into a
 new output tree. It verifies the immutable component archive, its manifest and
 all 44 payloads; the independently pinned identity; and the listed public
 examples from source commit
-[`317658ee7913bb58536f6ec1b2575043a9494449`](https://github.com/byebyebryan/niri-plus/tree/317658ee7913bb58536f6ec1b2575043a9494449).
+[`f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2`](https://github.com/byebyebryan/niri-plus/tree/f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2).
 It then renders appearance previews and writes `provenance.json` with the input
 and output hashes. It does not install packages, write normal configuration,
 start services, or import capture-pilot state.

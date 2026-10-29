@@ -10,12 +10,12 @@
   },
   "identity": {
     "path": "design/identity.json",
-    "sha256": "49b41866b7483a69a0499133864a10ac786335b1686ad9c314c3b916c94c367f"
+    "sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
   },
   "public_source": {
     "repository": "https://github.com/byebyebryan/niri-plus.git",
-    "commit": "317658ee7913bb58536f6ec1b2575043a9494449",
-    "examples_manifest_sha256": "9cac845610dbf619613f85a3d86fa84254724a879b9bf7eb903f6bf0e8c56689",
+    "commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+    "examples_manifest_sha256": "1cc868c86bc288ea9b09bd3f300033bfad2e3a5d0da4ca5e8a5ea68c409f9055",
     "assets": [
       "examples/clipboard/config",
       "examples/clipboard/profiles/minimal-niri/clipboard-history@.service",

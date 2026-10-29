@@ -79,6 +79,30 @@ def row_info(frame):
 
 
 class ControlsFrontend(unittest.TestCase):
+    def test_alt_r_scans_only_the_selected_wifi_adapter_without_leaving_editable_list(self):
+        from dataclasses import replace
+        from niri_plus_controls.model import ActionKind, ActionSpec, OperationResult, PendingRef, ResultKind
+
+        backend = FixtureBackend(Utility.NETWORK)
+        selected = TargetRef("access-point", "nm:ap:studio:wlan1:02")
+        backend._records[selected].state["device_path"] = "/device/wlan1"
+        original_snapshot, original_target, original_actions = backend.snapshot, backend.target, backend.actions
+        sample = original_target(selected)
+        device = replace(sample, ref=TargetRef("wifi-device", "adapter1"), title="wlan1",
+                         state={"device_path": "/device/wlan1"})
+        backend.snapshot = lambda utility: replace(original_snapshot(utility), targets=original_snapshot(utility).targets + (device,))
+        backend.target = lambda ref: device if ref == device.ref else original_target(ref)
+        backend.actions = lambda ref: (ActionSpec("rescan", "Rescan", ActionKind.OPERATION),) if ref == device.ref else original_actions(ref)
+        requests = []
+        backend.execute = lambda request: requests.append(request) or OperationResult(ResultKind.PENDING, "Scan accepted", device,
+            PendingRef("scan", device.ref, 1))
+        app, _ = self.make(Utility.NETWORK, backend=backend)
+        frame = callback(app, 10, selected_target(selected))
+        self.assertEqual([(request.target, request.action_id) for request in requests], [(device.ref, "rescan")])
+        self.assertEqual(app._resume_state.page, Page.LIST)
+        self.assertIsNone(app._resume_state.pending)
+        self.assertIn("Scan accepted", frame)
+
     def test_open_wifi_warning_precedes_persistence_and_rechecks_security(self):
         app, backend = self.make(Utility.NETWORK)
         target = TargetRef("access-point", "nm:ap:studio:wlan1:02")

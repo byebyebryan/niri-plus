@@ -291,7 +291,7 @@ def message_for_actions(
     if safe_context:
         sections.extend(("──────────────", safe_context))
     safe_notice = _escape(notice, limit=1024)
-    if safe_notice:
+    if safe_notice and safe_notice != safe_context:
         sections.append(safe_notice)
     return "\u2028\u2028".join(sections)
 
@@ -302,7 +302,7 @@ def message_for_rows(prompt: str, context: str, notice: str, appearance: Control
     if safe_context:
         lines.extend(("──────────────", safe_context))
     safe_notice = _escape(notice, limit=1024)
-    if safe_notice:
+    if safe_notice and safe_notice != safe_context:
         lines.append(safe_notice)
     return "\u2028\u2028".join(lines)
 

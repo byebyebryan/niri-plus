@@ -1,0 +1,798 @@
+#!/usr/bin/env python3
+"""Qualify the controls UI on an owned nested Niri Wayland compositor.
+
+The nested compositor runs as a winit window on a private Xvfb. Every client
+uses a private HOME/XDG tree, private runtime directory, and nonexistent
+explicit D-Bus socket paths. No --session flag is passed to Niri.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_DESKTOP = ROOT / "components/desktop"
+DEFAULT_OUTPUT = Path.home() / ".local/state/niri-plus-lab/rofi-controls-impl-20261029/wayland"
+NIRI = Path("/usr/bin/niri")
+ROFI = Path("/usr/bin/rofi")
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 900
+
+
+def need(name: str) -> str:
+    path = shutil.which(name)
+    if path is None:
+        raise RuntimeError(f"required native proof command is missing: {name}")
+    return path
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def safe_output_dir(path: Path) -> Path:
+    if path.is_symlink():
+        raise RuntimeError("artifact output must not be a symlink")
+    path = path.expanduser().absolute()
+    if path.exists() and (not path.is_dir() or any(path.iterdir())):
+        raise RuntimeError("artifact output must be a new or empty directory")
+    path.mkdir(parents=True, mode=0o700, exist_ok=True)
+    path.chmod(0o700)
+    info = path.stat()
+    if info.st_uid != os.getuid() or info.st_mode & 0o077:
+        raise RuntimeError("artifact output must be owned by this user and mode 0700")
+    return path
+
+
+def process_info(pid: int):
+    try:
+        stat_text = Path(f"/proc/{pid}/stat").read_text()
+        close = stat_text.rfind(")")
+        fields = stat_text[close + 2 :].split()
+        parent = int(fields[1])
+        cmdline = Path(f"/proc/{pid}/cmdline").read_bytes()
+        environ = Path(f"/proc/{pid}/environ").read_bytes()
+        comm = Path(f"/proc/{pid}/comm").read_text().strip()
+        return parent, cmdline, environ, comm
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def descendants(root_pid: int) -> dict[int, tuple[bytes, bytes, str]]:
+    known = {root_pid}
+    found: dict[int, tuple[bytes, bytes, str]] = {}
+    changed = True
+    while changed:
+        changed = False
+        for entry in Path("/proc").iterdir():
+            if not entry.name.isdigit():
+                continue
+            pid = int(entry.name)
+            if pid in known:
+                continue
+            info = process_info(pid)
+            if info and info[0] in known:
+                known.add(pid)
+                found[pid] = (info[1], info[2], info[3])
+                changed = True
+    return found
+
+
+def protected_host_pids() -> dict[int, str]:
+    """Track existing native desktop/service processes without reading envs."""
+    protected: dict[int, str] = {}
+    for entry in Path("/proc").iterdir():
+        if not entry.name.isdigit():
+            continue
+        pid = int(entry.name)
+        info = process_info(pid)
+        if info is None:
+            continue
+        command = info[1].split(b"\0")
+        comm = info[3]
+        if (comm == "niri" and b"--session" in command) or comm in {
+            "swaync", "swayidle", "gtklock", "mako", "bluetoothd",
+            "NetworkManager", "pipewire", "wireplumber",
+        }:
+            protected[pid] = comm
+    return protected
+
+
+def verify_host_pids(baseline: dict[int, str]) -> None:
+    current = protected_host_pids()
+    missing = {pid: name for pid, name in baseline.items() if current.get(pid) != name}
+    if missing:
+        raise RuntimeError(f"native session/service PID baseline changed during proof: {missing}")
+
+
+def private_env(root: Path) -> dict[str, str]:
+    home = root / "h"
+    runtime = root / "r"
+    config = root / "c"
+    data = root / "d"
+    cache = root / "k"
+    for path in (home, runtime, config, data, cache):
+        path.mkdir(mode=0o700)
+        path.chmod(0o700)
+    return {
+        "PATH": "/usr/bin:/bin",
+        "HOME": str(home),
+        "XDG_RUNTIME_DIR": str(runtime),
+        "XDG_CONFIG_HOME": str(config),
+        "XDG_DATA_HOME": str(data),
+        "XDG_CACHE_HOME": str(cache),
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "DBUS_SESSION_BUS_ADDRESS": f"unix:path={runtime / 'absent-session-bus'}",
+        "DBUS_SYSTEM_BUS_ADDRESS": f"unix:path={runtime / 'absent-system-bus'}",
+        "LIBGL_ALWAYS_SOFTWARE": "1",
+        "NIRI_DISABLE_SYSTEM_MANAGER_NOTIFY": "1",
+    }
+
+
+def validate_bundle(desktop: Path) -> Path:
+    desktop = desktop.expanduser().resolve(strict=True)
+    for relative in ("bin/desktop-audio-menu", "bin/desktop-network-menu", "lib/niri_plus_controls/runtime.py"):
+        if not (desktop / relative).is_file():
+            raise RuntimeError(f"desktop bundle is missing {relative}")
+    return desktop
+
+
+def write_appearance(temp: Path) -> tuple[Path, Path]:
+    sys.path.insert(0, str(ROOT / "components/appearance"))
+    import importlib.util
+
+    source = ROOT / "components/appearance/render.py"
+    spec = importlib.util.spec_from_file_location("controls_native_appearance", source)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("could not load the appearance renderer")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    identity = json.loads((ROOT / "design/identity.json").read_text())
+    rendered = module.render(identity)
+    theme = temp / "niri-plus-controls.rasi"
+    appearance = temp / "controls-appearance.json"
+    theme.write_text(rendered["niri-plus-controls.rasi"])
+    appearance.write_text(rendered["controls-appearance.json"])
+    return theme, appearance
+
+
+def start_xvfb(env: dict[str, str], temp: Path) -> subprocess.Popen:
+    read_fd, write_fd = os.pipe()
+    log = (temp / "xvfb.log").open("wb")
+    proc = subprocess.Popen(
+        [need("Xvfb"), "-screen", "0", f"{SCREEN_WIDTH}x{SCREEN_HEIGHT}x24", "-nolisten", "tcp", "-ac", "-displayfd", str(write_fd)],
+        env=env,
+        pass_fds=(write_fd,),
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=log,
+        start_new_session=True,
+    )
+    log.close()
+    os.close(write_fd)
+    ready, _, _ = __import__("select").select([read_fd], [], [], 5)
+    if not ready:
+        os.close(read_fd)
+        stop_process(proc)
+        raise RuntimeError("private Xvfb did not allocate a display")
+    display_number = os.read(read_fd, 32).decode("ascii", errors="replace").strip()
+    os.close(read_fd)
+    if not display_number.isdigit():
+        stop_process(proc)
+        raise RuntimeError("private Xvfb returned an invalid display number")
+    env["DISPLAY"] = f":{display_number}"
+    return proc
+
+
+def stop_process(proc: subprocess.Popen | None) -> None:
+    if proc is None or proc.poll() is not None:
+        return
+    try:
+        os.killpg(proc.pid, signal.SIGTERM)
+        proc.wait(timeout=4)
+    except (ProcessLookupError, subprocess.TimeoutExpired):
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        try:
+            proc.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            raise RuntimeError(f"owned process group {proc.pid} did not stop")
+
+
+def niri_socket_from_log(log_path: Path, runtime: Path, label: str) -> Path | None:
+    if not log_path.exists():
+        return None
+    text = re.sub(r"\x1b\[[0-9;]*m", "", log_path.read_text(errors="replace"))
+    match = re.search(rf"{re.escape(label)}: ([^\r\n]+)", text)
+    if not match:
+        return None
+    candidate = Path(match.group(1).strip())
+    if not candidate.is_absolute():
+        candidate = runtime / candidate
+    candidate = candidate.resolve()
+    try:
+        candidate.relative_to(runtime.resolve())
+    except ValueError as error:
+        raise RuntimeError(f"nested Niri reported a socket outside its private runtime: {label}") from error
+    return candidate
+
+
+def wait_for(predicate, *, timeout: float, message: str, proc: subprocess.Popen | None = None):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        value = predicate()
+        if value:
+            return value
+        if proc is not None and proc.poll() is not None:
+            raise RuntimeError(f"{message}: owned process exited {proc.returncode}")
+        time.sleep(0.05)
+    raise RuntimeError(f"{message}: timed out")
+
+
+def start_niri(env: dict[str, str], temp: Path) -> tuple[subprocess.Popen, Path, Path, dict]:
+    runtime = Path(env["XDG_RUNTIME_DIR"])
+    config = temp / "niri-private.kdl"
+    config.write_text(
+        'hotkey-overlay {\n    skip-at-startup\n}\n'
+        'output "winit" {\n    scale 1.25\n}\n'
+    )
+    config.chmod(0o600)
+    validated = subprocess.run(
+        [str(NIRI), "validate", "--config", str(config)],
+        env=env,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    if validated.returncode != 0:
+        raise RuntimeError("minimal private Niri config did not validate")
+
+    # An empty PATH prevents Niri from discovering xwayland-satellite. Niri is
+    # invoked by absolute path, uses no startup commands, and runs without
+    # --session; DISPLAY is exactly the private Xvfb allocated above.
+    niri_path = temp / "niri-path"
+    niri_path.mkdir(mode=0o700)
+    niri_env = dict(env)
+    niri_env["PATH"] = str(niri_path)
+    log_path = temp / "niri.log"
+    log = log_path.open("wb")
+    proc = subprocess.Popen(
+        [str(NIRI), "--config", str(config)],
+        env=niri_env,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=log,
+        start_new_session=True,
+    )
+    log.close()
+    try:
+        return _wait_niri_sockets_and_query(proc, log_path, runtime, niri_env)
+    except Exception:
+        stop_process(proc)
+        raise
+
+
+def _wait_niri_sockets_and_query(proc: subprocess.Popen, log_path: Path, runtime: Path, niri_env: dict[str, str]):
+    wayland_socket = wait_for(
+        lambda: niri_socket_from_log(log_path, runtime, "listening on Wayland socket"),
+        timeout=20,
+        message="private nested Niri Wayland socket",
+        proc=proc,
+    )
+    ipc_socket = wait_for(
+        lambda: niri_socket_from_log(log_path, runtime, "IPC listening on"),
+        timeout=10,
+        message="private nested Niri IPC socket",
+        proc=proc,
+    )
+    for path in (wayland_socket, ipc_socket):
+        if not path.exists() or not stat_is_socket(path):
+            raise RuntimeError("nested Niri socket is missing or not a socket")
+
+    wayland_name = str(wayland_socket) if wayland_socket.parent != runtime else wayland_socket.name
+    niri_env["WAYLAND_DISPLAY"] = wayland_name
+    niri_env["NIRI_SOCKET"] = str(ipc_socket)
+    output = subprocess.run(
+        [str(NIRI), "msg", "--json", "outputs"],
+        env=niri_env,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        timeout=5,
+        check=True,
+    )
+    outputs = json.loads(output.stdout)
+    if not output_has_fractional_winit_scale(outputs):
+        raise RuntimeError(f"nested Niri output did not report winit scale 1.25; IPC payload={output.stdout[:2000]!r}")
+    children = descendants(proc.pid)
+    if children:
+        names = sorted({item[2] for item in children.values()})
+        raise RuntimeError(f"nested Niri unexpectedly spawned child processes: {names}")
+    return proc, wayland_socket, ipc_socket, outputs
+
+
+def stat_is_socket(path: Path) -> bool:
+    try:
+        return path.is_socket()
+    except OSError:
+        return False
+
+
+def output_has_fractional_winit_scale(value: object) -> bool:
+    if isinstance(value, dict):
+        logical = value.get("logical")
+        scale = value.get("scale")
+        if isinstance(logical, dict) and scale is None:
+            scale = logical.get("scale")
+        if (value.get("name") == "winit" or "winit" in value) and scale == 1.25:
+            return True
+        return any(output_has_fractional_winit_scale(item) for item in value.values())
+    if isinstance(value, list):
+        return any(output_has_fractional_winit_scale(item) for item in value)
+    return False
+
+
+def read_trace(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    records = []
+    for line in path.read_text(errors="replace").splitlines():
+        try:
+            item = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(item, dict):
+            records.append(item)
+    return records
+
+
+def callback_count(trace: Path) -> int:
+    return sum(item.get("event") == "callback" for item in read_trace(trace))
+
+
+def latest_callback(trace: Path, after: int = 0, predicate=lambda _item: True):
+    items = [item for item in read_trace(trace) if item.get("event") == "callback"]
+    matches = [item for item in items[after:] if predicate(item)]
+    return matches[-1] if matches else None
+
+
+def wait_callback(trace: Path, *, after: int = 0, predicate=lambda _item: True, proc=None, timeout=8):
+    return wait_for(
+        lambda: latest_callback(trace, after, predicate),
+        timeout=timeout,
+        message="controls Rofi callback",
+        proc=proc,
+    )
+
+
+def rofi_processes(root_pid: int) -> dict[int, tuple[bytes, bytes]]:
+    binary = ROFI.resolve()
+    result = {}
+    for pid, (cmdline, environ, _comm) in descendants(root_pid).items():
+        first = cmdline.split(b"\0", 1)[0]
+        if first:
+            try:
+                executable = Path(os.fsdecode(first)).resolve()
+            except OSError:
+                continue
+            if executable == binary:
+                result[pid] = (cmdline, environ)
+    return result
+
+
+def verify_wayland_rofi(menu_proc: subprocess.Popen, wayland_name: str, *, password=False) -> dict[int, tuple[bytes, bytes]]:
+    items = rofi_processes(menu_proc.pid)
+    matches = [
+        (pid, cmd, raw_env)
+        for pid, (cmd, raw_env) in items.items()
+        if (b"-password" in cmd) is password
+    ]
+    if len(matches) != 1:
+        raise RuntimeError(f"expected exactly one owned {'password ' if password else ''}Rofi process, found {len(matches)}")
+    pid, cmd, raw_env = matches[0]
+    environ = set(raw_env.split(b"\0"))
+    if b"DISPLAY" in {item.partition(b"=")[0] for item in environ}:
+        raise RuntimeError("Rofi inherited DISPLAY, so native Wayland backing is not proven")
+    if f"WAYLAND_DISPLAY={wayland_name}".encode() not in environ:
+        raise RuntimeError("Rofi did not inherit the owned nested Wayland socket")
+    if b"GDK_BACKEND=wayland" not in environ:
+        raise RuntimeError("Rofi was not forced to its Wayland backend")
+    if password and (b"-dmenu" not in cmd or b"-disable-history" not in cmd):
+        raise RuntimeError("password Rofi child lacks dmenu or history-disable flags")
+    return items
+
+
+def start_menu(desktop: Path, utility: str, temp: Path, base_env: dict[str, str], theme: Path, appearance: Path, wayland_name: str,
+               owned: list[subprocess.Popen], owned_records: list[dict], owned_roles: dict[int, str]):
+    trace = temp / f"{utility}-{time.monotonic_ns()}.trace"
+    stderr_path = temp / f"{utility}-{time.monotonic_ns()}.stderr"
+    stderr = stderr_path.open("wb")
+    env = dict(base_env)
+    env["WAYLAND_DISPLAY"] = wayland_name
+    env["GDK_BACKEND"] = "wayland"
+    wrapper = desktop / "bin" / f"desktop-{utility}-menu"
+    proc = subprocess.Popen(
+        [
+            str(wrapper), "--fixture", "--no-config", "--appearance", str(appearance),
+            "--theme", str(theme), "--proof-trace", str(trace), "--rofi", str(ROFI),
+        ],
+        env=env,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=stderr,
+        start_new_session=True,
+    )
+    owned.append(proc)
+    owned_records.append({"role": f"{utility}-controller", "pid": proc.pid})
+    owned_roles[proc.pid] = f"{utility}-controller"
+    try:
+        wait_callback(trace, proc=proc, timeout=12)
+        wait_for(lambda: rofi_processes(proc.pid), timeout=10, message="Wayland-backed Rofi startup", proc=proc)
+        rofi_items = verify_wayland_rofi(proc, wayland_name)
+        for pid in rofi_items:
+            owned_records.append({"role": f"{utility}-rofi", "pid": pid})
+    except Exception:
+        stop_menu_tree(proc)
+        stderr.close()
+        raise
+    return proc, trace, stderr, stderr_path, env
+
+
+def wtype(env: dict[str, str], *args: str) -> None:
+    subprocess.run([need("wtype"), *args], env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5, check=True)
+
+
+def capture(env: dict[str, str], output_dir: Path, name: str) -> Path:
+    path = output_dir / f"{name}.png"
+    subprocess.run([need("grim"), "-t", "png", str(path)], env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=10, check=True)
+    if not path.is_file() or path.stat().st_size < 1000:
+        raise RuntimeError(f"native Wayland capture is empty: {name}")
+    return path
+
+
+def screenshot_dimensions(path: Path) -> tuple[int, int]:
+    result = subprocess.run([need("magick"), "identify", "-format", "%w %h", str(path)], capture_output=True, text=True, timeout=5, check=True)
+    try:
+        width, height = map(int, result.stdout.split())
+    except (ValueError, TypeError) as error:
+        raise RuntimeError("could not read native screenshot dimensions") from error
+    return width, height
+
+
+def screenshot_ocr(path: Path) -> str:
+    result = subprocess.run(
+        [need("tesseract"), str(path), "stdout", "--psm", "6", "-l", "afr"],
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=True,
+    )
+    return " ".join(result.stdout.casefold().split())
+
+
+def finish_menu(proc: subprocess.Popen, trace: Path, stderr, env: dict[str, str], *, escaped=True) -> None:
+    try:
+        if proc.poll() is None and escaped:
+            wtype(env, "-k", "Escape")
+        try:
+            proc.wait(timeout=8)
+        except subprocess.TimeoutExpired as error:
+            raise RuntimeError("owned controls launcher did not exit after Escape") from error
+        if proc.returncode != 0:
+            raise RuntimeError(f"owned controls launcher exited {proc.returncode}")
+        time.sleep(0.2)
+        if rofi_processes(proc.pid):
+            raise RuntimeError("Rofi remained alive after the native controls launcher exited")
+        runtime_root = Path(env["XDG_RUNTIME_DIR"]) / "niri-plus-controls"
+        if runtime_root.exists() and any(item.name.startswith("invocation-") for item in runtime_root.iterdir()):
+            raise RuntimeError("private controls invocation directory was not cleaned")
+    finally:
+        stop_menu_tree(proc)
+        stderr.close()
+
+
+def stop_menu_tree(proc: subprocess.Popen) -> None:
+    # Runtime Rofi children are placed in their own sessions. On failure,
+    # signal only descendants of this exact launcher before stopping it.
+    children = descendants(proc.pid)
+    for pid in reversed(list(children)):
+        info = process_info(pid)
+        if info is None:
+            continue
+        _parent, cmdline, _environ, _comm = info
+        if cmdline == children[pid][0]:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+    stop_process(proc)
+
+
+def audio_flow(desktop: Path, temp: Path, output_dir: Path, base_env: dict[str, str], theme: Path, appearance: Path, wayland_name: str,
+               owned: list[subprocess.Popen], owned_records: list[dict], owned_roles: dict[int, str]) -> dict:
+    proc, trace, stderr, _stderr_path, env = start_menu(desktop, "audio", temp, base_env, theme, appearance, wayland_name, owned, owned_records, owned_roles)
+    try:
+        initial = latest_callback(trace, predicate=lambda item: item.get("state", {}).get("page") == "list")
+        if initial is None or "45%" not in initial.get("frame", "") or "Unmuted" not in initial.get("frame", ""):
+            raise RuntimeError("Audio fixture initial frame omitted its current 45%/unmuted state")
+        capture(env, output_dir, "audio-inventory")
+        wtype(env, "-k", "Return")
+        wait_callback(trace, predicate=lambda item: item.get("state", {}).get("page") == "target", proc=proc)
+        wtype(env, "-k", "Tab")
+        wtype(env, "-k", "Tab")
+        wtype(env, "-k", "Return")
+        adjust = wait_callback(trace, predicate=lambda item: item.get("state", {}).get("page") == "adjust", proc=proc)
+        if "45%" not in adjust.get("frame", ""):
+            raise RuntimeError("Audio Adjust page did not preserve inline volume")
+        capture(env, output_dir, "audio-adjust-45")
+        observed = []
+        for expected in (50, 55, 60):
+            before = callback_count(trace)
+            wtype(env, "-k", "Return")
+            frame = wait_callback(
+                trace,
+                after=before,
+                predicate=lambda item: item.get("state", {}).get("action_id") == "volume-up",
+                proc=proc,
+            )
+            if f"{expected}%" not in frame.get("frame", ""):
+                raise RuntimeError(f"Audio inline volume did not update to {expected}%")
+            observed.append(expected)
+        capture(env, output_dir, "audio-adjust-60")
+        wtype(env, "-k", "Tab")
+        wtype(env, "-k", "Tab")
+        mute = wait_callback(trace, predicate=lambda item: item.get("state", {}).get("action_id") == "mute", proc=proc)
+        if mute.get("state", {}).get("page") != "adjust":
+            raise RuntimeError("Audio action cycling left its pinned Adjust page")
+        capture(env, output_dir, "audio-mute-selected")
+        before = callback_count(trace)
+        wtype(env, "-k", "Return")
+        muted = wait_callback(
+            trace,
+            after=before,
+            predicate=lambda item: item.get("state", {}).get("action_id") == "mute" and "Unmute" in item.get("frame", ""),
+            proc=proc,
+        )
+        operations = [event for event in muted.get("backend_events", []) if event.get("event") == "execute" and event.get("action") == "mute"]
+        if not operations or operations[-1].get("parameters", {}).get("desired_muted") is not True:
+            raise RuntimeError("Mute did not send the explicit desired_muted=true intent")
+        if "60%" not in muted.get("frame", ""):
+            raise RuntimeError("Audio mute update discarded the observed inline volume")
+        capture(env, output_dir, "audio-muted-60")
+    finally:
+        finish_menu(proc, trace, stderr, env)
+    return {"inline_volume_updates": observed, "mute_intent": "desired_muted=true", "page_after_mute": "adjust"}
+
+
+def filter_and_long_label_flow(desktop: Path, temp: Path, output_dir: Path, base_env: dict[str, str], theme: Path, appearance: Path, wayland_name: str,
+                               owned: list[subprocess.Popen], owned_records: list[dict], owned_roles: dict[int, str]) -> dict:
+    proc, trace, stderr, _stderr_path, env = start_menu(desktop, "network", temp, base_env, theme, appearance, wayland_name, owned, owned_records, owned_roles)
+    try:
+        initial = latest_callback(trace, predicate=lambda item: item.get("state", {}).get("page") == "list")
+        if initial is None or "路由器" not in initial.get("frame", "") or "Example Long Adapter Label" not in initial.get("frame", ""):
+            raise RuntimeError("Network fixture does not include the CJK/long-label candidate row")
+        wtype(env, "studio")
+        wtype(env, "-k", "Down")
+        wtype(env, "-k", "Tab")
+        after_tab = wait_callback(trace, predicate=lambda item: item.get("state", {}).get("action_id") == "details", proc=proc)
+        if after_tab.get("state", {}).get("page") != "list" or after_tab.get("selected", {}).get("ref", {}).get("stable_id") != "nm:ap:studio:wlan1:02":
+            raise RuntimeError("Tab did not retain the filtered second duplicate target")
+        filtered_png = capture(env, output_dir, "network-filtered-cursor-action")
+        before = callback_count(trace)
+        wtype(env, "-k", "ISO_Left_Tab")
+        previous = wait_callback(trace, after=before, predicate=lambda item: item.get("state", {}).get("action_id") == "open", proc=proc)
+        if previous.get("state", {}).get("page") != "list" or previous.get("selected", {}).get("ref", {}).get("stable_id") != "nm:ap:studio:wlan1:02":
+            raise RuntimeError("Shift+Tab changed the filtered target selection")
+    finally:
+        finish_menu(proc, trace, stderr, env)
+
+    proc, trace, stderr, _stderr_path, env = start_menu(desktop, "network", temp, base_env, theme, appearance, wayland_name, owned, owned_records, owned_roles)
+    try:
+        initial = latest_callback(trace, predicate=lambda item: item.get("state", {}).get("page") == "list")
+        if initial is None or "路由器" not in initial.get("frame", "") or "Example Long Adapter Label" not in initial.get("frame", ""):
+            raise RuntimeError("native CJK/long-label row disappeared from the consumer frame")
+        screenshot = capture(env, output_dir, "network-cjk-long-label")
+        recognized = screenshot_ocr(screenshot)
+        if not all(token in recognized for token in ("example", "long adapter label", "available", "additional state details")):
+            raise RuntimeError("native CJK/long-label screenshot clipped its title or second line")
+    finally:
+        finish_menu(proc, trace, stderr, env)
+    return {"filter_text": "studio", "cursor_selected_second_duplicate": True, "cjk_and_long_title_in_frame": True, "screenshot_ocr_contains": ["Example", "Long Adapter Label", "Available", "additional state details"], "screenshots": [filtered_png.name, screenshot.name]}
+
+
+def password_escape_flow(desktop: Path, temp: Path, output_dir: Path, base_env: dict[str, str], theme: Path, appearance: Path, wayland_name: str,
+                         owned: list[subprocess.Popen], owned_records: list[dict], owned_roles: dict[int, str]) -> dict:
+    proc, trace, stderr, _stderr_path, env = start_menu(desktop, "network", temp, base_env, theme, appearance, wayland_name, owned, owned_records, owned_roles)
+    try:
+        wtype(env, "studio")
+        wtype(env, "-k", "Down")
+        wtype(env, "-k", "Return")
+        target = wait_callback(trace, predicate=lambda item: item.get("state", {}).get("page") == "target", proc=proc)
+        if target.get("state", {}).get("target", {}).get("stable_id") != "nm:ap:studio:wlan1:02":
+            raise RuntimeError("password prompt flow did not pin the unsaved Studio access point")
+        wtype(env, "-k", "Tab")
+        wtype(env, "-k", "Tab")
+        wtype(env, "-k", "Return")
+        wait_callback(trace, predicate=lambda item: item.get("state", {}).get("page") == "connect-choice", proc=proc)
+        wtype(env, "-k", "Down")
+        wtype(env, "-k", "Return")
+        wait_for(
+            lambda: [item for item in rofi_processes(proc.pid).values() if b"-password" in item[0]],
+            timeout=10,
+            message="owned masked password Rofi child",
+            proc=proc,
+        )
+        password_children = verify_wayland_rofi(proc, wayland_name, password=True)
+        for pid in password_children:
+            owned_records.append({"role": "network-password-rofi", "pid": pid})
+        prompt_png = capture(env, output_dir, "network-masked-prompt-empty")
+        if not prompt_png.is_file():
+            raise RuntimeError("masked password prompt screenshot was not captured")
+        wtype(env, "-k", "Escape")
+        proc.wait(timeout=8)
+        stderr.close()
+        if proc.returncode != 0 or rofi_processes(proc.pid):
+            raise RuntimeError("Escape in the masked prompt did not close its owned UI process tree")
+        time.sleep(0.3)
+        if rofi_processes(proc.pid):
+            raise RuntimeError("controls Rofi reopened after masked-prompt Escape")
+        events = [event for row in read_trace(trace) for event in row.get("backend_events", [])]
+        if any(event.get("event") == "secret-received" for event in events):
+            raise RuntimeError("empty masked-prompt Escape delivered a secret to the fixture")
+    except Exception:
+        if proc.poll() is None:
+            try:
+                wtype(env, "-k", "Escape")
+            except Exception:
+                pass
+        try:
+            proc.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            stop_menu_tree(proc)
+        stderr.close()
+        raise
+    runtime_root = Path(env["XDG_RUNTIME_DIR"]) / "niri-plus-controls"
+    if runtime_root.exists() and any(item.name.startswith("invocation-") for item in runtime_root.iterdir()):
+        raise RuntimeError("password Escape left a private invocation directory")
+    return {"prompt_screenshot": prompt_png.name, "escape_closed_tree": True, "reopened_after_escape": False, "secret_submitted": False}
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--desktop-dir", type=Path, default=DEFAULT_DESKTOP, help="source or extracted desktop bundle containing bin/ and lib/")
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="new/empty private screenshot and receipt directory")
+    args = parser.parse_args()
+
+    desktop = validate_bundle(args.desktop_dir)
+    output_dir = safe_output_dir(args.output)
+    for command in ("Xvfb", "wtype", "grim", "magick", "tesseract"):
+        need(command)
+    if not NIRI.is_file() or not ROFI.is_file():
+        raise RuntimeError("installed Niri and Rofi binaries are required")
+
+    niri_version = subprocess.run([str(NIRI), "--version"], capture_output=True, text=True, timeout=5, check=True).stdout.strip()
+    rofi_version = subprocess.run([str(ROFI), "-version"], capture_output=True, text=True, timeout=5, check=True).stdout.strip()
+    proof_baseline = protected_host_pids()
+    owned: list[subprocess.Popen] = []
+    owned_records: list[dict] = []
+    owned_roles: dict[int, str] = {}
+    temp_path = Path(tempfile.mkdtemp(prefix="npw-", dir="/tmp"))
+    temp_path.chmod(0o700)
+    summary = None
+    failure = None
+    base_env = None
+    try:
+        base_env = private_env(temp_path)
+        theme, appearance = write_appearance(temp_path)
+        xvfb = start_xvfb(base_env, temp_path)
+        owned.append(xvfb)
+        owned_records.append({"role": "xvfb", "pid": xvfb.pid})
+        owned_roles[xvfb.pid] = "xvfb"
+        niri, wayland_socket, ipc_socket, outputs = start_niri(base_env, temp_path)
+        owned.append(niri)
+        owned_records.append({"role": "nested-niri", "pid": niri.pid})
+        owned_roles[niri.pid] = "nested-niri"
+        wayland_name = wayland_socket.name if wayland_socket.parent == Path(base_env["XDG_RUNTIME_DIR"]) else str(wayland_socket)
+        client_env = dict(base_env)
+        client_env["WAYLAND_DISPLAY"] = wayland_name
+        client_env["GDK_BACKEND"] = "wayland"
+        client_env.pop("DISPLAY", None)
+        client_env.pop("NIRI_SOCKET", None)
+        if "DBUS_SESSION_BUS_ADDRESS" not in client_env or "DBUS_SYSTEM_BUS_ADDRESS" not in client_env:
+            raise RuntimeError("private D-Bus isolation addresses were not configured")
+        if "NOTIFY_SOCKET" in client_env or "NIRI_SOCKET" in client_env or "WAYLAND_SOCKET" in client_env:
+            raise RuntimeError("private client environment retained an inherited host socket variable")
+        capture(client_env, output_dir, "nested-niri-empty")
+        dimensions = screenshot_dimensions(output_dir / "nested-niri-empty.png")
+        audio = audio_flow(desktop, temp_path, output_dir, client_env, theme, appearance, wayland_name, owned, owned_records, owned_roles)
+        long_label = filter_and_long_label_flow(desktop, temp_path, output_dir, client_env, theme, appearance, wayland_name, owned, owned_records, owned_roles)
+        password = password_escape_flow(desktop, temp_path, output_dir, client_env, theme, appearance, wayland_name, owned, owned_records, owned_roles)
+        summary = {
+            "status": "passed",
+            "scope": "private Xvfb with nested Niri winit compositor; no native session, host Wayland, or reachable D-Bus",
+            "physical_acceptance": "deferred",
+            "niri": {"version": niri_version, "binary": str(NIRI), "sha256": sha256(NIRI), "config": "private minimal config; no --session; no startup commands"},
+            "rofi": {"version": rofi_version, "binary": str(ROFI), "sha256": sha256(ROFI), "backend": "GDK_BACKEND=wayland; no DISPLAY in Rofi process environment"},
+            "output": {"name": "winit", "scale": 1.25, "ipc": outputs, "capture_px": list(dimensions)},
+            "isolation": {"xvfb_display": base_env["DISPLAY"], "wayland_socket": str(wayland_socket), "ipc_socket": str(ipc_socket), "private_xdg_runtime": base_env["XDG_RUNTIME_DIR"], "private_unreachable_dbus": True, "software_gl": True, "host_native_pids_unchanged": True, "host_native_pids": proof_baseline},
+            "checks": {"audio": audio, "filter_cursor_action_cycle_and_long_label": long_label, "masked_prompt_escape": password, "rofi_children_cleaned": True},
+            "owned_processes": owned_records,
+            "screenshots": sorted(path.name for path in output_dir.glob("*.png")),
+            "cleanup": "only exact owned Popen process groups were stopped; temporary HOME/XDG tree removed",
+        }
+    except Exception as error:
+        failure = f"{type(error).__name__}: {error}"
+        raise
+    finally:
+        cleanup_error = None
+        for proc in reversed(owned):
+            try:
+                if owned_roles.get(proc.pid, "").endswith("-controller"):
+                    stop_menu_tree(proc)
+                else:
+                    stop_process(proc)
+            except Exception as error:
+                cleanup_error = f"{type(error).__name__}: {error}"
+        try:
+            verify_host_pids(proof_baseline)
+        except Exception as error:
+            cleanup_error = cleanup_error or f"{type(error).__name__}: {error}"
+        if cleanup_error:
+            failure = f"{failure or 'proof complete'}; cleanup check failed: {cleanup_error}"
+            summary = None
+        for record in owned_records:
+            record["stopped"] = not Path(f"/proc/{record['pid']}").exists()
+        if any(not record["stopped"] for record in owned_records):
+            failure = f"{failure or 'proof complete'}; at least one owned process remained after cleanup"
+            summary = None
+        if base_env:
+            runtime_root = Path(base_env["XDG_RUNTIME_DIR"]) / "niri-plus-controls"
+            if runtime_root.exists() and not any(runtime_root.iterdir()):
+                runtime_root.rmdir()
+        shutil.rmtree(temp_path, ignore_errors=True)
+        if summary is not None:
+            (output_dir / "receipt.json").write_text(json.dumps(summary, indent=2) + "\n")
+            (output_dir / "receipt.json").chmod(0o600)
+        elif failure:
+            current_pids = protected_host_pids()
+            record = {"status": "failed", "scope": "owned nested compositor proof", "failure": failure, "niri_version": niri_version, "rofi_version": rofi_version, "host_native_pids_unchanged": all(current_pids.get(pid) == name for pid, name in proof_baseline.items())}
+            (output_dir / "failure.json").write_text(json.dumps(record, indent=2) + "\n")
+            (output_dir / "failure.json").chmod(0o600)
+
+    if failure:
+        raise RuntimeError(failure)
+
+    print(f"Niri: {niri_version} ({sha256(NIRI)})")
+    print(f"Rofi: {rofi_version} ({sha256(ROFI)})")
+    print(f"Artifacts: {output_dir}")
+    print("PASS: private nested Wayland consumer, scale 1.25, stateful Audio, filtering/action keys, CJK long label, prompt Escape and cleanup")
+    print("Physical desktop acceptance remains deferred.")
+    return 0
+
+
+if __name__ == "__main__":
+    import sys
+
+    raise SystemExit(main())

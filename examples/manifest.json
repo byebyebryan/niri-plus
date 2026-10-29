@@ -157,7 +157,7 @@
     },
     {
       "path": "examples/desktop/lib/niri_plus_controls/app.py",
-      "sha256": "5613161cbc89480e423a4b6a7c1e243e5f8a72ed4b1cb0da67784af4d5893059",
+      "sha256": "e45ab78a467150ec9e944fa4dc16e0cda96a3063fc9d8654c542b4b627662b03",
       "kind": "generated first-party component export",
       "module": "desktop",
       "generated": true,
@@ -267,7 +267,7 @@
     },
     {
       "path": "examples/desktop/lib/niri_plus_controls/rofi.py",
-      "sha256": "d10b22966b62fbd39110cf3de2e4280b074f4c3198acab929d3e681ee25c9566",
+      "sha256": "0fd10896fc0569b832557f54fa0f05b581ed54e7776968a090c67926077fe383",
       "kind": "generated first-party component export",
       "module": "desktop",
       "generated": true,
@@ -693,7 +693,7 @@
     },
     {
       "path": "examples/theme/niri-plus-controls.rasi",
-      "sha256": "751d93d7247db77ea7d2cb0139e5efcbe8706ea4509b35d85a334e336ae590b5",
+      "sha256": "127cb645334d29463f1a98e8b2a1611b2f20902cd561952bc0cba922519e5661",
       "kind": "generated first-party component export",
       "module": "appearance",
       "generated": true,

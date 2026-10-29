@@ -836,15 +836,43 @@ class ControlsApp:
             return self._poll_pending(state)
         if state.page == Page.LIST:
             self._refresh_inventory()
-            return self._render(replace(state, notice="Inventory refreshed."), selected=selected).render()
+            notice = self._scan_selected_adapter(self._selected_target(selected)) or "Inventory refreshed."
+            self._refresh_inventory()
+            return self._render(replace(state, notice=notice), selected=selected).render()
         if state.target is not None:
             target = self._target(state.target, fresh=True)
             if target is not None:
                 self._target_actions(target.ref, fresh=True)
-                state = replace(state, notice="Target state refreshed.")
+                notice = self._scan_selected_adapter(target.ref) if state.page == Page.TARGET else ""
+                state = replace(state, notice=notice or "Target state refreshed.")
             else:
                 state = replace(state, notice="Pinned target is unavailable; return to the list to choose another.")
         return self._render(state, selected=selected).render()
+
+    def _scan_selected_adapter(self, selected: TargetRef | None) -> str:
+        """Alt+R requests one bounded scan for the selected Wi-Fi interface.
+
+        Keep the editable frame usable; no polling timer is admitted here.
+        NetworkManager's backend coalesces/throttles repeated scan requests.
+        """
+        if self.utility != Utility.NETWORK or selected is None:
+            return ""
+        target = self._target(selected)
+        device_path = target.state.get("device_path") if target else None
+        if not device_path:
+            return ""
+        inventory = self._inventory or self._refresh_inventory()
+        device = next((item for item in inventory.targets if item.ref.kind == "wifi-device"
+                       and item.state.get("device_path") == device_path), None)
+        if device is None:
+            return ""
+        action = next((item for item in self.backend.actions(device.ref)
+                       if item.action_id == "rescan" and item.enabled), None)
+        if action is None:
+            return ""
+        result = self.backend.execute(OperationRequest(self.invocation_id, str(uuid.uuid4()), device.ref,
+                                                       action.action_id, device.revision, action.parameters))
+        return result.message or "Scan requested for the selected Wi-Fi adapter; refresh to read results."
 
     def _cycle(
         self,
@@ -1011,7 +1039,7 @@ class ControlsApp:
             return state.notice or "Request submitted; status is still pending."
         if target is None:
             return "Target state is unavailable"
-        return f"{target.status} · {target.summary}"
+        return " · ".join(dict.fromkeys(term for term in (*target.status.split(" · "), *target.summary.split(" · ")) if term))
 
     def _prompt(self, state: UIState, target: TargetSnapshot | None = None, suffix: str = "") -> str:
         title = {
@@ -1032,8 +1060,12 @@ class ControlsApp:
     def _confirmation_label(self, state: UIState, target: TargetSnapshot | None) -> str:
         action = state.pending_action
         if action == "disconnect" and target:
-            adapter = target.state.get("adapter", "adapter unknown")
+            adapter = target.state.get("adapter", target.state.get("interface", "adapter unknown"))
             return f"Disconnect {target.title} on {adapter}"
+        if action == "pair-device" and target:
+            return f"Pair {target.title} on {target.state.get('adapter', 'the selected adapter')}"
+        if action == "set-device-trust" and target:
+            return f"{'Trust' if dict(state.pending_parameters).get('desired_trusted') else 'Stop trusting'} {target.title}"
         if action == "set-wifi-radio":
             return "Turn off global Wi-Fi radio" if dict(state.pending_parameters).get("desired_on") is False else "Turn on global Wi-Fi radio"
         if action == "set-adapter-power":

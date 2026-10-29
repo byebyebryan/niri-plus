@@ -79,6 +79,7 @@ def _controls_rofi(profile, colors, shared):
         "/* Controls only: independent current/default and keyboard-selection states. */",
         "element { border: 1px; border-color: transparent; padding: 9px 8px; }",
         'entry { placeholder: "Search devices"; }',
+        "window { width: calc(52em min 96%); }",
         "element-text { border: 0px 0px 0px 3px; border-color: transparent; padding: 0px 0px 0px 8px; }",
         "element normal.normal { border-color: transparent; }",
         f"element normal.active {{ background-color: {derived['current_background']}; border-color: {derived['current_outline']}; }}",

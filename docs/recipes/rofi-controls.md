@@ -21,8 +21,10 @@ through devices. The landing list has fixed **Open / Details** actions; Tab
 and Shift+Tab cycle them. Open pins the chosen device into a focused page,
 where the strip presents that device's operations. Enter runs the visible
 action. Left/Right and Ctrl+B/Ctrl+F edit search; Escape/Ctrl+G closes the menu.
-Back restores the list's filter and selection. Alt+R refreshes native facts;
-Wi-Fi rescanning is an explicit adapter action.
+Back restores the list's filter and selection. Alt+R refreshes native facts
+and requests a bounded scan for the selected Wi-Fi adapter when available.
+The focused adapter also exposes an explicit Rescan action. Editable lists
+never receive a periodic refresh timer.
 
 | Utility | Routine actions | Native tools retained |
 | --- | --- | --- |
@@ -161,7 +163,7 @@ merely finding the launcher entry does not qualify the backend.
 ## Verification and recovery
 
 Use the owned checks in the reviewed checkout before selecting a personal host:
-`scripts/check-rofi-controls-native`, `scripts/check-controls-network-native`,
+`scripts/check-rofi-controls-native`, `scripts/check-controls-wayland-native`, `scripts/check-controls-network-native`,
 `scripts/check-controls-nm-agent-native`, `scripts/check-controls-audio-native`
 and `scripts/check-controls-bluetooth-native`. Installed-bundle checks accept
 their documented prefix/library overrides. The network service proof uses

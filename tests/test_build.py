@@ -2,9 +2,11 @@ import importlib.util
 import hashlib
 import json
 from pathlib import Path
+import re
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.parse import unquote, urljoin, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("niri_plus_build", ROOT / "scripts/build.py")
@@ -75,7 +77,7 @@ class BuildContracts(unittest.TestCase):
 
     def test_complete_site_has_checked_links_and_only_allowlisted_planning_docs(self):
         result = builder.build(self.output)
-        self.assertEqual(result["pages"], 20)
+        self.assertEqual(result["pages"], 21)
         self.assertGreater(result["local_links"], 200)
         self.assertEqual(
             {path.relative_to(self.output).as_posix() for path in (self.output / "docs").rglob("*") if path.is_file()},
@@ -91,6 +93,40 @@ class BuildContracts(unittest.TestCase):
         self.assertIn('href="/niri-plus/tour/#native-reference-demo"', (self.output / "index.html").read_text())
         for page in self.output.rglob("*.html"):
             self.assertNotIn("https://github.com/byebyebryan/dotfiles", page.read_text())
+
+    def test_setup_audiences_share_one_detailed_guide_with_usable_text_links(self):
+        builder.build(self.output, portable=True)
+        overview = (self.output / "setup/index.html").read_text()
+        agent = (self.output / "setup/agent/index.html").read_text()
+        plain = (self.output / "setup/agent.md").read_text()
+        source = (ROOT / "docs/setup-agent.md").read_text()
+        self.assertIn('href="agent/"', overview)
+        self.assertIn('href="agent.md"', overview)
+        self.assertNotIn("sudo pacman", overview)
+        self.assertIn("Execution contract", agent)
+        self.assertIn("Completion report", agent)
+        self.assertIn("Stage 8 gate", agent)
+        self.assertIn('rel="alternate" type="text/markdown" href="../agent.md"', agent)
+        # The text export preserves commands while following the generated site's routes.
+        fences = r"^```[^\n]*\n(.*?)^```\s*$"
+        self.assertEqual(re.findall(fences, plain, re.M | re.S), re.findall(fences, source, re.M | re.S))
+        parser = builder.MarkdownIt("commonmark").enable("table")
+        checked = 0
+        for token in parser.parse(plain):
+            for child in token.children or []:
+                if child.type != "link_open":
+                    continue
+                url = urlsplit(urljoin(builder.SITE + "setup/agent.md", child.attrGet("href")))
+                if url.netloc != urlsplit(builder.SITE).netloc or not url.path.startswith(builder.BASE):
+                    continue
+                dest = unquote(url.path[len(builder.BASE):])
+                dest += "index.html" if dest.endswith("/") else ""
+                target = self.output / dest
+                self.assertTrue(target.is_file(), f"unusable agent text link: {url.geturl()}")
+                if url.fragment and dest.endswith(".html"):
+                    self.assertIn(unquote(url.fragment), builder.Page(target.read_text()).ids)
+                checked += 1
+        self.assertGreater(checked, 20)
 
     def test_fresh_replay_evidence_stills_are_public_and_hashed(self):
         builder.build(self.output)

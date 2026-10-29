@@ -48,7 +48,7 @@ Mocha Blue. Niri Plus derives neutral colors from this separate archive. Its
 SHA-256 is
 `a68fbed896d3066aec1fdaded561e8d20c855f0de4e193bdca4bc0d59ac1e333`. Use the
 verified helper output at `$STAGE` from the
-[Arch walkthrough](../setup.md#2-stage-the-reviewed-inputs):
+[Arch walkthrough](../setup-agent.md#2-stage-the-reviewed-inputs):
 
 ```sh
 set -eu

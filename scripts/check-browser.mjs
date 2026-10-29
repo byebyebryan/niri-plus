@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 
 const output = path.resolve(process.argv[2] || "dist");
 const prefix = "/niri-plus/";
-const routes = ["", "story/", "tour/", "design/", "design/contrast/", "architecture/", "components/", "setup/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
+const routes = ["", "story/", "tour/", "design/", "design/contrast/", "architecture/", "components/", "setup/", "setup/agent/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
 const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".mp4": "video/mp4", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
 
 function parseByteRange(header, size) {
@@ -84,13 +84,24 @@ try {
       const brokenImages = await page.locator("img").evaluateAll((images) => images.filter((image) => !image.closest("video") && (!image.complete || image.naturalWidth === 0)).map((image) => ({src: image.getAttribute("src"), complete: image.complete, width: image.naturalWidth})));
       assert.deepEqual(brokenImages, [], `broken image: ${route}`);
       checks += 6;
-      if (process.env.NIRI_SCREENSHOTS && ["", "tour/", "design/", "design/contrast/", "recipes/terminal/", "setup/", "recipes/login/", "recipes/session/", "recipes/input/", "recipes/desktop-utilities/"].includes(route) && [375, 1280].includes(width)) {
+      if (process.env.NIRI_SCREENSHOTS && ["", "tour/", "design/", "design/contrast/", "recipes/terminal/", "setup/", "setup/agent/", "recipes/login/", "recipes/session/", "recipes/input/", "recipes/desktop-utilities/"].includes(route) && [375, 1280].includes(width)) {
         await page.evaluate(() => document.fonts.ready);
         await fs.mkdir(process.env.NIRI_SCREENSHOTS, { recursive: true });
         await page.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `${route.replaceAll("/", "-") || "home"}-${width}.png`), fullPage: true });
       }
     }
   }
+  await page.goto(origin + "setup/");
+  assert.equal(await page.locator("main pre").count(), 0);
+  await page.locator('main a[href$="setup/agent/"], main a[href="agent/"]').first().click();
+  assert.match(page.url(), /setup\/agent\/$/);
+  assert.equal(new URL(await page.locator('nav a[aria-current="page"]').getAttribute("href"), page.url()).pathname, prefix + "setup/");
+  const textLink = page.locator('main a[href$="agent.md"]').first();
+  const textResponse = await page.request.get(new URL(await textLink.getAttribute("href"), page.url()).href);
+  assert.equal(textResponse.status(), 200);
+  assert.ok((await textResponse.text()).startsWith("# Agent setup guide"));
+  assert.ok((await textResponse.text()).includes("## Completion report"));
+  checks += 6;
   await page.goto(origin);
   const nativeDemoLink = page.locator('a[href$="tour/#native-reference-demo"]');
   assert.equal(await nativeDemoLink.count(), 1);
@@ -315,7 +326,7 @@ try {
   checks += 2;
   const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 900 } });
   const staticPage = await noScript.newPage();
-  for (const route of ["", "story/", "tour/", "design/", "design/contrast/", "components/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "reference/"]) {
+  for (const route of ["", "story/", "tour/", "design/", "design/contrast/", "components/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "setup/agent/", "reference/"]) {
     await staticPage.goto(origin + route);
     assert.ok((await staticPage.locator("main").innerText()).length > 400);
     assert.equal(await staticPage.locator("[data-scene-controls]:visible").count(), 0);

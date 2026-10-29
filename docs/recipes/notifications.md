@@ -65,7 +65,7 @@ building. The config selects the dashboard and the same 1/2/5-second widget
 refresh intervals as the existing panel design.
 
 With the verified stager output from the
-[Arch walkthrough](../setup.md#2-stage-the-reviewed-inputs), set `STAGE` to that
+[Arch walkthrough](../setup-agent.md#2-stage-the-reviewed-inputs), set `STAGE` to that
 directory and install only after backing up any existing SwayNC files:
 
 ```sh

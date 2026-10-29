@@ -34,7 +34,8 @@ PAGES = {
     "tour/": ("docs/tour.md", "Explore browser, terminal, notification, clipboard, and remote-host workflows."),
     "architecture/": ("docs/architecture.md", "How Niri, SwayNC, Rofi, Kitty, and small session services fit together."),
     "components/": ("docs/components.md", "Canonical Niri Plus component sources, public exports, consumer boundaries, and release status."),
-    "setup/": ("docs/setup.md", "Assemble the parts you want with portable examples and focused Arch Linux recipes."),
+    "setup/": ("docs/setup.md", "A concise overview of the Arch reference desktop, what it includes, and the choices to make."),
+    "setup/agent/": ("docs/setup-agent.md", "Ordered Arch setup instructions for agents: inputs, commands, stage gates, verification and recovery."),
     "recipes/notifications/": ("docs/recipes/notifications.md", "SwayNC, the custom system panel, and notification integration under Niri."),
     "recipes/clipboard/": ("docs/recipes/clipboard.md", "Text and image clipboard history with Cliphist, Rofi, and session-scoped collectors."),
     "recipes/session/": ("docs/recipes/session.md", "Choose manual locking, idle behavior, and clear session service ownership."),
@@ -74,7 +75,7 @@ DEMO_ASSET_LICENSES = {
     for path in DEMO_ASSETS
 }
 FONT_ASSETS = {f"assets/{directory}/{font}.{suffix}" for font in ["noto", "noto-medium", "noto-semibold", "meslo", "source-han"] for directory, suffix in [("fonts", "woff2"), ("licenses", "txt")]}
-GENERATED = {"data/identity.json", "data/contrast-study.json", "assets/identity.css", "assets/fonts/provenance.json", "examples/kitty/neutral-slate.conf"}
+GENERATED = {"data/identity.json", "data/contrast-study.json", "assets/identity.css", "assets/fonts/provenance.json", "examples/kitty/neutral-slate.conf", "setup/agent.md"}
 PUBLIC_TOOLS = {"scripts/check-terminal.py", "scripts/check-desktop.py"}
 PUBLIC_LOCAL_DOCS = {
     "LICENSE",
@@ -94,7 +95,7 @@ DEMO_CLIPS = {
             "Open the SwayNC panel and clipboard picker in the staged Niri guest.",
             "Use the focused recordings below for the full task sequences.",
         ],
-        "setup": [("Install the Arch reference desktop", "setup.md#3-install-the-first-session-packages")],
+        "setup": [("Install the Arch reference desktop", "setup-agent.md#3-install-the-first-session-packages")],
     },
     "browser-files": {
         "video": "assets/demo-browser-files.mp4",
@@ -506,6 +507,34 @@ def link(source, target):
     raise ValueError(f"{source}: unregistered local link {target}")
 
 
+def agent_markdown():
+    """Export the agent source with links usable from the hosted text URL."""
+    source = "docs/setup-agent.md"
+    lines = (ROOT / source).read_text().splitlines(keepends=True)
+    parser = MarkdownIt("commonmark").enable("table")
+    for token in parser.parse("".join(lines)):
+        if token.type != "inline" or token.map is None:
+            continue
+        start, end = token.map
+        content = "".join(lines[start:end])
+        for child in token.children or []:
+            if child.type != "link_open":
+                continue
+            target = child.attrGet("href")
+            resolved = link(source, target)
+            if not resolved.startswith(BASE):
+                continue
+            url = urlsplit(resolved[len(BASE):])
+            relative = posixpath.relpath(url.path or ".", "setup")
+            if not url.path or url.path.endswith("/"):
+                relative += "/"
+            relative += ("?" + url.query if url.query else "") + ("#" + url.fragment if url.fragment else "")
+            content = content.replace("](" + target + ")", "](" + relative + ")")
+        # Inline maps keep their original line count; fenced command bodies stay untouched.
+        lines[start:end] = content.splitlines(keepends=True)
+    return "".join(lines)
+
+
 def partial(name):
     return (ROOT / "site" / name).read_text().replace("@@BASE@@", BASE)
 
@@ -634,13 +663,17 @@ def render_markdown(source):
         return title, f'<article class="wrap contrast-study"><p class="eyebrow">Niri Plus / Contrast study</p>{body}</article>'
     if source == "docs/story.md":
         toc = '<p class="eyebrow">A personal setup</p><p>Browser interaction.<br>Terminal work.<br>Agents in the everyday.</p><a href="' + BASE + 'tour/">See the desktop →</a>'
-    body = f'<div class="wrap document-layout"><aside class="on-this-page" aria-label="On this page"><span class="aside-label">{"The story" if source == "docs/story.md" else "On this page"}</span>{toc}</aside><article class="prose"><p class="eyebrow">Niri Plus / {"Personal story" if source == "docs/story.md" else "Desktop guide"}</p>{body}<div class="article-end"><a href="{BASE}setup/">Setup guide →</a><a href="https://github.com/byebyebryan/niri-plus/blob/main/{source}">Read on GitHub ↗</a></div></article></div>'
+    audience = {"docs/story.md": "Personal story", "docs/setup.md": "Setup overview", "docs/setup-agent.md": "Agent instructions"}.get(source, "Desktop guide")
+    next_route, next_label = ("setup/agent/", "Agent setup guide") if source == "docs/setup.md" else ("setup/", "Setup overview")
+    body = f'<div class="wrap document-layout"><aside class="on-this-page" aria-label="On this page"><span class="aside-label">{"The story" if source == "docs/story.md" else "On this page"}</span>{toc}</aside><article class="prose"><p class="eyebrow">Niri Plus / {audience}</p>{body}<div class="article-end"><a href="{BASE}{next_route}">{next_label} →</a><a href="https://github.com/byebyebryan/niri-plus/blob/main/{source}">Read on GitHub ↗</a></div></article></div>'
     return title, body
 
 
 def shell(route, title, description, body):
-    navigation = ''.join(f'<a href="{BASE}{r}"' + (' aria-current="page"' if route == r else '') + f'>{label}</a>' for r, label in [("story/", "Story"), ("tour/", "Tour"), ("design/", "Design"), ("setup/", "Setup"), ("reference/", "Reference")])
+    navigation = ''.join(f'<a href="{BASE}{r}"' + (' aria-current="page"' if route == r or (r == "setup/" and route.startswith(r)) else '') + f'>{label}</a>' for r, label in [("story/", "Story"), ("tour/", "Tour"), ("design/", "Design"), ("setup/", "Setup"), ("reference/", "Reference")])
     page_assets = f'<link rel="stylesheet" href="{BASE}assets/contrast.css"><script defer src="{BASE}assets/contrast.js"></script>' if route == "design/contrast/" else ""
+    if route == "setup/agent/":
+        page_assets += f'<link rel="alternate" type="text/markdown" href="{BASE}setup/agent.md">'
     return Template((ROOT / "site/layout.html").read_text()).substitute(title=escape(title), description=escape(description, quote=True), canonical=SITE + route, site=SITE, base=BASE, navigation=navigation, body=body, page_assets=page_assets, theme_canvas=working_identity()["direction"]["colors"]["canvas"])
 
 
@@ -705,6 +738,8 @@ def validate(output):
         raise ValueError("public contrast study differs from source")
     if (output / "assets/identity.css").read_text() != identity_css(identity) or (output / "examples/kitty/neutral-slate.conf").read_text() != kitty_fragment(identity):
         raise ValueError("generated appearance differs from identity source")
+    if (output / "setup/agent.md").read_text() != agent_markdown():
+        raise ValueError("agent Markdown differs from its detailed source")
     return {"pages": len(pages), "files": len(actual), "local_links": links}
 
 
@@ -736,6 +771,7 @@ def build(output, portable=False):
     fonts = json.loads((ROOT / "design/assets/provenance.json").read_text())
     examples = json.loads((ROOT / "examples/manifest.json").read_text())
     generated = {"data/identity.json": json.dumps(identity, indent=2) + "\n", "data/contrast-study.json": json.dumps(contrast_study(), indent=2) + "\n", "assets/identity.css": identity_css(identity), "examples/kitty/neutral-slate.conf": kitty_fragment(identity), "examples/manifest.json": json.dumps(examples, indent=2) + "\n", "assets/fonts/provenance.json": json.dumps({"files": [item for item in fonts["files"] if item["path"] in FONT_ASSETS]}, indent=2) + "\n"}
+    generated["setup/agent.md"] = agent_markdown()
     for name in public_files():
         target = output / name
         target.parent.mkdir(parents=True, exist_ok=True)

@@ -81,7 +81,7 @@ effective default.
 The selected portal profile is GTK for file/access/settings/notification
 interfaces, WLR for whole-monitor screen sharing, and KWallet for secrets.
 Dolphin remains the file manager; choosing it does not require the KDE picker.
-Use the [portal setup steps](../setup.md#3-install-the-first-session-packages) before
+Use the [portal setup steps](../setup-agent.md#3-install-the-first-session-packages) before
 checking browser dialogs. The portable portal example preserves your existing
 secret backend; the personal KWallet choice is recorded in the reference.
 

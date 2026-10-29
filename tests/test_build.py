@@ -83,6 +83,7 @@ class BuildContracts(unittest.TestCase):
             {path.relative_to(self.output).as_posix() for path in (self.output / "docs").rglob("*") if path.is_file()},
             {
                 "docs/planning/arch-installation-receipt.md",
+                "docs/planning/components-0.3.1-receipt.md",
                 "docs/planning/desktop-demonstration-receipt.md",
                 "docs/planning/rofi-controls-implementation-receipt.md",
             },
@@ -307,8 +308,8 @@ class BuildContracts(unittest.TestCase):
         for path in builder.DEMO_ASSETS:
             self.assertTrue((self.output / path).is_file(), path)
 
-    def test_component_source_map_pins_the_release_and_records_appearance_closeout(self):
-        producer = json.loads((ROOT / "data/components.json").read_text())
+    def test_historical_component_record_retains_its_original_acceptance(self):
+        producer = json.loads((ROOT / "data/history/components-0.3.1.json").read_text())
         self.assertEqual(producer["producer"]["version"], "0.3.1")
         self.assertEqual(producer["producer"]["api_version"], 1)
         self.assertEqual(producer["producer"]["source_commit"], "014a14241bd722186ae9248e71162e75cf7af7b1")
@@ -368,12 +369,24 @@ class BuildContracts(unittest.TestCase):
         source_map = (self.output / "components/index.html").read_text()
         self.assertIn("independent selections", source_map.lower())
         self.assertIn("private chezmoi", source_map.lower())
-        self.assertIn("0.3.1 shell maintenance acceptance", source_map.lower())
-        self.assertIn("historical 0.3.0", source_map.lower())
-        self.assertIn("014a14241bd722186ae9248e71162e75cf7af7b1", source_map)
-        self.assertIn("c8e058ed491b63b734c591c6dcff2d21ede7f03e", source_map)
-        self.assertIn("43d84fe54a8b07c405fc4461fda5fa14f605043e", source_map)
+        self.assertIn("0.4.1", source_map)
         self.assertIn("generated files keep their existing public paths", source_map.lower())
+        history = (self.output / "docs/planning/components-0.3.1-receipt.md").read_text()
+        self.assertIn("0.3.1 shell maintenance acceptance", history)
+        self.assertIn("historical 0.3.0", history)
+        self.assertIn("c8e058ed491b63b734c591c6dcff2d21ede7f03e", history)
+
+    def test_current_component_record_agrees_with_published_and_installed_tuple(self):
+        current = json.loads((ROOT / "data/components.json").read_text())
+        setup = json.loads((ROOT / "data/setup.json").read_text())
+        released = builder.component_releases()[current["producer"]["version"]]
+        for field, expected in released.items():
+            self.assertEqual(current["producer"][field], expected)
+        self.assertEqual(current["producer"]["version"], setup["component_version"])
+        self.assertEqual(current["identity"]["sha256"], setup["canonical_identity_sha256"])
+        self.assertEqual(current["identity"]["sha256"], hashlib.sha256((ROOT / current["identity"]["path"]).read_bytes()).hexdigest())
+        self.assertTrue(current["modules"]["appearance"]["fleet_rollout_complete"])
+        self.assertEqual(current["modules"]["appearance"]["verified_derived_outputs_per_host"], 41)
 
     def test_broken_local_anchor_is_rejected(self):
         builder.build(self.output)

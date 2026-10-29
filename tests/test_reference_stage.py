@@ -100,7 +100,7 @@ def synthetic_component_archive(version: str, source_commit: str, payload_count:
 class ArchReferenceStageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.inputs = json.loads((ROOT / "tools/reference/inputs.json").read_text(encoding="utf-8"))
+        cls.inputs = json.loads((ROOT / "tools/reference/history/inputs-0.3.1.json").read_text(encoding="utf-8"))
         # Reproduce the published pin from its actual immutable tree. Current
         # candidate bytes must never be mislabeled with a historic commit.
         cls.release_tree = tempfile.TemporaryDirectory(prefix="niri-plus-release-tree-")
@@ -298,6 +298,42 @@ class ArchReferenceStageTests(unittest.TestCase):
 
             with self.assertRaisesRegex(ValueError, "parent-directory"):
                 stage.output_path(base / ".." / "outside")
+
+
+class CurrentPublishedReferenceTests(unittest.TestCase):
+    def test_published_041_bytes_and_complete_direct_controls_stage(self):
+        inputs = json.loads((ROOT / "tools/reference/inputs-0.4.1-candidate.json").read_text())
+        with tempfile.TemporaryDirectory(prefix="niri-plus-current-reference-") as temporary:
+            base = Path(temporary)
+            code_tree = base / "code"
+            code_tree.mkdir()
+            commit = inputs["components"]["source_commit"]
+            archived = subprocess.run(["git", "archive", commit, "components"], cwd=ROOT,
+                                      check=True, capture_output=True).stdout
+            with tarfile.open(fileobj=io.BytesIO(archived)) as source:
+                source.extractall(code_tree, filter="data")
+            manifest, payloads = builder.manifest_for(code_tree, commit)
+            archive = builder.archive_bytes(manifest, payloads)
+            self.assertEqual(hashlib.sha256(archive).hexdigest(), inputs["components"]["archive_sha256"])
+            checked, files = stage.component_manifest(archive, inputs["components"])
+            self.assertEqual((checked["version"], len(files)), ("0.4.1", 44))
+            # Read the actual public-example commit through an offline clone.
+            inputs["public_source"]["repository"] = str(ROOT)
+            inputs_path = base / "inputs.json"
+            inputs_path.write_text(json.dumps(inputs))
+            output = base / "staged"
+            with mock.patch.object(stage.os, "geteuid", return_value=1000):
+                stage.stage_reference(output, inputs_path, fetcher=lambda _url, **_kwargs: archive)
+            library = output / "bundle/components/desktop/lib/niri_plus_controls"
+            self.assertEqual(len(list(library.glob("*.py"))), 13)
+            for name in ("desktop-network-menu", "desktop-audio-menu", "desktop-bluetooth-menu", "desktop-controls"):
+                self.assertTrue((output / "bundle/components/desktop/bin" / name).is_file())
+            roles = json.loads((output / "appearance/roles.json").read_text())
+            self.assertEqual(roles["colors"]["workspace_background"], "#000000")
+            self.assertEqual(roles["colors"]["overview_background"], "#111213")
+            for name in ("network", "audio", "bluetooth"):
+                self.assertFalse((output / f"source/examples/desktop/niri-plus-{name}.desktop").exists())
+            self.assertTrue((output / "source/examples/desktop/niri-plus-session.desktop").is_file())
 
 
 if __name__ == "__main__":

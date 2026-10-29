@@ -81,6 +81,7 @@ PUBLIC_TOOLS = {"scripts/check-terminal.py", "scripts/check-desktop.py"}
 PUBLIC_LOCAL_DOCS = {
     "LICENSE",
     "docs/planning/arch-installation-receipt.md",
+    "docs/planning/components-0.3.1-receipt.md",
     "docs/planning/desktop-demonstration-receipt.md",
     "tools/vm/desktop/wlr-compat/README.md",
     "design/rofi-controls/index.html",
@@ -533,7 +534,7 @@ def public_files():
     provenance = json.loads((ROOT / "assets/provenance.json").read_text())["desktop_demos"]
     captures = [provenance["source_versions"], *(clip["source_versions"] for clip in provenance["clips"] if "source_versions" in clip)]
     retained_identities = {item["identity"]["path"] for item in captures}
-    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/history/setup-20261026.json", "data/components.json", "data/component-releases.json", "examples/manifest.json"} | retained_identities | examples | FONT_ASSETS | GENERATED
+    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/history/setup-20261026.json", "data/history/components-0.3.1.json", "data/components.json", "data/component-releases.json", "examples/manifest.json"} | retained_identities | examples | FONT_ASSETS | GENERATED
 
 
 def validate_identity_associations(records):

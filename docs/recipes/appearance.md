@@ -261,7 +261,7 @@ GTK's theme and dark preference come from the GSettings values above:
 ```sh
 install -Dm644 /dev/stdin \
   "$HOME/.config/environment.d/90-niri-plus-appearance.conf" <<'EOF'
-QT_QPA_PLATFORMTHEME=qt5ct:qt6ct
+QT_QPA_PLATFORMTHEME=qt5ct
 EOF
 systemctl --user daemon-reload
 systemctl --user unset-environment GTK_THEME
@@ -275,8 +275,13 @@ leave `GTK_THEME` unset. The native Chrome and Kitty composition checks passed
 without changing their input-method route:
 
 ```kdl
-QT_QPA_PLATFORMTHEME "qt5ct:qt6ct"
+QT_QPA_PLATFORMTHEME "qt5ct"
 ```
+
+The tested Qt5ct 1.9 / Qt6ct 0.11 plugins both accept the `qt5ct` name. Native
+Qt5 and Qt6 probes loaded their matching plugins with the same Neutral Slate
+palette and Noto Sans 11. This single value also keeps Qt6ct's configuration
+check clear; the combined `qt5ct:qt6ct` value triggered its warning.
 
 Keep the input-method values in the input recipe, and do not add a global
 `GTK_IM_MODULE` here.

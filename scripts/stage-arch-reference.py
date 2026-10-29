@@ -21,7 +21,6 @@ import sys
 import tarfile
 import tempfile
 from typing import Any, Callable
-from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 
@@ -41,6 +40,7 @@ REQUIRED_RENDERER_COMPONENTS = (
 )
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 GIT_COMMIT = re.compile(r"[0-9a-f]{40}\Z")
+COMPONENT_VERSION = re.compile(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\Z")
 
 
 def sha256(data: bytes) -> str:
@@ -75,13 +75,20 @@ def validate_inputs(inputs: Any) -> dict[str, Any]:
         "version", "api_version", "source_commit", "archive_url", "archive_sha256", "manifest_sha256"
     }:
         raise ValueError("invalid component bundle pin")
-    if components.get("version") != "0.3.1" or components.get("api_version") != 1:
-        raise ValueError("the Arch reference candidate requires published components 0.3.1 API 1")
+    version = components.get("version")
+    if not isinstance(version, str) or not COMPONENT_VERSION.fullmatch(version):
+        raise ValueError("component version must be numeric x.y.z")
+    if type(components.get("api_version")) is not int or components["api_version"] != 1:
+        raise ValueError("component API version must be 1")
     if not isinstance(components.get("source_commit"), str) or not GIT_COMMIT.fullmatch(components["source_commit"]):
-        raise ValueError("invalid component source commit")
+        raise ValueError("invalid component source commit; expected a full 40-character hash")
     archive_url = components.get("archive_url")
-    if not isinstance(archive_url, str) or urlparse(archive_url).scheme != "https":
-        raise ValueError("component archive URL must use HTTPS")
+    expected_archive_url = (
+        "https://github.com/byebyebryan/niri-plus/releases/download/"
+        f"components-v{version}/niri-plus-components-{version}.tar.gz"
+    )
+    if archive_url != expected_archive_url:
+        raise ValueError("component archive URL must match the immutable GitHub release URL for its version")
     require_hash(components.get("archive_sha256"), "component archive")
     require_hash(components.get("manifest_sha256"), "component manifest")
 
@@ -100,8 +107,8 @@ def validate_inputs(inputs: Any) -> dict[str, Any]:
         local_repository = isinstance(repository, str) and Path(repository).is_dir()
         if not local_repository:
             raise ValueError("public example source must use the Niri Plus repository")
-    if source.get("commit") != "b62df460884b5a4d5e8c7eeb05c132a0b26814ae":
-        raise ValueError("public examples must use the pinned source commit b62df460884b5a4d5e8c7eeb05c132a0b26814ae")
+    if not isinstance(source.get("commit"), str) or not GIT_COMMIT.fullmatch(source["commit"]):
+        raise ValueError("invalid public example source commit; expected a full 40-character hash")
     require_hash(source.get("examples_manifest_sha256"), "public examples manifest")
     assets = source.get("assets")
     if not isinstance(assets, list) or not assets:
@@ -169,8 +176,8 @@ def component_manifest(data: bytes, pin: dict[str, Any]) -> tuple[dict[str, Any]
         ):
             raise ValueError("component manifest does not match the published release tuple")
         records = manifest.get("files")
-        if not isinstance(records, list) or len(records) != 27:
-            raise ValueError("published component manifest must list exactly 27 payload files")
+        if not isinstance(records, list) or not records:
+            raise ValueError("component manifest must list at least one payload file")
 
         payloads: dict[str, bytes] = {}
         seen: set[str] = set()

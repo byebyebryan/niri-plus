@@ -57,6 +57,46 @@ def rebuild_archive(data: bytes, *, mutate_name: str | None = None, mutation=Non
     return compressed.getvalue()
 
 
+def synthetic_component_archive(version: str, source_commit: str, payload_count: int) -> tuple[bytes, bytes]:
+    payloads = {
+        f"components/appearance/future-{index:02}.py": f"# fixture payload {index}\n".encode()
+        for index in range(payload_count)
+    }
+    records = [
+        {
+            "path": path,
+            "mode": 0o644,
+            "module": "appearance",
+            "sha256": hashlib.sha256(payload).hexdigest(),
+        }
+        for path, payload in sorted(payloads.items())
+    ]
+    manifest_bytes = (
+        json.dumps({
+            "schema_version": 1,
+            "api_version": 1,
+            "version": version,
+            "source_commit": source_commit,
+            "files": records,
+        }, ensure_ascii=False, indent=2) + "\n"
+    ).encode()
+    tar_stream = io.BytesIO()
+    with tarfile.open(fileobj=tar_stream, mode="w", format=tarfile.USTAR_FORMAT) as archive:
+        for name, payload in [("manifest.json", manifest_bytes), *sorted(payloads.items())]:
+            member = tarfile.TarInfo(name)
+            member.type = tarfile.REGTYPE
+            member.mode = 0o644
+            member.uid = 0
+            member.gid = 0
+            member.mtime = 0
+            member.size = len(payload)
+            archive.addfile(member, io.BytesIO(payload))
+    compressed = io.BytesIO()
+    with gzip.GzipFile(fileobj=compressed, mode="wb", filename="", mtime=0, compresslevel=9) as stream:
+        stream.write(tar_stream.getvalue())
+    return compressed.getvalue(), manifest_bytes
+
+
 class ArchReferenceStageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -88,6 +128,70 @@ class ArchReferenceStageTests(unittest.TestCase):
         record = next(item for item in example_manifest["files"] if item["path"] == "examples/notifications/reference.json")
         self.assertEqual(record["sha256"], candidate_hash)
         self.assertEqual(record["kind"], "authored Arch reference configuration candidate")
+
+    def test_accepts_future_exact_tuple_shape_without_relabeling_the_current_release(self):
+        version = "0.4.1"
+        component_commit = "a" * 40
+        public_commit = "b" * 40
+        archive, manifest_bytes = synthetic_component_archive(version, component_commit, 44)
+        future = json.loads(json.dumps(self.inputs))
+        future["components"].update({
+            "version": version,
+            "api_version": 1,
+            "source_commit": component_commit,
+            "archive_url": (
+                "https://github.com/byebyebryan/niri-plus/releases/download/"
+                f"components-v{version}/niri-plus-components-{version}.tar.gz"
+            ),
+            "archive_sha256": hashlib.sha256(archive).hexdigest(),
+            "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+        })
+        future["public_source"].update({
+            "commit": public_commit,
+            "examples_manifest_sha256": "c" * 64,
+        })
+
+        validated = stage.validate_inputs(future)
+        self.assertEqual(validated["components"]["version"], version)
+        self.assertEqual(validated["public_source"]["commit"], public_commit)
+        self.assertEqual(self.inputs["components"]["version"], "0.3.1")
+        with self.assertRaisesRegex(ValueError, "archive SHA-256"):
+            stage.component_manifest(self.component_archive, validated["components"])
+
+        manifest, payloads = stage.component_manifest(archive, validated["components"])
+        self.assertEqual(manifest["version"], version)
+        self.assertEqual(len(payloads), 44)
+        self.assertEqual(set(payloads), {record["path"] for record in manifest["files"]})
+
+    def test_validate_inputs_rejects_floating_or_malformed_release_pins(self):
+        def reject(change, message):
+            candidate = json.loads(json.dumps(self.inputs))
+            change(candidate)
+            with self.assertRaisesRegex(ValueError, message):
+                stage.validate_inputs(candidate)
+
+        for version in ("0.4", "v0.4.1", "0.4.1-rc1", "01.4.1", "0.4.1+local"):
+            with self.subTest(version=version):
+                reject(lambda inputs: inputs["components"].__setitem__("version", version), "numeric x.y.z")
+
+        for archive_url in (
+            "https://github.com/byebyebryan/niri-plus/archive/refs/tags/components-v0.3.1.zip",
+            "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
+            "https://example.com/niri-plus-components-0.3.1.tar.gz",
+        ):
+            with self.subTest(archive_url=archive_url):
+                reject(lambda inputs: inputs["components"].__setitem__("archive_url", archive_url), "immutable GitHub release URL")
+
+        for commit in ("a" * 39, "a" * 41, "v0.4.1", "refs/heads/main"):
+            with self.subTest(component_commit=commit):
+                reject(lambda inputs: inputs["components"].__setitem__("source_commit", commit), "full 40-character hash")
+            with self.subTest(public_commit=commit):
+                reject(lambda inputs: inputs["public_source"].__setitem__("commit", commit), "full 40-character hash")
+
+        reject(lambda inputs: inputs["components"].__setitem__("api_version", True), "API version must be 1")
+        reject(lambda inputs: inputs["components"].__setitem__("archive_sha256", ""), "invalid SHA-256 for component archive")
+        reject(lambda inputs: inputs["components"].__setitem__("manifest_sha256", ""), "invalid SHA-256 for component manifest")
+        reject(lambda inputs: inputs["public_source"].__setitem__("repository", "https://github.com/example/niri-plus.git"), "public example source must use the Niri Plus repository")
 
     def test_component_archive_checks_manifest_payloads_and_modes(self):
         manifest, payloads = stage.component_manifest(self.component_archive, self.inputs["components"])
@@ -146,7 +250,7 @@ class ArchReferenceStageTests(unittest.TestCase):
             self.assertIn('Mod+E { spawn "dolphin"; }', niri)
 
             provenance = json.loads((output / "provenance.json").read_text(encoding="utf-8"))
-            self.assertIn("candidate", provenance["status"])
+            self.assertEqual(provenance["status"], "candidate input stage; not a published component release")
             self.assertEqual(provenance["inputs_manifest"]["path"], "external --inputs file")
             self.assertEqual(provenance["inputs_manifest"]["sha256"], hashlib.sha256(inputs_bytes).hexdigest())
             self.assertEqual(provenance["components"]["archive_sha256"], hashlib.sha256(self.component_archive).hexdigest())

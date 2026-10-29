@@ -815,7 +815,9 @@ niri_plus_shell_finish
         checks += 2
 
         def run_to_prompt(command: str, context: str) -> None:
-            os.write(fd, command.encode() + b"\n")
+            # One compound command emits precmd only after the entire transition.
+            # Separate interactive lines can expose a prompt before finish runs.
+            os.write(fd, ("{\n" + command + "\n}\n").encode())
             pty_read_until(fd, b"NIRI_PLUS_TRANSITION_PROMPT_READY", 5, context)
 
         run_to_prompt(

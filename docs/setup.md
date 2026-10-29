@@ -13,16 +13,9 @@ guide, let it inspect your machine, and work through the choices together.
 
 [Set up with an agent](setup-agent.md)
 
-Send the guide with this request:
-
-> Help me set up Niri Plus on this Arch machine using this guide. Inspect the
-> current setup first and preserve my configuration and recovery access. Ask
-> about display, input and power-policy choices, then work through the stages
-> and report what was verified and what still needs my input.
-
-A [plain Markdown guide](../setup/agent.md) is also available for agents that
-prefer text. Both versions of the detailed guide come from the same source.
-For a single component, jump to its [focused recipe](setup-agent.md#focused-recipes).
+Share the guide or its [plain Markdown version](../setup/agent.md) with your
+agent. Ask it to inspect your current setup, work through your choices, and
+report what it verified. For one component, use a [focused recipe](setup-agent.md#focused-recipes).
 
 ## What you get
 

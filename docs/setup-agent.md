@@ -59,12 +59,13 @@ explicit; they are not passes.
 
 ## Inputs and working directory
 
-Obtain a reviewed checkout containing this guide, its input inventory and
-`scripts/stage-arch-reference.py`. Record its revision before starting. Some
-inputs are still an unpublished candidate separate from components 0.3.1; a
-hosted guide does not prove the candidate files exist on the public default
-branch. If the supplied revision/export is missing, obtain that exact source
-instead of substituting the older release or a private machine's configuration.
+Use a reviewed checkout of [Niri Plus](https://github.com/byebyebryan/niri-plus)
+containing this guide, its input inventory and `scripts/stage-arch-reference.py`.
+Record its revision before starting. The input stager and reference dashboard
+profile are checkout files, separate from the published components 0.3.1
+archive. If a specific revision or source export was supplied, use that exact
+source; do not substitute the older component archive or a private machine's
+configuration.
 
 This walkthrough starts from an installed Arch Linux x86-64 system, an ordinary
 sudo-capable user, working networking, and package access. It does not install
@@ -99,8 +100,8 @@ package notices; Chrome presents its own terms on first run.
 > fresh installed-Arch base, including password login, wallet unlock, locking,
 > input, files, clipboard, audio feedback, reboot and logout/relogin. Whole-monitor
 > sharing passed again after a full guest power-off/start using the documented
-> VirtIO compatibility branch. This is a local candidate; publication, physical
-> hardware and human acceptance remain separate. The
+> VirtIO compatibility branch. This qualifies the tested Arch guest; physical
+> hardware, human acceptance and personal-host deployment remain separate. The
 > [installation receipt](planning/arch-installation-receipt.md) records exact
 > inputs, results, recovery and limits.
 

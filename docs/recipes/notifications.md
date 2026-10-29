@@ -54,13 +54,13 @@ transaction: the fork replaces upstream `swaync`.
 ## Install the reference config and rendered stylesheet
 
 The small [`reference.json`](../../examples/notifications/reference.json) is an
-authored Arch walkthrough candidate, recorded separately from the 0.3.1
+authored Arch reference profile, recorded separately from the 0.3.1
 component bundle and the pinned public example snapshot. Its SHA-256 is
 `da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577`. Verify it
-from the candidate checkout; do not fetch it from the older pinned source
+from the reviewed checkout; do not fetch it from the older pinned source
 commit. Keep using the `NIRI_PLUS_CHECKOUT` path exported by the main guide,
 since the build above changes the current directory. If running this recipe in
-a separate shell, export that variable from the candidate checkout before
+a separate shell, export that variable from the reviewed checkout before
 building. The config selects the dashboard and the same 1/2/5-second widget
 refresh intervals as the existing panel design.
 

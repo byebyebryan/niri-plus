@@ -507,9 +507,8 @@ def link(source, target):
     raise ValueError(f"{source}: unregistered local link {target}")
 
 
-def agent_markdown():
-    """Export the agent source with links usable from the hosted text URL."""
-    source = "docs/setup-agent.md"
+def public_markdown(source, output_name, *, repository_links=False):
+    """Preserve Markdown and commands while resolving links for its public URL."""
     lines = (ROOT / source).read_text().splitlines(keepends=True)
     parser = MarkdownIt("commonmark").enable("table")
     for token in parser.parse("".join(lines)):
@@ -521,18 +520,32 @@ def agent_markdown():
             if child.type != "link_open":
                 continue
             target = child.attrGet("href")
-            resolved = link(source, target)
-            if not resolved.startswith(BASE):
-                continue
-            url = urlsplit(resolved[len(BASE):])
-            relative = posixpath.relpath(url.path or ".", "setup")
-            if not url.path or url.path.endswith("/"):
-                relative += "/"
-            relative += ("?" + url.query if url.query else "") + ("#" + url.fragment if url.fragment else "")
-            content = content.replace("](" + target + ")", "](" + relative + ")")
+            try:
+                resolved = link(source, target)
+            except ValueError:
+                if not repository_links:
+                    raise
+                url = urlsplit(target)
+                path = posixpath.normpath(posixpath.join(posixpath.dirname(source), unquote(url.path)))
+                original = (ROOT / path).resolve()
+                if not original.is_relative_to(ROOT.resolve()) or not original.is_file():
+                    raise ValueError(f"{source}: missing repository reference {target}")
+                suffix = ("?" + url.query if url.query else "") + ("#" + url.fragment if url.fragment else "")
+                resolved = "https://github.com/byebyebryan/niri-plus/blob/main/" + path + suffix
+            if resolved.startswith(BASE):
+                url = urlsplit(resolved[len(BASE):])
+                resolved = posixpath.relpath(url.path or ".", posixpath.dirname(output_name) or ".")
+                if not url.path or url.path.endswith("/"):
+                    resolved += "/"
+                resolved += ("?" + url.query if url.query else "") + ("#" + url.fragment if url.fragment else "")
+            content = content.replace("](" + target + ")", "](" + resolved + ")")
         # Inline maps keep their original line count; fenced command bodies stay untouched.
         lines[start:end] = content.splitlines(keepends=True)
     return "".join(lines)
+
+
+def agent_markdown():
+    return public_markdown("docs/setup-agent.md", "setup/agent.md")
 
 
 def partial(name):
@@ -748,6 +761,26 @@ def validate(output):
         raise ValueError("generated appearance differs from identity source")
     if (output / "setup/agent.md").read_text() != agent_markdown():
         raise ValueError("agent Markdown differs from its detailed source")
+    for name in sorted(PUBLIC_LOCAL_DOCS):
+        if not name.endswith(".md"):
+            continue
+        text = (output / name).read_text()
+        if text != public_markdown(name, name, repository_links=True):
+            raise ValueError(f"public Markdown differs from source: {name}")
+        for token in MarkdownIt("commonmark").enable("table").parse(text):
+            for child in token.children or []:
+                if child.type != "link_open":
+                    continue
+                url = urlsplit(urljoin(SITE + name, child.attrGet("href")))
+                if url.netloc != urlsplit(SITE).netloc or not url.path.startswith(BASE):
+                    continue
+                dest = unquote(url.path[len(BASE):])
+                dest += "index.html" if not dest or dest.endswith("/") else ""
+                if dest not in actual:
+                    raise ValueError(f"{name}: missing Markdown target {url.geturl()}")
+                if url.fragment and dest in pages and unquote(url.fragment) not in pages[dest].ids:
+                    raise ValueError(f"{name}: missing Markdown anchor {url.geturl()}")
+                links += 1
     return {"pages": len(pages), "files": len(actual), "local_links": links}
 
 
@@ -785,6 +818,9 @@ def build(output, portable=False):
         target.parent.mkdir(parents=True, exist_ok=True)
         if name in generated:
             target.write_text(generated[name])
+            continue
+        if name in PUBLIC_LOCAL_DOCS and name.endswith(".md"):
+            target.write_text(public_markdown(name, name, repository_links=True))
             continue
         source = ROOT / name
         if name in FONT_ASSETS:

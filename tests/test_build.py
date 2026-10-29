@@ -161,6 +161,26 @@ class BuildContracts(unittest.TestCase):
         self.assertIn("https://dev.byebyebryan.com/niri-plus/setup/", receipt)
         self.assertNotIn("arch-installation-pass.md", receipt)
 
+    def test_downloadable_receipts_keep_commands_and_link_to_existing_repository_sources(self):
+        builder.build(self.output, portable=True)
+        repository_prefix = "https://github.com/byebyebryan/niri-plus/blob/main/"
+        linked_sources = set()
+        fences = r"^```[^\n]*\n(.*?)^```\s*$"
+        for name in builder.PUBLIC_LOCAL_DOCS:
+            if not name.endswith(".md"):
+                continue
+            original = (ROOT / name).read_text()
+            exported = (self.output / name).read_text()
+            self.assertEqual(re.findall(fences, original, re.M | re.S), re.findall(fences, exported, re.M | re.S))
+            for token in builder.MarkdownIt("commonmark").enable("table").parse(exported):
+                for child in token.children or []:
+                    if child.type == "link_open" and child.attrGet("href").startswith(repository_prefix):
+                        path = unquote(urlsplit(child.attrGet("href")).path.split("/blob/main/", 1)[1])
+                        self.assertTrue((ROOT / path).is_file())
+                        linked_sources.add(path)
+        self.assertTrue({"docs/planning/demo-and-adoption-pass.md", "docs/planning/capture-pilot-receipt.md",
+                         "tools/vm/desktop/assemble-desktop.sh", "tools/vm/README.md"} <= linked_sources)
+
     def test_native_demo_provenance_contract_requires_measured_public_evidence(self):
         manifest = demo_provenance_fixture()
         self.assertEqual(builder.validate_desktop_demo_manifest(manifest)["capture_label"], "Staged Arch Linux x86_64 guest")

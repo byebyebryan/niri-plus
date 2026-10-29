@@ -6,12 +6,14 @@ examples, identifies what remains personal configuration, and records the
 current qualification state. It is a maintenance reference, not a workstation
 installer.
 
-The **opt-in 0.4.0 direct-controls release** adds Network/Audio/Bluetooth helpers,
+The **published 0.4.0 direct-controls release** adds Network/Audio/Bluetooth helpers,
 a shared controller and two additional appearance outputs, all listed in
 `components/metadata.json`.
 See the [release and installation recipe](recipes/rofi-controls.md) and
 [implementation receipt](planning/rofi-controls-implementation-receipt.md).
-The Arch reference archive and dated adoption records below remain 0.3.1.
+It is installed through chezmoi on Carbon, Starship and Snap. The numbered Arch
+reference remains 0.3.1 pending its next fresh-base replay; dated adoption
+records below retain the release they qualified.
 Direct-control desktop-entry downloads live under
 `examples/desktop/direct-controls/`; the existing entries are frozen 0.3.1
 baseline/recovery examples. Downloadable wrappers require the complete sibling
@@ -68,7 +70,15 @@ Established projects keep their implementation and release authority:
 
 ## Immutable bundle and independent selections
 
-The Arch reference producer record is [`data/components.json`](../data/components.json).
+The [release catalog](../data/component-releases.json) records immutable
+published tuples independently of the installation reference and recordings.
+The latest published release is 0.4.0; the black workspace refinement is being
+qualified as a separate release. Historical recordings keep their original
+component tuple and retained identity source in
+[media provenance](../assets/provenance.json), with their capture date and
+component version beside the player.
+
+The 0.3.1 Arch reference producer record is [`data/components.json`](../data/components.json).
 It pins one small deterministic archive, its source commit and manifest hash:
 
 - Version: `0.3.1`, API version `1`

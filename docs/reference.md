@@ -3,10 +3,11 @@
 The bindings below describe my managed Niri desktop. Portable examples and
 component guides let you adopt the parts you want.
 
-The [component source map](components.md) records the current immutable bundle
-and adoption evidence. The earlier appearance delivery in the setup record is
-historical context; the shared 0.3.0 appearance module is now deployed and
-converged on all three selected hosts.
+The [component source map](components.md) distinguishes published components,
+the tested Arch reference and dated adoption evidence. Components 0.4.0 and its
+direct device controls are installed on Carbon, Starship and Snap. The earlier
+appearance delivery remains historical context; the black workspace refinement
+is being qualified separately.
 
 ## Keyboard reference
 
@@ -54,16 +55,23 @@ name.
 
 ## Common utilities
 
-`Mod+D` opens the application list. The portable entries for Network,
-Bluetooth, Audio, and Session are documented in the
-[desktop utility recipe](recipes/desktop-utilities.md). They rely on their
-named service/tool owners and keep lock, logout confirmation, and power actions
-in their existing native paths.
+`Mod+D` opens the application list. **Network, Audio and Bluetooth** open the
+[direct Rofi controls](recipes/rofi-controls.md): search devices, cycle named
+actions with Tab/Shift+Tab and run the visible action with Enter. Open selects
+a device page; Details explains its native state. Current/default devices have
+green framing, while blue marks keyboard selection. The action strip and
+status have separate places.
 
-These four entries are installed through chezmoi on Carbon, Starship and Snap
-as of 2026-10-26. Native desktop-entry discovery and exact file checks passed;
-repeat applies make no writes. The utility delivery is recorded separately in
-[the setup record](../data/setup.json).
+Network retains `nm-connection-editor`, Audio retains `pavucontrol`, and
+Bluetooth retains `bluetoothctl` for deeper settings and recovery. Native
+providers keep device ownership. **Session** retains its existing lock, logout
+and confirmed power actions; see the [utility recipe](recipes/desktop-utilities.md).
+
+The 0.4.0 controls delivery on all three hosts passed exact installed-file,
+native dependency, fresh callback/startup and no-write repeat checks on
+2026-10-29. Physical Wi-Fi/wallet, speaker/microphone and peripheral actions
+remain normal-use checks. The numbered Arch guide still selects 0.3.1 until
+its updated fresh-base replay passes.
 
 ## Session and hardware ownership
 

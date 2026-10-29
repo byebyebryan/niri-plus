@@ -117,7 +117,7 @@
   .workbench-top { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 12px 0; font: 9px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: #9ba6ad; }
   .workbench-top > span:first-child { display: flex; align-items: center; gap: 7px; }
   .workbench-top i { width: 5px; height: 5px; background: var(--green); border-radius: 50%; }
-  .desktop-stage { position: relative; min-height: 352px; display: grid; grid-template-columns: 1.05fr 1fr; gap: 7px; padding: 18px 12px 33px; background: #07090a; border: 1px solid #3e474d; border-radius: 7px; overflow: hidden; }
+  .desktop-stage { position: relative; min-height: 352px; display: grid; grid-template-columns: 1.05fr 1fr; gap: 7px; padding: 18px 12px 33px; background: var(--workspace-background, var(--canvas)); border: 1px solid #3e474d; border-radius: 7px; overflow: hidden; }
   .window { min-width: 0; border: 1px solid #465462; border-radius: 5px; overflow: hidden; background: #171c21; transition: opacity .25s, border-color .25s, transform .25s; }
   .browser-window { background: #ece8de; color: #313c3f; border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
   .window-chrome { display: flex; align-items: center; justify-content: space-between; gap: 7px; padding: 10px 8px; line-height: 1; background: #242b31; color: #b1b9bf; font: 8px var(--mono); }
@@ -387,7 +387,7 @@
   .design-overview { margin-block: 28px 36px; border: 1px solid var(--line); background: var(--surface); }
   .design-specimen-label, .overview-topline, .overview-titlebar, .overview-toolbar, .overview-download, .terminal-window-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .design-specimen-label { padding: 10px 14px; color: var(--muted); font: 10px/1.5 var(--mono); letter-spacing: .04em; }
-  .overview-stage { padding: clamp(14px, 3vw, 36px); background: var(--bg); border-top: 1px solid var(--line); }
+  .overview-stage { padding: clamp(14px, 3vw, 36px); background: var(--workspace-background, var(--canvas)); border-top: 1px solid var(--line); }
   .overview-topline { color: var(--muted); font: 9px/1.5 var(--mono); padding-bottom: 13px; border-bottom: 1px solid var(--line); }
   .overview-brand { color: var(--text); font: 600 16px/1 var(--ui-family); letter-spacing: -.08em; }
   .overview-brand span { color: var(--accent); font-size: 22px; }

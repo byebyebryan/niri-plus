@@ -1,9 +1,10 @@
 # Direct Rofi controls implementation receipt
 
-Status: locally implemented and isolated-native qualified, 2026-10-29.
-Component **0.4.0 is an unreleased candidate**. No component release, public-site
-deployment, personal chezmoi selection or fleet apply was performed in this pass.
-The published Arch reference remains pinned to 0.3.1.
+Historical implementation receipt, 2026-10-29. The candidate results below
+describe the implementation pass. **0.4.0 was subsequently published and
+delivered to Carbon, Starship and Snap**; the [current recipe](../recipes/rofi-controls.md)
+records the released tuple and acceptance limits. The numbered Arch reference
+remains 0.3.1 pending its updated replay.
 
 This opening records the implementation pass. The subsequent publication pass
 uses the reviewed replacement tuple below; see the

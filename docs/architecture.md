@@ -20,7 +20,7 @@ monitoring. Chezmoi owns my configuration and deployment.
 | Browser and files | Chrome and Dolphin | Interactive web work, downloads, and graphical file operations. |
 | Terminal and shell | Kitty, Zsh, Powerlevel10k, fzf, zoxide | Terminal work, prompt/status, history/completion, directory navigation, and dedicated coding-agent windows. |
 | Applications and pickers | Rofi and Rofi Plus | Find applications, hosts, tmux sessions, agent windows, and clipboard items. |
-| Common utilities | NetworkManager/nmtui, BlueZ/bluetoothctl, pavucontrol, Session helper | Open network, pairing, audio, lock, logout, and power actions from the application list. |
+| Common utilities | Direct Rofi Network, Audio and Bluetooth controls; Session helper | Search devices and run explicit actions; open native advanced settings when needed. Session retains lock, logout and power actions. |
 | Notifications and information | SwayNC fork | Notification history and a panel of system information, available on demand. |
 | Clipboard | Cliphist and wl-clipboard | Collect text and images; a Rofi picker restores the original item. |
 | Locking | Gtklock | Manual locks through an independent user service. |
@@ -40,8 +40,11 @@ The panel only refreshes its metrics and wireless subscriptions while open.
 NVIDIA GPU reads wait for cached runtime activity. Closing it cancels the outstanding
 work. This behavior is part of the fork, beyond what a CSS theme can express.
 
-The [desktop utility recipe](recipes/desktop-utilities.md) keeps the small
-application entry points separate from session policy. UDisks2 and polkit
+The [direct controls](recipes/rofi-controls.md) use NetworkManager, the existing
+audio server and BlueZ without adding a startup daemon. Their current/default
+device marker is independent of keyboard selection. The [Session helper and
+baseline utility entries](recipes/desktop-utilities.md) remain separate from
+session policy. UDisks2 and polkit
 authorize removable-drive access; external monitor brightness is separate from
 the laptop backlight controls.
 
@@ -79,8 +82,9 @@ in private chezmoi or the independent projects.
 
 ## A shared visual identity
 
-The [design guide](design.md) presents the selected Neutral Slate palette,
-Noto Sans UI, Meslo terminal type, and the surface gallery. It links to the
+The [design guide](design.md) presents Neutral Slate's warm UI surfaces,
+Clear Blue focus, the black workspace refinement, Noto Sans UI, Meslo terminal
+type and the surface gallery. It links to the
 generated [identity export](../data/identity.json) and
 [Kitty appearance fragment](../examples/kitty/neutral-slate.conf).
 [Kitty and Zsh](recipes/terminal.md) are part of the reference workflow. The

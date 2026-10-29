@@ -26,7 +26,7 @@ derivation returns its 23 core files.
 
 | Download | Surface | Scope |
 | --- | --- | --- |
-| [Niri focus and background fragment](../../examples/theme/niri-neutral-slate.kdl) | Niri | Canvas and focus-ring colors. Merge the two settings into the existing `layout` block; keep its widths, gaps, border mode, shadows, and other layout settings. |
+| [Niri focus and background fragment](../../examples/theme/niri-neutral-slate.kdl) | Niri | Pure-black workspace and overview backdrop, plus focus-ring colors. Merge `layout` settings into the existing block and the separate `overview` settings at top level; preserve sizing and navigation. |
 | [Rofi theme](../../examples/theme/neutral-slate.rasi) | Rofi launcher | Theme declarations and colors only. Existing actions, key bindings, and launcher configuration remain yours. |
 | [SwayNC stylesheet](../../examples/theme/swaync.css) | Selected SwayNC fork | CSS only; imports the packaged base stylesheet. The fork still owns panel behavior and widget structure. |
 | [Gtklock stylesheet](../../examples/theme/gtklock.css) | Gtklock | Password-form appearance only. Authentication, lock-service lifetime, and power behavior stay with their current owners. |

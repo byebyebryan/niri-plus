@@ -214,6 +214,9 @@ try {
   assert.equal(identity.direction.ui_font, "Noto Sans");
   assert.equal(identity.direction.mono_font, "MesloLGS Nerd Font");
   assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()), identity.direction.colors.canvas);
+  assert.equal(await page.locator(".overview-stage").evaluate(node => getComputedStyle(node).backgroundColor), "rgb(0, 0, 0)");
+  assert.equal(await page.locator("body").evaluate(node => getComputedStyle(node).backgroundColor), "rgb(17, 18, 19)");
+  assert.equal(await page.locator(".overview-browser").evaluate(node => getComputedStyle(node).backgroundColor), "rgb(27, 29, 31)");
   assert.equal(await page.locator("[data-surface-button]").count(), 4);
   assert.equal(await page.locator("[data-surface-panel]:visible").count(), 1);
   await page.locator('[data-surface-button="launch"]').focus();
@@ -231,7 +234,7 @@ try {
   assert.equal(await page.locator(".ansi-reference-grid [role=listitem]").count(), 16);
   assert.ok(await page.evaluate(() => document.fonts.check('14px "Noto Sans"')));
   assert.ok(await page.evaluate(() => document.fonts.check('14px "MesloLGS Nerd Font"')));
-  checks += 14;
+  checks += 17;
   await page.locator('[data-surface-button="launch"]').click();
   const filter = page.getByLabel("Filter sample windows");
   await filter.fill("claude");

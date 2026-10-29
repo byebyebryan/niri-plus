@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "components": {
+    "version": "0.4.1",
+    "api_version": 1,
+    "source_commit": "317658ee7913bb58536f6ec1b2575043a9494449",
+    "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
+    "archive_sha256": "0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11",
+    "manifest_sha256": "30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4"
+  },
+  "identity": {
+    "path": "design/identity.json",
+    "sha256": "49b41866b7483a69a0499133864a10ac786335b1686ad9c314c3b916c94c367f"
+  },
+  "public_source": {
+    "repository": "https://github.com/byebyebryan/niri-plus.git",
+    "commit": "317658ee7913bb58536f6ec1b2575043a9494449",
+    "examples_manifest_sha256": "9cac845610dbf619613f85a3d86fa84254724a879b9bf7eb903f6bf0e8c56689",
+    "assets": [
+      "examples/clipboard/config",
+      "examples/clipboard/profiles/minimal-niri/clipboard-history@.service",
+      "examples/clipboard/rofi-clipboard",
+      "examples/desktop/desktop-session-menu",
+      "examples/desktop/desktop-session-ready",
+      "examples/desktop/niri-plus-session.desktop",
+      "examples/desktop/power.toml.example",
+      "examples/displays/kanshi.conf",
+      "examples/feedback/binds.kdl",
+      "examples/feedback/notify-brightness",
+      "examples/feedback/notify-volume",
+      "examples/files/mimeapps.list",
+      "examples/files/nvim-terminal.desktop",
+      "examples/input/classicui.conf",
+      "examples/login/derive-theme.py",
+      "examples/niri/config.kdl",
+      "examples/portals/niri-portals.conf",
+      "examples/session/desktop-battery.service",
+      "examples/session/desktop-idle.service",
+      "examples/session/desktop-power",
+      "examples/session/desktop-session-ready",
+      "examples/session/polkit-session.conf",
+      "examples/session/power.toml.example",
+      "examples/session/profiles/minimal-niri/desktop-lock.service",
+      "examples/terminal/THIRD_PARTY_NOTICES.md",
+      "examples/terminal/fetch.py",
+      "examples/terminal/init.zsh",
+      "examples/terminal/p10k-custom-segments.zsh",
+      "examples/terminal/p10k.zsh",
+      "examples/terminal/pins.json",
+      "examples/terminal/zshrc"
+    ]
+  }
+}

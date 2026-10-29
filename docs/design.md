@@ -1,14 +1,15 @@
 # Neutral Slate
 
-Neutral Slate pairs a crisper warm-charcoal desktop with a pure-black Balanced+
-terminal. Clear Blue marks focus and selection; status colors and normal/bright
-terminal pairs stay distinct. Noto Sans UI and Meslo terminal typography remain.
+Neutral Slate pairs warm-charcoal UI surfaces with a pure-black workspace and
+Balanced+ terminal. Clear Blue marks focus and selection; status colors and
+normal/bright terminal pairs stay distinct. Noto Sans UI and Meslo terminal
+typography remain.
 
-This revision is installed on Carbon, Starship, and Snap. Carbon and Snap
-reloaded in place; a later review observed Starship running its Niri session.
-The [deployment record](reference.md#working-setup) distinguishes source
-selection, installed files, active sessions, and normal-use checks. The gallery
-below remains labeled sample content.
+The black workspace refinement is being qualified for Carbon, Starship and
+Snap. Their preceding Crisper Neutral Slate and Balanced+ identity is already
+installed. The [deployment record](reference.md#working-setup) distinguishes
+design, installed files and normal-use checks. The gallery below uses sample
+content.
 
 The [contrast study](design/contrast.md) retains the preceding desktop baseline
 and terminal comparisons. Balanced+ and the crisper desktop are selected; the
@@ -25,16 +26,17 @@ explains the native focused-device workflow and its current acceptance boundary.
 
 ## Desktop overview
 
-The browser and terminal share the screen, with the focused window marked by a
-clear border. There is no permanent bar. This HTML/CSS composition is sample
-content, not a recording of a configured or deployed desktop.
+The browser and terminal share the screen over an opaque black background,
+with the focused window marked by a clear border. There is no permanent bar.
+This HTML/CSS composition uses sample content.
 
 <!-- niri-plus:overview -->
 The overview shows browser work beside a terminal, with focus on the terminal.
 It is an illustration; no desktop action is performed.
 <!-- /niri-plus:overview -->
 
-The frame below is a poster from the native staged Arch overview. The recording
+The frame below is a poster from the earlier 0.3.1 staged Arch overview, before
+the black workspace refinement. The recording
 shows actual Chrome, Kitty/Zsh, and SwayNC surfaces with public local sample
 content; its 12-second terminal excerpt reuses the earlier pilot. It is not a
 recording of my daily desktop. [Watch the native overview](tour.md#native-reference-demo)
@@ -44,7 +46,7 @@ or see the focused [browser and files](tour.md#browser-and-files),
 
 ![Native staged Arch overview poster, showing Chrome beside Kitty/Zsh and the SwayNC panel with public local sample content](../assets/demo-overview.png)
 
-*Native staged guest capture · overview poster · public local sample content. The terminal excerpt is reused pilot footage.*
+*Earlier 0.3.1 staged guest capture · public local sample content · charcoal workspace. The terminal excerpt is reused pilot footage.*
 
 ## Surface gallery
 
@@ -59,6 +61,11 @@ login/lock surfaces. All content is an illustration with fictional values.
 <!-- /niri-plus:gallery -->
 
 ## Palette
+
+The workspace and overview backgrounds use `#000000`. UI canvas, panels and
+raised controls retain separate warm-charcoal roles, so black behind windows
+does not flatten the applications themselves. Login and lock surfaces retain
+their neutral secure palette.
 
 The desktop palette names each color's job. The terminal has independent
 background, foreground, cursor, selection, and sixteen ANSI values. Its error,

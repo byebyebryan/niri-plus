@@ -4,6 +4,12 @@ Status: proposed design, 2026-10-28; Plus picker UI refinement, 2026-10-29.
 This pass creates a plan and an illustrated preview; it does not replace
 utilities or qualify native behavior.
 
+The [pre-implementation review](rofi-controls-design-review.md) retains the
+visual direction and records interaction gates. Row-specific action labels,
+repeatable Audio actions, exact disruption scope and stateful sample outcomes
+must not be inferred from the current illustration. Qualify the native action
+model before full helper implementation.
+
 The Arch reference and human/agent setup split are published at `d3e7505`.
 The next improvement is everyday device control: choose Wi-Fi, change audio
 output, or connect headphones without opening a terminal or a settings panel.
@@ -140,8 +146,11 @@ each utility. Session and Clipboard do not inherit a rewrite from this design.
 
 ## Shared interaction contract
 
-- Up/Down selects a row. Tab/Shift+Tab cycles its named actions; Enter executes
-  the visibly selected action. Moving to another row selects its primary action.
+- Up/Down selects a row. Tab/Shift+Tab cycles named actions; Enter executes the
+  visibly selected action. Per-row action changes/reset on navigation are a
+  design target requiring native proof, not an assumed script capability.
+  If that proof fails, use fixed actions within each view and open a focused
+  device view for specific operations; never let label and operation diverge.
 - Preserve the filter and selected object while cycling actions or refreshing.
   Use stable identities, not row numbers or labels. If an object disappears,
   select the nearest surviving row and show that it is unavailable on retry.
@@ -184,7 +193,7 @@ profile choice. Do not pin a connection permanently to one BSSID.
 | Available new personal/open Wi-Fi | Connect | Details |
 | Saved but unavailable | Details | Advanced settings; no speculative activation |
 | Unsupported new security / unmanaged device | Details | Advanced settings |
-| Wi-Fi radio | Turn on/off | Confirm before turning off when it would break a current link |
+| Wi-Fi radio (global) | Turn on/off | Name affected managed Wi-Fi interfaces/connections; confirm before disruption. This is distinct from disconnecting one adapter. |
 | Refresh / Advanced settings | Named action | None |
 
 Creation supports open networks and explicitly recognized WPA2/WPA3 Personal.
@@ -195,6 +204,12 @@ authentication or secondaries must be qualified before promising one-click
 activation. Do not expose Forget, reveal-password, QR sharing or restart-all
 networking in this release. Never pre-disconnect a working link before asking
 NM to activate the selected replacement.
+
+Confirmation and replacement context must name the target, such as Home on
+wlan0, rather than “the selected adapter”. NM's global Wi-Fi radio action
+affects managed Wi-Fi adapters; do not present it as an interface-local switch
+or disable Ethernet. Bluetooth power-off names its adapter and affected
+connected devices. Revalidate scope immediately before performing the action.
 
 ### Credentials and persistence
 
@@ -265,7 +280,10 @@ actual Arch package ownership before modifying any manifest.
 1. **Native Rofi interaction proof.** Compare script mode with a foreground
    dmenu controller using custom exit codes. Prove filtered-row mapping, action
    cycling, cursor/filter/selection preservation, native cancel and one pending
-   result transition. Current Agent Plus uses only narrowly scoped one-shot
+   result transition. Specifically prove row-dependent action-strip changes on
+   Up/Down and pointer movement without a Tab callback; otherwise select the
+   fixed-view/device-view fallback recorded in the review. Current Agent Plus
+   uses only narrowly scoped one-shot
    callbacks; a reliable periodic refresh cannot be assumed. A controller must
    not continually close/reopen an editable list or steal focus after dismissal.
    Prefer script mode for editable lists if dmenu cannot retain the contract.
@@ -294,6 +312,12 @@ separate explicit action, initially available through `pavucontrol`. Do not
 silently change Bluetooth profiles, unmute a microphone on volume adjustment,
 or replace the current hardware-key feedback helpers. Advanced per-app routing,
 profiles, EQ and media controls are outside the first Audio slice.
+
+Successful volume/mute/default actions update inline. Preserve device, filter
+and active action for repeatable adjustments instead of opening a success
+screen and resetting to Details. If necessary, use a focused Adjust view with
+a small fixed action set. Model the fictional value/default/mute transitions
+before treating the visual Audio scene as an interaction specification.
 
 Bluetooth first covers paired devices and adapter power. Then add a bounded
 discovery/pairing slice with its own acceptance: adapter selection, fresh device

@@ -2,8 +2,8 @@
 Type=Application
 Name=Bluetooth
 Comment=Pair and connect devices with BlueZ
-Exec=kitty -e bluetoothctl
-TryExec=bluetoothctl
+Exec=desktop-bluetooth-menu
+TryExec=desktop-bluetooth-menu
 Icon=preferences-system-bluetooth
 Terminal=false
 Categories=Settings;HardwareSettings;

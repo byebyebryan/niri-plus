@@ -77,13 +77,14 @@ class BuildContracts(unittest.TestCase):
 
     def test_complete_site_has_checked_links_and_only_allowlisted_planning_docs(self):
         result = builder.build(self.output)
-        self.assertEqual(result["pages"], 21)
+        self.assertEqual(result["pages"], 23)
         self.assertGreater(result["local_links"], 200)
         self.assertEqual(
             {path.relative_to(self.output).as_posix() for path in (self.output / "docs").rglob("*") if path.is_file()},
             {
                 "docs/planning/arch-installation-receipt.md",
                 "docs/planning/desktop-demonstration-receipt.md",
+                "docs/planning/rofi-controls-implementation-receipt.md",
             },
         )
         self.assertTrue((self.output / "tools/vm/desktop/wlr-compat/README.md").is_file())
@@ -397,7 +398,7 @@ class BuildContracts(unittest.TestCase):
     def test_native_theme_examples_are_bound_to_the_canonical_identity(self):
         manifest = json.loads((ROOT / "examples/manifest.json").read_text())
         records = [item for item in manifest["files"] if item["path"].startswith("examples/theme/")]
-        self.assertEqual(len(records), 7)
+        self.assertEqual(len(records), 9)
         identity = json.loads((ROOT / "design/identity.json").read_text())
         digest = hashlib.sha256((ROOT / "design/identity.json").read_bytes()).hexdigest()
         self.assertEqual({item["identity_sha256"] for item in records}, {digest})
@@ -409,7 +410,7 @@ class BuildContracts(unittest.TestCase):
         self.assertEqual(identity["selected_candidate"], "neutral-slate")
         builder.build(self.output)
         public_manifest = json.loads((self.output / "examples/manifest.json").read_text())
-        self.assertEqual(len([item for item in public_manifest["files"] if item["path"].startswith("examples/theme/")]), 7)
+        self.assertEqual(len([item for item in public_manifest["files"] if item["path"].startswith("examples/theme/")]), 9)
 
     def test_contrast_study_keeps_the_selected_identity_and_isolates_black_only(self):
         builder.build(self.output)

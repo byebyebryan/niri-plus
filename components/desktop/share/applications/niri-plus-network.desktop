@@ -2,8 +2,8 @@
 Type=Application
 Name=Network
 Comment=Manage connections with NetworkManager
-Exec=kitty -e nmtui
-TryExec=nmtui
+Exec=desktop-network-menu
+TryExec=desktop-network-menu
 Icon=network-wireless
 Terminal=false
 Categories=Settings;

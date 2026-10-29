@@ -17,7 +17,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/config/cliphist/config",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
@@ -28,7 +28,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/systemd/user/clipboard-history@.service",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module",
       "profile": "minimal-niri",
       "notes": "Selected minimal Niri service; the authored portable collector remains at the existing example path."
@@ -41,7 +41,51 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/bin/rofi-clipboard",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/desktop-audio-menu",
+      "sha256": "5de22c403e78fa9387b1e64599a48c448d1d921499cf53b7d33d15c0748a474d",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/bin/desktop-audio-menu",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/desktop-bluetooth-menu",
+      "sha256": "ec9df33249a81886012851affbc0a3d4ab2475abcecde1372d0da72dd6e8501b",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/bin/desktop-bluetooth-menu",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/desktop-controls",
+      "sha256": "3888396bd4f91f8267b68232187de15180265ed75680cc5168c31f335363c8a7",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/bin/desktop-controls",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/desktop-network-menu",
+      "sha256": "6f540e5cb4f31e7f88943b5974e992b9d4f32e7576cd1f1996b378722c7c26ff",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/bin/desktop-network-menu",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
@@ -52,7 +96,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/bin/desktop-session-menu",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
@@ -63,42 +107,212 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/bin/desktop-session-ready",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module",
       "notes": "Checks whether the Wayland display socket accepts a connection; it does not identify the compositor."
     },
     {
-      "path": "examples/desktop/niri-plus-audio.desktop",
-      "sha256": "0b9af152ee931cae9aa2bd6aae8dc3ddac86b3ff063152de50e913bc346618e6",
+      "path": "examples/desktop/direct-controls/niri-plus-audio.desktop",
+      "sha256": "c8978bced11121a5a10b53eb4ae1e71596b0efaea96481ea686d2816e932fbee",
       "kind": "generated first-party component export",
       "module": "desktop",
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/share/applications/niri-plus-audio.desktop",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
-      "path": "examples/desktop/niri-plus-bluetooth.desktop",
-      "sha256": "5a7b0ec3f420e21489e0f942c560241becf70f241b6f59c49e97b89f8499371d",
+      "path": "examples/desktop/direct-controls/niri-plus-bluetooth.desktop",
+      "sha256": "cf2aeb8db6d1ea442b9c9062b2bff73102e68858fa279bd7113015baa29a56e3",
       "kind": "generated first-party component export",
       "module": "desktop",
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/share/applications/niri-plus-bluetooth.desktop",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
-      "path": "examples/desktop/niri-plus-network.desktop",
-      "sha256": "6d916d47760a53c24f2b8af3f042054c52d5bd795b853fa212856f0fd1277021",
+      "path": "examples/desktop/direct-controls/niri-plus-network.desktop",
+      "sha256": "9af72ddfeccff62dc72eb283bb452c4e6f1bab6cc25262c69178e9fc2fba8190",
       "kind": "generated first-party component export",
       "module": "desktop",
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/share/applications/niri-plus-network.desktop",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/__init__.py",
+      "sha256": "f409bbb241907061084370230f6c7e2b0c366e672bd8e9984f6f16574ce87991",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/__init__.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/app.py",
+      "sha256": "ebf5611168ca279fcaedd56ea1c0297bb7e7724b51fa2ab2f32ede6d9a1cef08",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/app.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/appearance.py",
+      "sha256": "856ea6042e4a4f1d7aa85aa33a4632cca4c4209ed193fb795fe8b4666f1bb1d3",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/appearance.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/audio.py",
+      "sha256": "2afeac9a54cf176c6ea3dad4180628bb80a9c6adb78b8b914680fc92fcd5e9e4",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/audio.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/bluetooth.py",
+      "sha256": "6b7db5a04e7127ccfb033425bf1305bc135369f21a88d383dcddff68986ea80d",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/bluetooth.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/bt_agent.py",
+      "sha256": "117d3da648f006c9942c04c58e966aa61c8a5863cd50c6b5b7e1512cc13061bb",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/bt_agent.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/fixture.py",
+      "sha256": "c8af7ca4629fd8f286f46a094a3b3b83a00d0969542514624e44ffa86e9cfe45",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/fixture.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/model.py",
+      "sha256": "bf28a536b2be97e6c54282f29221da47d1d18216db617e913a76eb427b4aea13",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/model.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/network.py",
+      "sha256": "8b15f8db788795e129aeb52cb919542eef79e58c20262b159ae5747f79f1ffab",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/network.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/nm_agent.py",
+      "sha256": "d96da8779c36215014a5141de3f0a041edaa5d112eea2702fd10c260ec0f2090",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/nm_agent.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/nm_bus.py",
+      "sha256": "761fce2ee931330bc72b7bc30a7f6e07a4b22dd5541cb36f9f2551787ec57546",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/nm_bus.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/rofi.py",
+      "sha256": "5d6d52d089a2d7f99d4bc7fcccd7424146b6b9b44cda81d276e6ba7b0f409706",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/rofi.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/runtime.py",
+      "sha256": "9161921101640faf6dbf9382595be960f15c27f1d4f2c8c779bd70033d7e6779",
+      "kind": "generated first-party component export",
+      "module": "desktop",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/desktop/lib/niri_plus_controls/runtime.py",
+      "component_version": "0.4.0",
+      "source": "Niri Plus desktop component module"
+    },
+    {
+      "path": "examples/desktop/niri-plus-audio.desktop",
+      "kind": "frozen published 0.3.1 launcher example",
+      "source": "Niri Plus components 0.3.1",
+      "generated": false,
+      "notes": "Retained baseline/recovery entry; candidate direct controls are exported in desktop/direct-controls/.",
+      "sha256": "0b9af152ee931cae9aa2bd6aae8dc3ddac86b3ff063152de50e913bc346618e6",
+      "source_visibility": "public"
+    },
+    {
+      "path": "examples/desktop/niri-plus-bluetooth.desktop",
+      "kind": "frozen published 0.3.1 launcher example",
+      "source": "Niri Plus components 0.3.1",
+      "generated": false,
+      "notes": "Retained baseline/recovery entry; candidate direct controls are exported in desktop/direct-controls/.",
+      "sha256": "5a7b0ec3f420e21489e0f942c560241becf70f241b6f59c49e97b89f8499371d",
+      "source_visibility": "public"
+    },
+    {
+      "path": "examples/desktop/niri-plus-network.desktop",
+      "kind": "frozen published 0.3.1 launcher example",
+      "source": "Niri Plus components 0.3.1",
+      "generated": false,
+      "notes": "Retained baseline/recovery entry; candidate direct controls are exported in desktop/direct-controls/.",
+      "sha256": "6d916d47760a53c24f2b8af3f042054c52d5bd795b853fa212856f0fd1277021",
+      "source_visibility": "public"
     },
     {
       "path": "examples/desktop/niri-plus-session.desktop",
@@ -108,7 +322,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/share/applications/niri-plus-session.desktop",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
@@ -142,7 +356,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/bin/notify-brightness",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
@@ -153,7 +367,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/bin/notify-volume",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
@@ -187,7 +401,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/appearance/render.py#kitty-neutral-slate.conf",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus appearance component module",
       "notes": "Selected Balanced+ terminal colors only; existing Kitty behavior remains separately owned.",
       "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
@@ -207,7 +421,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/appearance/sddm.py",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus appearance component module",
       "notes": "Standalone, generated SDDM preview helper; requires the pinned upstream theme tree and schema-2 identity, and never installs or activates the theme."
     },
@@ -258,7 +472,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/systemd/user/desktop-battery.service",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
@@ -269,7 +483,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/systemd/user/desktop-idle.service",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
@@ -288,7 +502,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/bin/desktop-power",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module",
       "notes": "Portable policy values remain in the separately authored TOML profile."
     },
@@ -300,7 +514,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/bin/desktop-session-ready",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module",
       "notes": "This download and the desktop utility download share one source component."
     },
@@ -312,7 +526,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/systemd/user/plasma-polkit-agent.service.d/session.conf",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module"
     },
     {
@@ -330,7 +544,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/desktop/systemd/user/desktop-lock.service",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus desktop component module",
       "profile": "minimal-niri",
       "notes": "Selected Gtklock service; the authored portable unit remains at the existing example path."
@@ -343,7 +557,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/shell/THIRD_PARTY_NOTICES.md",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus shell component module"
     },
     {
@@ -354,7 +568,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/shell/fetch.py",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus shell component module"
     },
     {
@@ -365,7 +579,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/shell/init.zsh",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus shell component module"
     },
     {
@@ -376,7 +590,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/shell/p10k-custom-segments.zsh",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus shell component module"
     },
     {
@@ -387,7 +601,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/shell/p10k.zsh",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus shell component module"
     },
     {
@@ -398,7 +612,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/shell/pins.json",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus shell component module"
     },
     {
@@ -409,7 +623,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/shell/zshrc",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus shell component module"
     },
     {
@@ -420,9 +634,22 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/appearance/render.py#NeutralSlate.colors",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus appearance component module",
       "notes": "Generated KDE color groups; keep unrelated kdeglobals groups and font preferences. not a deployed artifact.",
+      "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
+    },
+    {
+      "path": "examples/theme/controls-appearance.json",
+      "sha256": "8cfea2a055fce45d0b630c62feca61ea102981479b19ddbe964d7dbf7dfd53bc",
+      "kind": "generated first-party component export",
+      "module": "appearance",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/appearance/render.py#controls-appearance.json",
+      "component_version": "0.4.0",
+      "source": "Niri Plus appearance component module",
+      "notes": "Unreleased direct Rofi controls candidate; generated from canonical desktop roles independently of terminal colors.",
       "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
     },
     {
@@ -433,7 +660,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/appearance/render.py#gtklock.css",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus appearance component module",
       "notes": "Password-form appearance only; authentication and lock-service ownership remain separate. not a deployed artifact.",
       "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
@@ -446,7 +673,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/appearance/render.py#neutral-slate.rasi",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus appearance component module",
       "notes": "Rofi appearance only; existing actions and launcher behavior remain separately owned. not a deployed artifact.",
       "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
@@ -459,9 +686,22 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/appearance/render.py#niri-neutral-slate.kdl",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus appearance component module",
       "notes": "Canvas and focus-ring appearance fragment for the existing Niri layout block. not a deployed artifact.",
+      "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
+    },
+    {
+      "path": "examples/theme/niri-plus-controls.rasi",
+      "sha256": "751d93d7247db77ea7d2cb0139e5efcbe8706ea4509b35d85a334e336ae590b5",
+      "kind": "generated first-party component export",
+      "module": "appearance",
+      "generated": true,
+      "generated_by": "scripts/export-components.py",
+      "generated_from": "components/appearance/render.py#niri-plus-controls.rasi",
+      "component_version": "0.4.0",
+      "source": "Niri Plus appearance component module",
+      "notes": "Unreleased direct Rofi controls candidate; generated from canonical desktop roles independently of terminal colors.",
       "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
     },
     {
@@ -472,7 +712,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/appearance/render.py#qt5-palette.conf",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus appearance component module",
       "notes": "Qt 5 QPalette colors only; style and dialog preferences remain separately owned. not a deployed artifact.",
       "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
@@ -485,7 +725,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/appearance/render.py#qt6-palette.conf",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus appearance component module",
       "notes": "Qt 6 QPalette colors only; style and dialog preferences remain separately owned. not a deployed artifact.",
       "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
@@ -498,7 +738,7 @@
       "generated": true,
       "generated_by": "scripts/export-components.py",
       "generated_from": "components/appearance/render.py#swaync.css",
-      "component_version": "0.3.1",
+      "component_version": "0.4.0",
       "source": "Niri Plus appearance component module",
       "notes": "CSS for the selected SwayNC fork; notification behavior remains separately owned. not a deployed artifact.",
       "identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"

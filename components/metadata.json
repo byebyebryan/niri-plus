@@ -1,11 +1,14 @@
 {
-  "version": "0.3.1",
+  "version": "0.4.0",
   "modules": {
     "desktop": {
       "prerequisites": [
         "Linux with a Wayland graphical session",
         "systemd --user for the reusable service units",
-        "Python 3.11 or newer for the Python helpers"
+        "Python 3.11 or newer for the Python helpers",
+        "Rofi 2.0 for direct Network, Audio and Bluetooth controls",
+        "PyGObject with NetworkManager/libnm and libsecret introspection for Network; BlueZ D-Bus for Bluetooth",
+        "pactl and an existing PulseAudio-compatible server for Audio; existing native owners are not installed or started by a menu"
       ]
     },
     "shell": {
@@ -24,62 +27,244 @@
     }
   },
   "files": [
-    { "path": "components/desktop/bin/desktop-power", "module": "desktop" },
-    { "path": "components/desktop/bin/desktop-session-menu", "module": "desktop" },
-    { "path": "components/desktop/bin/desktop-session-ready", "module": "desktop" },
-    { "path": "components/desktop/bin/notify-brightness", "module": "desktop" },
-    { "path": "components/desktop/bin/notify-volume", "module": "desktop" },
-    { "path": "components/desktop/bin/rofi-clipboard", "module": "desktop" },
-    { "path": "components/desktop/config/cliphist/config", "module": "desktop" },
-    { "path": "components/desktop/share/applications/niri-plus-audio.desktop", "module": "desktop" },
-    { "path": "components/desktop/share/applications/niri-plus-bluetooth.desktop", "module": "desktop" },
-    { "path": "components/desktop/share/applications/niri-plus-network.desktop", "module": "desktop" },
-    { "path": "components/desktop/share/applications/niri-plus-session.desktop", "module": "desktop" },
-    { "path": "components/desktop/systemd/user/clipboard-history@.service", "module": "desktop" },
-    { "path": "components/desktop/systemd/user/desktop-battery.service", "module": "desktop" },
-    { "path": "components/desktop/systemd/user/desktop-idle.service", "module": "desktop" },
-    { "path": "components/desktop/systemd/user/desktop-lock.service", "module": "desktop" },
-    { "path": "components/desktop/systemd/user/plasma-polkit-agent.service.d/session.conf", "module": "desktop" },
-    { "path": "components/shell/THIRD_PARTY_NOTICES.md", "module": "shell" },
-    { "path": "components/shell/fetch.py", "module": "shell" },
-    { "path": "components/shell/init.zsh", "module": "shell" },
-    { "path": "components/shell/p10k-custom-segments.zsh", "module": "shell" },
-    { "path": "components/shell/p10k.zsh", "module": "shell" },
-    { "path": "components/shell/pins.json", "module": "shell" },
-    { "path": "components/shell/zshrc", "module": "shell" },
-    { "path": "components/appearance/__init__.py", "module": "appearance" },
-    { "path": "components/appearance/ini_merge.py", "module": "appearance" },
-    { "path": "components/appearance/render.py", "module": "appearance" },
-    { "path": "components/appearance/sddm.py", "module": "appearance" }
+    {
+      "path": "components/desktop/bin/desktop-power",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/desktop-session-menu",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/desktop-session-ready",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/notify-brightness",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/notify-volume",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/rofi-clipboard",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/config/cliphist/config",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/share/applications/niri-plus-audio.desktop",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/share/applications/niri-plus-bluetooth.desktop",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/share/applications/niri-plus-network.desktop",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/share/applications/niri-plus-session.desktop",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/systemd/user/clipboard-history@.service",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/systemd/user/desktop-battery.service",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/systemd/user/desktop-idle.service",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/systemd/user/desktop-lock.service",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/systemd/user/plasma-polkit-agent.service.d/session.conf",
+      "module": "desktop"
+    },
+    {
+      "path": "components/shell/THIRD_PARTY_NOTICES.md",
+      "module": "shell"
+    },
+    {
+      "path": "components/shell/fetch.py",
+      "module": "shell"
+    },
+    {
+      "path": "components/shell/init.zsh",
+      "module": "shell"
+    },
+    {
+      "path": "components/shell/p10k-custom-segments.zsh",
+      "module": "shell"
+    },
+    {
+      "path": "components/shell/p10k.zsh",
+      "module": "shell"
+    },
+    {
+      "path": "components/shell/pins.json",
+      "module": "shell"
+    },
+    {
+      "path": "components/shell/zshrc",
+      "module": "shell"
+    },
+    {
+      "path": "components/appearance/__init__.py",
+      "module": "appearance"
+    },
+    {
+      "path": "components/appearance/ini_merge.py",
+      "module": "appearance"
+    },
+    {
+      "path": "components/appearance/render.py",
+      "module": "appearance"
+    },
+    {
+      "path": "components/appearance/sddm.py",
+      "module": "appearance"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/__init__.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/app.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/appearance.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/audio.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/bluetooth.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/bt_agent.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/fixture.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/model.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/network.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/nm_agent.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/nm_bus.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/rofi.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/lib/niri_plus_controls/runtime.py",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/desktop-controls",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/desktop-network-menu",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/desktop-audio-menu",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/desktop-bluetooth-menu",
+      "module": "desktop"
+    }
   ],
   "exports": [
-    { "path": "examples/clipboard/config", "component": "components/desktop/config/cliphist/config" },
+    {
+      "path": "examples/clipboard/config",
+      "component": "components/desktop/config/cliphist/config"
+    },
     {
       "path": "examples/clipboard/profiles/minimal-niri/clipboard-history@.service",
       "component": "components/desktop/systemd/user/clipboard-history@.service",
       "profile": "minimal-niri",
       "notes": "Selected minimal Niri service; the authored portable collector remains at the existing example path."
     },
-    { "path": "examples/clipboard/rofi-clipboard", "component": "components/desktop/bin/rofi-clipboard" },
-    { "path": "examples/desktop/desktop-session-menu", "component": "components/desktop/bin/desktop-session-menu" },
+    {
+      "path": "examples/clipboard/rofi-clipboard",
+      "component": "components/desktop/bin/rofi-clipboard"
+    },
+    {
+      "path": "examples/desktop/desktop-session-menu",
+      "component": "components/desktop/bin/desktop-session-menu"
+    },
     {
       "path": "examples/desktop/desktop-session-ready",
       "component": "components/desktop/bin/desktop-session-ready",
       "notes": "Checks whether the Wayland display socket accepts a connection; it does not identify the compositor."
     },
-    { "path": "examples/desktop/niri-plus-audio.desktop", "component": "components/desktop/share/applications/niri-plus-audio.desktop" },
-    { "path": "examples/desktop/niri-plus-bluetooth.desktop", "component": "components/desktop/share/applications/niri-plus-bluetooth.desktop" },
-    { "path": "examples/desktop/niri-plus-network.desktop", "component": "components/desktop/share/applications/niri-plus-network.desktop" },
-    { "path": "examples/desktop/niri-plus-session.desktop", "component": "components/desktop/share/applications/niri-plus-session.desktop" },
-    { "path": "examples/feedback/notify-brightness", "component": "components/desktop/bin/notify-brightness" },
-    { "path": "examples/feedback/notify-volume", "component": "components/desktop/bin/notify-volume" },
+    {
+      "path": "examples/desktop/direct-controls/niri-plus-audio.desktop",
+      "component": "components/desktop/share/applications/niri-plus-audio.desktop"
+    },
+    {
+      "path": "examples/desktop/direct-controls/niri-plus-bluetooth.desktop",
+      "component": "components/desktop/share/applications/niri-plus-bluetooth.desktop"
+    },
+    {
+      "path": "examples/desktop/direct-controls/niri-plus-network.desktop",
+      "component": "components/desktop/share/applications/niri-plus-network.desktop"
+    },
+    {
+      "path": "examples/desktop/niri-plus-session.desktop",
+      "component": "components/desktop/share/applications/niri-plus-session.desktop"
+    },
+    {
+      "path": "examples/feedback/notify-brightness",
+      "component": "components/desktop/bin/notify-brightness"
+    },
+    {
+      "path": "examples/feedback/notify-volume",
+      "component": "components/desktop/bin/notify-volume"
+    },
     {
       "path": "examples/login/derive-theme.py",
       "component": "components/appearance/sddm.py",
       "notes": "Standalone, generated SDDM preview helper; requires the pinned upstream theme tree and schema-2 identity, and never installs or activates the theme."
     },
-    { "path": "examples/session/desktop-battery.service", "component": "components/desktop/systemd/user/desktop-battery.service" },
-    { "path": "examples/session/desktop-idle.service", "component": "components/desktop/systemd/user/desktop-idle.service" },
+    {
+      "path": "examples/session/desktop-battery.service",
+      "component": "components/desktop/systemd/user/desktop-battery.service"
+    },
+    {
+      "path": "examples/session/desktop-idle.service",
+      "component": "components/desktop/systemd/user/desktop-idle.service"
+    },
     {
       "path": "examples/session/desktop-power",
       "component": "components/desktop/bin/desktop-power",
@@ -100,13 +285,102 @@
       "profile": "minimal-niri",
       "notes": "Selected Gtklock service; the authored portable unit remains at the existing example path."
     },
-    { "path": "examples/terminal/THIRD_PARTY_NOTICES.md", "component": "components/shell/THIRD_PARTY_NOTICES.md" },
-    { "path": "examples/terminal/fetch.py", "component": "components/shell/fetch.py" },
-    { "path": "examples/terminal/init.zsh", "component": "components/shell/init.zsh" },
-    { "path": "examples/terminal/p10k-custom-segments.zsh", "component": "components/shell/p10k-custom-segments.zsh" },
-    { "path": "examples/terminal/p10k.zsh", "component": "components/shell/p10k.zsh" },
-    { "path": "examples/terminal/pins.json", "component": "components/shell/pins.json" },
-    { "path": "examples/terminal/zshrc", "component": "components/shell/zshrc" }
+    {
+      "path": "examples/terminal/THIRD_PARTY_NOTICES.md",
+      "component": "components/shell/THIRD_PARTY_NOTICES.md"
+    },
+    {
+      "path": "examples/terminal/fetch.py",
+      "component": "components/shell/fetch.py"
+    },
+    {
+      "path": "examples/terminal/init.zsh",
+      "component": "components/shell/init.zsh"
+    },
+    {
+      "path": "examples/terminal/p10k-custom-segments.zsh",
+      "component": "components/shell/p10k-custom-segments.zsh"
+    },
+    {
+      "path": "examples/terminal/p10k.zsh",
+      "component": "components/shell/p10k.zsh"
+    },
+    {
+      "path": "examples/terminal/pins.json",
+      "component": "components/shell/pins.json"
+    },
+    {
+      "path": "examples/terminal/zshrc",
+      "component": "components/shell/zshrc"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/__init__.py",
+      "component": "components/desktop/lib/niri_plus_controls/__init__.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/app.py",
+      "component": "components/desktop/lib/niri_plus_controls/app.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/appearance.py",
+      "component": "components/desktop/lib/niri_plus_controls/appearance.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/audio.py",
+      "component": "components/desktop/lib/niri_plus_controls/audio.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/bluetooth.py",
+      "component": "components/desktop/lib/niri_plus_controls/bluetooth.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/bt_agent.py",
+      "component": "components/desktop/lib/niri_plus_controls/bt_agent.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/fixture.py",
+      "component": "components/desktop/lib/niri_plus_controls/fixture.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/model.py",
+      "component": "components/desktop/lib/niri_plus_controls/model.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/network.py",
+      "component": "components/desktop/lib/niri_plus_controls/network.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/nm_agent.py",
+      "component": "components/desktop/lib/niri_plus_controls/nm_agent.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/nm_bus.py",
+      "component": "components/desktop/lib/niri_plus_controls/nm_bus.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/rofi.py",
+      "component": "components/desktop/lib/niri_plus_controls/rofi.py"
+    },
+    {
+      "path": "examples/desktop/lib/niri_plus_controls/runtime.py",
+      "component": "components/desktop/lib/niri_plus_controls/runtime.py"
+    },
+    {
+      "path": "examples/desktop/desktop-controls",
+      "component": "components/desktop/bin/desktop-controls"
+    },
+    {
+      "path": "examples/desktop/desktop-network-menu",
+      "component": "components/desktop/bin/desktop-network-menu"
+    },
+    {
+      "path": "examples/desktop/desktop-audio-menu",
+      "component": "components/desktop/bin/desktop-audio-menu"
+    },
+    {
+      "path": "examples/desktop/desktop-bluetooth-menu",
+      "component": "components/desktop/bin/desktop-bluetooth-menu"
+    }
   ],
   "appearance_exports": [
     {
@@ -148,6 +422,16 @@
       "path": "examples/kitty/neutral-slate.conf",
       "artifact": "kitty-neutral-slate.conf",
       "notes": "Selected Balanced+ terminal colors only; existing Kitty behavior remains separately owned."
+    },
+    {
+      "path": "examples/theme/niri-plus-controls.rasi",
+      "artifact": "niri-plus-controls.rasi",
+      "notes": "Unreleased direct Rofi controls candidate; generated from canonical desktop roles independently of terminal colors."
+    },
+    {
+      "path": "examples/theme/controls-appearance.json",
+      "artifact": "controls-appearance.json",
+      "notes": "Unreleased direct Rofi controls candidate; generated from canonical desktop roles independently of terminal colors."
     }
   ]
 }

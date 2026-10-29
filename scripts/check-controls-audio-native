@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+"""Qualify the Audio adapter against owned PipeWire/Pulse virtual devices.
+
+WirePlumber runs its policy-only profile, without hardware monitors. No host
+audio socket or host bus is used.
+"""
+
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import uuid
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--lib-dir", type=Path, default=Path(__file__).resolve().parents[1] / "components/desktop/lib")
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+    sys.path.insert(0, str(args.lib_dir.resolve()))
+    from niri_plus_controls.audio import AudioBackend
+    from niri_plus_controls.model import OperationRequest, ResultKind, Utility
+
+    for binary in ("pipewire", "pipewire-pulse", "pactl", "wireplumber"):
+        if not shutil.which(binary):
+            raise SystemExit(f"Missing isolated proof prerequisite: {binary}")
+    checks = []
+    with tempfile.TemporaryDirectory(prefix="niri-plus-audio-native-") as temporary:
+        root = Path(temporary)
+        root.chmod(0o700)
+        env = {
+            "PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "HOME": str(root / "home"),
+            "XDG_RUNTIME_DIR": str(root), "PIPEWIRE_RUNTIME_DIR": str(root),
+            "PIPEWIRE_REMOTE": "controls-private", "PULSE_SERVER": "unix:" + str(root / "pulse.sock"),
+            "XDG_CONFIG_HOME": str(root / "config"), "XDG_DATA_HOME": str(root / "data"),
+            "XDG_STATE_HOME": str(root / "state"), "XDG_CACHE_HOME": str(root / "cache"),
+            "DBUS_SESSION_BUS_ADDRESS": "unix:path=" + str(root / "no-session-bus"),
+            "DBUS_SYSTEM_BUS_ADDRESS": "unix:path=" + str(root / "no-system-bus"),
+        }
+        core_config = root / "pipewire.conf"
+        core_config.write_text("""context.properties = { core.daemon = true core.name = controls-private support.dbus = false }
+context.spa-libs = { audio.convert.* = audioconvert/libspa-audioconvert support.* = support/libspa-support }
+context.modules = [
+ { name = libpipewire-module-protocol-native }
+ { name = libpipewire-module-metadata }
+ { name = libpipewire-module-spa-node-factory }
+ { name = libpipewire-module-client-node }
+ { name = libpipewire-module-adapter }
+ { name = libpipewire-module-link-factory }
+ { name = libpipewire-module-access }
+]
+""")
+        pulse_config = root / "pulse.conf"
+        pulse_config.write_text("""context.properties = { core.name = controls-private-pulse support.dbus = false }
+context.spa-libs = { audio.convert.* = audioconvert/libspa-audioconvert support.* = support/libspa-support }
+context.modules = [
+ { name = libpipewire-module-protocol-native }
+ { name = libpipewire-module-client-node }
+ { name = libpipewire-module-metadata }
+ { name = libpipewire-module-protocol-pulse args = { server.address = [ "unix:""" + str(root / "pulse.sock") + """" ] } }
+]
+""")
+        processes, logs = [], []
+
+        def pactl(*arguments):
+            result = subprocess.run(["pactl", "--format=json", *arguments], env=env,
+                                    capture_output=True, text=True, timeout=5)
+            if result.returncode:
+                raise subprocess.CalledProcessError(result.returncode, arguments, result.stdout, result.stderr)
+            return json.loads(result.stdout) if result.stdout.strip() else None
+
+        def assert_check(label, condition):
+            if not condition:
+                raise AssertionError(label)
+            checks.append(label)
+
+        backend = None
+        try:
+            for binary, config in (("pipewire", core_config), ("pipewire-pulse", pulse_config)):
+                log = (root / (binary + ".log")).open("wb")
+                logs.append(log)
+                processes.append(subprocess.Popen([binary, "-c", str(config)], env=env,
+                                                  stdin=subprocess.DEVNULL, stdout=log, stderr=log))
+            log = (root / "wireplumber.log").open("wb")
+            logs.append(log)
+            processes.append(subprocess.Popen(["wireplumber", "-p", "policy"], env=env,
+                                               stdin=subprocess.DEVNULL, stdout=log, stderr=log))
+            deadline = time.monotonic() + 5
+            while True:
+                try:
+                    info = pactl("info")
+                    break
+                except subprocess.CalledProcessError:
+                    if time.monotonic() >= deadline or any(p.poll() is not None for p in processes):
+                        raise RuntimeError("Owned audio services did not become ready") from None
+                    time.sleep(0.05)
+            assert_check("Pulse endpoint is the owned Unix socket", info["server_string"] == env["PULSE_SERVER"])
+            modules = []
+            for suffix in ("a", "b"):
+                modules.append(pactl("load-module", "module-null-sink", "sink_name=controls_output_" + suffix,
+                                     "sink_properties=device.description=Controls_Output_" + suffix.upper())["index"])
+            time.sleep(0.2)
+            pactl("set-default-sink", "controls_output_a")
+            pactl("set-default-source", "controls_output_a.monitor")
+            time.sleep(0.15)
+            backend = AudioBackend(runner=lambda command, **kwargs: subprocess.run(command, env=env, **kwargs))
+
+            def find(name, direction):
+                return next(t for t in backend.snapshot(Utility.AUDIO).targets
+                            if t.state["direction"] == direction
+                            and any(f.label == "Native device" and f.value == name for f in t.facts))
+
+            def execute(target, action_id):
+                action = next(a for a in backend.actions(target.ref) if a.action_id == action_id)
+                result = backend.execute(OperationRequest("audio-private-native", uuid.uuid4().hex, target.ref,
+                                                          action_id, target.revision, action.parameters))
+                assert_check("Native " + action_id + " completed", result.kind == ResultKind.COMPLETE)
+                return result
+
+            output = find("controls_output_a", "output")
+            mic = find("controls_output_a.monitor", "input")
+            assert_check("Virtual output default is observed", output.active)
+            assert_check("Virtual monitor input default is observed: " + str(pactl("info").get("default_source_name")), mic.active)
+            pactl("set-sink-volume", "controls_output_a", "32768", "16384")
+            for expected in (55, 60, 65):
+                execute(output, "volume-up")
+                assert_check("Repeated +5 observes fresh volume " + str(expected), backend.target(output.ref).state["volume_percent"] == expected)
+            volume = pactl("list", "sinks")[0]["volume"]
+            channels = [value["value"] for value in volume.values()]
+            assert_check("Asymmetric channel balance is preserved", abs(channels[0] / channels[1] - 2) < 0.001)
+            execute(mic, "mute")
+            execute(mic, "volume-down")
+            assert_check("Input volume does not unmute", backend.target(mic.ref).state["muted"] is True)
+            other_input = find("controls_output_b.monitor", "input")
+            execute(other_input, "set-default")
+            assert_check("Changing input default preserves output default", find("controls_output_a", "output").active)
+            execute(find("controls_output_b", "output"), "set-default")
+            assert_check("Changing output default preserves input default", find("controls_output_b.monitor", "input").active)
+            pactl("set-sink-volume", "controls_output_a", "150%")
+            execute(output, "volume-down")
+            assert_check("Existing amplified volume steps down gradually", backend.target(output.ref).state["volume_percent"] == 145)
+            execute(output, "volume-up")
+            assert_check("Up never increases existing volume above 100", backend.target(output.ref).state["volume_percent"] == 145)
+            pactl("unload-module", str(modules[0]))
+            pactl("load-module", "module-null-sink", "sink_name=controls_output_a")
+            stale = backend.execute(OperationRequest("audio-private-native", uuid.uuid4().hex, output.ref,
+                                                     "volume-up", output.revision, {"direction": "output"}))
+            assert_check("Recreated node rejects the previous native identity", stale.kind == ResultKind.ERROR)
+            for process in reversed(processes):
+                process.terminate()
+                process.wait(timeout=5)
+            assert_check("Missing owned server is unavailable without autostart", not backend.snapshot().targets)
+        finally:
+            if backend:
+                backend.close()
+            for process in reversed(processes):
+                if process.poll() is None:
+                    process.terminate()
+                    try:
+                        process.wait(timeout=3)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                        process.wait(timeout=3)
+            for log in logs:
+                log.close()
+        evidence = {
+            "scope": "Real PipeWire/Pulse virtual devices on private sockets; no physical audio acceptance",
+            "checks": checks, "check_count": len(checks),
+            "library": str(args.lib_dir.resolve()),
+            "audio_sha256": hashlib.sha256((args.lib_dir / "niri_plus_controls/audio.py").read_bytes()).hexdigest(),
+            "cleanup": "All owned service processes stopped; temporary socket tree removed on exit",
+        }
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(evidence, indent=2) + "\n")
+        print(json.dumps(evidence, indent=2))
+
+
+if __name__ == "__main__":
+    main()

@@ -5,6 +5,7 @@ import io
 import json
 from pathlib import Path
 import stat
+import subprocess
 import tarfile
 import tempfile
 import unittest
@@ -60,7 +61,15 @@ class ArchReferenceStageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.inputs = json.loads((ROOT / "tools/reference/inputs.json").read_text(encoding="utf-8"))
-        cls.component_manifest, cls.component_payloads = builder.manifest_for(ROOT, COMPONENT_COMMIT)
+        # Reproduce the published pin from its actual immutable tree. Current
+        # candidate bytes must never be mislabeled with a historic commit.
+        cls.release_tree = tempfile.TemporaryDirectory(prefix="niri-plus-release-tree-")
+        cls.addClassCleanup(cls.release_tree.cleanup)
+        archive = subprocess.run(["git", "archive", COMPONENT_COMMIT, "components"], cwd=ROOT,
+                                 check=True, capture_output=True).stdout
+        with tarfile.open(fileobj=io.BytesIO(archive)) as source:
+            source.extractall(cls.release_tree.name, filter="data")
+        cls.component_manifest, cls.component_payloads = builder.manifest_for(cls.release_tree.name, COMPONENT_COMMIT)
         cls.component_archive = builder.archive_bytes(cls.component_manifest, cls.component_payloads)
         cls.component_manifest_bytes = (json.dumps(cls.component_manifest, ensure_ascii=False, indent=2) + "\n").encode()
 

@@ -4,6 +4,11 @@ Status: proposed design, 2026-10-28; Plus picker UI refinement, 2026-10-29.
 This pass creates a plan and an illustrated preview; it does not replace
 utilities or qualify native behavior.
 
+Implementation now follows in the separate
+[0.4.0 candidate receipt](rofi-controls-implementation-receipt.md), which records
+the chosen native fallback, evidence and delivery boundary. The design-pass
+observations below remain historical inputs.
+
 The [pre-implementation review](rofi-controls-design-review.md) retains the
 visual direction and records interaction gates. Row-specific action labels,
 repeatable Audio actions, exact disruption scope and stateful sample outcomes

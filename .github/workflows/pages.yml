@@ -25,15 +25,17 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.11'
-      - name: Install Zsh for isolated shell checks
+      - name: Install isolated shell and native binding test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends --yes zsh
+          sudo apt-get install --no-install-recommends --yes zsh python3-gi gir1.2-nm-1.0 gir1.2-secret-1 dbus
           # The hosted image leaves system-owned completion ancestors writable.
           # Restore their normal audit boundary before copying fixture functions.
           sudo chmod go-w / /usr /usr/share /usr/share/zsh
       - name: Install build dependencies
         run: python -m pip install -r requirements.txt
+      - name: Check native controls bindings on system Python
+        run: /usr/bin/python3 -B -m unittest discover -s tests -p 'test_controls_*.py' -v
       - name: Check and build
         run: |
           python -B -m unittest discover -s tests -v

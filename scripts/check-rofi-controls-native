@@ -1,0 +1,883 @@
+#!/usr/bin/env python3
+"""Exercise native Rofi controls on an owned, headless Xvfb display only."""
+
+from __future__ import annotations
+
+import ctypes
+import argparse
+from contextlib import nullcontext
+from ctypes.util import find_library
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import re
+import select
+import shutil
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+
+
+ROOT = Path(__file__).resolve().parents[1]
+BIN = ROOT / "components/desktop/bin"
+LIB = ROOT / "components/desktop/lib"
+sys.path.insert(0, str(LIB))
+sys.path.insert(0, str(ROOT / "components/appearance"))
+
+from niri_plus_controls.model import Utility
+
+
+SENTINEL = b"fakesecretneverpersist9xq"
+XW, XH = 1280, 900
+
+
+class _XWindowAttributes(ctypes.Structure):
+    _fields_ = [
+        ("x", ctypes.c_int), ("y", ctypes.c_int), ("width", ctypes.c_int), ("height", ctypes.c_int),
+        ("border_width", ctypes.c_int), ("depth", ctypes.c_int), ("visual", ctypes.c_void_p),
+        ("root", ctypes.c_ulong), ("window_class", ctypes.c_int), ("bit_gravity", ctypes.c_int),
+        ("win_gravity", ctypes.c_int), ("backing_store", ctypes.c_int),
+        ("backing_planes", ctypes.c_ulong), ("backing_pixel", ctypes.c_ulong),
+        ("save_under", ctypes.c_int), ("colormap", ctypes.c_ulong), ("map_installed", ctypes.c_int),
+        ("map_state", ctypes.c_int), ("all_event_masks", ctypes.c_long), ("your_event_mask", ctypes.c_long),
+        ("do_not_propagate_mask", ctypes.c_long), ("override_redirect", ctypes.c_int), ("screen", ctypes.c_void_p),
+    ]
+
+
+def need(name):
+    path = shutil.which(name)
+    if not path:
+        raise RuntimeError(f"required headless proof tool is missing: {name}")
+    return path
+
+
+class XTest:
+    def __init__(self, display_name):
+        x11_name = find_library("X11")
+        xtst_name = find_library("Xtst")
+        if not x11_name or not xtst_name:
+            raise RuntimeError("libX11 and libXtst are required for private XTEST input")
+        self.x11 = ctypes.CDLL(x11_name)
+        self.xtst = ctypes.CDLL(xtst_name)
+        self.x11.XOpenDisplay.argtypes = [ctypes.c_char_p]
+        self.x11.XOpenDisplay.restype = ctypes.c_void_p
+        self.x11.XCloseDisplay.argtypes = [ctypes.c_void_p]
+        self.x11.XStringToKeysym.argtypes = [ctypes.c_char_p]
+        self.x11.XStringToKeysym.restype = ctypes.c_ulong
+        self.x11.XKeysymToKeycode.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
+        self.x11.XKeysymToKeycode.restype = ctypes.c_ubyte
+        self.x11.XFlush.argtypes = [ctypes.c_void_p]
+        self.x11.XSync.argtypes = [ctypes.c_void_p, ctypes.c_int]
+        self.x11.XDefaultRootWindow.argtypes = [ctypes.c_void_p]
+        self.x11.XDefaultRootWindow.restype = ctypes.c_ulong
+        self.x11.XQueryTree.argtypes = [
+            ctypes.c_void_p, ctypes.c_ulong, ctypes.POINTER(ctypes.c_ulong),
+            ctypes.POINTER(ctypes.c_ulong), ctypes.POINTER(ctypes.POINTER(ctypes.c_ulong)),
+            ctypes.POINTER(ctypes.c_uint),
+        ]
+        self.x11.XGetWindowAttributes.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.POINTER(_XWindowAttributes)]
+        self.x11.XFree.argtypes = [ctypes.c_void_p]
+        self.xtst.XTestFakeKeyEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.c_ulong]
+        self.xtst.XTestFakeKeyEvent.restype = ctypes.c_int
+        self.xtst.XTestFakeButtonEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.c_ulong]
+        self.xtst.XTestFakeButtonEvent.restype = ctypes.c_int
+        self.xtst.XTestFakeMotionEvent.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_ulong]
+        self.xtst.XTestFakeMotionEvent.restype = ctypes.c_int
+        self.display = self.x11.XOpenDisplay(display_name.encode("ascii"))
+        if not self.display:
+            raise RuntimeError("could not connect to the private Xvfb display")
+
+    def key(self, name, down=True):
+        keysym = self.x11.XStringToKeysym(name.encode())
+        if not keysym:
+            raise RuntimeError(f"unknown X11 keysym: {name}")
+        code = self.x11.XKeysymToKeycode(self.display, keysym)
+        if not code or not self.xtst.XTestFakeKeyEvent(self.display, code, int(down), 0):
+            raise RuntimeError(f"XTEST could not send key: {name}")
+        self.x11.XFlush(self.display)
+
+    def tap(self, name):
+        self.key(name, True)
+        time.sleep(0.025)
+        self.key(name, False)
+        time.sleep(0.04)
+
+    def type_text(self, value):
+        for char in value:
+            if char.isupper():
+                self.key("Shift_L", True)
+                self.tap(char)
+                self.key("Shift_L", False)
+            else:
+                self.tap("space" if char == " " else char)
+
+    def chord(self, modifier, key):
+        self.key(modifier, True)
+        self.tap(key)
+        self.key(modifier, False)
+
+    def shift_tab(self):
+        self.key("Shift_L", True)
+        self.tap("Tab")
+        self.key("Shift_L", False)
+
+    def move(self, x, y):
+        if not self.xtst.XTestFakeMotionEvent(self.display, 0, int(x), int(y), 0):
+            raise RuntimeError("XTEST could not move the private pointer")
+        self.x11.XFlush(self.display)
+        time.sleep(0.15)
+
+    def window_geometry(self):
+        root_window = self.x11.XDefaultRootWindow(self.display)
+        root_return = ctypes.c_ulong()
+        parent_return = ctypes.c_ulong()
+        children = ctypes.POINTER(ctypes.c_ulong)()
+        count = ctypes.c_uint()
+        if not self.x11.XQueryTree(
+            self.display, root_window, ctypes.byref(root_return), ctypes.byref(parent_return),
+            ctypes.byref(children), ctypes.byref(count),
+        ):
+            raise RuntimeError("could not inspect windows on the private X server")
+        geometries = []
+        try:
+            for index in range(count.value):
+                attrs = _XWindowAttributes()
+                if self.x11.XGetWindowAttributes(self.display, children[index], ctypes.byref(attrs)) and attrs.map_state == 2:
+                    geometries.append((attrs.width * attrs.height, attrs.x, attrs.y, attrs.width, attrs.height))
+        finally:
+            if children:
+                self.x11.XFree(children)
+        if not geometries:
+            raise RuntimeError("no mapped Rofi window exists on the private X server")
+        _, x, y, width, height = max(geometries)
+        return x, y, width, height
+
+    def click_primary(self):
+        self.xtst.XTestFakeButtonEvent(self.display, 1, 1, 0)
+        self.x11.XFlush(self.display)
+        time.sleep(0.04)
+        self.xtst.XTestFakeButtonEvent(self.display, 1, 0, 0)
+        self.x11.XFlush(self.display)
+        time.sleep(0.15)
+
+    def close(self):
+        if self.display:
+            self.x11.XCloseDisplay(self.display)
+            self.display = None
+
+
+def start_xvfb(env, temp):
+    read_fd, write_fd = os.pipe()
+    stderr_path = Path(temp) / "xvfb.stderr"
+    stderr = stderr_path.open("wb")
+    process = subprocess.Popen(
+        [need("Xvfb"), "-screen", "0", f"{XW}x{XH}x24", "-nolisten", "tcp", "-ac", "-displayfd", str(write_fd)],
+        pass_fds=(write_fd,),
+        stdout=subprocess.DEVNULL,
+        stderr=stderr,
+        env=env,
+        start_new_session=True,
+    )
+    os.close(write_fd)
+    ready, _, _ = select.select([read_fd], [], [], 5)
+    if not ready:
+        process.terminate()
+        raise RuntimeError("private Xvfb did not allocate a display")
+    display_number = os.read(read_fd, 32).decode("ascii").strip()
+    os.close(read_fd)
+    if not display_number.isdigit():
+        process.terminate()
+        raise RuntimeError("private Xvfb returned an invalid display number")
+    env["DISPLAY"] = ":" + display_number
+    return process
+
+
+def write_appearance(temp):
+    spec = importlib.util.spec_from_file_location("controls_proof_appearance", ROOT / "components/appearance/render.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    identity = json.loads((ROOT / "design/identity.json").read_text())
+    artifacts = module.render(identity)
+    theme = Path(temp) / "niri-plus-controls.rasi"
+    appearance = Path(temp) / "controls-appearance.json"
+    theme.write_text(artifacts["niri-plus-controls.rasi"])
+    appearance.write_text(artifacts["controls-appearance.json"])
+    return theme, appearance
+
+
+def read_trace(path):
+    if not path.exists():
+        return []
+    output = []
+    for line in path.read_text(errors="replace").splitlines():
+        try:
+            output.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return output
+
+
+def wait_for(predicate, *, timeout=8, message, process=None, stderr_path=None):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        value = predicate()
+        if value:
+            return value
+        if process is not None and process.poll() is not None:
+            stderr = stderr_path.read_text(errors="replace") if stderr_path and stderr_path.exists() else ""
+            raise RuntimeError(f"{message}: launcher exited {process.returncode}; stderr={stderr[-2000:]}")
+        time.sleep(0.05)
+    stderr = stderr_path.read_text(errors="replace") if stderr_path and stderr_path.exists() else ""
+    raise RuntimeError(f"{message}: timed out; stderr={stderr[-2000:]}")
+
+
+def latest_callback(path, *, after=0, predicate=lambda _entry: True):
+    entries = [entry for entry in read_trace(path) if entry.get("event") == "callback"]
+    matches = [entry for entry in entries[after:] if predicate(entry)]
+    return matches[-1] if matches else None
+
+
+def callback_count(path):
+    return len([item for item in read_trace(path) if item.get("event") == "callback"])
+
+
+def wait_callback(path, *, after=0, predicate=lambda _entry: True, process=None, stderr_path=None, timeout=8):
+    return wait_for(
+        lambda: latest_callback(path, after=after, predicate=predicate),
+        timeout=timeout,
+        message="Rofi callback",
+        process=process,
+        stderr_path=stderr_path,
+    )
+
+
+def press_and_wait(xtest, trace, key, predicate, *, process, stderr, timeout=8):
+    before = callback_count(trace)
+    xtest.tap(key)
+    return wait_callback(
+        trace,
+        after=before,
+        predicate=predicate,
+        process=process,
+        stderr_path=stderr,
+        timeout=timeout,
+    )
+
+
+def process_info(pid):
+    try:
+        stat_text = Path(f"/proc/{pid}/stat").read_text()
+        close = stat_text.rfind(")")
+        fields = stat_text[close + 2:].split()
+        ppid = int(fields[1])
+        cmdline = Path(f"/proc/{pid}/cmdline").read_bytes()
+        environ = Path(f"/proc/{pid}/environ").read_bytes()
+        return ppid, cmdline, environ
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def descendants(root_pid):
+    known = {root_pid}
+    found = {}
+    changed = True
+    while changed:
+        changed = False
+        for entry in Path("/proc").iterdir():
+            if not entry.name.isdigit():
+                continue
+            pid = int(entry.name)
+            if pid in known:
+                continue
+            info = process_info(pid)
+            if info and info[0] in known:
+                known.add(pid)
+                found[pid] = info[1:]
+                changed = True
+    return found
+
+
+def private_rofi_processes(env):
+    display_marker = f"DISPLAY={env['DISPLAY']}".encode()
+    matches = {}
+    for entry in Path("/proc").iterdir():
+        if not entry.name.isdigit():
+            continue
+        pid = int(entry.name)
+        info = process_info(pid)
+        if info is None:
+            continue
+        _ppid, cmdline, environ = info
+        if b"rofi" in cmdline.lower() and display_marker in environ.split(b"\0"):
+            matches[pid] = cmdline
+    return matches
+
+
+def rofi_children(root_pid):
+    binary = Path(need("rofi")).resolve()
+    return {
+        pid: value
+        for pid, value in descendants(root_pid).items()
+        if value[0] and Path(os.fsdecode(value[0].split(b"\0", 1)[0])).resolve() == binary
+    }
+
+
+def wait_rofi(root_pid, *, predicate, timeout=8, message="Rofi process"):
+    return wait_for(lambda: predicate(rofi_children(root_pid)), timeout=timeout, message=message)
+
+
+def start_menu(utility, temp, env, theme, appearance):
+    trace = Path(temp) / f"{utility.value}-{time.monotonic_ns()}.trace"
+    stderr = Path(temp) / f"{utility.value}-{time.monotonic_ns()}.stderr"
+    stderr_stream = stderr.open("wb")
+    wrapper = BIN / f"desktop-{utility.value}-menu"
+    process = subprocess.Popen(
+        [
+            str(wrapper),
+            "--fixture",
+            "--no-config",
+            "--appearance", str(appearance),
+            "--theme", str(theme),
+            "--proof-trace", str(trace),
+            "--rofi", need("rofi"),
+        ],
+        env=env,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=stderr_stream,
+        start_new_session=True,
+    )
+    wait_callback(trace, process=process, stderr_path=stderr, timeout=10)
+    launch = next((item for item in read_trace(trace) if item.get("event") == "rofi-launch"), None)
+    if launch is None or launch.get("pending_timeout") is not False or launch.get("timeout_delay") != 0:
+        raise RuntimeError("editable inventory started with a periodic Rofi timeout")
+    rofi = wait_rofi(process.pid, predicate=lambda items: any(b"-show\x00controls" in cmd for cmd, _env in items.values()), message="controls Rofi startup")
+    return process, trace, stderr, stderr_stream, rofi
+
+
+def frame_contains(entry, value):
+    return value.casefold() in (entry.get("frame") or "").casefold()
+
+
+def key_callback(xtest, trace, *, retv, selected=None, process=None, stderr=None):
+    before = len([item for item in read_trace(trace) if item.get("event") == "callback"])
+    if selected == "next":
+        xtest.tap("Tab")
+    elif selected == "previous":
+        xtest.shift_tab()
+    elif selected == "accept":
+        xtest.tap("Return")
+    else:
+        raise AssertionError("unsupported key callback helper")
+    return wait_callback(
+        trace,
+        after=before,
+        predicate=lambda entry: entry.get("retv") == retv,
+        process=process,
+        stderr_path=stderr,
+    )
+
+
+def screenshot(env, temp, label):
+    xwd = Path(temp) / f"{label}.xwd"
+    png = Path(temp) / f"{label}.png"
+    subprocess.run([need("xwd"), "-root", "-silent", "-out", str(xwd)], env=env, check=True, timeout=5)
+    subprocess.run([need("magick"), str(xwd), str(png)], env=env, check=True, timeout=10, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    ocr = subprocess.run(
+        [need("tesseract"), str(png), "stdout", "--psm", "6", "-l", "afr"],
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    ).stdout
+    return png, ocr
+
+
+def input_field_ocr(env, png, geometry, temp, label):
+    x, y, _width, _height = geometry
+    crop = Path(temp) / f"{label}-input.png"
+    subprocess.run(
+        [need("magick"), str(png), "-crop", f"340x52+{x + 95}+{y + 10}", "-resize", "300%", str(crop)],
+        env=env,
+        check=True,
+        timeout=10,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return subprocess.run(
+        [need("tesseract"), str(crop), "stdout", "--psm", "7", "-l", "afr"],
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    ).stdout
+
+
+def first_list_row_ocr(env, png, geometry, row_count, temp, label):
+    x, y, width, height = geometry
+    crop = Path(temp) / f"{label}-first-row.png"
+    row_height = 65
+    top = y + height - 12 - (row_count * row_height)
+    subprocess.run(
+        [
+            need("magick"), str(png), "-crop", f"{width - 52}x23+{x + 28}+{top + 14}",
+            "-resize", "300%", "-colorspace", "Gray", "-negate", "-threshold", "50%", str(crop),
+        ],
+        env=env,
+        check=True,
+        timeout=10,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return subprocess.run(
+        [need("tesseract"), str(crop), "stdout", "--psm", "7", "-l", "afr"],
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    ).stdout
+
+
+def action_line(ocr):
+    lines = [line.strip() for line in ocr.splitlines() if "enter" in line.casefold()]
+    if not lines:
+        raise RuntimeError("Rofi screenshot has no readable action strip: " + repr(ocr[:800]))
+    return re.sub(r"[^a-z0-9]+", " ", lines[0].casefold()).strip()
+
+
+def screenshot_boxes(env, png, text):
+    output = subprocess.run(
+        [need("tesseract"), str(png), "stdout", "--psm", "11", "-l", "afr", "tsv"],
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    ).stdout
+    matches = []
+    for row in output.splitlines()[1:]:
+        fields = row.split("\t")
+        if len(fields) < 12 or fields[11].strip().casefold() != text.casefold():
+            continue
+        try:
+            left, top, width, height = map(int, fields[6:10])
+        except ValueError:
+            continue
+        matches.append((left + width // 2, top + height // 2, float(fields[10])))
+    return sorted(matches, key=lambda item: item[1])
+
+
+def image_colors(png, env):
+    histogram = subprocess.run(
+        [need("magick"), str(png), "-format", "%c", "histogram:info:-"],
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    ).stdout.lower()
+    return histogram
+
+
+def assert_absent_from_processes(root_pid, value):
+    for _pid, (cmdline, environ) in descendants(root_pid).items():
+        if value in cmdline or value in environ:
+            raise RuntimeError("credential sentinel appeared in a process argument or environment")
+
+
+def finish_menu(process, trace, stderr, stderr_stream, xtest, env, *, expected_exit=True):
+    if process.poll() is None:
+        xtest.tap("Escape")
+    try:
+        process.wait(timeout=8)
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f"controls launcher did not exit after Escape; stderr={stderr.read_text(errors='replace')[-2000:]}")
+    stderr_stream.close()
+    if expected_exit and process.returncode != 0:
+        raise RuntimeError(f"controls launcher returned {process.returncode}: {stderr.read_text(errors='replace')[-2000:]}")
+    wait_for(
+        lambda: not private_rofi_processes(env),
+        timeout=3,
+        message="owned Rofi process cleanup on the private display",
+    )
+    wait_for(
+        lambda: not any(entry.name.startswith("invocation-") for entry in Path(env["XDG_RUNTIME_DIR"], "niri-plus-controls").iterdir()),
+        timeout=3,
+        message="private invocation directory cleanup",
+    )
+    text = trace.read_bytes() if trace.exists() else b""
+    if SENTINEL in text:
+        raise RuntimeError("credential sentinel appeared in UI state or proof trace")
+
+
+def native_network_duplicate_and_connect(xtest, env, temp, theme, appearance):
+    process, trace, stderr, stream, rofi = start_menu(Utility.NETWORK, temp, env, theme, appearance)
+    initial = next(item for item in read_trace(trace) if item.get("event") == "callback")
+    rows = [
+        row["info"]
+        for row in parse_frame_rows(initial["frame"])
+        if row["info"].get("row") == "target" and row["info"]["ref"]["stable_id"].startswith("nm:ap:studio:")
+    ]
+    ids = {row["ref"]["stable_id"] for row in rows}
+    if ids != {"nm:ap:studio:wlan0:01", "nm:ap:studio:wlan1:02"}:
+        raise RuntimeError(f"native list collapsed duplicate SSIDs: {ids}")
+    if initial["state"]["action_id"] != "open" or "Open" not in initial["frame"] or "Details" not in initial["frame"]:
+        raise RuntimeError("inventory did not show its fixed Open / Details strip")
+
+    xtest.type_text("studio")
+    time.sleep(0.2)
+    before_png, before_ocr = screenshot(env, temp, "network-filter")
+    before_geometry = xtest.window_geometry()
+    if "studio" not in input_field_ocr(env, before_png, before_geometry, temp, "network-filter").casefold():
+        raise RuntimeError("native Rofi filter did not retain the duplicate SSID text")
+    baseline = action_line(before_ocr)
+
+    tab = key_callback(xtest, trace, retv=16, selected="next", process=process, stderr=stderr)
+    if tab["state"]["page"] != "list" or tab["state"]["action_id"] != "details":
+        raise RuntimeError("Tab did not cycle the fixed list action")
+    shift = key_callback(xtest, trace, retv=17, selected="previous", process=process, stderr=stderr)
+    if shift["state"]["action_id"] != "open" or shift["selected"]["ref"]["stable_id"] != "nm:ap:studio:wlan0:01":
+        raise RuntimeError("Shift+Tab lost list selection or filter state")
+
+    xtest.tap("Down")
+    down = key_callback(xtest, trace, retv=16, selected="next", process=process, stderr=stderr)
+    if down["selected"]["ref"]["stable_id"] != "nm:ap:studio:wlan1:02":
+        raise RuntimeError("Down did not select the second duplicate SSID")
+    back = key_callback(xtest, trace, retv=17, selected="previous", process=process, stderr=stderr)
+    if back["state"]["action_id"] != "open" or back["selected"]["ref"]["stable_id"] != "nm:ap:studio:wlan1:02":
+        raise RuntimeError("action cycling lost the selected duplicate row")
+
+    # Move the private pointer over the first matching row, then compare only
+    # the native action strip. The target highlight may move; the strip is global.
+    x, y, width, height = before_geometry
+    xtest.move(x + width // 2, y + height - 107)
+    _, pointer_ocr = screenshot(env, temp, "network-pointer")
+    if action_line(pointer_ocr) != baseline:
+        raise RuntimeError("pointer movement changed the fixed Open / Details strip")
+    before_click = callback_count(trace)
+    xtest.click_primary()
+    entry = latest_callback(trace, after=before_click, predicate=lambda item: item["state"]["page"] == "target")
+    if entry is None:
+        xtest.tap("Return")
+        entry = wait_callback(trace, after=before_click, predicate=lambda item: item["state"]["page"] == "target", process=process, stderr_path=stderr)
+    if entry["state"]["target"]["stable_id"] not in ids:
+        raise RuntimeError("pointer acceptance did not pin one typed duplicate identity")
+    if any(event.get("event") == "execute" for event in entry.get("backend_events", [])):
+        raise RuntimeError("highlight or Open caused a native operation")
+    if entry["state"]["target"]["stable_id"] != "nm:ap:studio:wlan0:01":
+        raise RuntimeError("pointer selected the wrong duplicate row")
+    # Return through the target's fixed Back action and prove the filter survived.
+    press_and_wait(xtest, trace, "Tab", lambda item: item["state"]["action_id"] == "back", process=process, stderr=stderr)
+    press_and_wait(xtest, trace, "Return", lambda item: item["state"]["page"] == "list", process=process, stderr=stderr)
+    returned_png, returned_ocr = screenshot(env, temp, "network-back-filter")
+    returned_geometry = xtest.window_geometry()
+    if "studio" not in input_field_ocr(env, returned_png, returned_geometry, temp, "network-back-filter").casefold():
+        raise RuntimeError("Back discarded the Rofi filter")
+
+    # Pointer-select the second identical SSID by its screen row and typed ID.
+    x, y, width, height = returned_geometry
+    xtest.move(x + width // 2, y + height - 31)
+    pointer_baseline = action_line(returned_ocr)
+    _, pointer_again = screenshot(env, temp, "network-pointer-second")
+    if action_line(pointer_again) != pointer_baseline:
+        raise RuntimeError("pointer selection changed the list action strip")
+    before_click = callback_count(trace)
+    xtest.click_primary()
+    entry = latest_callback(trace, after=before_click, predicate=lambda item: item["state"]["page"] == "target")
+    if entry is None:
+        xtest.tap("Return")
+        entry = wait_callback(trace, after=before_click, predicate=lambda item: item["state"]["page"] == "target", process=process, stderr_path=stderr)
+    if entry["state"]["target"]["stable_id"] != "nm:ap:studio:wlan1:02":
+        raise RuntimeError("pointer selection did not pin the second duplicate SSID")
+    # Target strip order is Connect, Details, Back. Details is initially active.
+    press_and_wait(xtest, trace, "Tab", lambda item: item["state"]["action_id"] == "back", process=process, stderr=stderr)
+    press_and_wait(xtest, trace, "Tab", lambda item: item["state"]["action_id"] == "connect", process=process, stderr=stderr)
+    choice = press_and_wait(xtest, trace, "Return", lambda item: item["state"]["page"] == "connect-choice", process=process, stderr=stderr)
+    choices = parse_frame_rows(choice["frame"])
+    if not choices or choices[0]["info"].get("persistence") != "cancel":
+        raise RuntimeError("scope-sensitive connection choice is not Cancel-first")
+    cancelled = press_and_wait(xtest, trace, "Return", lambda item: item["state"]["page"] == "target", process=process, stderr=stderr)
+    if any(event.get("event") == "execute" for event in cancelled.get("backend_events", [])):
+        raise RuntimeError("Cancel-first connection choice submitted an operation")
+    # The Connect action remains pinned; choose Once before submitting.
+    choice = press_and_wait(xtest, trace, "Return", lambda item: item["state"]["page"] == "connect-choice", process=process, stderr=stderr)
+    xtest.tap("Down")
+    xtest.tap("Down")
+    before_submit = callback_count(trace)
+    xtest.tap("Return")
+    password_children = wait_for(
+        lambda: (
+            items if any(b"-password" in cmd for cmd, _env in items.values())
+            else None
+        ) if (items := rofi_children(process.pid)) else None,
+        message="masked password child",
+    )
+    if len(password_children) != 1:
+        raise RuntimeError("password prompt did not own exactly one private Rofi child")
+    password_pid, (password_cmd, password_env) = next(
+        (pid, item) for pid, item in password_children.items() if b"-password" in item[0]
+    )
+    if b"-disable-history" not in password_cmd or b"-dmenu" not in password_cmd:
+        raise RuntimeError("credential child lacks dmenu password mode or disabled history")
+    if any(b"-show\x00controls" in cmd for cmd, _env in rofi_children(process.pid).values()):
+        raise RuntimeError("old controls menu retained focus while password dmenu opened")
+    assert_absent_from_processes(process.pid, SENTINEL)
+    password_png, _ = screenshot(env, temp, "password-empty")
+    if not password_png.is_file():
+        raise RuntimeError("password child screenshot was not captured")
+    xtest.type_text(SENTINEL.decode("ascii"))
+    password_png, password_ocr = screenshot(env, temp, "password-masked")
+    if SENTINEL.decode().casefold() in password_ocr.casefold():
+        raise RuntimeError("password characters were visible in the native password child")
+    assert_absent_from_processes(process.pid, SENTINEL)
+    xtest.tap("Return")
+    wait_callback(
+        trace,
+        after=before_submit,
+        predicate=lambda item: item["state"]["page"] == "pending",
+        process=process,
+        stderr_path=stderr,
+        timeout=10,
+    )
+    completed = wait_callback(
+        trace,
+        predicate=lambda item: item["state"]["page"] == "target" and "Connected" in item.get("frame", ""),
+        process=process,
+        stderr_path=stderr,
+        timeout=5,
+    )
+    launches = wait_for(
+        lambda: launches if len(launches := [item for item in read_trace(trace) if item.get("event") == "rofi-launch"]) >= 3 else None,
+        timeout=8,
+        message="owned Rofi timer removal after pending completion",
+        process=process,
+        stderr_path=stderr,
+    )
+    if [item.get("pending_timeout") for item in launches] != [False, True, False]:
+        raise RuntimeError(f"pending timeout lifecycle was not scoped to the request: {launches}")
+    final_text = trace.read_bytes() + stderr.read_bytes()
+    if SENTINEL in final_text:
+        raise RuntimeError("credential sentinel entered callback state, backend events, or stderr")
+    all_events = completed.get("backend_events", [])
+    for event_name in ("execute", "secret-received", "pending-refresh"):
+        count = len([event for event in all_events if event.get("event") == event_name])
+        if count != 1:
+            raise RuntimeError(f"expected one {event_name} event, observed {count}")
+    received = next(event for event in all_events if event.get("event") == "secret-received")
+    if received.get("secret_recorded") is not False or received.get("bytes") != len(SENTINEL):
+        raise RuntimeError("fixture secret pipe did not consume the bounded sentinel")
+    finish_menu(process, trace, stderr, stream, xtest, env)
+    return trace
+
+
+def parse_frame_rows(frame):
+    marker = "\x00delim\x1f\\x1e\n"
+    if marker in frame:
+        rows = frame.split(marker, 1)[1]
+        records = [record for record in rows.split("\x1e") if "\x00info\x1f" in record]
+    else:
+        records = [record for record in frame.split("\x1e") if "\x00info\x1f" in record]
+    result = []
+    for record in records:
+        if "\x00" not in record:
+            continue
+        _, fields = record.split("\x00", 1)
+        values = fields.split("\x1f")
+        if "info" in values:
+            try:
+                result.append({"text": record.split("\x00", 1)[0], "info": json.loads(values[values.index("info") + 1])})
+            except (ValueError, IndexError):
+                continue
+    return result
+
+
+def native_network_confirmation_and_password_escape(xtest, env, temp, theme, appearance):
+    # Global radio confirmation is an isolated scope warning with Cancel first.
+    process, trace, stderr, stream, _ = start_menu(Utility.NETWORK, temp, env, theme, appearance)
+    xtest.type_text("wifi radio")
+    time.sleep(0.15)
+    xtest.tap("Return")
+    wait_callback(trace, predicate=lambda item: item["state"]["page"] == "target", process=process, stderr_path=stderr)
+    xtest.tap("Tab")
+    xtest.tap("Tab")
+    xtest.tap("Return")
+    confirm = wait_callback(trace, predicate=lambda item: item["state"]["page"] == "confirm", process=process, stderr_path=stderr)
+    choices = parse_frame_rows(confirm["frame"])
+    if choices[0]["info"].get("decision") != "cancel" or "wlan0" not in confirm["frame"] or "wlan1" not in confirm["frame"]:
+        raise RuntimeError("global Wi-Fi confirmation did not name affected radios and default Cancel")
+    xtest.tap("Return")
+    cancelled = wait_callback(trace, after=max(0, callback_count(trace) - 1), predicate=lambda item: item["state"]["page"] == "target", process=process, stderr_path=stderr)
+    if any(event.get("event") == "execute" for event in cancelled.get("backend_events", [])):
+        raise RuntimeError("default Cancel performed a global radio operation")
+    finish_menu(process, trace, stderr, stream, xtest, env)
+
+    # A separate invocation proves Escape in the masked password child cannot
+    # reopen the controls menu after cancellation.
+    process, trace, stderr, stream, _ = start_menu(Utility.NETWORK, temp, env, theme, appearance)
+    xtest.type_text("studio")
+    time.sleep(0.15)
+    xtest.tap("Down")
+    xtest.tap("Return")
+    wait_callback(trace, predicate=lambda item: item["state"]["page"] == "target" and item["state"]["target"]["stable_id"] == "nm:ap:studio:wlan1:02", process=process, stderr_path=stderr)
+    xtest.tap("Tab")
+    xtest.tap("Tab")
+    xtest.tap("Return")
+    wait_callback(trace, predicate=lambda item: item["state"]["page"] == "connect-choice", process=process, stderr_path=stderr)
+    xtest.tap("Down")
+    xtest.tap("Down")
+    xtest.tap("Return")
+    password = wait_for(
+        lambda: (
+            items if any(b"-password" in cmd for cmd, _env in items.values())
+            else None
+        ) if (items := rofi_children(process.pid)) else None,
+        message="password child for Escape test",
+    )
+    if not any(b"-password" in cmd for cmd, _env in password.values()):
+        raise RuntimeError("password dmenu did not open")
+    assert_absent_from_processes(process.pid, SENTINEL)
+    xtest.tap("Escape")
+    finish_menu(process, trace, stderr, stream, xtest, env)
+    all_events = [event for entry in read_trace(trace) for event in entry.get("backend_events", [])]
+    if any(event.get("event") == "secret-received" for event in all_events):
+        raise RuntimeError("password Escape submitted credential bytes")
+    if SENTINEL in trace.read_bytes():
+        raise RuntimeError("password Escape placed the sentinel in state")
+
+
+def native_audio_adjustments(xtest, env, temp, theme, appearance):
+    process, trace, stderr, stream, _ = start_menu(Utility.AUDIO, temp, env, theme, appearance)
+    initial = next(item for item in read_trace(trace) if item.get("event") == "callback")
+    active_png, active_ocr = screenshot(env, temp, "audio-active-row")
+    target_count = sum(
+        row["info"].get("row") == "target"
+        for row in parse_frame_rows(initial["frame"])
+    )
+    first_row = first_list_row_ocr(env, active_png, xtest.window_geometry(), target_count, temp, "audio-active-row")
+    if "usb speakers" not in first_row.casefold():
+        raise RuntimeError("Audio native list did not render its first target")
+    colors = image_colors(active_png, env)
+    if "srgb(53,61,48)" not in colors or "srgb(134,162,111)" not in colors:
+        raise RuntimeError("native selected.active derived fill/outline colors were not rendered")
+    if initial["state"]["page"] != "list":
+        raise RuntimeError("Audio invocation did not start at inventory")
+    xtest.tap("Return")
+    wait_callback(trace, predicate=lambda item: item["state"]["page"] == "target", process=process, stderr_path=stderr)
+    xtest.tap("Tab")
+    xtest.tap("Tab")
+    xtest.tap("Return")
+    wait_callback(trace, predicate=lambda item: item["state"]["page"] == "adjust", process=process, stderr_path=stderr)
+    for expected in (50, 55, 60):
+        before = callback_count(trace)
+        xtest.tap("Return")
+        entry = wait_callback(trace, after=before, predicate=lambda item: item["state"]["action_id"] == "volume-up", process=process, stderr_path=stderr)
+        if f"{expected}%" not in entry.get("frame", ""):
+            raise RuntimeError(f"native Audio did not render the updated {expected}% value inline")
+    # Adjust action strip: Volume+, Volume-, Mute. The same pinned device remains
+    # selected after both repeated operations and action cycling.
+    xtest.tap("Tab")
+    xtest.tap("Tab")
+    mute = latest_callback(trace)
+    if mute["state"]["action_id"] != "mute":
+        raise RuntimeError("native Audio Tab cycling did not select Mute")
+    xtest.tap("Return")
+    entry = wait_callback(trace, after=max(0, callback_count(trace) - 1), predicate=lambda item: item["state"]["action_id"] == "mute" and "Unmute" in item.get("frame", ""), process=process, stderr_path=stderr)
+    events = entry.get("backend_events", [])
+    operations = [event for event in events if event.get("event") == "execute"]
+    volume = [event for event in operations if event.get("action") == "volume-up"]
+    mute_ops = [event for event in operations if event.get("action") == "mute"]
+    if len(volume) != 3 or len(mute_ops) != 1 or mute_ops[0]["parameters"].get("desired_muted") is not True:
+        raise RuntimeError("native Audio did not send repeated +5 and explicit desired mute intent")
+    if entry["state"]["page"] != "adjust":
+        raise RuntimeError("Audio completion did not preserve the Adjust page")
+    finish_menu(process, trace, stderr, stream, xtest, env)
+    if SENTINEL in trace.read_bytes():
+        raise RuntimeError("Audio UI state unexpectedly contains the credential sentinel")
+
+
+def main():
+    global BIN
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--desktop-dir", type=Path, default=ROOT / "components/desktop",
+                        help="Source or extracted bundle desktop module (bin/ plus lib/)")
+    parser.add_argument("--output", type=Path, help="New/empty private artifact directory; retains screenshots and redacted fixture traces")
+    parser.add_argument("--only", choices=("all", "audio", "network"), default="all")
+    args = parser.parse_args()
+    BIN = args.desktop_dir.resolve() / "bin"
+    if args.output:
+        if args.output.is_symlink() or (args.output.exists() and any(args.output.iterdir())):
+            raise SystemExit("--output must be a new or empty non-symlink directory")
+        args.output.mkdir(parents=True, mode=0o700, exist_ok=True)
+        args.output.chmod(0o700)
+    rofi = need("rofi")
+    xvfb = need("Xvfb")
+    need("xwd")
+    need("magick")
+    need("tesseract")
+    binary = Path(rofi).resolve()
+    version = subprocess.run([str(binary), "-version"], capture_output=True, text=True, timeout=5, check=True).stdout.strip()
+    digest = hashlib.sha256(binary.read_bytes()).hexdigest()
+    with (nullcontext(str(args.output.resolve())) if args.output else tempfile.TemporaryDirectory(prefix="niri-plus-rofi-native-")) as temp, tempfile.TemporaryDirectory(prefix="npc-runtime-") as runtime_temp:
+        temp = Path(temp)
+        home = temp / "home"
+        runtime = Path(runtime_temp)
+        config = temp / "config"
+        cache = temp / "cache"
+        data = temp / "data"
+        for path in (home, runtime, config, cache, data):
+            path.mkdir(mode=0o700, exist_ok=True)
+            os.chmod(path, 0o700)
+        env = {
+            "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+            "HOME": str(home),
+            "XDG_RUNTIME_DIR": str(runtime),
+            "XDG_CONFIG_HOME": str(config),
+            "XDG_CACHE_HOME": str(cache),
+            "XDG_DATA_HOME": str(data),
+            "LANG": "C.UTF-8",
+            "LC_ALL": "C.UTF-8",
+        }
+        theme, appearance = write_appearance(temp)
+        xvfb_process = start_xvfb(env, temp)
+        xtest = None
+        try:
+            xtest = XTest(env["DISPLAY"])
+            if args.only in {"all", "network"}:
+                native_network_duplicate_and_connect(xtest, env, temp, theme, appearance)
+                native_network_confirmation_and_password_escape(xtest, env, temp, theme, appearance)
+            if args.only in {"all", "audio"}:
+                native_audio_adjustments(xtest, env, temp, theme, appearance)
+        finally:
+            if xtest is not None:
+                xtest.close()
+            if xvfb_process.poll() is None:
+                try:
+                    os.killpg(xvfb_process.pid, signal.SIGTERM)
+                    xvfb_process.wait(timeout=3)
+                except (ProcessLookupError, subprocess.TimeoutExpired):
+                    try:
+                        os.killpg(xvfb_process.pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    xvfb_process.wait(timeout=3)
+        if args.output:
+            (temp / "receipt.json").write_text(json.dumps({"status": "passed", "scope": "Private X11/Xvfb Rofi with inert stateful backend",
+                "version": version, "rofi_sha256": digest, "desktop_module": str(args.desktop_dir.resolve()), "slice": args.only,
+                "physical_devices": "not exercised", "cleanup": "owned Xvfb, menu, password and callback processes stopped"}, indent=2) + "\n")
+    print(f"Rofi binary: {binary}")
+    print(f"Rofi version: {version}")
+    print(f"Rofi SHA-256: {digest}")
+    print(f"Xvfb binary: {xvfb}")
+    print("PASS: private Xvfb/XTEST only; no host DISPLAY, Wayland, D-Bus, device, or service access")
+    print("This X11 proof is separate from later VM Wayland acceptance.")
+
+
+if __name__ == "__main__":
+    main()

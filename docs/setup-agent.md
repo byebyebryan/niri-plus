@@ -9,6 +9,12 @@ desktop and its choices.
 Agents: follow the numbered stages in order and open each linked recipe before
 applying its part.
 
+The numbered reference still selects released components **0.3.1**. Direct Rofi
+Network/Audio/Bluetooth controls are an independently reviewed **0.4.0 candidate**;
+use the [candidate recipe](recipes/rofi-controls.md) only when that source and
+scope were selected explicitly. Do not silently replace reference launcher
+entries, release pins, or personal chezmoi selectors with candidate files.
+
 ## Execution contract
 
 The target is one user-authorized Arch Linux x86-64 machine with an installed

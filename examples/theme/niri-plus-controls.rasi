@@ -1,0 +1,65 @@
+/* Neutral Slate. dms-* aliases retain the public Rofi Plus styling contract. */
+* {
+    dms-primary: #6eafff;
+    dms-primary-container: #294e75;
+    dms-surface: #1b1d1fff;
+    dms-surface-container: #111315;
+    dms-surface-container-high: #303336;
+    dms-surface-text: #efefec;
+    dms-surface-variant-text: #c9cbc8;
+    dms-outline: #81878c;
+    dms-primary-muted: #6eafff70;
+    dms-warning: #e9b55f;
+    dms-warning-muted: #e9b55f80;
+    dms-warning-container: #111315;
+    dms-danger: #f27d78;
+    dms-danger-muted: #f27d7880;
+    dms-danger-container: #111315;
+    dms-highlight: bold #6eafff;
+    background-color: transparent;
+    text-color: @dms-surface-text;
+    font: "Noto Sans 11";
+}
+window {
+    width: 52em;
+    padding: 12px;
+    border: 1px;
+    border-color: @dms-outline;
+    border-radius: 0px;
+    background-color: @dms-surface;
+    transparency: "real";
+}
+mainbox { spacing: 10px; background-color: transparent; }
+inputbar {
+    padding: 8px 10px;
+    spacing: 10px;
+    border: 1px;
+    border-color: #a6ceff;
+    border-radius: 3px;
+    background-color: @dms-surface-container;
+    children: [ prompt, entry ];
+}
+prompt { padding: 3px 7px; border-radius: 3px; background-color: @dms-surface-container-high; text-color: @dms-primary; }
+entry { padding: 0px 4px; placeholder: "Search applications"; placeholder-color: @dms-surface-variant-text; text-color: @dms-surface-text; cursor-color: #a6ceff; }
+listview { lines: 9; columns: 1; fixed-height: false; dynamic: true; scrollbar: false; spacing: 5px; background-color: transparent; }
+element { padding: 10px 12px; spacing: 12px; border: 0px 0px 0px 3px; border-color: transparent; border-radius: 3px; background-color: transparent; text-color: @dms-surface-text; }
+element selected { background-color: @dms-primary-container; border-color: #a6ceff; text-color: #efefec; }
+element active { background-color: @dms-surface-container-high; border-color: @dms-primary-muted; }
+element selected.active { background-color: @dms-primary-container; border-color: #a6ceff; }
+element-icon { size: 1.75em; vertical-align: 0.5; }
+element-text { vertical-align: 0.5; highlight: @dms-highlight; }
+message { padding: 8px 10px; border: 1px; border-color: @dms-outline; border-radius: 3px; background-color: @dms-surface-container; }
+textbox { text-color: @dms-surface-variant-text; }
+message textbox { markup: true; }
+mode-switcher, case-indicator { enabled: false; }
+
+/* Controls only: independent current/default and keyboard-selection states. */
+element { border: 1px; border-color: transparent; padding: 9px 8px; }
+entry { placeholder: "Search devices"; }
+element-text { border: 0px 0px 0px 3px; border-color: transparent; padding: 0px 0px 0px 8px; }
+element normal.normal { border-color: transparent; }
+element normal.active { background-color: #353d30; border-color: #86a26f; }
+element selected.normal { background-color: #294e75; border-color: transparent; }
+element selected.active { background-color: #294e75; border-color: #86a26f; }
+element-text selected.normal { border-color: #a6ceff; }
+element-text selected.active { border-color: #a6ceff; }

@@ -4,6 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>Niri Plus · Direct Rofi controls design</title>
+<link rel="canonical" href="https://dev.byebyebryan.com/niri-plus/design/rofi-controls/">
 <style>
 @font-face{font-family:Noto;src:url('../assets/fonts/noto.woff2') format('woff2');font-weight:400;font-display:swap}
 @font-face{font-family:Noto;src:url('../assets/fonts/noto-semibold.woff2') format('woff2');font-weight:600;font-display:swap}
@@ -62,6 +63,12 @@ p{margin:0 0 14px}.lead{font-size:17px;color:var(--secondary)}.muted,small{color
 .preview-controls>.preview-buttons{margin-top:10px}.preview-controls>.preview-buttons:first-of-type{margin-top:0}
 .preview-buttons button{font-size:12px;background:transparent;padding:5px 9px}
 .preview-controls p{font-size:12px;color:var(--muted);margin:0 0 8px}
+.credential-preview{margin:14px 0;padding:14px;border:1px dashed var(--separator);border-radius:3px;background:var(--surface)}
+.credential-preview h3{margin:0 0 6px;font-size:14px}
+.credential-preview p{font-size:12px;color:var(--secondary);margin:0 0 10px}
+.credential-mask{display:inline-block;padding:6px 10px;margin:0 0 10px;border:1px solid var(--separator);background:var(--input);letter-spacing:.18em}
+.preview-status{font-size:12px;color:var(--muted);margin:12px 0 0}
+.closed-note{padding:16px;border:1px solid var(--separator);background:var(--surface);color:var(--secondary)}
 .aside{border-top:2px solid var(--accent);padding-top:14px}
 .aside p,.aside li{font-size:14px;color:var(--secondary)}.aside ul{padding-left:18px}.aside h2{font-size:17px}
 .flow{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 18px}.flow span{font-size:12px;color:var(--secondary);border-bottom:2px solid var(--separator);padding:4px 0}.flow span.current{border-color:var(--accent);color:var(--text)}
@@ -72,275 +79,1006 @@ p{margin:0 0 14px}.lead{font-size:17px;color:var(--secondary)}.muted,small{color
 noscript p{padding:16px;border:1px solid var(--warning)}.static-flow{color:var(--secondary);font-size:14px}.static-flow li{margin-bottom:6px}
 footer{margin-top:32px;font-size:12px;color:var(--muted)}[hidden]{display:none!important}
 @media(max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}.aside{max-width:760px;display:grid;grid-template-columns:1fr 1fr;gap:16px}.aside h2{grid-column:1/-1}.aside h3{margin-top:0}.cards{grid-template-columns:1fr}}
-@media(max-width:480px){.wrap{padding:24px 16px 40px}.aside{display:block}.rofi{padding:12px}.inputbar{gap:6px;padding:8px}.prompt{font-size:13px;max-width:60%;padding:3px 5px}.filter{font-size:13px}.row{padding:10px 12px}.row-name{font-size:14px}.action-hint{font-size:12px}.message{padding:8px 10px}}
+@media(max-width:480px){.wrap{padding:24px 16px 40px}.aside{display:block}.rofi{padding:12px}.inputbar{gap:6px;padding:8px;flex-wrap:wrap}.prompt{font-size:13px;max-width:100%;padding:3px 5px;overflow-wrap:anywhere}.filter{font-size:13px;flex-basis:100%;width:100%;padding:2px 4px}.entry-placeholder{flex-basis:100%;padding:2px 4px}.row{padding:10px 12px}.row-name{font-size:14px}.action-hint{font-size:12px}.message{padding:8px 10px}}
 </style>
 <div class="wrap">
 <header>
-  <p class="eyebrow">Niri Plus / next desktop pass</p>
+  <p class="eyebrow">Niri Plus / direct Rofi controls</p>
   <h1>Everyday controls, a few keystrokes away.</h1>
-  <p class="lead">Choose Wi-Fi, switch output, connect headphones. Familiar launcher entries, the Plus picker interface.</p>
-  <p class="notice"><strong>Design illustration · fictional data.</strong> These controls simulate outcomes in this page only. They do not operate the computer or collect passwords. Native Rofi behavior still needs qualification.</p>
+  <p class="lead">Choose a network, adjust an audio device, or pair and reconnect a Bluetooth device. Each operation stays attached to the target you opened.</p>
+  <p class="notice"><strong>Design illustration · fictional data.</strong> The sample controls below change this page’s local fixture only. They do not operate the computer. Network credentials and Bluetooth authentication values are shown as synthetic, input-free samples. The native Bluetooth candidate passed 10 behavioral checks against a synthetic BlueZ service through GIO methods and Agent1; resource counters were clean. Physical-device proof remains pending.</p>
 </header>
 <main>
 <div class="layout">
 <section aria-label="Interactive sample controls">
-  <div class="categories" aria-label="Choose utility">
-    <button data-category="Network" aria-pressed="true">Network · first</button>
+  <div class="categories" aria-label="Choose sample utility">
+    <button data-category="Network" aria-pressed="true">Network</button>
     <button data-category="Audio" aria-pressed="false">Audio</button>
     <button data-category="Bluetooth" aria-pressed="false">Bluetooth</button>
-    <button data-category="Session" aria-pressed="false">Session · existing</button>
   </div>
-  <div class="flow" aria-label="Network journey"><span data-step="list" class="current">1 Choose</span><span data-step="password">2 Credential</span><span data-step="review">3 Review</span><span data-step="pending">4 Connecting</span><span data-step="result">5 Result</span></div>
-  <div class="rofi" tabindex="0" aria-label="Sample Plus picker; Up/Down selects, Tab cycles actions, Enter accepts, Escape closes">
+  <div class="rofi" id="rofi" tabindex="0" aria-label="Sample Plus picker; Up and Down select rows, Tab cycles named actions, Enter accepts, Escape closes">
     <div class="inputbar">
       <h2 class="prompt" id="title">Network</h2>
       <input class="filter" id="filter" aria-label="Filter sample devices" placeholder="Search networks…" autocomplete="off" spellcheck="false">
       <span class="entry-placeholder" id="entry-placeholder" hidden>Choose an action…</span>
-      <span class="mask" aria-label="Illustrated masked password, not an input" hidden>••••••••••••</span>
     </div>
-    <div class="message" id="actionbar"><div class="action-hint" id="action-hint">Enter: [Details] · Disconnect │ Tab: Cycle actions</div><p class="context" id="context">Wi-Fi on · wlan0 · Home connected</p></div>
-    <div class="rows" id="rows">
-      <div class="static-flow"><p>Network-first design:</p><ol><li>Select a saved or nearby Wi-Fi network.</li><li>Supply credentials if needed.</li><li>Choose Connect and remember or Connect once.</li><li>See progress and a specific result.</li></ol><p>Audio and Bluetooth follow the same Plus picker conventions. Session keeps its existing guarded actions.</p></div>
-    </div>
+    <div class="message" id="actionbar"><div class="action-hint" id="action-hint">Enter: [Open] · Details │ Tab: Cycle actions</div><p class="context" id="context">Wi-Fi on · wlan0 and wlan1 · Home connected</p></div>
+    <div class="rows" id="rows"></div>
   </div>
-  <p class="caption">Plus picker layout: prompt/search → action strip and inline notices → rows. Same 52em native target, 12px padding and left selection edge. Click selects; double-click accepts in this sketch. Focus the frame or filter for ↑/↓, Tab/Shift+Tab, Enter and Escape; Escape releases focus.</p>
-  <p class="caption" id="state-legend"><span class="status-connected">● Connected</span> has a green-tinted background and outline; <span class="status-saved">◇ Saved</span> keeps an emphasized name and label. Blue fill and the left edge show keyboard selection; the green outline and state label persist when selected. Use “Compare row states” to see the distinction.</p>
+  <p class="caption" id="interaction-note">The landing page always offers <strong>Open</strong> and <strong>Details</strong>. Open pins the selected target before showing its actions. Moving through landing rows never changes the operation under the action strip. Click selects; double-click accepts in this illustration. Native pointer behavior is not claimed here.</p>
+  <p class="caption" id="state-legend"><span class="status-connected">● Connected</span> and <span class="status-current">● Default</span> use a green frame; blue fill and the left edge indicate keyboard selection independently. <span class="status-saved">◇ Saved</span> and <span class="status-known">◇ Paired</span> remain text labels without a current-state frame. <span class="status-muted">Muted</span> is amber.</p>
+  <p class="caption closed-note" id="closed-note" hidden>The illustrated picker is closed. Its sample state remains in this page. Reopen it to inspect the pending sample request or return to the selected target.</p>
+  <div class="credential-preview" id="credential-preview" hidden>
+    <h3>Credential prompt sample · web illustration only</h3>
+    <p id="credential-copy">A native secret prompt may be requested for this network. This sample has no password field and accepts or stores no secret.</p>
+    <div class="credential-mask" aria-label="Decorative mask only; no credential is present">••••••••••</div>
+    <div class="preview-buttons"><button id="credential-continue">Continue sample request · no secret</button><button id="credential-cancel">Cancel sample request</button></div>
+  </div>
+  <div class="credential-preview" id="pair-secret-preview" hidden>
+    <h3 id="pair-secret-title">Bluetooth authentication sample · web illustration only</h3>
+    <p id="pair-secret-copy">A temporary BlueZ agent requested a PIN or passkey for the pinned sample device. This page accepts no authentication input.</p>
+    <div class="credential-mask" id="pair-secret-mask" aria-label="Decorative mask only; no authentication value is present">••••••</div>
+    <div class="preview-buttons"><button id="pair-secret-continue">Submit synthetic response · no value</button><button id="pair-secret-cancel">Cancel sample pairing</button></div>
+  </div>
+  <div class="credential-preview" id="advanced-handoff" hidden>
+    <h3>Sample native handoff · no external launch</h3>
+    <p id="advanced-handoff-copy">The native controller hands this row to its existing editor or recovery tool when that tool is installed. This web illustration opened no program.</p>
+    <div class="preview-buttons"><button id="advanced-return">Return to sample list</button></div>
+  </div>
   <fieldset class="preview-controls">
-    <legend>Web preview controls · outside the native UI</legend>
-    <div class="preview-buttons"><button id="previous-action">← Action</button><button id="next-action">Next action →</button><button id="run">Run selected</button></div>
-    <div class="preview-buttons" id="credential-controls" hidden><button id="credential-continue">Continue with sample credential</button></div>
-    <div id="outcome-controls" hidden><p style="margin-top:12px">Choose a fictional result for the pending connection:</p><div class="preview-buttons"><button data-outcome="success">Simulate connected</button><button data-outcome="failure">Simulate wrong password</button><button data-outcome="limited">Simulate limited access</button></div></div>
-    <div class="preview-buttons"><button id="compare-states">Compare row states</button><button id="new-wifi">Try new Wi-Fi</button><button id="disconnect">Preview disconnect</button><button id="reset">Reset sample</button></div>
+    <legend>Web preview controls · sample state only · outside the illustrated native picker</legend>
+    <div class="preview-buttons">
+      <button id="previous-action">← Cycle action</button>
+      <button id="next-action">Cycle action →</button>
+      <button id="run">Accept selected action</button>
+      <button id="close-menu">Close sample menu</button>
+      <button id="reopen-menu">Reopen sample menu</button>
+    </div>
+    <div class="preview-buttons" id="sample-outcomes" hidden>
+      <button data-outcome="success">Simulate sample success</button>
+      <button data-outcome="failure">Simulate sample failure</button>
+      <button data-outcome="limited">Simulate sample limited connectivity</button>
+    </div>
+    <div class="preview-buttons" id="pairing-samples" hidden>
+      <button id="show-pin-request">Show synthetic PIN request</button>
+      <button id="show-passkey-request">Show synthetic passkey request</button>
+      <button id="show-match-confirmation">Show synthetic matching-code confirmation</button>
+      <button id="show-keyboard-display">Show synthetic keyboard code and progress</button>
+      <button id="complete-pairing">Simulate pairing success</button>
+      <button id="fail-pairing">Simulate pairing failure</button>
+    </div>
+    <div class="preview-buttons" id="open-warning-samples" hidden>
+      <button id="change-open-network">Simulate sample security/revision change</button>
+    </div>
+    <div class="preview-buttons">
+      <button id="compare-states">Compare selected/current states</button>
+      <button id="select-new-network">Select new Wi-Fi sample</button>
+      <button id="set-overrange">Set USB speakers sample to 120%</button>
+      <button id="reset">Reset sample state</button>
+    </div>
+    <p class="preview-status" id="preview-status" aria-live="polite">Sample outcomes are local to this web page; no native action is submitted.</p>
   </fieldset>
-  <noscript><p>The interactive sketch requires JavaScript. The journey above and the design plan below remain readable.</p></noscript>
+  <noscript><p>The interactive illustration requires JavaScript. The planning page and appearance notes remain readable.</p></noscript>
 </section>
 <aside class="aside">
-  <h2 id="aside-title">Network first</h2>
-  <div><h3>Routine actions here</h3><p id="aside-copy">Active and saved networks, nearby Wi-Fi, connection details, radio state and refresh. Advanced settings stays one handoff away.</p><h3>State is part of the design</h3><p>Connecting is a visible state. A specific failure offers a next step. Accepted by the backend does not mean connected.</p></div>
-  <div><h3>The familiar Plus interface</h3><ul><li>Up/Down chooses the object.</li><li>Tab changes its named action.</li><li>Enter runs the visible action.</li><li>The filter and selection stay put.</li></ul><p>Same prompt/search, bracketed action strip and compact rows as SSH, Tmux and Agent Plus. Warm surfaces and Clear Blue selection stay.</p></div>
+  <h2 id="aside-title">Fixed entry, pinned target</h2>
+  <div>
+    <h3>Landing and target pages</h3>
+    <p id="aside-copy">The landing action pair stays Open and Details for every row. Open pins one native identity; target actions then belong to that target until Back.</p>
+    <h3>Details and confirmation</h3>
+    <p>Details has a Back row. Destructive confirmations name their exact target or full radio scope, with Cancel first and selected by default.</p>
+  </div>
+  <div>
+    <h3>The familiar Plus interface</h3>
+    <ul><li>Up/Down selects a row.</li><li>Tab/Shift+Tab cycles named actions.</li><li>Enter accepts the visible action.</li><li>Back restores the landing filter and selection.</li></ul>
+    <p>Current-state green frames, blue selection, the compact action strip and warm Neutral Slate surfaces stay within the Plus picker.</p>
+  </div>
 </aside>
 </div>
 <section class="section">
-  <h2>A complete Network flow before more menus.</h2>
+  <h2>Three focused utilities, each on its own page.</h2>
   <div class="cards">
-    <div class="card"><span class="number">01 / Network</span><h3>Connect with confidence</h3><p>Saved and new personal Wi-Fi, readable progress, guarded disconnect, credentials and cancellation. Prove the Rofi and native credential lifecycles first.</p></div>
-    <div class="card"><span class="number">02 / Audio</span><h3>Pick what you hear</h3><p>Output/input, default device, volume and mute. Keep per-app mixing and profile changes in Pavucontrol. Default changes do not silently move existing streams.</p></div>
-    <div class="card"><span class="number">03 / Bluetooth</span><h3>Reconnect, then pair</h3><p>Paired devices and power first. Add bounded discovery, pairing and passkey confirmation after that. Trust is an explicit choice.</p></div>
+    <div class="card"><span class="number">01 / Network</span><h3>Warn before open Wi-Fi</h3><p>Every open-network Connect action shows a Cancel-first warning naming the network and interface. Continuing rechecks that same target’s security and revision. New profiles then offer persistence choices; saved open profiles proceed to activation. The global Wi-Fi switch names affected interfaces and connections; Ethernet remains outside its scope.</p></div>
+    <div class="card"><span class="number">02 / Audio</span><h3>Adjust without losing the target</h3><p>Set an output or input default, then use a focused Adjust page for repeatable ±5% and mute actions. Changes update inline. Volume adjustments never unmute a microphone.</p></div>
+    <div class="card"><span class="number">03 / Bluetooth</span><h3>Pair, then choose trust</h3><p>Pair a discovered device after a Cancel-first preflight that names its address and adapter. PIN/passkey prompts, matching-code confirmation and keyboard display are temporary and device-scoped. Trust is a separate confirmed action after pairing. Ten behavioral checks passed against a synthetic BlueZ service through GIO methods and Agent1; physical-device proof remains pending.</p></div>
   </div>
 </section>
 <section class="section">
   <h2>Keep the desktop easy to reason about.</h2>
-  <p class="muted">SwayNC shows status. Rofi performs short actions. NetworkManager, BlueZ and the existing audio stack keep control of devices. Session and Clipboard retain their tested behavior.</p>
-  <details><summary>Close menu versus cancel connection</summary><p class="muted" style="margin-top:12px">Before submission, Escape means no action. After NetworkManager accepts a connection, closing the menu leaves that native request running. “Cancel connection” is a separate targeted action. It must never disconnect a replacement connection started elsewhere. It also does not promise to restore the previous network.</p></details>
-  <div class="links"><a href="http://starship:8787/reports/8e684129ed5bb400428abdbae23e205b6734b6b8997f2d27a1b228d9cb022cca/">Previous design preview</a><a href="../../docs/planning/rofi-controls-pass.md">Full plan, scope and acceptance gates →</a><a href="https://dev.byebyebryan.com/niri-plus/design/">Current desktop identity</a><a href="https://dev.byebyebryan.com/niri-plus/setup/">Published setup overview</a></div>
+  <p class="muted">SwayNC shows status. Rofi performs short actions. NetworkManager, the audio service and BlueZ keep control of devices. Advanced settings hands off to the installed native editor or recovery tool. Session and Clipboard retain their own helpers.</p>
+  <details><summary>Close menu, Cancel connection and Stop waiting</summary><p class="muted" style="margin-top:12px">Close menu dismisses the picker. Network’s separate Cancel connection targets its owned activation and does not restore an earlier link. Bluetooth’s Stop waiting ends this client’s observation; the native connection request may still finish. The web sample changes no real service.</p></details>
+  <div class="links"><a href="../../recipes/rofi-controls/">Public scope and acceptance guide →</a><a href="https://dev.byebyebryan.com/niri-plus/design/">Current desktop identity</a><a href="https://dev.byebyebryan.com/niri-plus/setup/">Published setup overview</a></div>
 </section>
 </main>
-<footer>Plus UI design refinement · 2026-10-29 · sample names and documentation-range addresses · no component release or host rollout in this pass.</footer>
+<footer>Plus picker interaction refinement · 2026-10-29 · fictional sample state only · no native service, device, rollout or release acceptance.</footer>
 </div>
 <script>
 const $ = (selector) => document.querySelector(selector);
-const text = (value) => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-let category='Network', view='list', selected='home', action=0, filter='', target=null;
-let result='', tone='ok', confirmAction='', preference='remember', choice=0, choices=[];
-const networks=[
- {id:'home',name:'Home',sub:'wlan0 · WPA2 Personal · 88%',state:'Connected',actions:['Details','Disconnect']},
- {id:'studio',name:'Studio',sub:'wlan0 · WPA3 Personal · 76%',state:'Saved',actions:['Connect','Details']},
- {id:'atelier',name:'Atelier',sub:'wlan0 · WPA3 Personal · 69%',state:'New',actions:['Connect','Details']},
- {id:'guest',name:'Guest Wi-Fi',sub:'wlan0 · Open network · 55%',state:'Open',actions:['Connect','Details']},
- {id:'radio',name:'Wi-Fi radio',sub:'wlan0 · software radio enabled',state:'On',actions:['Turn off']},
- {id:'refresh',name:'Refresh networks',sub:'Read fresh state and request a bounded scan',state:'',actions:['Refresh']},
- {id:'advanced',name:'Advanced settings…',sub:'Profiles, enterprise Wi-Fi, VPN and addressing',state:'',actions:['Open settings']}
-];
-const inventories={Network:networks,Audio:[
- {id:'speakers',name:'USB speakers',sub:'Output · 45% · not muted',state:'Default output',role:'output',isDefault:true,volume:45,muted:false,available:true,actions:['Details','Volume +5%','Volume −5%','Mute']},
- {id:'headphones',name:'Headphones',sub:'Output · 30% · not muted',state:'Available',role:'output',isDefault:false,volume:30,muted:false,available:true,actions:['Set default','Details','Volume +5%','Volume −5%','Mute']},
- {id:'mic',name:'USB microphone',sub:'Input · 65% · muted',state:'Default input',role:'input',isDefault:true,volume:65,muted:true,available:true,actions:['Details','Unmute','Volume +5%','Volume −5%']},
- {id:'hdmi',name:'HDMI / DisplayPort',sub:'Output · cable disconnected',state:'Unavailable',role:'output',available:false,actions:['Details']},
- {id:'mixer',name:'Advanced mixer…',sub:'Per-app routing, device profiles and existing streams',state:'',actions:['Open mixer']}
-],Bluetooth:[
- {id:'keyboard',name:'Mechanical keyboard',sub:'Paired · trusted · battery 82%',state:'Connected',device:true,connected:true,paired:true,battery:82,actions:['Details','Disconnect']},
- {id:'bt-headphones',name:'Wireless headphones',sub:'Paired · trusted · battery unknown',state:'Disconnected',device:true,connected:false,paired:true,battery:null,actions:['Connect','Details']},
- {id:'bt-power',name:'Bluetooth adapter',sub:'hci0 · powered on',state:'On',actions:['Turn off']},
- {id:'discover',name:'Find and pair a device…',sub:'Following slice: bounded discovery and confirmation',state:'Planned',actions:['Preview pairing scope']}
-],Session:[
- {id:'lock',name:'Lock',sub:'Independent desktop lock service',state:'',actions:['Lock']},
- {id:'logout',name:'Log out',sub:'Native Niri confirmation',state:'',actions:['Log out']},
- {id:'suspend',name:'Suspend',sub:'Existing captured power and lock policy',state:'',actions:['Suspend']},
- {id:'restart',name:'Restart',sub:'Cancel-first confirmation',state:'',actions:['Restart']},
- {id:'shutdown',name:'Shut down',sub:'Cancel-first confirmation',state:'',actions:['Shut down']}
-]};
-const context={Network:'Wi-Fi on · wlan0 · Home connected',Audio:'Output: USB speakers · input: USB microphone',Bluetooth:'hci0 on · 1 device connected',Session:'Existing actions · illustrated with current identity'};
-const descriptions={Network:'Active and saved networks, nearby Wi-Fi, connection details, radio state and refresh. Advanced settings stays one handoff away.',Audio:'Choose a default output or input, change volume and mute. Per-app mixing and profiles remain in Pavucontrol. This is a scope sketch.',Bluetooth:'Reconnect paired devices and control adapter power first. Discovery and pairing follow with explicit confirmation and trust. This is a scope sketch.',Session:'Keep the existing Session helper: independent locking, native logout, captured suspend policy and Cancel-first restart/shutdown.'};
-const legends={
- Network:'<span class="status-connected">● Connected</span> has a green-tinted background and outline; <span class="status-saved">◇ Saved</span> keeps an emphasized name and label. Blue fill and the left edge show keyboard selection; the green outline and state label persist when selected.',
- Audio:'Green outlines identify the <span class="status-current">● Default output/input</span>. Volume and <span class="status-muted">Muted</span> are independent states. Unavailable devices stay readable and offer Details only. Default does not mean playing or recording.',
- Bluetooth:'<span class="status-connected">● Connected</span> uses the green frame; <span class="status-known">◇ Paired</span> alone has no active background. Rows show connection state and battery percentage or “Battery unknown”. Pairing and connection are distinct.',
- Session:'Session keeps its existing action and confirmation behavior. Blue fill and the left edge show the selected action.'
+const escapeHTML = (value) => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+const makeSample = () => ({
+ Network: [
+  {id:'home',name:'Home',kind:'connection',adapter:'wlan0',security:'WPA2 Personal',connected:true,saved:true,available:true},
+  {id:'studio-wlan0',name:'Studio',kind:'ap',adapter:'wlan0',security:'WPA3 Personal',signal:76,connected:false,saved:true,available:true},
+  {id:'studio-wlan1',name:'Studio',kind:'ap',adapter:'wlan1',security:'WPA3 Personal',signal:42,connected:false,saved:false,available:true},
+  {id:'open-new',name:'Open Garden Wi-Fi',kind:'ap',adapter:'wlan0',security:'Open',signal:68,connected:false,saved:false,available:true,revision:1},
+  {id:'open-saved',name:'Saved Cafe Wi-Fi',kind:'ap',adapter:'wlan1',security:'Open',signal:57,connected:false,saved:true,available:true,revision:4},
+  {id:'open-profile',name:'Saved Community Profile',kind:'profile',adapter:'wlan1',security:'Open',connected:false,saved:true,available:true,revision:2},
+  {id:'guest',name:'Guest',kind:'profile',adapter:'wlan0',security:'Open',connected:false,saved:true,available:false},
+  {id:'wifi-radio',name:'Wi-Fi radio',kind:'radio',powered:true,interfaces:['wlan0','wlan1'],available:true},
+  {id:'long-network',name:'路由器 <Studio> — Example Long Adapter Label 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ',kind:'device',adapter:'wlan-extra-long-device-name',security:'WPA3 Personal',signal:63,connected:false,saved:false,available:true}
+ ],
+ Audio: [
+  {id:'speakers',name:'USB speakers',kind:'audio',direction:'output',volume:45,muted:false,isDefault:true,available:true},
+  {id:'headphones',name:'Headphones',kind:'audio',direction:'output',volume:30,muted:false,isDefault:false,available:true},
+  {id:'microphone',name:'USB microphone',kind:'audio',direction:'input',volume:65,muted:true,isDefault:true,available:true},
+  {id:'hdmi',name:'HDMI / DisplayPort',kind:'audio',direction:'output',volume:null,muted:false,isDefault:false,available:false}
+ ],
+ Bluetooth: [
+  {id:'bt-headphones',name:'Headphones',kind:'bt-device',adapter:'hci0',address:'02:00:00:00:00:11',connected:true,paired:true,trusted:true,battery:null,available:true},
+  {id:'bt-speaker',name:'BT speaker',kind:'bt-device',adapter:'hci0',address:'02:00:00:00:00:12',connected:false,paired:true,trusted:false,battery:54,available:true},
+  {id:'bt-adapter',name:'Bluetooth adapter hci0',kind:'bt-adapter',adapter:'hci0',powered:true,connectedDevices:['Headphones'],available:true}
+ ]
+});
+let inventories = makeSample();
+let category = 'Network';
+let view = 'list';
+let filter = '';
+let selectedId = 'home';
+let pinnedId = null;
+let parentPage = 'list';
+let returnPage = 'target';
+let selectedActionId = 'open';
+let choiceIndex = 0;
+let pending = null;
+let credentialRequest = null;
+let openWarning = null;
+let closedFrom = 'list';
+let notice = '';
+let noticeTone = 'ok';
+let btScanPending = false;
+let btDiscovered = false;
+let pairSecretMode = '';
+let pairAuthenticationPrompt = '';
+let pairDisplayPrompt = '';
+let advancedHandoff = false;
+const defaults = {Network:'home',Audio:'speakers',Bluetooth:'bt-headphones'};
+const descriptions = {
+ Network:'Every Connect action for an open network first shows a Cancel-first warning naming its network and interface. Continue revalidates the same target security and revision before persistence choice or activation.',
+ Audio:'Defaults are separate for input and output. Adjust retains one pinned device and changes volume or mute inline.',
+ Bluetooth:'Pair a discovered device after a Cancel-first device/address/adapter check. Temporary authentication prompts stay tied to that pairing; trust remains a separate confirmed action.'
 };
-function rowPresentation(r){
+const $rofi = $('#rofi');
+const $filter = $('#filter');
+const $rows = $('#rows');
+
+function listFor(name=category){
+ const rows = inventories[name];
+ if(name === 'Bluetooth' && btDiscovered && !rows.some((item)=>item.id === 'bt-discovered')){
+  rows.push({id:'bt-discovered',name:'Sample wireless mouse',kind:'bt-device',adapter:'hci0',address:'02:00:00:00:00:27',connected:false,paired:false,trusted:false,battery:null,discovered:true,available:true});
+ }
+ return rows;
+}
+function targetById(id, name=category){return listFor(name).find((item)=>item.id === id) || null;}
+function activeTarget(){return targetById(pinnedId);}
+function currentRows(){
+ const query=filter.toLowerCase();
+ const rows=listFor().filter((item)=>[item.name,targetSummary(item),itemStatus(item)].join(' ').toLowerCase().includes(query));
+ const advanced={id:'advanced-settings',name:'Advanced settings',kind:'advanced',available:true};
+ if(!query||['advanced settings','native editor','recovery tool'].some((term)=>term.includes(query)||query.includes(term)))rows.push(advanced);
+ return rows;
+}
+function itemStatus(item){
+ if(item.kind === 'connection')return item.connected ? 'Connected' : item.saved ? 'Saved Disconnected' : 'Disconnected';
+ if(item.kind === 'ap')return item.connected ? 'Connected' : item.saved ? 'Saved Available' : 'Available';
+ if(item.kind === 'profile')return item.available ? 'Saved' : 'Saved Adapter unavailable';
+ if(item.kind === 'radio')return item.powered ? 'Global Wi-Fi on' : 'Global Wi-Fi off';
+ if(item.kind === 'device')return item.available ? 'Available' : 'Unavailable';
+ if(item.kind === 'audio')return item.available ? (item.isDefault ? 'Default '+item.direction : item.direction)+' '+volumeLabel(item)+' '+(item.muted?'Muted':'Unmuted') : 'Unavailable';
+ if(item.kind === 'bt-device')return (item.paired?'Paired ':'Not paired ')+(item.trusted?'Trusted':item.trusted===false?'Not trusted':'Trust unknown')+' '+(item.connected?'Connected':'Disconnected')+' '+batteryLabel(item);
+ if(item.kind === 'bt-adapter')return (item.powered?'Powered on':'Powered off')+' '+item.connectedDevices.length+' connected devices';
+ if(item.kind === 'advanced')return 'Native editor recovery tool when installed';
+ return '';
+}
+function volumeLabel(item){return Number.isFinite(item.volume)?item.volume+'%':'Volume unknown';}
+function batteryLabel(item){return Number.isFinite(item.battery)?'Battery '+item.battery+'%':'Battery unknown';}
+function networkConnections(){return listFor('Network').filter((item)=>item.connected && ['connection','ap','profile'].includes(item.kind));}
+function targetSummary(item){
+ if(item.kind === 'connection')return item.adapter+' · '+item.security+(item.connected?' · connected':item.saved?' · saved profile':'');
+ if(item.kind === 'ap')return (!targetById('wifi-radio','Network').powered?'Wi-Fi radio off · ':'')+(item.saved?'Saved · ':'')+item.adapter+' · '+item.security+' · '+item.signal+'%';
+ if(item.kind === 'profile')return 'Saved profile · '+item.adapter+' · '+item.security+(item.available?'':' · Adapter unavailable');
+ if(item.kind === 'radio')return 'Global Wi-Fi radio · '+item.interfaces.join(', ')+' · Ethernet unaffected';
+ if(item.kind === 'device')return item.adapter+' · '+item.security+' · '+item.signal+'%';
+ if(item.kind === 'audio')return (item.isDefault?'Default '+item.direction+' · ':item.direction+' · ')+volumeLabel(item)+' · '+(item.muted?'Muted':'Unmuted');
+ if(item.kind === 'bt-device')return (item.paired?'Paired':'Not paired')+' · '+(item.trusted?'Trusted':item.trusted===false?'Not trusted':'Trust unknown')+' · '+(item.connected?'Connected':'Disconnected')+' · '+batteryLabel(item);
+ if(item.kind === 'bt-adapter')return (item.powered?'Powered on':'Powered off')+' · '+item.connectedDevices.length+' connected device'+(item.connectedDevices.length===1?'':'s');
+ if(item.kind === 'advanced')return 'Native editor or recovery tool · if installed';
+ return 'State unknown';
+}
+function statusTag(kind,label){return '<span class="status-'+kind+'">'+escapeHTML(label)+'</span>';}
+function rowPresentation(item){
  const classes=[],parts=[];
- const label=(kind,value)=>`<span class="status-${kind}">${text(value)}</span>`;
- if(category==='Network'){
-  if(r.state==='Connected'){classes.push('current','network-connected');parts.push(label('connected','● Connected'));}
-  else if(r.state==='Saved'){classes.push('known','network-saved');parts.push(label('saved','◇ Saved'));}
-  else if(r.state)parts.push(text(r.state));
-  if(r.sub)parts.push(text(r.sub));
- }else if(category==='Audio'&&r.role){
-  if(!r.available){classes.push('unavailable');parts.push(label('unavailable','Unavailable'),text(r.role==='input'?'Input':'Output'),'Cable disconnected');}
+ if(item.kind === 'connection' || item.kind === 'ap'){
+  if(item.connected){classes.push('current');parts.push(statusTag('connected','● Connected'));}
+  else if(item.saved){classes.push('known');parts.push(statusTag('saved','◇ Saved'));}
+  else if(!targetById('wifi-radio','Network').powered){classes.push('unavailable');parts.push(statusTag('unavailable','Wi-Fi off'));}
+  else parts.push('Available');
+  parts.push(item.adapter+' · '+item.security+(item.kind==='ap'?' · '+item.signal+'%':'')+(!targetById('wifi-radio','Network').powered?' · Wi-Fi radio off':''));
+ }else if(item.kind === 'profile'){
+  if(item.available){classes.push('known');parts.push(statusTag('saved','◇ Saved'));}
+  else{classes.push('unavailable');parts.push(statusTag('unavailable','Unavailable'));}
+  if(item.connected){classes.push('current');parts.push(statusTag('connected','● Connected'));}
+  parts.push(item.adapter+' · '+item.security);
+ }else if(item.kind === 'radio'){
+  parts.push(item.powered?'Global Wi-Fi on':'Global Wi-Fi off');parts.push(item.interfaces.join(', ')+' · Ethernet unaffected');
+ }else if(item.kind === 'device'){
+  parts.push('Wi-Fi adapter');parts.push(item.available?'Available':'Unavailable');parts.push(item.adapter+' · '+item.security+' · '+item.signal+'%');
+ }else if(item.kind === 'audio'){
+  if(!item.available){classes.push('unavailable');parts.push(statusTag('unavailable','Unavailable'));parts.push(item.direction+' · Volume unknown');}
   else{
-   if(r.isDefault){classes.push('current','audio-default');parts.push(label('current','● Default '+r.role));}
-   else parts.push(text(r.role==='input'?'Input':'Output'));
-   parts.push(Number.isFinite(r.volume)?`<span class="metric">${text(r.volume)}%</span>`:'Volume unknown');
-   parts.push(r.muted?label('muted','Muted'):'Unmuted');
+   if(item.isDefault){classes.push('current');parts.push(statusTag('current','● Default '+item.direction));}
+   else parts.push(item.direction.charAt(0).toUpperCase()+item.direction.slice(1));
+   parts.push(Number.isFinite(item.volume)?'<span class="metric">'+escapeHTML(item.volume)+'%</span>':'Volume unknown');
+   parts.push(item.muted?statusTag('muted','Muted'):'Unmuted');
   }
- }else if(category==='Bluetooth'&&r.device){
-  if(r.connected){classes.push('current','bluetooth-connected');parts.push(label('connected','● Connected'));if(r.paired)parts.push('Paired');}
-  else{if(r.paired){classes.push('known','bluetooth-paired');parts.push(label('known','◇ Paired'));}parts.push('Disconnected');}
-  parts.push(r.connected&&Number.isFinite(r.battery)?`<span class="metric">${text(r.battery)}% battery</span>`:'Battery unknown');
- }else{if(r.state)parts.push(text(r.state));if(r.sub)parts.push(text(r.sub));}
+ }else if(item.kind === 'bt-device'){
+  if(item.connected){classes.push('current');parts.push(statusTag('connected','● Connected'));}
+  if(item.paired){classes.push('known');parts.push(statusTag('known','◇ Paired'));}
+  else parts.push(item.discovered?'Discovered · Not paired':'Not paired');
+  parts.push(item.trusted?'Trusted':item.trusted===false?'Not trusted':'Trust unknown');
+  if(!item.connected)parts.push('Disconnected');
+  parts.push(batteryLabel(item));
+ }else if(item.kind === 'bt-adapter'){
+  parts.push(item.powered?'Powered on':'Powered off');
+  parts.push(item.connectedDevices.length+' connected device'+(item.connectedDevices.length===1?'':'s')+' · hci0');
+ }else parts.push(targetSummary(item));
  return {classes,detail:parts.join(' · ')};
 }
-
-function items(){return inventories[category].filter(r=>(r.name+' '+r.sub+' '+r.state).toLowerCase().includes(filter.toLowerCase()));}
-function row(){return inventories[category].find(r=>r.id===selected);}
-function setView(next){
- const hadFocus=$('.rofi').contains(document.activeElement);
- view=next;choice=0;action=0;render();
- if(hadFocus&&next!=='closed')$('.rofi').focus({preventScroll:true});
+function freshStatus(){
+ if(category==='Network'){
+  const radio=targetById('wifi-radio','Network');
+  const connected=networkConnections();
+  return (radio.powered?'Wi-Fi on':'Wi-Fi off')+' · wlan0 and wlan1 · '+(connected.length?connected.map((item)=>item.name+' on '+item.adapter+' connected').join(', '):'no active Wi-Fi connection');
+ }
+ if(category==='Audio'){
+  const output=listFor('Audio').find((item)=>item.direction==='output'&&item.isDefault);
+  const input=listFor('Audio').find((item)=>item.direction==='input'&&item.isDefault);
+  return 'Default output: '+(output?output.name:'unknown')+' · default input: '+(input?input.name:'unknown')+(input&&input.muted?' · input muted':'');
+ }
+ const adapter=targetById('bt-adapter','Bluetooth');
+ return adapter.adapter+' '+(adapter.powered?'powered on':'powered off')+' · '+adapter.connectedDevices.length+' connected device'+(adapter.connectedDevices.length===1?'':'s');
 }
-function toList(){setView('list');}
-function close(){setView('closed');$('#reset').focus();}
-function showResult(title,kind='ok'){result=title;tone=kind;setView('result');}
-function pending(mode){preference=mode;setView('pending');}
-function actions(){return view==='list'?(row()?.actions||[]):view==='pending'?['Close menu','Cancel connection']:[];}
-function updateStrip(){
- const names=actions();
- if(names.length){
-  action=Math.min(action,names.length-1);
-  const labels=names.map((name,index)=>index===action?`<span class="chosen ${['Disconnect','Turn off','Cancel connection'].includes(name)?'warn':''}">[${text(name)}]</span>`:text(name));
-  $('#action-hint').innerHTML=`Enter: ${labels.join(' · ')}${names.length>1?'  │  Tab: Cycle actions':''}`;
- }else $('#action-hint').textContent=view==='password'?'Enter: Continue  │  Escape: Cancel':view==='closed'?'Enter: Reopen':'Enter: Choose  │  Escape: Close';
- $('#previous-action').disabled=$('#next-action').disabled=names.length<2;
- $('#run').disabled=view==='list'&&!row();
+function targetActions(item){
+ if(!item)return [];
+ let actions=[];
+ if(category==='Network'){
+  const radio=targetById('wifi-radio','Network');
+  if(item.available){
+   if(item.kind==='connection'){
+    if(item.connected)actions.push({id:'disconnect',label:'Disconnect',confirm:'Disconnect '+item.name+' on '+item.adapter+'?'});
+    else if(item.saved&&radio.powered)actions.push({id:'connect',label:'Connect saved profile'});
+   }else if(item.kind==='profile'){
+    if(item.connected)actions.push({id:'disconnect',label:'Disconnect',confirm:'Disconnect '+item.name+' on '+item.adapter+'?'});
+    else if(radio.powered)actions.push({id:'connect',label:'Connect'});
+   }else if(item.kind==='ap'&&item.connected){
+    actions.push({id:'disconnect',label:'Disconnect',confirm:'Disconnect '+item.name+' on '+item.adapter+'?'});
+   }else if(item.kind==='ap'&&radio.powered){
+    actions.push({id:'connect',label:item.saved?'Connect saved profile':'Connect'});
+   }else if(item.kind==='radio'){
+    if(item.powered){
+     const connections=networkConnections().map((entry)=>entry.name+' on '+entry.adapter);
+     actions.push({id:'set-wifi-radio',label:'Turn Wi-Fi off',confirm:'Turn off Wi-Fi for all adapters ('+item.interfaces.join(' and ')+') and disconnect active Wi-Fi connections ('+(connections.length?connections.join(', '):'none')+')? Ethernet and Bluetooth remain unchanged.'});
+    }else actions.push({id:'set-wifi-radio',label:'Turn Wi-Fi on'});
+   }else if(item.kind==='device')actions.push({id:'rescan',label:'Rescan this adapter'});
+  }
+ }else if(category==='Audio'&&item.kind==='audio'&&item.available){
+  if(Number.isFinite(item.volume)||typeof item.muted==='boolean')actions.push({id:'adjust',label:'Adjust'});
+  if(!item.isDefault)actions.push({id:'set-default',label:'Set default'});
+ }else if(category==='Bluetooth'){
+  if(item.kind==='bt-device'&&item.available){
+   if(item.paired){
+    if(item.connected)actions.push({id:'set-device-connection',label:'Disconnect',confirm:'Disconnect '+item.name+' on '+item.adapter+'? Pairing and trust stay.'});
+    else actions.push({id:'set-device-connection',label:'Connect'});
+    actions.push({id:'set-device-trust',label:item.trusted?'Stop trusting device':'Trust device',desiredTrusted:!item.trusted,confirm:(item.trusted?'Stop trusting ':'Trust ')+item.name+' on '+item.adapter+'? Trust controls future authorization; pairing and connection stay unchanged.'});
+   }else if(item.discovered){
+    actions.push({id:'pair-device',label:'Pair',confirm:'Pair '+item.name+' at '+item.address+' on '+item.adapter+'? Verify this exact device before pairing. Pairing may connect it; trust stays unchanged.'});
+   }
+  }else if(item.kind==='bt-adapter'){
+   if(item.powered){
+    const connected=item.connectedDevices.slice();
+    actions.push({id:'set-adapter-power',label:'Turn Bluetooth off',confirm:'Turn off '+item.adapter+'? Connected devices: '+(connected.length?connected.join(', '):'none')+'. Pairings stay.'});
+    actions.push({id:'start-discovery',label:'Find devices'});
+   }else actions.push({id:'set-adapter-power',label:'Turn Bluetooth on'});
+  }
+ }
+ actions.push({id:'details',label:'Details'},{id:'back',label:'Back'});
+ return actions;
 }
-function paintSelection(){
- document.querySelectorAll('.row[data-id]').forEach(node=>{
-  const active=view==='list'?node.dataset.id===selected:Number(node.dataset.id)===choice;
-  node.classList.toggle('selected',active);node.setAttribute('aria-pressed',String(active));
+function adjustActions(item){
+ if(!item||category!=='Audio')return [];
+ const actions=[];
+ if(Number.isFinite(item.volume))actions.push({id:'volume-up',label:'Volume +5%'},{id:'volume-down',label:'Volume −5%'});
+ if(typeof item.muted==='boolean')actions.push({id:'mute',label:item.muted?'Unmute':'Mute'});
+ actions.push({id:'back',label:'Back'});
+ return actions;
+}
+function actionsForView(){
+ if(view==='list')return [{id:'open',label:'Open'},{id:'details',label:'Details'}];
+ if(view==='target')return targetActions(activeTarget());
+ if(view==='adjust')return adjustActions(activeTarget());
+ if(view==='pending')return [{id:'close-menu',label:'Close menu'},{id:pending?.kind==='pairing'?'cancel-pairing':category==='Network'?'cancel-connection':'stop-waiting',label:pending?.kind==='pairing'?'Cancel pairing':category==='Network'?'Cancel connection':'Stop waiting'}];
+ if(view==='details')return [{id:'back',label:'Back'}];
+ return [];
+}
+function normalizeAction(){
+ const actions=actionsForView();
+ if(actions.length&&!actions.some((action)=>action.id===selectedActionId)){
+  selectedActionId=actions.find((action)=>action.id==='details')?.id||actions[0].id;
+ }
+ return actions;
+}
+function currentAction(){
+ const actions=normalizeAction();
+ return actions.find((action)=>action.id===selectedActionId)||actions[0]||null;
+}
+function displayTitle(){
+ const item=activeTarget()||(pending?targetById(pending.targetId,pending.category):null);
+ let title=category+(item&&view!=='list'?' › '+item.name:'');
+ if(view==='adjust')title+=' › Adjust';
+ else if(view==='details')title+=' › Details';
+ else if(view==='confirm')title+=' › Confirm';
+ else if(view==='open-warning')title+=' › Wi-Fi warning';
+ else if(view==='pair-auth-confirm')title+=' › Pairing confirmation';
+ else if(view==='connect-choice')title+=' › Connect';
+ else if(view==='pending')title+=' › Pending';
+ return title;
+}
+function contextForView(){
+ const item=activeTarget();
+ if(view==='list')return freshStatus();
+ if(view==='target'&&item)return itemStatus(item)+' · '+targetSummary(item);
+ if(view==='adjust'&&item)return item.name+' · '+(item.direction==='input'?'Input':'Output')+' · '+volumeLabel(item)+' · '+(item.muted?'Muted':'Unmuted')+(item.direction==='input'&&item.muted?' · Volume changes leave mute unchanged.':'');
+ if(view==='details'&&item)return 'Details for '+item.name+' · saved passwords and secret values are never shown.';
+ if(view==='confirm')return confirmationText;
+ if(view==='open-warning'&&openWarning){
+  const observed=openWarning.name+' on '+openWarning.interface+' was observed as Open. This network does not encrypt wireless traffic. Continue only if you accept that risk.';
+  return (notice?notice+' · ':'')+observed;
+ }
+ if(view==='pair-auth-confirm')return pairAuthenticationPrompt;
+ if(view==='connect-choice'&&item)return item.name+' on '+item.adapter+' · choose profile persistence before submitting.';
+ if(view==='pending'&&pending){
+  if(category==='Network')return 'Sample pending: '+(pending.desired==='connect'?'connecting to ':'disconnecting ')+pending.name+' on '+pending.adapter+'. Close menu leaves the sample request pending; Cancel connection targets this request only.';
+  if(pending.kind==='pairing')return (notice?notice+' · ':'')+'Sample pending: pairing with '+pending.name+' at '+pending.address+' on '+pending.adapter+'. Trust is unchanged.'+(pairDisplayPrompt?' '+pairDisplayPrompt:'');
+  return 'Sample pending: '+(pending.desiredConnected?'connecting ':'disconnecting ')+pending.name+' through '+pending.adapter+'. Close menu closes this preview; Stop waiting ends observation but does not promise that BlueZ work stops.';
+ }
+ return freshStatus();
+}
+function setNotice(message,tone='ok'){notice=message;noticeTone=tone;}
+function renderActionStrip(){
+ const actions=normalizeAction();
+ const actionHint=$('#action-hint');
+ if(['confirm','open-warning','connect-choice','pair-auth-confirm'].includes(view)){
+  actionHint.textContent='Enter: Choose row · ↑/↓: Select · Escape: Close';
+ }else if(view==='details'){
+  actionHint.innerHTML='Enter: <span class="chosen">[Back]</span> · Escape: Close';
+ }else if(actions.length){
+  const labels=actions.map((action)=>action.id===selectedActionId?'<span class="chosen '+(['disconnect','set-wifi-radio','set-adapter-power','cancel-connection','cancel-pairing','set-device-trust'].includes(action.id)&&action.label!=='Turn Wi-Fi on'&&action.label!=='Turn Bluetooth on'?'warn':'')+'">['+escapeHTML(action.label)+']</span>':escapeHTML(action.label));
+  actionHint.innerHTML='Enter: '+labels.join(' · ')+(actions.length>1?'  │  Tab: Cycle actions':'');
+ }else actionHint.textContent='Escape: Close';
+ $('#previous-action').disabled=$('#next-action').disabled=actions.length<2;
+ $('#run').disabled=!actions.length||view==='closed';
+}
+function addInfo(label,value){
+ const row=document.createElement('div');
+ row.className='row info';
+ row.innerHTML='<span class="row-name">'+escapeHTML(label)+'</span><small>'+escapeHTML(value)+'</small>';
+ $rows.append(row);
+}
+function addActionRow(label,detail,index,selected,onAccept){
+ const row=document.createElement('button');
+ row.type='button';row.className='row'+(selected?' selected':'');row.tabIndex=-1;
+ row.dataset.choice=String(index);row.setAttribute('aria-pressed',String(selected));
+ row.innerHTML='<span class="row-name">'+escapeHTML(label)+'</span><small>'+escapeHTML(detail||'')+'</small>';
+ row.onclick=()=>{choiceIndex=index;paintChoices();$rofi.focus({preventScroll:true});};
+ row.ondblclick=()=>{choiceIndex=index;onAccept();};
+ $rows.append(row);
+}
+function makeDeviceRow(item,selected,onClick,onDoubleClick){
+ const row=document.createElement('button');
+ row.type='button';row.className='row';row.tabIndex=-1;row.dataset.id=item.id;
+ const presentation=rowPresentation(item);
+ row.classList.add(...presentation.classes);
+ if(selected)row.classList.add('selected');
+ row.setAttribute('aria-pressed',String(selected));
+ row.innerHTML='<span class="row-name">'+escapeHTML(item.name)+'</span><small>'+presentation.detail+'</small>';
+ row.onclick=onClick;row.ondblclick=onDoubleClick;
+ return row;
+}
+function detailsFor(item){
+ if(item.kind==='connection')return [['Adapter',item.adapter],['Security',item.security],['Profile',item.name],['Status',item.connected?'Connected':item.saved?'Saved · Disconnected':'Disconnected']];
+ if(item.kind==='ap')return [['Adapter',item.adapter],['Security',item.security],['Signal',item.signal+'%'],['Saved profile',item.saved?'Yes':'No'],['Status',item.connected?'Connected':'Available']];
+ if(item.kind==='profile')return [['Adapter',item.adapter],['Security',item.security],['Profile',item.name],['Availability',item.available?'Available':'Adapter unavailable']];
+ if(item.kind==='radio')return [['Scope','Global Wi-Fi radio'],['Power',item.powered?'On':'Off'],['Affected interfaces',item.interfaces.join(', ')],['Active Wi-Fi connections',networkConnections().map((entry)=>entry.name+' on '+entry.adapter).join(', ')||'None'],['Ethernet','Unaffected']];
+ if(item.kind==='device')return [['Adapter',item.adapter],['Security',item.security],['Signal',item.signal+'%'],['Status',item.available?'Available':'Unavailable']];
+ if(item.kind==='audio')return [['Direction',item.direction.charAt(0).toUpperCase()+item.direction.slice(1)],['Volume',volumeLabel(item)],['Mute',item.available?(item.muted?'Muted':'Unmuted'):'Unknown'],['Default',item.isDefault?'Yes':'No'],['Availability',item.available?'Available':'Unavailable']];
+ if(item.kind==='bt-device')return [['Address',item.address||'Unknown'],['Adapter',item.adapter],['Paired',item.paired?'Yes':'No'],['Trusted',item.trusted===null?'Unknown':item.trusted?'Yes':'No'],['Connected',item.connected?'Yes':'No'],['Battery',Number.isFinite(item.battery)?item.battery+'%':'Unknown']];
+ if(item.kind==='bt-adapter')return [['Adapter',item.adapter],['Powered',item.powered?'Yes':'No'],['Connected devices',item.connectedDevices.join(', ')||'None'],['Pairings','Retained when adapter power changes']];
+ return [['Status',itemStatus(item)]];
+}
+function renderRows(){
+ $rows.replaceChildren();
+ if(view==='list'){
+  const rows=currentRows();
+  if(!rows.some((item)=>item.id===selectedId))selectedId=rows[0]?.id||null;
+  rows.forEach((item)=>{
+   const row=makeDeviceRow(item,item.id===selectedId,()=>{
+    selectedId=item.id;paintListSelection();$rofi.focus({preventScroll:true});
+   },()=>{
+    selectedId=item.id;paintListSelection();acceptCurrent();
+   });
+   $rows.append(row);
+  });
+  if(!rows.length)addInfo('No sample matches','Clear the filter or close the sample menu');
+  return;
+ }
+ if(view==='target'||view==='adjust'||view==='pending'){
+  const item=view==='pending'&&pending?targetById(pending.targetId,pending.category):activeTarget();
+  if(item){
+   const row=makeDeviceRow(item,true,()=>{$rofi.focus({preventScroll:true});},()=>acceptCurrent());
+   $rows.append(row);
+  }else addInfo('Target unavailable','Return to the list and select a current sample row');
+  return;
+ }
+ if(view==='details'){
+  const item=activeTarget();
+  if(item)detailsFor(item).forEach((fact)=>addInfo(fact[0],fact[1]));
+  addActionRow('Back','Return to the previous page',0,true,acceptCurrent);
+  return;
+ }
+ if(view==='confirm'){
+  addActionRow('Cancel','Return without changing anything',0,choiceIndex===0,acceptCurrent);
+  addActionRow(confirmationLabel,'Accept this named operation',1,choiceIndex===1,acceptCurrent);
+  return;
+ }
+ if(view==='open-warning'){
+  addActionRow('Cancel','Return without submitting a connection',0,choiceIndex===0,acceptCurrent);
+  addActionRow('Continue with unsecured Wi-Fi','This network does not encrypt wireless traffic',1,choiceIndex===1,acceptCurrent);
+  return;
+ }
+ if(view==='pair-auth-confirm'){
+  addActionRow('Cancel pairing','Decline this temporary matching-code request',0,choiceIndex===0,acceptCurrent);
+  addActionRow('Confirm matching code / authorize','Accept only if the displayed code matches the device',1,choiceIndex===1,acceptCurrent);
+  return;
+ }
+ if(view==='connect-choice'){
+  addActionRow('Cancel','Return without submitting a connection',0,choiceIndex===0,acceptCurrent);
+  addActionRow('Connect and remember','Save for this user and enable autoconnect for this new profile',1,choiceIndex===1,acceptCurrent);
+  addActionRow('Connect once','Use a volatile profile without autoconnect',2,choiceIndex===2,acceptCurrent);
+ }
+}
+function paintListSelection(){
+ document.querySelectorAll('#rows .row[data-id]').forEach((node)=>{
+  const selected=node.dataset.id===selectedId;
+  node.classList.toggle('selected',selected);node.setAttribute('aria-pressed',String(selected));
  });
- updateStrip();
+ renderActionStrip();
 }
-function info(name,detail=''){
- const item=document.createElement('div');item.className='row info';item.innerHTML=`<span class="row-name">${text(name)}</span>${detail?`<small>${text(detail)}</small>`:''}`;$('#rows').append(item);
-}
-function choiceRow(name,detail,fn){choices.push({name,detail,fn});}
-function renderChoices(){
- choices.forEach((item,index)=>{
-  const b=document.createElement('button');b.className='row';b.tabIndex=-1;b.dataset.id=String(index);
-  b.innerHTML=`<span class="row-name">${text(item.name)}</span>${item.detail?`<small>${text(item.detail)}</small>`:''}`;
-  b.onclick=()=>{choice=index;paintSelection();$('.rofi').focus({preventScroll:true});};
-  b.ondblclick=()=>{choice=index;run();};$('#rows').append(b);
+function paintChoices(){
+ document.querySelectorAll('#rows .row[data-choice]').forEach((node)=>{
+  const selected=Number(node.dataset.choice)===choiceIndex;
+  node.classList.toggle('selected',selected);node.setAttribute('aria-pressed',String(selected));
  });
 }
 function render(){
- $('.rofi').dataset.view=view;
- const suffix={password:'Credential',review:'Connect',pending:'Connecting',result:'Result',details:'Details',confirm:confirmAction+'?',closed:'Closed'}[view];
- $('#title').textContent=category+(suffix?' › '+suffix:'');
- $('#filter').hidden=view!=='list';$('#entry-placeholder').hidden=view==='list'||view==='password';$('.mask').hidden=view!=='password';
- $('#entry-placeholder').textContent=view==='pending'?'Working…':view==='closed'?'Preview closed':'Choose an action…';
- $('#filter').placeholder={Network:'Search networks…',Audio:'Search devices…',Bluetooth:'Search devices…',Session:'Search actions…'}[category];
- $('#aside-title').textContent=category==='Network'?'Network first':category==='Session'?'Preserve the existing flow':category+' follows';
+ const closed=view==='closed';
+ $rofi.hidden=closed||view==='credential'||view==='pair-secret';
+ $('#closed-note').hidden=!closed;
+ $('#credential-preview').hidden=view!=='credential';
+ $('#pair-secret-preview').hidden=view!=='pair-secret';
+ $('#advanced-handoff').hidden=!advancedHandoff;
+ $('.filter').hidden=view!=='list';
+ $('#entry-placeholder').hidden=view==='list'||view==='credential'||view==='pair-secret'||closed;
+ $('#entry-placeholder').textContent=view==='pending'?'Waiting for sample outcome…':view==='pair-auth-confirm'?'Pairing confirmation':'Choose an action…';
+ $('#filter').placeholder={Network:'Search networks…',Audio:'Search devices…',Bluetooth:'Search devices…'}[category];
+ $('#title').textContent=displayTitle();
+ $rofi.dataset.view=view;
+ $('#aside-title').textContent=view==='list'?'Fixed entry, pinned target':category+' target page';
  $('#aside-copy').textContent=descriptions[category];
- $('#state-legend').innerHTML=legends[category]+(category==='Session'?'':' Use “Compare row states” to move selection away from current devices.');
- $('#compare-states').disabled=category==='Session'||view!=='list';
- document.querySelectorAll('[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===category)));
- document.querySelectorAll('[data-step]').forEach(e=>e.classList.toggle('current',e.dataset.step===view));
- $('.flow').hidden=category!=='Network';
- $('#credential-controls').hidden=view!=='password';$('#outcome-controls').hidden=view!=='pending';
- $('#context').className='context';$('#context').textContent=context[category];
- $('#rows').replaceChildren();choices=[];
- if(view==='list'){
-  const list=items();if(!list.some(r=>r.id===selected)){selected=list[0]?.id;action=0;}
-  for(const r of list){
-   const b=document.createElement('button');b.className='row';b.tabIndex=-1;b.dataset.id=r.id;
-   const presentation=rowPresentation(r);b.classList.add(...presentation.classes);
-   b.innerHTML=`<span class="row-name">${text(r.name)}</span><small>${presentation.detail}</small>`;
-   b.onclick=()=>{selected=r.id;action=0;paintSelection();$('.rofi').focus({preventScroll:true});};
-   b.ondblclick=()=>{selected=r.id;action=0;run();};$('#rows').append(b);
-  }
-  if(!list.length)$('#context').textContent='No sample matches. Clear the filter, refresh or close the menu.';
- }else if(view==='password'){
-  $('#context').textContent=`${target.name} · WPA3 Personal · wlan0. Masked credential illustration only; use the web-preview control below. No password is collected.`;
- }else if(view==='review'){
-  $('#context').textContent=target.id==='guest'?'Guest Wi-Fi is an open network. Choose how to connect; no credential is requested.':`${target.name} · Personal Wi-Fi · wlan0. Choose whether to remember this new connection.`;
-  choiceRow('Connect and remember','Current user · save through NetworkManager · autoconnect',()=>pending('remember'));
-  choiceRow('Connect once','Volatile profile · no autoconnect',()=>pending('once'));
-  choiceRow('Cancel','Return to devices without submitting',toList);
- }else if(view==='pending'){
-  $('#context').textContent=`Connecting to ${target.name} · wlan0 · ${preference==='once'?'this connection only':'remember for this user'}. Closing the menu leaves the submitted native request running.`;
-  info('Authenticating…',target.name+' · waiting for NetworkManager');
-  info('Obtaining an address','Waiting for authentication to complete');
- }else if(view==='result'){
-  const detail=result==='Authentication failed'?'The sample credential was rejected. Retry asks again; there is no automatic credential loop.':result==='Connected'?'Observed connection active · 192.0.2.42. This does not establish Internet access.':result==='Connection cancelled'?'The explicit action cancelled this sample attempt. A previous connection is not automatically restored.':'Sample outcome only. Native state remains authoritative.';
-  $('#context').textContent=result+' · '+detail;$('#context').classList.add(tone);
-  choiceRow(result==='Authentication failed'?'Retry':'Back to devices',result==='Authentication failed'?'Ask for the credential again':'Keep the original filter and selected device',()=>result==='Authentication failed'?setView('password'):toList());
-  choiceRow('Close','Dismiss the utility',close);
- }else if(view==='details'){
-  $('#context').textContent='Connection/device details · saved passwords are never shown.';
-  info(target.name,target.sub);info('Status',target.state||'Available');
-  choiceRow('Back','Return to the selected device',toList);
- }else if(view==='confirm'){
-  $('#context').textContent=category==='Network'?'This may interrupt current connections on the selected adapter. Cancel is selected by default.':'This affects the selected device or session. Cancel is selected by default.';
-  choiceRow('Cancel','Return without changing anything',toList);
-  choiceRow('Confirm '+confirmAction.toLowerCase(),'Explicitly accept this operation',()=>showResult('Sample: '+confirmAction,'warn'));
- }else if(view==='closed'){
-  $('#context').textContent='Menu closed. The sketch released focus; no device or connection on this computer was changed.';
-  choiceRow('Reopen sample','Read the fictional device list again',toList);
+ $('#state-legend').innerHTML='<span class="status-connected">● Connected</span> and <span class="status-current">● Default</span> use a green frame; blue fill and the left edge indicate keyboard selection independently. <span class="status-saved">◇ Saved</span> and <span class="status-known">◇ Paired</span> remain text labels without a current-state frame. <span class="status-muted">Muted</span> is amber.';
+ document.querySelectorAll('[data-category]').forEach((button)=>{
+  button.setAttribute('aria-pressed',String(button.dataset.category===category));
+  button.disabled=Boolean(pending||credentialRequest||openWarning);
+ });
+ $('#context').className='context';
+ const message=view==='pending'&&pending?contextForView():view==='confirm'||view==='open-warning'||view==='connect-choice'||view==='pair-auth-confirm'?contextForView():notice?notice+' · '+contextForView():contextForView();
+ $('#context').textContent=message;
+ if(noticeTone)$('#context').classList.add(noticeTone);
+ $rows.replaceChildren();
+ if(!closed&&view!=='credential'&&view!=='pair-secret')renderRows();
+ renderActionStrip();
+ $('#sample-outcomes').hidden=view!=='pending'||!pending||pending.kind==='pairing';
+ $('#pairing-samples').hidden=view!=='pending'||!pending||pending.category!=='Bluetooth'||pending.kind!=='pairing';
+ $('#open-warning-samples').hidden=view!=='open-warning';
+ $('#reopen-menu').hidden=!closed;
+ $('#close-menu').hidden=closed;
+ $('#compare-states').disabled=view!=='list'||Boolean(pending||credentialRequest);
+ $('#select-new-network').disabled=category!=='Network'||view!=='list'||Boolean(pending||credentialRequest);
+ $('#set-overrange').disabled=category!=='Audio'||Boolean(pending||credentialRequest);
+ $('#credential-copy').textContent=credentialRequest?'Sample request for '+targetById(credentialRequest.targetId,'Network').name+' on '+targetById(credentialRequest.targetId,'Network').adapter+'. '+(credentialRequest.persistence==='once'?'Connect once was selected.':'Connect and remember was selected.')+' This illustration has no input and stores no secret.':'No sample credential is pending.';
+ $('#pair-secret-title').textContent='Bluetooth '+(pairSecretMode==='pin'?'PIN':pairSecretMode==='passkey'?'passkey':'authentication')+' sample · web illustration only';
+ $('#pair-secret-copy').textContent='Temporary agent request for '+(pending?.name||'the pinned sample device')+' at '+(pending?.address||'synthetic address')+' on '+(pending?.adapter||'hci0')+'. This decorative mask is not an input and no authentication value is read or stored.';
+ $('#pair-secret-mask').textContent=pairSecretMode==='passkey'?'••••••':'••••••••';
+ const status=$('#preview-status');
+ status.textContent=closed?(pending?'Sample menu closed; its fictional '+(pending.kind==='pairing'?'pairing':'connection')+' request remains pending.':'Sample menu closed; no operation was submitted.'):view==='credential'?'A masked credential prompt is shown as an external web illustration; no secret is collected.':view==='pair-secret'?'Synthetic Bluetooth authentication illustration only; no live PIN/passkey input, submission, or persistence.':view==='pending'?'Pending result buttons below change only this page’s fictional sample state.':'Sample controls affect only this page. No native service or device is contacted.';
+ renderOutcomeButtons();
+}
+function renderOutcomeButtons(){
+ const buttons=document.querySelectorAll('[data-outcome]');
+ buttons.forEach((button)=>{
+  if(!pending||pending.kind==='pairing'){button.hidden=true;return;}
+  button.hidden=button.dataset.outcome==='limited'&&pending.category!=='Network';
+  if(button.dataset.outcome==='success'){
+   button.textContent=pending.category==='Bluetooth'?'Simulate sample '+(pending.desiredConnected?'connected':'disconnected'):'Simulate sample connected';
+  }else if(button.dataset.outcome==='failure')button.textContent='Simulate sample failure';
+  else button.textContent='Simulate sample limited connectivity';
+ });
+}
+function setView(next){
+ view=next;
+ render();
+ if(next==='list')$filter.focus({preventScroll:true});
+ else if(next!=='closed'&&next!=='credential'&&next!=='pair-secret')$rofi.focus({preventScroll:true});
+}
+function setCategory(next){
+ if(pending||credentialRequest||openWarning)return;
+ category=next;filter='';$filter.value='';selectedId=defaults[next];pinnedId=null;parentPage='list';selectedActionId='open';advancedHandoff=false;notice='';noticeTone='ok';setView('list');
+}
+function currentConfirmation(){
+ const item=activeTarget();
+ if(!item)return {label:'Confirm operation',text:'Confirm this exact operation? Cancel is selected by default.'};
+ const action=targetActions(item).find((entry)=>entry.id===pendingActionId);
+ let label=action?.label||'Confirm operation';
+ if(category==='Network'&&action?.id==='disconnect')label='Disconnect '+item.name+' on '+item.adapter;
+ else if(category==='Network'&&action?.id==='set-wifi-radio')label='Turn off global Wi-Fi radio';
+ else if(category==='Bluetooth'&&action?.id==='set-adapter-power')label='Turn off Bluetooth adapter '+item.adapter;
+ else if(category==='Bluetooth'&&action?.id==='set-device-connection')label='Disconnect '+item.name+' on '+item.adapter;
+ else if(category==='Bluetooth'&&action?.id==='pair-device')label='Pair '+item.name+' on '+item.adapter;
+ else if(category==='Bluetooth'&&action?.id==='set-device-trust')label=(action.desiredTrusted?'Trust ':'Stop trusting ')+item.name+' on '+item.adapter;
+ return {label,text:action?.confirm||'Confirm '+label+'?'};
+}
+let pendingActionId='';
+let confirmationLabel='';
+let confirmationText='';
+function openConfirmation(action){
+ const item=activeTarget();
+ if(!item)return;
+ pendingActionId=action.id;
+ returnPage='target';
+ const details=currentConfirmation();
+ confirmationLabel=details.label;
+ confirmationText=details.text;
+ choiceIndex=0;
+ notice='';noticeTone='warn';
+ setView('confirm');
+}
+function openDetails(parent){
+ parentPage=parent;
+ selectedActionId='back';
+ notice='';noticeTone='ok';
+ setView('details');
+}
+function backFromDetails(){
+ if(parentPage==='target'){
+  selectedActionId='details';setView('target');
+ }else{
+  pinnedId=null;selectedActionId='open';setView('list');
  }
- renderChoices();paintSelection();
 }
-function cycle(step){const names=actions();if(!names.length)return;action=(action+step+names.length)%names.length;updateStrip();}
-function move(step){
- if(view==='list'){const list=items();if(!list.length)return;const at=list.findIndex(r=>r.id===selected);selected=list[(at+step+list.length)%list.length].id;action=0;}
- else if(choices.length)choice=(choice+step+choices.length)%choices.length;
- paintSelection();
+function backToList(message=''){
+ const old=pinnedId;
+ pinnedId=null;parentPage='list';selectedActionId='open';pending=null;pendingActionId='';
+ if(old)selectedId=old;
+ if(message)setNotice(message);
+ setView('list');
 }
-function run(){
- if(view==='password'){setView('review');return;}
- if(view==='pending'){if(action===1)showResult('Connection cancelled','warn');else close();return;}
- if(view!=='list'){choices[choice]?.fn();return;}
- const r=row();if(!r)return;target=r;const a=r.actions[action]||r.actions[0];
- if(a==='Details')setView('details');
- else if(category==='Network'&&a==='Connect'){
-  if(r.id==='atelier')setView('password');else if(r.id==='guest')setView('review');else pending('remember');
- }else if(['Disconnect','Turn off','Restart','Shut down','Log out'].includes(a)){confirmAction=a;setView('confirm');}
- else if(a==='Refresh')showResult('Sample scan complete');
- else if(a.startsWith('Open '))showResult('Advanced tool handoff illustrated');
- else if(a==='Preview pairing scope')showResult('Pairing: following Bluetooth slice','warn');
- else showResult('Sample: '+a);
+function backToTarget(message=''){
+ pending=null;credentialRequest=null;view='target';
+ if(message)setNotice(message);
+ setView('target');
 }
-function chooseCategory(name){category=name;filter='';$('#filter').value='';selected=inventories[name][0].id;setView('list');}
-function focusFrame(){if(view!=='closed')$('.rofi').focus({preventScroll:true});}
-function previewAction(fn){return ()=>{fn();focusFrame();};}
-document.querySelectorAll('[data-category]').forEach(b=>b.onclick=()=>chooseCategory(b.dataset.category));
-$('#filter').addEventListener('input',e=>{filter=e.target.value;action=0;render();});
-$('.rofi').addEventListener('keydown',e=>{
- if(e.key==='Escape'||(e.ctrlKey&&e.key.toLowerCase()==='g')){e.preventDefault();close();return;}
- if(e.target!==$('.rofi')&&e.target!==$('#filter'))return;
- if(e.key==='Tab'&&actions().length){e.preventDefault();cycle(e.shiftKey?-1:1);}
- else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();move(e.key==='ArrowDown'?1:-1);}
- else if(e.key==='Enter'){e.preventDefault();run();}
- else if(e.altKey&&e.key.toLowerCase()==='r'&&view==='list'){e.preventDefault();$('#context').textContent='Sample refresh complete · '+context[category];}
+function startPending(action,params={}){
+ const item=activeTarget();
+ if(!item)return;
+ pending={category,targetId:item.id,name:item.name,adapter:item.adapter||item.adapterName||'adapter unknown',address:item.address||'',kind:action.id==='pair-device'?'pairing':'connection',desired:action.id,desiredConnected:params.desiredConnected,persistence:params.persistence||'existing'};
+ pairSecretMode='';pairAuthenticationPrompt='';pairDisplayPrompt='';
+ selectedActionId='close-menu';
+ notice='';noticeTone='ok';
+ setView('pending');
+}
+function submitConnectedNetwork(persistence){
+ const item=activeTarget();
+ if(!item)return;
+ pending={category:'Network',targetId:item.id,name:item.name,adapter:item.adapter,desired:'connect',persistence};
+ selectedActionId='close-menu';notice='';noticeTone='ok';setView('pending');
+}
+function networkConnect(item){
+ if(!targetById('wifi-radio','Network').powered){setNotice('Sample: Wi-Fi is off. Turn on the global radio before connecting.','warn');render();return;}
+ if(String(item.security||'').toLowerCase()==='open'){
+  openOpenNetworkWarning(item);return;
+ }
+ if(item.saved){
+  startPending({id:'connect'});
+ }else{
+  returnPage='target';choiceIndex=0;notice='';noticeTone='ok';setView('connect-choice');
+ }
+}
+function sampleNetworkRevision(item){return [item.id,item.adapter,item.security,String(item.revision||0)].join('|');}
+function openOpenNetworkWarning(item){
+ openWarning={targetId:item.id,name:item.name,interface:item.adapter,security:String(item.security||'').toLowerCase(),revision:sampleNetworkRevision(item)};
+ choiceIndex=0;setNotice('','warn');setView('open-warning');
+}
+function continueOpenNetwork(){
+ if(!openWarning)return;
+ const warning=openWarning;
+ const item=targetById(warning.targetId,'Network');
+ const stillSame=Boolean(item&&pinnedId===warning.targetId&&String(item.security||'').toLowerCase()==='open'&&sampleNetworkRevision(item)===warning.revision&&item.adapter===warning.interface);
+ openWarning=null;
+ if(!stillSame){
+  setNotice('Sample revalidation stopped the request: network identity, security, or revision changed. Review the current Connect action; no request was submitted.','warn');
+  setView('target');return;
+ }
+ if(item.saved){startPending({id:'connect'});return;}
+ returnPage='target';selectedActionId='cancel';choiceIndex=0;setNotice('','ok');setView('connect-choice');
+}
+function changeOpenNetworkSample(){
+ if(!openWarning)return;
+ const item=targetById(openWarning.targetId,'Network');
+ if(!item)return;
+ item.security='WPA2 Personal';item.revision=(item.revision||0)+1;
+ setNotice('Sample fixture changed this access point from Open to WPA2 Personal and advanced its revision. Continuing will be rejected.','warn');render();$rofi.focus({preventScroll:true});
+}
+function connectChoiceAccept(){
+ if(choiceIndex===0){
+  backToTarget('Cancelled; no connection was submitted.');
+  return;
+ }
+ const persistence=choiceIndex===1?'remember':'once';
+ const item=activeTarget();
+ if(String(item.security||'').toLowerCase()==='open'){
+  submitConnectedNetwork(persistence);return;
+ }
+ credentialRequest={targetId:item.id,persistence};
+ setNotice('Sample only: the selected persistence choice would be followed by a native credential request. No secret is entered here.','warn');
+ setView('credential');
+}
+function showPairSecretSample(mode){
+ if(!pending||pending.kind!=='pairing')return;
+ pairSecretMode=mode;pairDisplayPrompt='';pairAuthenticationPrompt='';
+ setView('pair-secret');
+}
+function submitPairSecretSample(){
+ if(!pending||pending.kind!=='pairing')return;
+ const mode=pairSecretMode==='passkey'?'passkey':'PIN';
+ pairSecretMode='';
+ setNotice('Sample: synthetic '+mode+' response accepted by the illustration. No real value was entered or submitted; pairing is still pending.','ok');
+ setView('pending');
+}
+function showPairConfirmationSample(){
+ if(!pending||pending.kind!=='pairing')return;
+ pairAuthenticationPrompt='Does this code match the Bluetooth device? 004217';
+ pairDisplayPrompt='';choiceIndex=0;setNotice('','ok');setView('pair-auth-confirm');
+}
+function showPairKeyboardDisplaySample(){
+ if(!pending||pending.kind!=='pairing')return;
+ pairAuthenticationPrompt='';pairDisplayPrompt='Type 000042 on the Bluetooth device, then press Enter there. 2/6 digits entered.';
+ setNotice('Sample keyboard-display request · synthetic code only.','ok');setView('pending');
+}
+function syncNetworkDetails(){
+ inventories.Network.forEach((item)=>{
+  if(item.kind==='connection'||item.kind==='ap'){
+   item.details=item.details||{};
+   item.details.Status=item.connected?'Connected':item.saved?'Saved · Disconnected':'Available';
+  }
+ });
+}
+function syncBluetoothAdapter(){
+ const adapter=targetById('bt-adapter','Bluetooth');
+ if(adapter)adapter.connectedDevices=listFor('Bluetooth').filter((item)=>item.kind==='bt-device'&&item.connected).map((item)=>item.name);
+}
+function applyNetworkRadio(powered){
+ const radio=targetById('wifi-radio','Network');
+ radio.powered=powered;
+ if(!powered)networkConnections().forEach((item)=>{item.connected=false;item.saved=true;});
+ syncNetworkDetails();
+}
+function finishPending(outcome){
+ if(!pending)return;
+ const operation=pending;
+ const item=targetById(operation.targetId,operation.category);
+ if(!item)return;
+ if(operation.category==='Network'){
+  if(outcome==='success'||outcome==='limited'){
+   if(operation.desired==='connect'){
+    networkConnections().forEach((current)=>{current.connected=false;if(current.kind==='connection')current.saved=true;});
+    item.connected=true;
+    if(!item.saved)item.saved=operation.persistence==='remember';
+    item.active=true;
+    syncNetworkDetails();
+    setNotice('Sample outcome: '+item.name+' on '+item.adapter+' is connected'+(outcome==='limited'?' with limited connectivity':'')+'. Existing Wi-Fi was replaced in this fictional state; Internet access is not verified.','ok');
+   }
+  }else{
+   setNotice('Sample outcome: the connection to '+item.name+' on '+item.adapter+' failed. The existing connection was left in place.','error');
+  }
+  pending=null;selectedActionId='connect';setView('target');return;
+ }
+ if(operation.kind==='pairing'){
+  pairSecretMode='';pairAuthenticationPrompt='';pairDisplayPrompt='';pending=null;
+  if(outcome==='success'){
+   item.paired=true;item.trusted=false;item.connected=false;item.discovered=false;
+   setNotice('Sample outcome: '+item.name+' at '+item.address+' is paired on '+item.adapter+', disconnected and not trusted. Trust remains a separate action.','ok');
+   selectedActionId='details';
+  }else{
+   setNotice('Sample outcome: pairing failed for '+item.name+' on '+item.adapter+'. It remains unpaired and trust was unchanged.','error');
+   selectedActionId='pair-device';
+  }
+  syncBluetoothAdapter();setView('target');return;
+ }
+ if(outcome==='success'){
+  item.connected=Boolean(operation.desiredConnected);
+  syncBluetoothAdapter();
+  setNotice('Sample outcome: '+item.name+' is '+(item.connected?'connected':'disconnected')+' on '+item.adapter+'. Pairing and trust state are unchanged.','ok');
+ }else{
+  setNotice('Sample outcome: Bluetooth request failed for '+item.name+' on '+item.adapter+'. Observed sample state is unchanged.','error');
+ }
+ pending=null;selectedActionId='set-device-connection';setView('target');
+}
+function stopPendingAction(){
+ if(!pending)return;
+ const operation=pending;
+ if(operation.kind==='pairing'){
+  pairSecretMode='';pairAuthenticationPrompt='';pairDisplayPrompt='';
+  setNotice('Sample: Cancel pairing stopped this sample attempt for '+operation.name+' at '+operation.address+' on '+operation.adapter+'. No pairing was removed and trust was unchanged.','warn');
+ }else if(operation.category==='Network'){
+  setNotice('Sample: Cancel connection requested for '+operation.name+' on '+operation.adapter+'. No previous connection was restored or disconnected by this sample.','warn');
+ }else{
+  setNotice('Sample: Stop waiting ended this client’s observation for '+operation.name+' on '+operation.adapter+'. Bluetooth may still connect or disconnect; refresh to observe.','warn');
+ }
+ pending=null;selectedActionId=operation.kind==='pairing'?'pair-device':operation.category==='Network'?'connect':'set-device-connection';setView('target');
+}
+function confirmOperation(){
+ const item=activeTarget();
+ if(!item)return;
+ const action=targetActions(item).find((entry)=>entry.id===pendingActionId);
+ if(!action){backToTarget('Target state changed; review the current action.');return;}
+ if(category==='Network'&&action.id==='disconnect'){
+  item.connected=false;item.saved=true;syncNetworkDetails();
+  setNotice('Sample: Disconnected '+item.name+' on '+item.adapter+'. No replacement connection was started.','ok');
+  selectedActionId='details';setView('target');return;
+ }
+ if(category==='Network'&&action.id==='set-wifi-radio'){
+  applyNetworkRadio(false);
+  setNotice('Sample: global Wi-Fi is off for wlan0 and wlan1; active Wi-Fi connections were disconnected. Ethernet and Bluetooth are unchanged.','warn');
+  selectedActionId='set-wifi-radio';setView('target');return;
+ }
+ if(category==='Bluetooth'&&action.id==='set-adapter-power'){
+  const adapter=targetById('bt-adapter','Bluetooth');
+  adapter.powered=false;
+  listFor('Bluetooth').filter((entry)=>entry.kind==='bt-device').forEach((device)=>{device.connected=false;});
+  syncBluetoothAdapter();
+  setNotice('Sample: adapter hci0 is off. Connected devices disconnected; pairings and trust are retained.','warn');
+  selectedActionId='set-adapter-power';setView('target');return;
+ }
+ if(category==='Bluetooth'&&action.id==='pair-device'){
+  startPending(action);return;
+ }
+ if(category==='Bluetooth'&&action.id==='set-device-trust'){
+  item.trusted=Boolean(action.desiredTrusted);
+  setNotice('Sample: '+(item.trusted?'Trusted ':'Stopped trusting ')+item.name+' on '+item.adapter+'. Pairing and connection are unchanged.','ok');
+  selectedActionId='set-device-trust';setView('target');return;
+ }
+ if(category==='Bluetooth'&&action.id==='set-device-connection'){
+  startPending(action,{desiredConnected:false});return;
+ }
+ backToTarget('Sample operation was not available; no state changed.','warn');
+}
+function acceptChoice(){
+ if(view==='confirm'){
+  if(choiceIndex===0){backToTarget('Cancelled; no change was submitted.');return;}
+  confirmOperation();return;
+ }
+ if(view==='open-warning'){
+  if(choiceIndex===0){openWarning=null;backToTarget('Cancelled; no connection was submitted.');return;}
+  continueOpenNetwork();return;
+ }
+ if(view==='connect-choice'){connectChoiceAccept();return;}
+ if(view==='pair-auth-confirm'){
+  if(choiceIndex===0){stopPendingAction();return;}
+  pairAuthenticationPrompt='';
+  setNotice('Sample: matching code accepted for '+pending.name+' on '+pending.adapter+'. Pairing is still pending; trust is unchanged.','ok');
+  setView('pending');return;
+ }
+ if(view==='details'){backFromDetails();return;}
+}
+function executeTargetAction(action){
+ const item=activeTarget();
+ if(!item||!action)return;
+ if(action.id==='details'){openDetails('target');return;}
+ if(action.id==='back'){backToList();return;}
+ if(action.id==='adjust'){
+  selectedActionId=adjustActions(item)[0]?.id||'back';notice='';noticeTone='ok';setView('adjust');return;
+ }
+ if(action.confirm){openConfirmation(action);return;}
+ if(category==='Network'&&action.id==='connect'){networkConnect(item);return;}
+ if(category==='Network'&&action.id==='set-wifi-radio'){
+  applyNetworkRadio(true);
+  selectedActionId='set-wifi-radio';setNotice('Sample: global Wi-Fi is on for wlan0 and wlan1. Ethernet and Bluetooth are unchanged.','ok');setView('target');return;
+ }
+ if(category==='Network'&&action.id==='rescan'){
+  setNotice('Sample: bounded scan requested for '+item.adapter+'. No adapter was read or changed.','ok');render();return;
+ }
+ if(category==='Audio'&&action.id==='set-default'){
+  listFor('Audio').filter((entry)=>entry.kind==='audio'&&entry.direction===item.direction).forEach((entry)=>{entry.isDefault=entry.id===item.id;});
+  selectedActionId='set-default';setNotice('Sample: '+item.name+' is now the default '+item.direction+'. Existing streams are unchanged.','ok');setView('target');return;
+ }
+ if(category==='Bluetooth'&&action.id==='set-adapter-power'){
+  const adapter=targetById('bt-adapter','Bluetooth');adapter.powered=true;
+  setNotice('Sample: adapter hci0 is on. Paired devices remain disconnected until connected explicitly.','ok');selectedActionId='set-adapter-power';setView('target');return;
+ }
+ if(category==='Bluetooth'&&action.id==='start-discovery'){
+  btScanPending=true;
+  setNotice('Sample: bounded discovery started on hci0. Refresh the list to review discovered devices, including unpaired targets.','ok');render();return;
+ }
+ if(category==='Bluetooth'&&action.id==='set-device-connection'){startPending(action,{desiredConnected:true});return;}
+ setNotice('Sample handoff only; no external tool was opened.','warn');render();
+}
+function acceptCurrent(){
+ if(view==='list'){
+  const item=currentRows().find((entry)=>entry.id===selectedId);
+  if(!item)return;
+  if(item.kind==='advanced'){
+   if(selectedActionId==='details'){
+    advancedHandoff=false;
+    setNotice('Advanced settings is a global handoff row; Details leaves the menu open. The native controller opens its installed editor or recovery tool only with Open.','warn');
+   }else{
+    advancedHandoff=true;
+    setNotice('Sample handoff only; this web page did not launch an external program.','warn');
+   }
+   render();return;
+  }
+  if(selectedActionId==='details'){pinnedId=item.id;openDetails('list');}
+  else{pinnedId=item.id;parentPage='list';selectedActionId='details';notice='';noticeTone='ok';setView('target');}
+  return;
+ }
+ if(view==='target'){
+  const action=currentAction();
+  if(action)executeTargetAction(action);
+  return;
+ }
+ if(view==='adjust'){
+  const item=activeTarget(),action=currentAction();
+  if(!item||!action)return;
+  if(action.id==='back'){selectedActionId='adjust';setView('target');return;}
+  if(action.id==='volume-up'||action.id==='volume-down'){
+   if(!Number.isFinite(item.volume)){setNotice('Volume is unknown; the sample value was not changed.','warn');render();return;}
+   if(action.id==='volume-up')item.volume=item.volume>=100?item.volume:Math.min(100,item.volume+5);
+   else item.volume=Math.max(0,item.volume-5);
+   setNotice('Sample: '+item.name+' volume is now '+item.volume+'%. Mute state is unchanged.','ok');
+   setView('adjust');return;
+  }
+  if(action.id==='mute'){
+   item.muted=!item.muted;
+   setNotice('Sample: '+item.name+' is now '+(item.muted?'muted':'unmuted')+'.','ok');
+   setView('adjust');return;
+  }
+  return;
+ }
+ if(view==='pending'){
+  if(selectedActionId==='close-menu'){closeMenu();return;}
+  if(selectedActionId==='cancel-connection'||selectedActionId==='stop-waiting'||selectedActionId==='cancel-pairing'){stopPendingAction();return;}
+  return;
+ }
+ acceptChoice();
+}
+function cycleAction(step){
+ const actions=normalizeAction();
+ if(actions.length<2)return;
+ const index=Math.max(0,actions.findIndex((action)=>action.id===selectedActionId));
+ selectedActionId=actions[(index+step+actions.length)%actions.length].id;
+ notice='';noticeTone='ok';renderActionStrip();
+}
+function moveSelection(step){
+ if(view==='list'){
+  const rows=currentRows();
+  if(!rows.length)return;
+  const index=rows.findIndex((item)=>item.id===selectedId);
+  selectedId=rows[(index+step+rows.length)%rows.length].id;
+  paintListSelection();return;
+ }
+ if(['confirm','open-warning','connect-choice','pair-auth-confirm'].includes(view)){
+  const count=view==='confirm'||view==='open-warning'||view==='pair-auth-confirm'?2:3;
+  choiceIndex=(choiceIndex+step+count)%count;renderRows();paintChoices();return;
+ }
+ if(view==='details'){choiceIndex=0;paintChoices();}
+}
+function closeMenu(){
+ if(view==='closed')return;
+ closedFrom=view;
+ view='closed';render();$('#reopen-menu').focus();
+}
+function reopenMenu(){
+ if(view!=='closed')return;
+ view=pending?(closedFrom==='pair-auth-confirm'||closedFrom==='pair-secret'?closedFrom:'pending'):credentialRequest?'credential':openWarning?'open-warning':closedFrom==='closed'?'list':closedFrom;
+ render();
+ if(view==='list')$filter.focus({preventScroll:true});else if(view!=='credential'&&view!=='pair-secret')$rofi.focus({preventScroll:true});
+}
+function refreshSample(){
+ if(view==='list'&&category==='Bluetooth'&&btScanPending){
+  btDiscovered=true;btScanPending=false;
+  setNotice('Sample refresh: one unpaired device was discovered. Open it to review its fictional address and Pair preflight.','ok');
+ }else setNotice('Sample inventory refreshed; observed sample values are unchanged.','ok');
+ render();
+}
+function selectCategoryForComparison(){
+ const id={Network:'studio-wlan1',Audio:'headphones',Bluetooth:'bt-speaker'}[category];
+ filter='';$filter.value='';selectedId=id;pinnedId=null;selectedActionId='open';notice='';noticeTone='ok';setView('list');
+}
+function selectNewNetwork(){
+ if(pending||credentialRequest)return;
+ category='Network';filter='';$filter.value='';selectedId='studio-wlan1';pinnedId=null;selectedActionId='open';notice='';noticeTone='ok';setView('list');
+}
+function setOverrangeSample(){
+ const item=targetById('speakers','Audio');
+ if(!item)return;
+ item.volume=120;
+ if(category!=='Audio'){category='Audio';filter='';$filter.value='';selectedId='speakers';pinnedId=null;selectedActionId='open';setNotice('Sample fixture: USB speakers are set to 120% to show that +5% adds no gain while −5% reduces gradually.','warn');setView('list');}
+ else{setNotice('Sample fixture: USB speakers are set to 120% to show that +5% adds no gain while −5% reduces gradually.','warn');render();}
+}
+function resetSample(){
+ inventories=makeSample();category='Network';view='list';filter='';$filter.value='';selectedId='home';pinnedId=null;parentPage='list';returnPage='target';selectedActionId='open';choiceIndex=0;pending=null;credentialRequest=null;openWarning=null;closedFrom='list';notice='';noticeTone='ok';btScanPending=false;btDiscovered=false;pairSecretMode='';pairAuthenticationPrompt='';pairDisplayPrompt='';advancedHandoff=false;pendingActionId='';setView('list');
+}
+document.querySelectorAll('[data-category]').forEach((button)=>button.onclick=()=>setCategory(button.dataset.category));
+$filter.addEventListener('input',(event)=>{
+ filter=event.target.value;
+ const rows=currentRows();
+ if(!rows.some((item)=>item.id===selectedId))selectedId=rows[0]?.id||null;
+ renderRows();paintListSelection();
 });
-$('#previous-action').onclick=previewAction(()=>cycle(-1));$('#next-action').onclick=previewAction(()=>cycle(1));$('#run').onclick=previewAction(run);
-$('#credential-continue').onclick=previewAction(()=>setView('review'));
-$('#compare-states').onclick=previewAction(()=>{const currentCategory=category;chooseCategory(currentCategory);selected={Network:'atelier',Audio:'headphones',Bluetooth:'bt-headphones'}[currentCategory]||selected;paintSelection();});
-$('#new-wifi').onclick=previewAction(()=>{chooseCategory('Network');target=networks.find(r=>r.id==='atelier');selected=target.id;setView('password');});
-$('#disconnect').onclick=previewAction(()=>{chooseCategory('Network');selected='home';action=1;run();});
-$('#reset').onclick=()=>chooseCategory('Network');
-document.querySelectorAll('[data-outcome]').forEach(b=>b.onclick=previewAction(()=>{
- if(b.dataset.outcome==='success')showResult('Connected');else if(b.dataset.outcome==='failure')showResult('Authentication failed','error');else showResult('Connected · limited access','warn');
-}));
+$rofi.addEventListener('keydown',(event)=>{
+ if(event.key==='Escape'||(event.ctrlKey&&event.key.toLowerCase()==='g')){event.preventDefault();closeMenu();return;}
+ if(event.altKey&&event.key.toLowerCase()==='r'){event.preventDefault();refreshSample();return;}
+ if(event.target!==$rofi&&event.target!==$filter)return;
+ if(event.key==='Tab'&&actionsForView().length>0){event.preventDefault();cycleAction(event.shiftKey?-1:1);}
+ else if(event.key==='ArrowUp'||event.key==='ArrowDown'){event.preventDefault();moveSelection(event.key==='ArrowDown'?1:-1);}
+ else if(event.key==='Enter'){event.preventDefault();acceptCurrent();}
+});
+$('#previous-action').onclick=()=>cycleAction(-1);
+$('#next-action').onclick=()=>cycleAction(1);
+$('#run').onclick=acceptCurrent;
+$('#close-menu').onclick=closeMenu;
+$('#reopen-menu').onclick=reopenMenu;
+$('#credential-continue').onclick=()=>{
+ if(!credentialRequest)return;
+ const choice=credentialRequest;
+ credentialRequest=null;
+ submitConnectedNetwork(choice.persistence);
+};
+$('#credential-cancel').onclick=()=>{
+ credentialRequest=null;selectedActionId='connect';backToTarget('Sample credential request cancelled; no connection was submitted.');
+};
+$('#pair-secret-continue').onclick=submitPairSecretSample;
+$('#pair-secret-cancel').onclick=stopPendingAction;
+$('#show-pin-request').onclick=()=>showPairSecretSample('pin');
+$('#show-passkey-request').onclick=()=>showPairSecretSample('passkey');
+$('#show-match-confirmation').onclick=showPairConfirmationSample;
+$('#show-keyboard-display').onclick=showPairKeyboardDisplaySample;
+$('#complete-pairing').onclick=()=>finishPending('success');
+$('#fail-pairing').onclick=()=>finishPending('failure');
+$('#change-open-network').onclick=changeOpenNetworkSample;
+$('#advanced-return').onclick=()=>{advancedHandoff=false;render();$filter.focus({preventScroll:true});};
+$('#compare-states').onclick=selectCategoryForComparison;
+$('#select-new-network').onclick=selectNewNetwork;
+$('#set-overrange').onclick=setOverrangeSample;
+$('#reset').onclick=resetSample;
+document.querySelectorAll('[data-outcome]').forEach((button)=>button.onclick=()=>finishPending(button.dataset.outcome));
 render();
 </script>
 </html>

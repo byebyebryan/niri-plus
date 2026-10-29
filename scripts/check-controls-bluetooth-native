@@ -1,0 +1,400 @@
+#!/usr/bin/env python3
+"""Run BlueZ backend methods against an owned private GIO/D-Bus peer."""
+
+from __future__ import annotations
+
+import argparse
+import io
+import json
+from pathlib import Path
+import secrets
+import select
+import subprocess
+import sys
+import time
+import uuid
+
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_LIB_DIR = ROOT / "components/desktop/lib"
+FIXTURE_DIR = ROOT / "tests/fixtures/controls_bluez"
+
+
+class ProofFailure(RuntimeError):
+    pass
+
+
+def require(condition: bool, message: str) -> None:
+    if not condition:
+        raise ProofFailure(message)
+
+
+def launch_private_bus():
+    process = subprocess.Popen(
+        ["dbus-daemon", "--session", "--nofork", "--print-address=1"],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        bufsize=1,
+    )
+    try:
+        ready, _, _ = select.select([process.stdout], [], [], 5.0)
+        if not ready:
+            raise ProofFailure("owned private D-Bus daemon did not publish an address")
+        address = process.stdout.readline().strip()
+        if not address:
+            raise ProofFailure("owned private D-Bus daemon returned an empty address")
+        return process, address
+    except Exception:
+        stop_process(process)
+        raise
+
+
+def stop_process(process):
+    if process is None or process.poll() is not None:
+        return
+    process.terminate()
+    try:
+        process.wait(timeout=3)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait(timeout=3)
+
+
+def request(invocation_id, target, action):
+    from niri_plus_controls.model import OperationRequest
+
+    return OperationRequest(
+        invocation_id,
+        uuid.uuid4().hex,
+        target.ref,
+        action.action_id,
+        target.revision,
+        dict(action.parameters),
+    )
+
+
+def find_target(backend, kind, *, title=None, state_key=None, state_value=None):
+    inventory = backend.snapshot()
+    return next(
+        item for item in inventory.targets
+        if item.ref.kind == kind
+        and (title is None or item.title == title)
+        and (state_key is None or item.state.get(state_key) == state_value)
+    )
+
+
+def wait_result(backend, pending, accepted, timeout=4.0):
+    from niri_plus_controls.model import ResultKind
+
+    deadline = time.monotonic() + timeout
+    last = None
+    while time.monotonic() < deadline:
+        last = backend.refresh(pending)
+        if last.kind in accepted:
+            return last
+        time.sleep(0.01)
+    raise ProofFailure(f"bounded native wait expired; last result was {getattr(last, 'kind', 'none')}")
+
+
+def wait_peer(predicate, timeout=3.0):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if predicate():
+            return
+        time.sleep(0.01)
+    raise ProofFailure("bounded synthetic BlueZ peer wait expired")
+
+
+def wait_display_prompt(backend, pending, timeout=4.0):
+    from niri_plus_controls.model import ResultKind
+
+    deadline = time.monotonic() + timeout
+    last = None
+    while time.monotonic() < deadline:
+        last = backend.refresh(pending)
+        if last.kind != ResultKind.PENDING:
+            raise ProofFailure("displayed keyboard code did not remain a pending operation")
+        if last.display_prompt:
+            return last
+        time.sleep(0.01)
+    raise ProofFailure("bounded DisplayPasskey callback wait expired")
+
+
+def run_proof(lib_dir: Path) -> dict[str, object]:
+    sys.path.insert(0, str(lib_dir))
+    sys.path.insert(0, str(FIXTURE_DIR))
+    from bluez_peer import BluezPeer
+    from niri_plus_controls.bluetooth import BluezBus, BluetoothBackend
+    from niri_plus_controls.model import ActionKind, ResultKind
+
+    bus_process = None
+    service = None
+    backend = None
+    bus = None
+    external_discovery = None
+    summary = None
+    stages: list[str] = []
+    devices = [
+        {"path": "/org/bluez/hci0/dev_00_00_00_00_00_11", "address": "00:00:00:00:00:11", "alias": "PIN fixture", "pair_mode": "pin"},
+        {"path": "/org/bluez/hci0/dev_00_00_00_00_00_12", "address": "00:00:00:00:00:12", "alias": "Passkey fixture", "pair_mode": "passkey"},
+        {"path": "/org/bluez/hci0/dev_00_00_00_00_00_13", "address": "00:00:00:00:00:13", "alias": "Confirm fixture", "pair_mode": "confirmation"},
+        {"path": "/org/bluez/hci0/dev_00_00_00_00_00_14", "address": "00:00:00:00:00:14", "alias": "Display fixture", "pair_mode": "display"},
+        {"path": "/org/bluez/hci0/dev_00_00_00_00_00_15", "address": "00:00:00:00:00:15", "alias": "Pair race fixture", "pair_mode": "passkey"},
+        {"path": "/org/bluez/hci0/dev_00_00_00_00_00_16", "address": "00:00:00:00:00:16", "alias": "Connect fixture", "paired": True},
+    ]
+    dynamic_pin = secrets.token_hex(6)
+    dynamic_passkey = f"{secrets.randbelow(1_000_000):06d}"
+    race_passkey = f"{secrets.randbelow(1_000_000):06d}"
+    try:
+        bus_process, address = launch_private_bus()
+        service = BluezPeer(address, devices=devices)
+        service.set_expected_secret(devices[0]["path"], dynamic_pin)
+        service.set_expected_secret(devices[1]["path"], int(dynamic_passkey))
+        service.set_expected_secret(devices[4]["path"], int(race_passkey), hold_reply=True)
+        service.start()
+        client_connection = BluezPeer._new_connection(address)
+        bus = BluezBus(connection=client_connection)
+        backend = BluetoothBackend(peer=bus, scan_seconds=30)
+        invocation_id = "private-bluez-native-proof"
+
+        # Another unique D-Bus sender keeps its own discovery session alive.
+        external_discovery = service.external_discovery_client()
+        stages.append("private daemon and independent discovery client")
+
+        adapter = find_target(backend, "bluetooth-adapter")
+        start = next(item for item in backend.actions(adapter.ref) if item.action_id == "start-discovery")
+        require(start.kind == ActionKind.OPERATION, "discovery must be an explicit adapter operation")
+        result = backend.execute(request(invocation_id, adapter, start))
+        require(result.kind == ResultKind.COMPLETE, "owned StartDiscovery did not complete")
+        require(service.counters["start_discovery"] == 2, "BlueZ did not retain per-sender discovery sessions")
+        stages.append("StartDiscovery was issued by only the owned client")
+
+        # PIN transport: dynamic text only crosses the password stream and the
+        # synthetic peer retains a boolean comparison, never the supplied PIN.
+        pin_target = find_target(backend, "bluetooth-device", title="PIN fixture")
+        pin_action = next(item for item in backend.actions(pin_target.ref) if item.action_id == "pair-device")
+        require(pin_action.kind == ActionKind.CONFIRM, "pairing should require its named confirmation")
+        pin_pending = backend.execute(request(invocation_id, pin_target, pin_action))
+        require(pin_pending.kind == ResultKind.PENDING, "PIN Pair request did not remain asynchronous")
+        pin_prompt = wait_result(backend, pin_pending.pending, {ResultKind.NEEDS_SECRET})
+        require(pin_prompt.secret_prompt.startswith("Bluetooth PIN"), "BlueZ PIN callback did not reach the controller")
+        result = backend.provide_secret(pin_pending.pending, io.BytesIO(dynamic_pin.encode("utf-8")))
+        if result.kind == ResultKind.PENDING:
+            result = wait_result(backend, pin_pending.pending, {ResultKind.COMPLETE})
+        require(result.kind == ResultKind.COMPLETE, "PIN pairing did not observe the paired property")
+        require(service.input_result(devices[0]["path"]) == (True, 1), "the private peer did not validate exactly one PIN in memory")
+        require(service.stats()["paired"][devices[0]["path"]] is True, "PIN Pair did not update Paired")
+        require(service.stats()["connected"][devices[0]["path"]] is False, "pairing silently connected the device")
+        require(service.stats()["trusted"][devices[0]["path"]] is False, "pairing silently changed trust")
+        stages.append("Agent1 RequestPinCode reply and separate Pair/Connect/Trust state")
+
+        # RequestPasskey uses the same separate pipe and an unsigned numeric
+        # reply. The helper only exposes a matching boolean/count.
+        pass_target = find_target(backend, "bluetooth-device", title="Passkey fixture")
+        pass_action = next(item for item in backend.actions(pass_target.ref) if item.action_id == "pair-device")
+        pass_pending = backend.execute(request(invocation_id, pass_target, pass_action))
+        pass_prompt = wait_result(backend, pass_pending.pending, {ResultKind.NEEDS_SECRET})
+        require(pass_prompt.secret_prompt.startswith("Bluetooth passkey"), "BlueZ passkey callback did not reach the controller")
+        result = backend.provide_secret(pass_pending.pending, io.BytesIO(dynamic_passkey.encode("ascii")))
+        if result.kind == ResultKind.PENDING:
+            result = wait_result(backend, pass_pending.pending, {ResultKind.COMPLETE})
+        require(result.kind == ResultKind.COMPLETE, "passkey pairing did not observe the paired property")
+        require(service.input_result(devices[1]["path"]) == (True, 1), "the private peer did not validate exactly one passkey in memory")
+        stages.append("Agent1 RequestPasskey numeric reply")
+
+        # The confirmation callback is device scoped and carries the displayed
+        # six-digit code. Confirming does not grant trust or connect.
+        confirm_target = find_target(backend, "bluetooth-device", title="Confirm fixture")
+        confirm_action = next(item for item in backend.actions(confirm_target.ref) if item.action_id == "pair-device")
+        confirm_pending = backend.execute(request(invocation_id, confirm_target, confirm_action))
+        confirmation = wait_result(backend, confirm_pending.pending, {ResultKind.NEEDS_CONFIRMATION})
+        require("000042" in confirmation.confirmation_prompt, "matching code was not rendered as a six-digit confirmation")
+        result = backend.respond_confirmation(confirm_pending.pending, True)
+        if result.kind == ResultKind.PENDING:
+            result = wait_result(backend, confirm_pending.pending, {ResultKind.COMPLETE})
+        require(result.kind == ResultKind.COMPLETE, "confirmed pairing did not complete")
+        require(service.counters["confirmation_requests"] == 1, "the service did not call RequestConfirmation")
+        require(service.stats()["connected"][devices[2]["path"]] is False, "confirmed pairing silently connected")
+        require(service.stats()["trusted"][devices[2]["path"]] is False, "confirmed pairing silently trusted")
+        require(service.counters["default_agent"] == 0, "pairing registered as the system default agent")
+        stages.append("Agent1 RequestConfirmation code matching")
+
+        # DisplayPasskey is a read-only instruction with a zero-padded code and
+        # entered digit count. Escape/cancel only calls CancelPairing for this
+        # exact pending request; the fixture has no RemoveDevice/Disconnect use.
+        display_target = find_target(backend, "bluetooth-device", title="Display fixture")
+        display_action = next(item for item in backend.actions(display_target.ref) if item.action_id == "pair-device")
+        display_pending = backend.execute(request(invocation_id, display_target, display_action))
+        display_result = wait_display_prompt(backend, display_pending.pending)
+        require("000042" in display_result.display_prompt and "2/6 digits entered" in display_result.display_prompt,
+                "DisplayPasskey lost zero padding or keyboard progress")
+        cancel_pairing_before = service.counters["cancel_pairing"]
+        canceled = backend.cancel(display_pending.pending)
+        require(canceled.kind == ResultKind.CANCELLED, "pair cancellation did not stop this owned request")
+        require(service.counters["cancel_pairing"] == cancel_pairing_before + 1, "pair cancellation did not target CancelPairing")
+        require(service.counters["remove_device"] == 0 and service.counters["disconnect"] == 0,
+                "pair cancellation removed or disconnected a device")
+        stages.append("DisplayPasskey progress and exact pairing cancellation")
+
+        # Success can race with Escape after the synthetic peer has accepted
+        # the passkey. Complete the held Pair reply but do not pump the client
+        # callback before cancel; state revalidation must prevent rollback.
+        race_path = devices[4]["path"]
+        race_target = find_target(backend, "bluetooth-device", title="Pair race fixture")
+        race_action = next(item for item in backend.actions(race_target.ref) if item.action_id == "pair-device")
+        race_pending = backend.execute(request(invocation_id, race_target, race_action))
+        wait_result(backend, race_pending.pending, {ResultKind.NEEDS_SECRET})
+        result = backend.provide_secret(race_pending.pending, io.BytesIO(race_passkey.encode("ascii")))
+        require(result.kind == ResultKind.PENDING, "held Pair request should remain pending after Agent1 accepted input")
+        wait_peer(lambda: service.input_result(race_path) == (True, 1))
+        cancel_pairing_before = service.counters["cancel_pairing"]
+        service.complete_pair(race_path)
+        wait_peer(lambda: service.stats()["paired"][race_path] is True)
+        canceled = backend.cancel(race_pending.pending)
+        require(canceled.kind == ResultKind.CANCELLED, "success-race Escape did not close the owned observation")
+        require(service.counters["cancel_pairing"] == cancel_pairing_before,
+                "success-race cancellation sent CancelPairing after the device was already paired")
+        require(service.stats()["paired"][race_path] is True, "success-race cancellation rolled back pairing")
+        require(service.counters["disconnect"] == 0 and service.counters["remove_device"] == 0,
+                "success-race cancellation disconnected or removed the device")
+        stages.append("pair success/escape race has no rollback")
+
+        # Trust is a separate explicit operation after Pair and does not
+        # initiate a connection.
+        pin_target = find_target(backend, "bluetooth-device", title="PIN fixture")
+        trust_action = next(item for item in backend.actions(pin_target.ref) if item.action_id == "set-device-trust")
+        require(trust_action.kind == ActionKind.CONFIRM, "Trust must have its own explicit confirmation")
+        trust_result = backend.execute(request(invocation_id, pin_target, trust_action))
+        require(trust_result.kind == ResultKind.COMPLETE, "explicit Trust did not complete")
+        require(service.stats()["trusted"][devices[0]["path"]] is True, "Trust did not update Trusted")
+        require(service.stats()["connected"][devices[0]["path"]] is False, "Trust silently connected the device")
+        stages.append("Trust remains separate from Pair and Connect")
+
+        # Connect uses its own async method handle. Cancel stops observing only;
+        # the peer may still complete Connect and must never receive Disconnect.
+        connect_target = find_target(backend, "bluetooth-device", title="Connect fixture")
+        connect_action = next(item for item in backend.actions(connect_target.ref) if item.action_id == "set-device-connection")
+        connect_pending = backend.execute(request(invocation_id, connect_target, connect_action))
+        require(connect_pending.kind == ResultKind.PENDING, "Connect did not return an owned async handle")
+        wait_peer(lambda: service.counters["connect"] == 1)
+        connect_canceled = backend.cancel(connect_pending.pending)
+        require(connect_canceled.kind == ResultKind.CANCELLED, "Connect cancel did not stop waiting")
+        require(service.counters["disconnect"] == 0, "stopping a Connect wait broadened into Disconnect")
+        require(service.stats()["connected"][devices[5]["path"]] is True, "the native Connect result was rolled back")
+        stages.append("Connect async cancellation stops observation without rollback")
+
+        # A second sender's discovery reference survives the backend's close.
+        adapter = find_target(backend, "bluetooth-adapter")
+        backend._stop_discovery(adapter.ref)
+        require(service.counters["stop_discovery"] == 1, "owned StopDiscovery was not issued exactly once")
+        require(service.stats()["active_discovery_clients"] == 1, "stopping the owned scan stopped another sender")
+        # Prove target handles are bound to the original unique BlueZ owner.
+        stale_target = find_target(backend, "bluetooth-device", title="Connect fixture")
+        stale_action = next(item for item in backend.actions(stale_target.ref) if item.action_id == "set-device-connection")
+        stale_request = request(invocation_id, stale_target, stale_action)
+        service.replace_owner()
+        stale_result = backend.execute(stale_request)
+        require(stale_result.kind == ResultKind.ERROR, "a replaced BlueZ owner accepted an old target handle")
+        stages.append("owner replacement invalidates stale target handles")
+
+        summary = {
+            "schema_version": 1,
+            "status": "passed",
+            "scope": "owned private dbus-daemon and synthetic GIO org.bluez service; no system bus or Bluetooth hardware",
+            "checks": stages,
+            "native_method_counts": {
+                key: int(value)
+                for key, value in service.stats().items()
+                if key in {
+                    "start_discovery", "stop_discovery", "connect", "disconnect", "pair", "cancel_pairing",
+                    "remove_device", "register_agent", "unregister_agent", "default_agent", "pin_requests",
+                    "passkey_requests", "confirmation_requests", "display_passkey_requests",
+                }
+            },
+            "synthetic_input_checks": {
+                "pin": {"matched_in_peer_memory": service.input_result(devices[0]["path"])[0], "count": service.input_result(devices[0]["path"])[1]},
+                "passkey": {"matched_in_peer_memory": service.input_result(devices[1]["path"])[0], "count": service.input_result(devices[1]["path"])[1]},
+                "pair_race_passkey": {"matched_in_peer_memory": service.input_result(race_path)[0], "count": service.input_result(race_path)[1]},
+                "values_recorded": False,
+            },
+        }
+        return summary
+    finally:
+        if backend is not None:
+            backend.close()
+        if summary is not None and service is not None:
+            stats = service.stats()
+            summary["cleanup"] = {
+                "registered_agent_count": stats["registered_agent_count"],
+                "agent_register_unregister_balanced": stats["register_agent"] == stats["unregister_agent"],
+                "external_discovery_clients_retained": stats["active_discovery_clients"] == 1,
+                "remaining_discovery_clients": stats["active_discovery_clients"],
+                "backend_discovery_entries": len(backend._discoveries) if backend is not None else 0,
+                "backend_pending_operations": len(backend._pending) if backend is not None else 0,
+                "pending_gio_calls": len(bus._calls) if bus is not None else 0,
+                "private_bus_daemon_owned_until_cleanup": bus_process is not None and bus_process.poll() is None,
+            }
+            cleanup_ok = (
+                stats["registered_agent_count"] == 0
+                and stats["register_agent"] == stats["unregister_agent"]
+                and stats["active_discovery_clients"] == 1
+                and not backend._discoveries
+                and not backend._pending
+                and not bus._calls
+            )
+            if not cleanup_ok:
+                summary["status"] = "failed"
+                summary["cleanup_contract_passed"] = False
+            else:
+                summary["cleanup_contract_passed"] = True
+        if external_discovery is not None:
+            try:
+                external_discovery.close_sync(None)
+            except Exception:
+                pass
+        if service is not None:
+            service.close()
+        stop_process(bus_process)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--lib-dir", type=Path, default=DEFAULT_LIB_DIR,
+        help="directory containing the niri_plus_controls package (supports installed bundles)",
+    )
+    parser.add_argument("--output", type=Path, help="write the secret-free JSON proof summary to this file")
+    args = parser.parse_args()
+    if not (args.lib_dir / "niri_plus_controls").is_dir():
+        parser.error("--lib-dir must contain a niri_plus_controls package directory")
+    try:
+        summary = run_proof(args.lib_dir.resolve())
+    except Exception as error:
+        # Do not serialize exception text: a native service error must never
+        # turn a pairing input into a file or diagnostic artifact.
+        summary = {
+            "schema_version": 1,
+            "status": "failed",
+            "failure_type": type(error).__name__,
+            "scope": "owned private dbus-daemon and synthetic GIO org.bluez service",
+        }
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        else:
+            print(json.dumps(summary, indent=2, sort_keys=True))
+        print(f"private BlueZ proof failed: {type(error).__name__}", file=sys.stderr)
+        return 1
+    serialized = json.dumps(summary, indent=2, sort_keys=True) + "\n"
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(serialized, encoding="utf-8")
+    else:
+        print(serialized, end="")
+    return 0 if summary.get("status") == "passed" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -51,6 +51,45 @@ def _json_text(value):
     return json.dumps(value, ensure_ascii=False, indent=2) + "\n"
 
 
+def _mix_color(foreground, background, percent):
+    """Resolve a reviewed state tint to opaque RGB for native toolkit inputs."""
+    return "#" + "".join(
+        f"{round((int(foreground[index:index + 2], 16) * percent + int(background[index:index + 2], 16) * (100 - percent)) / 100):02x}"
+        for index in (1, 3, 5)
+    )
+
+
+def _controls_appearance(profile, colors, shared):
+    return {
+        "schema_version": 1,
+        "candidate": IDENTITY_CANDIDATE,
+        "colors": dict(colors),
+        "derived": {
+            "current_background": _mix_color(colors["success"], colors["surface"], 18),
+            "current_outline": _mix_color(colors["success"], colors["separator"], 65),
+        },
+        "fonts": {"ui_font": profile["ui_font"], "ui_pt": shared["ui_pt"]},
+    }
+
+
+def _controls_rofi(profile, colors, shared):
+    """A self-contained opt-in theme; other Plus pickers retain their theme."""
+    derived = _controls_appearance(profile, colors, shared)["derived"]
+    return _rofi(profile, colors, shared) + "\n" + "\n".join([
+        "/* Controls only: independent current/default and keyboard-selection states. */",
+        "element { border: 1px; border-color: transparent; padding: 9px 8px; }",
+        'entry { placeholder: "Search devices"; }',
+        "element-text { border: 0px 0px 0px 3px; border-color: transparent; padding: 0px 0px 0px 8px; }",
+        "element normal.normal { border-color: transparent; }",
+        f"element normal.active {{ background-color: {derived['current_background']}; border-color: {derived['current_outline']}; }}",
+        f"element selected.normal {{ background-color: {colors['selection']}; border-color: transparent; }}",
+        f"element selected.active {{ background-color: {colors['selection']}; border-color: {derived['current_outline']}; }}",
+        f"element-text selected.normal {{ border-color: {colors['focus']}; }}",
+        f"element-text selected.active {{ border-color: {colors['focus']}; }}",
+        "",
+    ])
+
+
 def _rofi(profile, colors, shared):
     opacity_byte = int(shared["overlay_opacity"] * 255)
     lines = [
@@ -337,6 +376,8 @@ def render(identity):
     role_data = {"schema_version": 1, "candidate": IDENTITY_CANDIDATE, "colors": colors}
     return {
         "neutral-slate.rasi": _rofi(profile, colors, shared),
+        "niri-plus-controls.rasi": _controls_rofi(profile, colors, shared),
+        "controls-appearance.json": _json_text(_controls_appearance(profile, colors, shared)),
         "swaync.css": _swaync(profile, colors, shared),
         "gtklock.css": _gtklock(profile, colors, shared),
         "qt5-palette.conf": _qt_palette(colors, 21),

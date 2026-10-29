@@ -14,6 +14,15 @@ The [contrast study](design/contrast.md) retains the preceding desktop baseline
 and terminal comparisons. Balanced+ and the crisper desktop are selected; the
 other terminal options remain references.
 
+## Direct device controls
+
+The [interactive controls illustration](../design/rofi-controls/index.html)
+shows Network, Audio and Bluetooth in the shared Plus frame: green current
+device framing, independent blue keyboard selection, explicit state labels,
+and an action strip separated from status. The illustration uses fictional,
+stateful sample devices. The [candidate recipe](recipes/rofi-controls.md)
+explains the native focused-device workflow and its current acceptance boundary.
+
 ## Desktop overview
 
 The browser and terminal share the screen, with the focused window marked by a

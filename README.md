@@ -35,6 +35,21 @@ parent, then open `http://127.0.0.1:8000/niri-plus/`.
 The build and module checks work offline after dependencies are installed. They
 use declared repository inputs; they do not inspect or operate a desktop.
 
+Direct Rofi controls are an [unreleased 0.4.0 candidate](docs/recipes/rofi-controls.md),
+separate from the published Arch reference. Native binding tests need the system
+Python with PyGObject/libnm/libsecret; environments without those bindings report
+explicit skips. Run the separate required native gate on an equipped machine:
+
+```sh
+/usr/bin/python3 -B -m unittest discover -s tests -p 'test_controls_*.py' -v
+```
+
+The owned native Rofi, NetworkManager, secret-agent, Audio and BlueZ checkers in
+`scripts/check-controls-*` and `scripts/check-rofi-controls-native` qualify
+isolated clients/services. They are opt-in, have explicit prerequisites and
+do not use physical devices as fixtures. Their results and remaining hardware
+checks are recorded in the [implementation receipt](docs/planning/rofi-controls-implementation-receipt.md).
+
 ## Repository layout
 
 - `docs/`: story, tour, architecture, setup, component ownership and recipes.

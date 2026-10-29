@@ -1,0 +1,225 @@
+#!/usr/bin/env python3
+"""Run real NetworkManager only inside owned mount/network/UTS namespaces.
+
+Requires passwordless sudo and Linux namespaces. This never joins a host bus or
+changes host network ownership. The parent verifies host protection afterwards.
+"""
+
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import time
+import uuid
+
+sys.dont_write_bytecode = True
+
+
+def command(*argv, **kwargs):
+    return subprocess.run(argv, check=True, capture_output=True, text=True, timeout=8, **kwargs)
+
+
+def host_facts():
+    services = {}
+    for user, names in ((False, ("NetworkManager", "docker", "tailscaled")),
+                        (True, ("niri", "swaync", "desktop-idle", "349d"))):
+        for name in names:
+            result = subprocess.run(["systemctl", *(('--user',) if user else ()), "show", name,
+                                     "-p", "MainPID", "--value"], capture_output=True, text=True, timeout=5)
+            services[("user:" if user else "system:") + name] = result.stdout.strip()
+    return {"default_routes": json.loads(command("ip", "-json", "route", "show", "default").stdout),
+            "resolver_sha256": hashlib.sha256(Path("/etc/resolv.conf").read_bytes()).hexdigest(),
+            "service_main_pids": services}
+
+
+def inside(args):
+    # Refuse all mutations unless the wrapper actually isolated every boundary.
+    if os.geteuid() != 0 or any(os.readlink("/proc/self/ns/" + key) == old
+                               for key, old in zip(("net", "mnt", "uts"), args.inside)):
+        raise SystemExit("Refusing native proof outside the owned namespaces")
+    sys.path.insert(0, str(args.lib_dir.resolve()))
+    from niri_plus_controls.network import NetworkBackend
+    from niri_plus_controls.model import OperationRequest, ResultKind
+
+    checks = []
+    def verify(label, value):
+        if not value:
+            raise AssertionError(label)
+        checks.append(label)
+
+    processes, backend = [], None
+    with tempfile.TemporaryDirectory(prefix="niri-controls-nm-native-") as temporary:
+        root = Path(temporary)
+        for target in ("/run", "/var/lib/NetworkManager", "/etc/NetworkManager"):
+            command("mount", "-t", "tmpfs", "-o", "mode=755", "tmpfs", target)
+        command("mount", "-t", "sysfs", "-o", "ro", "sysfs", "/sys")
+        command("ip", "link", "add", "controls0", "type", "veth", "peer", "name", "controls1")
+        for name in ("lo", "controls0", "controls1"):
+            command("ip", "link", "set", name, "up")
+        # No host udev socket/database is visible. Mark only these private
+        # virtual links initialized so NM can manage them without a udev daemon.
+        udev = Path("/run/udev/data")
+        udev.mkdir(parents=True)
+        for name in ("controls0", "controls1"):
+            index = (Path("/sys/class/net") / name / "ifindex").read_text().strip()
+            (udev / ("n" + index)).write_text("I:1\nE:ID_NET_MANAGED_BY=org.freedesktop.NetworkManager\n")
+        config = root / "NetworkManager.conf"
+        config.write_text("""[main]
+plugins=keyfile
+dns=none
+rc-manager=unmanaged
+hostname-mode=none
+no-auto-default=*
+auth-polkit=false
+[connectivity]
+enabled=false
+[device-controls]
+match-device=interface-name:controls*
+managed=true
+""")
+        for name in ("conf", "system-conf"):
+            (root / name).mkdir()
+        bus_config = root / "bus.conf"
+        bus_config.write_text("""<busconfig><type>system</type><listen>unix:tmpdir=/tmp</listen><auth>EXTERNAL</auth>
+<policy context="default"><allow user="root"/><allow own="*"/><allow send_destination="*"/><allow receive_sender="*"/></policy></busconfig>""")
+        logs = []
+        try:
+            bus = subprocess.Popen(["dbus-daemon", "--nofork", "--config-file=" + str(bus_config), "--print-address=1"],
+                                   stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+            processes.append(bus)
+            address = bus.stdout.readline().strip()
+            if not address.startswith("unix:"):
+                raise RuntimeError("Private bus did not become ready")
+            env = {"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "HOME": str(root),
+                   "DBUS_SYSTEM_BUS_ADDRESS": address, "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/no-session-bus"}
+            nm_command = ["NetworkManager", "--no-daemon", "--config=" + str(config),
+                          "--config-dir=" + str(root / "conf"), "--system-config-dir=" + str(root / "system-conf"),
+                          "--intern-config=" + str(root / "intern.conf"), "--state-file=" + str(root / "state"),
+                          "--pid-file=" + str(root / "pid"), "--log-level=WARN"]
+            def start_nm():
+                log = (root / ("nm-" + str(len(logs)) + ".log")).open("wb")
+                logs.append(log)
+                process = subprocess.Popen(nm_command, env=env, stdin=subprocess.DEVNULL, stdout=log, stderr=log)
+                processes.append(process)
+                deadline = time.monotonic() + 5
+                while time.monotonic() < deadline:
+                    result = subprocess.run(["nmcli", "general", "status"], env=env, capture_output=True, timeout=1)
+                    if result.returncode == 0:
+                        return process
+                    if process.poll() is not None:
+                        break
+                    time.sleep(0.05)
+                raise RuntimeError("Private NetworkManager did not become ready")
+
+            manager = start_nm()
+            for index in (0, 1):
+                command("nmcli", "connection", "add", "type", "ethernet", "ifname", "controls" + str(index),
+                        "con-name", "Controls wired " + str(index), "connection.autoconnect", "no",
+                        "ipv4.method", "manual", "ipv4.addresses", "192.0.2." + str(index + 2) + "/24",
+                        "ipv4.never-default", "yes", "ipv6.method", "disabled", env=env)
+            command("nmcli", "connection", "add", "type", "ethernet", "ifname", "controls0", "con-name", "Controls pending",
+                    "connection.autoconnect", "no", "ipv4.method", "auto", "ipv4.dhcp-timeout", "4", "ipv4.may-fail", "no",
+                    "ipv6.method", "disabled", env=env)
+            backend = NetworkBackend(bus_address=address)
+            inventory = backend.snapshot()
+            verify("Real libnm initializes its owned client/cache", not backend._init_error and bool(backend._owner))
+            verify("Private Ethernet devices have D-Bus identities rather than udev paths",
+                   len([t for t in inventory.targets if t.ref.kind == "ethernet-device"]) == 2)
+            radio = next(t for t in inventory.targets if t.ref.kind == "wifi-radio")
+            verify("Missing Wi-Fi hardware offers no global radio mutation", not backend.actions(radio.ref))
+
+            def target(title):
+                return next(t for t in backend.snapshot().targets if t.title == title and t.ref.kind == "ethernet-profile")
+
+            def execute(title, action_id):
+                selected = target(title)
+                action = next(a for a in backend.actions(selected.ref) if a.action_id == action_id)
+                return backend.execute(OperationRequest("isolated-native", uuid.uuid4().hex, selected.ref,
+                                                        action_id, selected.revision, action.parameters))
+
+            def settle(result, seconds=7):
+                until = time.monotonic() + seconds
+                while result.kind == ResultKind.PENDING and time.monotonic() < until:
+                    time.sleep(0.05)
+                    result = backend.refresh(result.pending)
+                return result
+
+            for index in (0, 1):
+                result = settle(execute("Controls wired " + str(index), "connect"))
+                verify("Observed real wired activation " + str(index), result.kind == ResultKind.COMPLETE and result.target.active)
+            verify("Observed IPv4 fact comes from real NM", any(f.label == "IPv4 addresses" and "192.0.2.2" in f.value
+                                                               for f in target("Controls wired 0").facts))
+            verify("Exact disconnect completes", settle(execute("Controls wired 0", "disconnect")).kind == ResultKind.COMPLETE)
+            verify("Other adapter remains connected", target("Controls wired 1").active)
+            pending = execute("Controls pending", "connect")
+            verify("Request acceptance is distinct from activation", pending.kind == ResultKind.PENDING and not target("Controls pending").active)
+            verify("Owned active connection can be cancelled", settle(backend.cancel(pending.pending)).kind == ResultKind.CANCELLED)
+            verify("Cancelling one activation preserves the other adapter", target("Controls wired 1").active)
+            pending = execute("Controls pending", "connect")
+            verify("Second bounded pending request is accepted", pending.kind == ResultKind.PENDING)
+            old_owner = backend._owner
+            manager.terminate()
+            manager.wait(timeout=5)
+            manager = start_nm()
+            for _ in range(20):
+                backend.snapshot()
+                if backend._owner != old_owner:
+                    break
+                time.sleep(0.05)
+            stale = backend.cancel(pending.pending)
+            verify("Restarted daemon rejects the old cancellation handle", stale.kind in {ResultKind.ERROR, ResultKind.UNAVAILABLE})
+            backend.close()
+            backend = None
+            verify("Only namespace links exist", {r["ifname"] for r in json.loads(command("ip", "-json", "link").stdout)} == {"lo", "controls0", "controls1"})
+        finally:
+            if backend:
+                backend.close()
+            for process in reversed(processes):
+                if process.poll() is None:
+                    process.terminate()
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                        process.wait(timeout=3)
+                if process.stdout:
+                    process.stdout.close()
+            for log in logs:
+                log.close()
+    print(json.dumps({"scope": "Real NetworkManager/libnm on isolated virtual Ethernet; physical Wi-Fi unqualified",
+                      "checks": checks, "check_count": len(checks), "version": command("NetworkManager", "--version").stdout.strip(),
+                      "library": str(args.lib_dir.resolve()), "cleanup": "Owned NM and bus stopped; namespaces and private mounts released on exit"}))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--lib-dir", type=Path, default=Path(__file__).resolve().parents[1] / "components/desktop/lib")
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--inside", nargs=3, help=argparse.SUPPRESS)
+    args = parser.parse_args()
+    if args.inside:
+        return inside(args)
+    before = host_facts()
+    namespace_ids = [os.readlink("/proc/self/ns/" + key) for key in ("net", "mnt", "uts")]
+    result = subprocess.run(["sudo", "-n", "unshare", "--mount", "--propagation", "private", "--net", "--uts", "--fork",
+                             sys.executable, str(Path(__file__).resolve()), "--lib-dir", str(args.lib_dir.resolve()), "--inside", *namespace_ids],
+                            capture_output=True, text=True, timeout=60)
+    after = host_facts()
+    if before != after:
+        raise RuntimeError("Host protection comparison changed; inspect concurrent host state before proceeding")
+    if result.returncode:
+        raise SystemExit(result.stderr or "Native NM namespace proof failed")
+    evidence = json.loads(result.stdout)
+    evidence["host_protection"] = {"before": before, "after": after, "unchanged": True}
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(evidence, indent=2) + "\n")
+    print(json.dumps(evidence, indent=2))
+
+
+if __name__ == "__main__":
+    main()

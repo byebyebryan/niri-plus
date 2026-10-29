@@ -4,6 +4,12 @@ Reviewed 2026-10-29 against `f497a07`, the published HTML snapshot, sibling
 Plus picker source, installed Rofi `2.0.0-1` documentation and NetworkManager
 `1.58.1-2` package metadata. No native UI, service, radio or device was operated.
 
+This is the historical pre-implementation review. The current illustration has
+since been reconciled with the fixed-view native implementation; see the
+[candidate receipt](rofi-controls-implementation-receipt.md) for resolved findings
+and current qualification, rather than treating the observations below as its
+current behavior.
+
 **Verdict: keep the visual direction; resolve the interaction findings before
 building full helpers.** The next implementation milestone is a bounded native
 interaction proof, not a launcher replacement or fleet rollout.

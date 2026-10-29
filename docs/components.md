@@ -6,6 +6,17 @@ examples, identifies what remains personal configuration, and records the
 current qualification state. It is a maintenance reference, not a workstation
 installer.
 
+The current source also contains the **unreleased 0.4.0 direct-controls
+candidate**. Its Network/Audio/Bluetooth helpers, shared controller and two
+additional appearance outputs are listed in `components/metadata.json`.
+See the [candidate recipe](recipes/rofi-controls.md) and
+[implementation receipt](planning/rofi-controls-implementation-receipt.md).
+The published archive and personal adoption records below remain 0.3.1.
+Candidate desktop-entry downloads live under
+`examples/desktop/direct-controls/`; the existing entries are frozen 0.3.1
+baseline/recovery examples. Downloadable wrappers require the complete sibling
+`lib/niri_plus_controls` package.
+
 ## Public source and example map
 
 | Module | Canonical source at the 0.3.1 producer revision | Public examples and downloads | Consumer boundary |

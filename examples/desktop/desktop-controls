@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+"""Shared Rofi controls dispatcher and script-mode callback."""
+
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+
+from niri_plus_controls.runtime import common_main
+
+
+if __name__ == "__main__":
+    raise SystemExit(common_main())

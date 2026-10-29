@@ -28,6 +28,11 @@ report what it verified. For one component, use a [focused recipe](setup-agent.m
   feedback, files, network/Bluetooth entry points, input methods and
   whole-monitor sharing.
 
+The next [direct Rofi controls](recipes/rofi-controls.md) are an unreleased
+candidate with a [stateful design illustration](../design/rofi-controls/index.html).
+They are separate from the published setup path below and have not been
+selected on personal hosts.
+
 ## Starting point
 
 Start with **installed Arch Linux x86-64**, a regular sudo account, working

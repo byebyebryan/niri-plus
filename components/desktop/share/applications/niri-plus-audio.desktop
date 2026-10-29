@@ -2,8 +2,8 @@
 Type=Application
 Name=Audio
 Comment=Choose audio devices and application streams
-Exec=pavucontrol
-TryExec=pavucontrol
+Exec=desktop-audio-menu
+TryExec=desktop-audio-menu
 Icon=audio-volume-high
 Terminal=false
 Categories=AudioVideo;Audio;Mixer;

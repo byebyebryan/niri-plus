@@ -1,0 +1,1042 @@
+#!/usr/bin/env python3
+"""Exercise the NetworkManager secret agent on an isolated root-owned peer bus.
+
+The private bus uses a system-type policy so libnm applies the same sender
+authorization as a native NetworkManager owner. Its only service is the test
+AgentManager in tests/fixtures/controls_nm/agent_manager_peer.py. No host bus,
+NetworkManager daemon, network device, profile, or Secret Service is accessed.
+
+Synthetic passwords are created in memory, supplied through anonymous pipes,
+and compared in memory across the private D-Bus probe. They are never printed
+or written to the report.
+"""
+
+from __future__ import annotations
+
+import argparse
+from datetime import datetime, timezone
+import json
+import os
+from pathlib import Path
+import select
+import secrets
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+import traceback
+import uuid
+
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_LIB_DIR = ROOT / "components/desktop/lib"
+PEER_FIXTURE = ROOT / "tests/fixtures/controls_nm/agent_manager_peer.py"
+BUS_NAME = "org.freedesktop.NetworkManager"
+PROBE_PATH = "/org/niri_plus/ControlsTestProbe"
+PROBE_INTERFACE = "org.niri_plus.ControlsTestProbe"
+SECRET_AGENT_PATH = "/org/freedesktop/NetworkManager/SecretAgent"
+SECRET_AGENT_INTERFACE = "org.freedesktop.NetworkManager.SecretAgent"
+MAX_WAIT_SECONDS = 4.0
+SecretStoreError = RuntimeError
+
+
+class CheckFailure(RuntimeError):
+    def __init__(self, phase: str):
+        super().__init__(phase)
+        self.phase = phase
+
+
+def check(condition: object, phase: str) -> None:
+    if not condition:
+        raise CheckFailure(phase)
+
+
+def load_gi(lib_dir: Path):
+    if not lib_dir.is_dir():
+        raise CheckFailure("library-path")
+    sys.path.insert(0, str(lib_dir))
+    try:
+        import gi
+
+        gi.require_version("Gio", "2.0")
+        gi.require_version("NM", "1.0")
+        from gi.repository import Gio, GLib, NM
+
+        from niri_plus_controls.model import OperationRequest, PendingRef, ResultKind, TargetRef, Utility
+        from niri_plus_controls.nm_agent import (
+            NetworkSecretAgent,
+            SecretStoreError,
+            WIFI_PSK_KEY,
+            WIFI_SECURITY_SETTING,
+        )
+        from niri_plus_controls.nm_bus import dedicated_bus_connection, load_nm_modules
+    except Exception as error:
+        raise CheckFailure("python-bindings-or-library") from error
+    return (
+        Gio, GLib, NM, OperationRequest, PendingRef, ResultKind, TargetRef, Utility,
+        None, NetworkSecretAgent, SecretStoreError,
+        WIFI_PSK_KEY, WIFI_SECURITY_SETTING, dedicated_bus_connection, load_nm_modules,
+    )
+
+
+class PrivateBus:
+    """Own one custom system-type bus and one exact sudo-owned peer process."""
+
+    def __init__(self, Gio, GLib, dedicated_bus_connection):
+        self.Gio = Gio
+        self.GLib = GLib
+        self._connect = dedicated_bus_connection
+        self._temporary = tempfile.TemporaryDirectory(prefix="niri-controls-nm-native-")
+        self.directory = Path(self._temporary.name)
+        self.config_path = self.directory / "bus.conf"
+        self.bus_process = None
+        self.manager_process = None
+        self.manager_pid = 0
+        self.address = ""
+        self.connection = None
+        self.shutdown_token = secrets.token_hex(24)
+        self._bus_stderr = tempfile.TemporaryFile(mode="w+b")
+        self._manager_stderr = tempfile.TemporaryFile(mode="w+b")
+
+    @staticmethod
+    def _read_line(stream, timeout: float) -> str:
+        deadline = time.monotonic() + max(0.0, timeout)
+        data = bytearray()
+        while time.monotonic() < deadline:
+            ready, _write, _error = select.select([stream], [], [], deadline - time.monotonic())
+            if not ready:
+                raise CheckFailure("private-peer-start-timeout")
+            chunk = os.read(stream.fileno(), 1)
+            if not chunk:
+                if data:
+                    return data.decode("utf-8").strip()
+                raise CheckFailure("private-peer-start-eof")
+            if chunk == b"\n":
+                return data.decode("utf-8").strip()
+            data.extend(chunk)
+        raise CheckFailure("private-peer-start-timeout")
+
+    def start(self) -> None:
+        self.config_path.write_text(
+            "<busconfig>"
+            "<type>system</type>"
+            "<listen>unix:tmpdir=/tmp</listen>"
+            "<auth>EXTERNAL</auth>"
+            "<policy context=\"default\">"
+            "<allow user=\"*\"/>"
+            "<allow own=\"*\"/>"
+            "<allow send_destination=\"*\"/>"
+            "<allow receive_sender=\"*\"/>"
+            "</policy>"
+            "</busconfig>",
+            encoding="utf-8",
+        )
+        self.bus_process = subprocess.Popen(
+            ["dbus-daemon", "--nofork", f"--config-file={self.config_path}", "--print-address=1"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=self._bus_stderr,
+            bufsize=0,
+        )
+        if self.bus_process.stdout is None:
+            raise CheckFailure("private-bus-pipe")
+        self.address = self._read_line(self.bus_process.stdout, 4.0)
+        check(self.address.startswith("unix:"), "private-bus-address")
+
+        self.manager_process = subprocess.Popen(
+            ["sudo", "-n", "/usr/bin/python3", str(PEER_FIXTURE), self.address],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=self._manager_stderr,
+            bufsize=0,
+        )
+        if self.manager_process.stdout is None:
+            raise CheckFailure("private-manager-pipe")
+        check(self._read_line(self.manager_process.stdout, 5.0) == "ready", "root-peer-ready")
+        pid_line = self._read_line(self.manager_process.stdout, 2.0)
+        check(pid_line.startswith("pid "), "root-peer-pid-line")
+        self.manager_pid = int(pid_line[4:])
+        self.connection = self._connect(address=self.address)
+        reported_pid = self.call("GetPeerPid", None, "(u)").unpack()[0]
+        check(self.manager_pid > 1 and reported_pid == self.manager_pid, "root-peer-pid")
+        self.call("ArmShutdown", self.GLib.Variant("(s)", (self.shutdown_token,)), "()")
+
+    def call(self, method: str, parameters, reply_signature: str):
+        if self.connection is None:
+            raise CheckFailure("private-manager-unavailable")
+        return self.connection.call_sync(
+            BUS_NAME,
+            PROBE_PATH,
+            PROBE_INTERFACE,
+            method,
+            parameters,
+            self.GLib.VariantType.new(reply_signature),
+            self.Gio.DBusCallFlags.NONE,
+            3000,
+            None,
+        )
+
+    def registrations(self) -> dict[str, str]:
+        return self.call("GetRegistrations", None, "(a{ss})").unpack()[0]
+
+    def counters(self) -> tuple[int, int, int, int, int]:
+        try:
+            return self.call("GetCounters", None, "(uuuuu)").unpack()
+        except Exception as error:
+            try:
+                remote_name = self.Gio.DBusError.get_remote_error(error)
+            except Exception:
+                remote_name = None
+            peer_status = self.manager_process.poll() if self.manager_process is not None else "missing"
+            bus_status = self.bus_process.poll() if self.bus_process is not None else "missing"
+            domain = getattr(error, "domain", None)
+            code = getattr(error, "code", None)
+            raise CheckFailure(
+                f"manager-counters-{remote_name or type(error).__name__}-peer-{peer_status}-bus-{bus_status}-domain-{domain}-code-{code}"
+            ) from error
+
+    def last_agent_failure(self) -> tuple[str, str, str]:
+        return self.call("GetLastAgentFailure", None, "(sss)").unpack()
+
+    def manager_error_markers(self) -> list[str]:
+        markers = []
+        try:
+            self._manager_stderr.seek(0)
+            captured = self._manager_stderr.read(16384)
+        except Exception:
+            return markers
+        for needle, marker in (
+            (b"takes exactly 3 arguments", "callback-arity-3"),
+            (b"takes exactly 4 arguments", "callback-arity-4"),
+            (b"Expected NM.SecretAgentOld", "callback-agent-type"),
+            (b"Expected NM.Connection", "callback-connection-type"),
+            (b"does not allow None", "callback-nullability"),
+            (b"Traceback (most recent call last)", "vfunc-python-exception"),
+        ):
+            if needle in captured:
+                markers.append(marker)
+        return markers
+
+    def start_probe(self, method: str, parameters, reply_signature: str) -> "ProbeJob":
+        return ProbeJob(self, method, parameters, reply_signature)
+
+    def close(self) -> bool:
+        clean = True
+        if self.connection is not None:
+            try:
+                self.call("Shutdown", self.GLib.Variant("(s)", (self.shutdown_token,)), "()")
+            except Exception:
+                clean = False
+            try:
+                self.connection.close_sync(None)
+            except Exception:
+                clean = False
+            self.connection = None
+
+        if self.manager_process is not None:
+            try:
+                self.manager_process.wait(timeout=2.0)
+            except subprocess.TimeoutExpired:
+                # Only signal the exact PID reported by our private peer. Never
+                # signal a process group or a host NetworkManager instance.
+                if self.manager_pid > 1:
+                    kill = subprocess.run(
+                        ["sudo", "-n", "/usr/bin/kill", "-TERM", str(self.manager_pid)],
+                        stdin=subprocess.DEVNULL,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=2.0,
+                        check=False,
+                    )
+                    clean = clean and kill.returncode == 0
+                    try:
+                        self.manager_process.wait(timeout=2.0)
+                    except subprocess.TimeoutExpired:
+                        kill = subprocess.run(
+                            ["sudo", "-n", "/usr/bin/kill", "-KILL", str(self.manager_pid)],
+                            stdin=subprocess.DEVNULL,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            timeout=2.0,
+                            check=False,
+                        )
+                        clean = clean and kill.returncode == 0
+                        try:
+                            self.manager_process.wait(timeout=2.0)
+                        except subprocess.TimeoutExpired:
+                            clean = False
+                else:
+                    clean = False
+            if self.manager_process.stdout is not None:
+                self.manager_process.stdout.close()
+
+        if self.bus_process is not None:
+            if self.bus_process.poll() is None:
+                self.bus_process.terminate()
+                try:
+                    self.bus_process.wait(timeout=2.0)
+                except subprocess.TimeoutExpired:
+                    self.bus_process.kill()
+                    try:
+                        self.bus_process.wait(timeout=2.0)
+                    except subprocess.TimeoutExpired:
+                        clean = False
+            if self.bus_process.stdout is not None:
+                self.bus_process.stdout.close()
+
+        for stream in (self._bus_stderr, self._manager_stderr):
+            try:
+                stream.close()
+            except Exception:
+                clean = False
+        self._temporary.cleanup()
+        return clean
+
+
+class ProbeJob:
+    def __init__(self, peer: PrivateBus, method: str, parameters, reply_signature: str):
+        self.peer = peer
+        self.method = method
+        self.parameters = parameters
+        self.reply_signature = reply_signature
+        self.result = None
+        self.error = None
+        self.thread = threading.Thread(target=self._run, daemon=True)
+        self.thread.start()
+
+    def _run(self) -> None:
+        connection = None
+        try:
+            connection = self.peer._connect(address=self.peer.address)
+            self.result = connection.call_sync(
+                BUS_NAME,
+                PROBE_PATH,
+                PROBE_INTERFACE,
+                self.method,
+                self.parameters,
+                self.peer.GLib.VariantType.new(self.reply_signature),
+                self.peer.Gio.DBusCallFlags.NONE,
+                3000,
+                None,
+            )
+        except Exception as error:
+            self.error = error
+        finally:
+            if connection is not None:
+                try:
+                    connection.close_sync(None)
+                except Exception:
+                    pass
+
+    def pump(self, agents, timeout: float = MAX_WAIT_SECONDS) -> None:
+        deadline = time.monotonic() + timeout
+        while self.thread.is_alive() and time.monotonic() < deadline:
+            for agent in agents:
+                agent.iterate_for(4)
+            time.sleep(0.001)
+        self.thread.join(timeout=0.05)
+        check(not self.thread.is_alive(), f"{self.method.lower()}-timeout")
+
+
+class MemoryStore:
+    error_type = RuntimeError
+
+    def __init__(self):
+        self.values: dict[tuple[str, str, str], str] = {}
+        self.calls: list[tuple[str, str, str, str]] = []
+        self.fail_lookup = False
+        self.fail_store = False
+        self.fail_delete = False
+
+    def lookup(self, connection_uuid: str, setting_name: str, setting_key: str):
+        self.calls.append(("lookup", connection_uuid, setting_name, setting_key))
+        if self.fail_lookup:
+            raise self.error_type("fixture store lookup failed")
+        return self.values.get((connection_uuid, setting_name, setting_key))
+
+    def store(self, connection_uuid: str, setting_name: str, setting_key: str, secret: str) -> None:
+        self.calls.append(("store", connection_uuid, setting_name, setting_key))
+        if self.fail_store:
+            raise self.error_type("fixture store write failed")
+        self.values[(connection_uuid, setting_name, setting_key)] = secret
+
+    def delete(self, connection_uuid: str, setting_name: str, setting_key: str) -> None:
+        self.calls.append(("delete", connection_uuid, setting_name, setting_key))
+        if self.fail_delete:
+            raise self.error_type("fixture store delete failed")
+        self.values.pop((connection_uuid, setting_name, setting_key), None)
+
+
+class AgentHarness:
+    def __init__(self, peer: PrivateBus, NetworkSecretAgent, PendingRef, TargetRef, SecretStoreError,
+                 connection_uuid: str, connection_path: str, store: MemoryStore, suffix: str):
+        self.uuid = connection_uuid
+        self.path = connection_path
+        self.store = store
+        self.requests = []
+        self.context, self.connection = NetworkSecretAgent.new_context_connection(peer.address)
+
+        def request_secret(request):
+            pending = PendingRef(
+                f"native-{suffix}-{uuid.uuid4().hex}",
+                TargetRef("native-test", f"target-{suffix}"),
+                len(self.requests),
+            )
+            self.requests.append((request, pending))
+            return pending
+
+        try:
+            self.agent = NetworkSecretAgent(
+                identifier=f"org.niri_plus.rofi.native.{suffix}.{uuid.uuid4().hex}",
+                dbus_connection=self.connection,
+                secret_store=store,
+                expected_uuid=connection_uuid,
+                expected_connection_path=connection_path,
+                request_secret=request_secret,
+                context=self.context,
+            )
+            self.agent.register(timeout=2.5)
+        except Exception:
+            try:
+                self.connection.close_sync(None)
+            except Exception:
+                pass
+            raise CheckFailure(f"register-{suffix}")
+
+    @property
+    def identifier(self) -> str:
+        return self.agent.get_property("identifier")
+
+    @property
+    def unique_name(self) -> str:
+        return self.agent.get_dbus_connection().get_unique_name()
+
+    def close(self) -> None:
+        self.agent.close()
+
+    def iterate_for(self, milliseconds: int) -> None:
+        self.agent.iterate_for(milliseconds)
+
+
+def make_nm_connection(NM, GLib, connection_uuid: str, secret_flags: int, *, password: str | None = None):
+    connection = NM.SimpleConnection.new()
+    setting_connection = NM.SettingConnection.new()
+    setting_connection.set_property("id", "Native controls fixture")
+    setting_connection.set_property("uuid", connection_uuid)
+    setting_connection.set_property("type", "802-11-wireless")
+    connection.add_setting(setting_connection)
+    wireless = NM.SettingWireless.new()
+    wireless.set_property("ssid", GLib.Bytes.new(b"niri-controls-native-test"))
+    wireless.set_property("mode", "infrastructure")
+    connection.add_setting(wireless)
+    security = NM.SettingWirelessSecurity.new()
+    security.set_property("key-mgmt", "wpa-psk")
+    security.set_property("psk-flags", secret_flags)
+    if password is not None:
+        security.set_property("psk", password)
+    connection.add_setting(security)
+    connection.add_setting(NM.SettingIP4Config.new())
+    connection.add_setting(NM.SettingIP6Config.new())
+    return connection
+
+
+def make_get_job(peer: PrivateBus, GLib, NM, agent: AgentHarness, connection, flags: int, *,
+                 connection_path: str | None = None, setting_name: str | None = None):
+    serialized = connection.to_dbus(NM.ConnectionSerializationFlags.WITH_NON_SECRET)
+    parameters = GLib.Variant.new_tuple(
+        GLib.Variant("s", agent.identifier),
+        serialized,
+        GLib.Variant("o", connection_path or agent.path),
+        GLib.Variant("s", setting_name or "802-11-wireless-security"),
+        GLib.Variant("as", []),
+        GLib.Variant("u", flags),
+    )
+    return peer.start_probe("ProbeGetSecrets", parameters, "(a{sa{sv}})")
+
+
+def make_save_job(peer: PrivateBus, GLib, NM, agent: AgentHarness, connection, method: str):
+    include_connection_and_secrets = (
+        NM.ConnectionSerializationFlags.WITH_NON_SECRET | NM.ConnectionSerializationFlags.WITH_SECRETS
+    )
+    serialized = connection.to_dbus(include_connection_and_secrets)
+    parameters = GLib.Variant.new_tuple(
+        GLib.Variant("s", agent.identifier), serialized, GLib.Variant("o", agent.path),
+    )
+    return peer.start_probe(method, parameters, "()")
+
+
+def make_cancel_job(peer: PrivateBus, GLib, agent: AgentHarness):
+    parameters = GLib.Variant.new_tuple(
+        GLib.Variant("s", agent.identifier),
+        GLib.Variant("o", agent.path),
+        GLib.Variant("s", "802-11-wireless-security"),
+    )
+    return peer.start_probe("ProbeCancelGetSecrets", parameters, "()")
+
+
+def result_psk(result, setting_name: str, key: str) -> str | None:
+    try:
+        settings = result.get_child_value(0).unpack()
+        security = settings.get(setting_name, {})
+        value = security.get(key)
+        return value.unpack() if hasattr(value, "unpack") else value
+    except Exception:
+        return None
+
+
+def synthetic_password(label: str) -> str:
+    return f"fixture-{label}-{secrets.token_hex(10)}"
+
+
+def secret_pipe(password: str):
+    read_fd, write_fd = os.pipe()
+    try:
+        os.write(write_fd, password.encode("utf-8"))
+    finally:
+        os.close(write_fd)
+    return os.fdopen(read_fd, "rb", closefd=True)
+
+
+def provide_to_agent(job: ProbeJob, agent: AgentHarness, previous_count: int, agents, *, failure: bool = False) -> None:
+    deadline = time.monotonic() + MAX_WAIT_SECONDS
+    while len(agent.requests) <= previous_count and job.thread.is_alive() and time.monotonic() < deadline:
+        for current in agents:
+            current.agent.iterate_for(4)
+        time.sleep(0.001)
+    check(len(agent.requests) > previous_count, "getsecrets-did-not-reach-vfunc")
+    pending = agent.requests[-1][1]
+    password = synthetic_password("agent-failure" if failure else "agent-callback")
+    buffer = bytearray()
+    try:
+        with secret_pipe(password) as stream:
+            buffer.extend(stream.read(513))
+        supplied = buffer.decode("utf-8")
+        raised = False
+        try:
+            agent.agent.complete_secret(pending, supplied)
+        except SecretStoreError:
+            raised = True
+        check(raised == failure, "agent-secret-store-failure-policy")
+    finally:
+        buffer[:] = b"\x00" * len(buffer)
+    job.pump(agents)
+    if failure:
+        check(job.error is not None and job.result is None, "getsecrets-store-failure-returned-secret")
+    else:
+        check(job.error is None and job.result is not None, "getsecrets-reply")
+        check(result_psk(job.result, "802-11-wireless-security", "psk") == password, "getsecrets-password-roundtrip")
+
+
+def run_direct_agent_checks(peer: PrivateBus, components, agents_out: list[AgentHarness], checks: list[str]) -> None:
+    Gio, GLib, NM, _OperationRequest, PendingRef, _ResultKind, TargetRef, _Utility, _NetworkBackend, NetworkSecretAgent, SecretStoreError, psk_key, setting_name, _connect, _load = components
+    allow = int(NM.SecretAgentGetSecretsFlags.ALLOW_INTERACTION)
+    request_new = int(NM.SecretAgentGetSecretsFlags.REQUEST_NEW | NM.SecretAgentGetSecretsFlags.ALLOW_INTERACTION)
+    uuid_agent = str(uuid.uuid4())
+    path_agent = f"/org/freedesktop/NetworkManager/Settings/{uuid.uuid4().hex}"
+    store_agent = MemoryStore()
+    agent_notsaved = AgentHarness(peer, NetworkSecretAgent, PendingRef, TargetRef, SecretStoreError, uuid_agent, path_agent, store_agent, "notsaved")
+    agents_out.append(agent_notsaved)
+
+    uuid_owned = str(uuid.uuid4())
+    path_owned = f"/org/freedesktop/NetworkManager/Settings/{uuid.uuid4().hex}"
+    store_owned = MemoryStore()
+    agent_owned = AgentHarness(peer, NetworkSecretAgent, PendingRef, TargetRef, SecretStoreError, uuid_owned, path_owned, store_owned, "owned")
+    agents_out.append(agent_owned)
+
+    registrations = peer.registrations()
+    check(len(registrations) == 2, "two-agents-registered")
+    check(set(registrations.values()) == {agent_notsaved.identifier, agent_owned.identifier}, "registered-identifiers")
+    check(agent_notsaved.unique_name != agent_owned.unique_name, "agents-own-distinct-connections")
+    check(agent_notsaved.unique_name in registrations and agent_owned.unique_name in registrations, "registered-sender-ownership")
+    checks.extend(("two-unique-agents-register", "separate-dbus-connections", "registration-owner-map"))
+
+    profile_notsaved = make_nm_connection(NM, GLib, uuid_agent, int(NM.SettingSecretFlags.NOT_SAVED))
+    wrong_uuid = make_nm_connection(NM, GLib, str(uuid.uuid4()), int(NM.SettingSecretFlags.NOT_SAVED))
+    wrong_identity_jobs = (
+        make_get_job(peer, GLib, NM, agent_notsaved, wrong_uuid, allow),
+        make_get_job(peer, GLib, NM, agent_notsaved, profile_notsaved, allow, connection_path=f"{path_agent}/wrong"),
+        make_get_job(peer, GLib, NM, agent_notsaved, profile_notsaved, allow, setting_name="802-11-wireless"),
+    )
+    for job in wrong_identity_jobs:
+        job.pump([agent_notsaved])
+        check(job.error is not None and job.result is None, "foreign-request-rejected")
+    check(not agent_notsaved.requests, "foreign-request-no-prompt")
+    checks.append("foreign-uuid-path-setting-denied")
+
+    profile_owned = make_nm_connection(NM, GLib, uuid_owned, int(NM.SettingSecretFlags.AGENT_OWNED))
+    cached_password = synthetic_password("cached")
+    store_owned.values[(uuid_owned, setting_name, psk_key)] = cached_password
+    cached_job = make_get_job(peer, GLib, NM, agent_owned, profile_owned, 0)
+    cached_job.pump([agent_owned])
+    check(cached_job.error is None and result_psk(cached_job.result, setting_name, psk_key) == cached_password, "agent-owned-cache-response")
+    check(not agent_owned.requests, "agent-owned-cache-no-prompt")
+
+    new_job = make_get_job(peer, GLib, NM, agent_owned, profile_owned, request_new)
+    provide_to_agent(new_job, agent_owned, 0, [agent_owned])
+    check(store_owned.calls[-1][0] == "store", "request-new-persists-agent-owned-before-response")
+    second_new = make_get_job(peer, GLib, NM, agent_owned, profile_owned, request_new)
+    second_new.pump([agent_owned])
+    check(second_new.error is not None and len(agent_owned.requests) == 1, "one-prompt-per-agent-attempt")
+
+    retry_agent = AgentHarness(peer, NetworkSecretAgent, PendingRef, TargetRef, SecretStoreError, uuid_owned, path_owned, store_owned, "retry")
+    agents_out.append(retry_agent)
+    explicit_retry = make_get_job(peer, GLib, NM, retry_agent, profile_owned, request_new)
+    provide_to_agent(explicit_retry, retry_agent, 0, [agent_owned, retry_agent])
+    check(len(retry_agent.requests) == 1, "new-agent-explicit-retry")
+    checks.extend(("request-new-bypasses-cache", "explicit-retry-gets-one-new-prompt"))
+
+    notsaved_job = make_get_job(peer, GLib, NM, agent_notsaved, profile_notsaved, allow)
+    provide_to_agent(notsaved_job, agent_notsaved, 0, [agent_notsaved])
+    check(store_agent.calls == [], "not-saved-never-uses-secret-service")
+    checks.append("not-saved-pipe-response")
+
+    uuid_nm = str(uuid.uuid4())
+    path_nm = f"/org/freedesktop/NetworkManager/Settings/{uuid.uuid4().hex}"
+    store_nm = MemoryStore()
+    agent_nm = AgentHarness(peer, NetworkSecretAgent, PendingRef, TargetRef, SecretStoreError, uuid_nm, path_nm, store_nm, "nm-owned")
+    agents_out.append(agent_nm)
+    profile_nm = make_nm_connection(NM, GLib, uuid_nm, 0)
+    nm_job = make_get_job(peer, GLib, NM, agent_nm, profile_nm, allow)
+    provide_to_agent(nm_job, agent_nm, 0, [agent_nm])
+    check(store_nm.calls == [], "nm-owned-never-uses-secret-service")
+    checks.append("nm-owned-flags-zero")
+
+    save_profile = make_nm_connection(NM, GLib, uuid_owned, int(NM.SettingSecretFlags.AGENT_OWNED), password=synthetic_password("save"))
+    save_job = make_save_job(peer, GLib, NM, agent_owned, save_profile, "ProbeSaveSecrets")
+    save_job.pump([agent_owned])
+    check(save_job.error is None, "save-secrets-ack")
+    store_key = (uuid_owned, setting_name, psk_key)
+    check(store_key in store_owned.values, "save-secrets-persisted")
+    delete_job = make_save_job(peer, GLib, NM, agent_owned, save_profile, "ProbeDeleteSecrets")
+    delete_job.pump([agent_owned])
+    check(delete_job.error is None and store_key not in store_owned.values, "delete-secrets-persisted")
+
+    store_owned.fail_store = True
+    failed_save = make_save_job(peer, GLib, NM, agent_owned, save_profile, "ProbeSaveSecrets")
+    failed_save.pump([agent_owned])
+    check(failed_save.error is not None, "save-store-failure-not-acknowledged")
+    store_owned.fail_store = False
+    store_owned.fail_delete = True
+    failed_delete = make_save_job(peer, GLib, NM, agent_owned, save_profile, "ProbeDeleteSecrets")
+    failed_delete.pump([agent_owned])
+    check(failed_delete.error is not None, "delete-store-failure-not-acknowledged")
+    checks.extend(("save-delete-secret-service-callbacks", "store-failures-return-errors"))
+
+    uuid_fail = str(uuid.uuid4())
+    path_fail = f"/org/freedesktop/NetworkManager/Settings/{uuid.uuid4().hex}"
+    store_fail = MemoryStore()
+    store_fail.fail_store = True
+    agent_fail = AgentHarness(peer, NetworkSecretAgent, PendingRef, TargetRef, SecretStoreError, uuid_fail, path_fail, store_fail, "store-fail")
+    agents_out.append(agent_fail)
+    failing_get = make_get_job(
+        peer, GLib, NM, agent_fail,
+        make_nm_connection(NM, GLib, uuid_fail, int(NM.SettingSecretFlags.AGENT_OWNED)),
+        allow,
+    )
+    provide_to_agent(failing_get, agent_fail, 0, [agent_fail], failure=True)
+    checks.append("agent-owned-getsecrets-store-failure")
+
+    uuid_cancel = str(uuid.uuid4())
+    path_cancel = f"/org/freedesktop/NetworkManager/Settings/{uuid.uuid4().hex}"
+    agent_cancel = AgentHarness(peer, NetworkSecretAgent, PendingRef, TargetRef, SecretStoreError, uuid_cancel, path_cancel, MemoryStore(), "cancel")
+    agents_out.append(agent_cancel)
+    cancel_connection = make_nm_connection(NM, GLib, uuid_cancel, int(NM.SettingSecretFlags.NOT_SAVED))
+    cancel_get = make_get_job(peer, GLib, NM, agent_cancel, cancel_connection, allow)
+    start_count = len(agent_cancel.requests)
+    deadline = time.monotonic() + MAX_WAIT_SECONDS
+    while len(agent_cancel.requests) == start_count and cancel_get.thread.is_alive() and time.monotonic() < deadline:
+        agent_cancel.agent.iterate_for(4)
+        time.sleep(0.001)
+    check(len(agent_cancel.requests) == 1, "cancel-request-pending")
+    cancel_call = make_cancel_job(peer, GLib, agent_cancel)
+    while (cancel_call.thread.is_alive() or cancel_get.thread.is_alive()) and time.monotonic() < deadline:
+        agent_cancel.agent.iterate_for(4)
+        time.sleep(0.001)
+    cancel_call.thread.join(timeout=0.05)
+    cancel_get.thread.join(timeout=0.05)
+    check(not cancel_call.thread.is_alive() and cancel_call.error is None, "cancel-getsecrets-ack")
+    check(not cancel_get.thread.is_alive() and cancel_get.error is not None, "cancel-getsecrets-rejects-secret")
+    check(not agent_cancel.agent.has_pending_secret, "cancel-clears-agent-request")
+    checks.append("cancel-getsecrets")
+
+
+class FakeProfile:
+    def __init__(self, connection, path: str):
+        self.connection = connection
+        self.path = path
+
+    def get_path(self):
+        return self.path
+
+    def to_dbus(self, flags):
+        return self.connection.to_dbus(flags)
+
+    def __getattr__(self, name):
+        return getattr(self.connection, name)
+
+
+class FakeDevice:
+    def __init__(self, NM):
+        self.path = "/org/freedesktop/NetworkManager/Devices/1"
+        self.interface = "niri-test0"
+        self.available_connections = []
+        self.NM = NM
+
+    def get_path(self):
+        return self.path
+
+    def get_device_type(self):
+        return int(self.NM.DeviceType.WIFI)
+
+    def get_iface(self):
+        return self.interface
+
+    def get_managed(self):
+        return True
+
+    def get_state(self):
+        return int(self.NM.DeviceState.DISCONNECTED)
+
+    def get_access_points(self):
+        return []
+
+    def get_available_connections(self):
+        return list(self.available_connections)
+
+
+class FakeActive:
+    def __init__(self, profile, device):
+        self.profile = profile
+        self.device = device
+        self.path = "/org/freedesktop/NetworkManager/ActiveConnection/1"
+        self.state = 1
+        self.reason = 0
+
+    def get_path(self):
+        return self.path
+
+    def get_connection(self):
+        return self.profile
+
+    def get_devices(self):
+        return [self.device]
+
+    def get_specific_object(self):
+        return ""
+
+    def get_state(self):
+        return self.state
+
+    def get_state_reason(self):
+        return self.reason
+
+
+class FakeNMClient:
+    def __init__(self, peer: PrivateBus, NM, GLib, profile: FakeProfile, device: FakeDevice,
+                 store: MemoryStore, expected_password: str):
+        self.peer = peer
+        self.NM = NM
+        self.GLib = GLib
+        self.profile = profile
+        self.device = device
+        self.store = store
+        self.expected_password = expected_password
+        self.owner = peer.connection.call_sync(
+            "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "GetNameOwner",
+            GLib.Variant("(s)", (BUS_NAME,)), GLib.VariantType.new("(s)"),
+            peer.Gio.DBusCallFlags.NONE, 2000, None,
+        ).unpack()[0]
+        self.active = None
+        self._last_active = None
+        self.remote_job = None
+        self.secret_matches = False
+        self.remote_failed = False
+
+    def get_dbus_name_owner(self):
+        return self.owner
+
+    def get_devices(self):
+        return [self.device]
+
+    def get_connections(self):
+        return [self.profile]
+
+    def get_active_connections(self):
+        return [self.active] if self.active is not None else []
+
+    def wireless_get_enabled(self):
+        return True
+
+    def wireless_hardware_get_enabled(self):
+        return True
+
+    def activate_connection_async(self, profile, device, _specific_object, _cancellable, callback, user_data):
+        self.active = FakeActive(profile, device)
+        self._last_active = self.active
+        registrations = self.peer.registrations()
+        identifiers = list(registrations.values())
+        check(len(identifiers) == 1, "backend-agent-registered-alone")
+        connection = profile.connection
+        serialized = connection.to_dbus(self.NM.ConnectionSerializationFlags.WITH_NON_SECRET)
+        parameters = self.GLib.Variant.new_tuple(
+            self.GLib.Variant("s", identifiers[0]),
+            serialized,
+            self.GLib.Variant("o", profile.get_path()),
+            self.GLib.Variant("s", "802-11-wireless-security"),
+            self.GLib.Variant("as", []),
+            self.GLib.Variant("u", int(self.NM.SecretAgentGetSecretsFlags.ALLOW_INTERACTION)),
+        )
+        self.remote_job = self.peer.start_probe("ProbeGetSecrets", parameters, "(a{sa{sv}})")
+
+        def remote_result():
+            self.remote_job.thread.join(timeout=MAX_WAIT_SECONDS)
+            if self.remote_job.thread.is_alive() or self.remote_job.error is not None:
+                self.remote_failed = True
+                self.active.state = 4
+                self.active.reason = 9
+                return
+            returned = result_psk(self.remote_job.result, "802-11-wireless-security", "psk")
+            self.secret_matches = returned == self.expected_password
+            self.active.state = 2 if self.secret_matches else 4
+            self.active.reason = 0 if self.secret_matches else 9
+
+        self._remote_thread = threading.Thread(target=remote_result, daemon=True)
+        self._remote_thread.start()
+        callback(self, object(), user_data)
+
+    def activate_connection_finish(self, _result):
+        return self._last_active
+
+    def wait_for_probe(self, timeout: float = MAX_WAIT_SECONDS) -> None:
+        thread = getattr(self, "_remote_thread", None)
+        if thread is not None:
+            thread.join(timeout=timeout)
+            check(not thread.is_alive(), "backend-probe-timeout")
+
+    def close(self):
+        return None
+
+
+def pipe_stream(password: str):
+    read_fd, write_fd = os.pipe()
+    try:
+        os.write(write_fd, password.encode("utf-8"))
+    finally:
+        os.close(write_fd)
+    return os.fdopen(read_fd, "rb", closefd=True)
+
+
+def run_backend_check(peer: PrivateBus, components, *, secret_flags: int, fail_store: bool, checks: list[str]) -> None:
+    Gio, GLib, NM, OperationRequest, _PendingRef, ResultKind, _TargetRef, Utility, _NetworkBackend, _Agent, SecretStoreError, psk_key, setting_name, _connect, load_nm_modules = components
+    try:
+        from niri_plus_controls.network import NetworkBackend
+    except Exception as error:
+        raise CheckFailure("network-backend-import") from error
+    connection_uuid = str(uuid.uuid4())
+    profile_path = f"/org/freedesktop/NetworkManager/Settings/{uuid.uuid4().hex}"
+    nm_connection = make_nm_connection(NM, GLib, connection_uuid, secret_flags)
+    profile = FakeProfile(nm_connection, profile_path)
+    device = FakeDevice(NM)
+    device.available_connections = [profile]
+    store = MemoryStore()
+    store.fail_store = fail_store
+    password = synthetic_password("backend")
+    client = FakeNMClient(peer, NM, GLib, profile, device, store, password)
+    runtime = load_nm_modules().GLib
+    backend = NetworkBackend(
+        client=client,
+        bus_address=peer.address,
+        runtime=__import__("niri_plus_controls.nm_bus", fromlist=["GLibRuntime"]).GLibRuntime(runtime),
+        secret_store=store,
+        username="native-checker",
+        timeout=2.5,
+    )
+    try:
+        snapshot = backend.snapshot(Utility.NETWORK)
+        target = next((item for item in snapshot.targets if item.ref.kind == "wifi-profile" and item.state.get("uuid") == connection_uuid), None)
+        check(target is not None, "backend-saved-profile-inventory")
+        action = next((item for item in backend.actions(target.ref) if item.action_id == "connect"), None)
+        check(action is not None, "backend-connect-action-missing")
+        check(action.enabled, "backend-connect-action-disabled")
+        request = OperationRequest(
+            "native-checker-invocation", uuid.uuid4().hex, target.ref, "connect",
+            target.revision, action.parameters,
+        )
+        prompt = backend.execute(request)
+        check(prompt.kind == ResultKind.NEEDS_SECRET and prompt.pending is not None, "backend-agent-secret-prompt")
+        with pipe_stream(password) as stream:
+            result = backend.provide_secret(prompt.pending, stream)
+        client.wait_for_probe()
+        if fail_store:
+            check(result.kind == ResultKind.ERROR, "backend-store-failure-result")
+            check(client.remote_failed and not client.secret_matches, "backend-store-failure-no-secret-response")
+            check(not store.values, "backend-store-failure-no-persistence")
+            checks.append("backend-provide-secret-store-failure")
+        else:
+            if result.kind != ResultKind.COMPLETE:
+                result = backend.refresh(prompt.pending)
+            check(result.kind == ResultKind.COMPLETE, "backend-activation-observed")
+            check(client.secret_matches and not client.remote_failed, "backend-agent-secret-roundtrip")
+            if secret_flags == int(NM.SettingSecretFlags.AGENT_OWNED):
+                check(store.values.get((connection_uuid, setting_name, psk_key)) == password, "backend-agent-owned-persisted")
+                checks.append("backend-agent-owned-pipe-and-persist")
+            else:
+                check(secret_flags == int(NM.SettingSecretFlags.NOT_SAVED) and store.calls == [], "backend-not-saved-no-store")
+                checks.append("backend-not-saved-pipe-no-store")
+    finally:
+        backend.close()
+        client.close()
+    deadline = time.monotonic() + MAX_WAIT_SECONDS
+    while peer.registrations() and time.monotonic() < deadline:
+        time.sleep(0.025)
+    check(not peer.registrations(), "backend-agent-unregistered-on-close")
+
+
+def write_report(output: Path | None, report: dict) -> None:
+    if output is None:
+        return
+    if output.is_symlink():
+        raise CheckFailure("artifact-path-symlink")
+    output.mkdir(parents=True, exist_ok=True, mode=0o700)
+    report_path = output / "controls-nm-agent-native.json"
+    if report_path.exists() or report_path.is_symlink():
+        raise CheckFailure("artifact-already-exists")
+    fd = os.open(report_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump(report, stream, sort_keys=True, indent=2)
+            stream.write("\n")
+    except Exception:
+        try:
+            report_path.unlink()
+        except Exception:
+            pass
+        raise
+
+
+def parse_args(argv: list[str] | None = None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--lib-dir", type=Path, default=DEFAULT_LIB_DIR,
+                        help="component library directory containing niri_plus_controls")
+    parser.add_argument("--output", type=Path,
+                        help="optional new/empty evidence directory; only redacted JSON is written")
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    global SecretStoreError
+    args = parse_args(argv)
+    report = {
+        "schema": 1,
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "result": "fail",
+        "phase": "initialization",
+        "checks": [],
+        "scope": "private-system-type-dbus-peer-only",
+    }
+    peer = None
+    agents: list[AgentHarness] = []
+    checks: list[str] = []
+    components = None
+    try:
+        components = load_gi(args.lib_dir)
+        SecretStoreError = components[10]
+        MemoryStore.error_type = SecretStoreError
+        Gio, GLib, _NM, *_rest = components
+        dedicated_bus_connection = components[-2]
+        peer = PrivateBus(Gio, GLib, dedicated_bus_connection)
+        peer.start()
+        checks.append("isolated-root-owned-peer-ready")
+        run_direct_agent_checks(peer, components, agents, checks)
+        disconnected_agent = agents.pop()
+        disconnected_owner = disconnected_agent.unique_name
+        disconnected_agent.connection.close_sync(None)
+        deadline = time.monotonic() + MAX_WAIT_SECONDS
+        while disconnected_owner in peer.registrations() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        check(disconnected_owner not in peer.registrations(), "bus-disconnect-removes-agent")
+        disconnected_agent.agent.close()
+        expected_explicit_unregistrations = len(agents)
+        for agent in reversed(agents):
+            agent.close()
+        agents.clear()
+        deadline = time.monotonic() + MAX_WAIT_SECONDS
+        while peer.registrations() and time.monotonic() < deadline:
+            time.sleep(0.025)
+        check(not peer.registrations(), "all-direct-agents-unregistered")
+        counters = peer.counters()
+        report["direct_manager_counts"] = {
+            "register_calls": counters[0],
+            "unregister_events": counters[1],
+            "explicit_unregister_calls": counters[2],
+            "owner_disconnect_removals": counters[3],
+            "forwarded_secret_methods": counters[4],
+        }
+        check(counters[2] >= expected_explicit_unregistrations, "explicit-agent-unregister-methods")
+        check(counters[3] >= 1, "agent-disconnect-auto-unregister")
+        checks.extend(("explicit-agent-unregister-method", "owner-disconnect-auto-unregister"))
+        checks.append("agents-unregister-before-backend-phase")
+
+        NM = components[2]
+        run_backend_check(peer, components, secret_flags=int(NM.SettingSecretFlags.AGENT_OWNED), fail_store=False, checks=checks)
+        run_backend_check(peer, components, secret_flags=int(NM.SettingSecretFlags.NOT_SAVED), fail_store=False, checks=checks)
+        run_backend_check(peer, components, secret_flags=int(NM.SettingSecretFlags.AGENT_OWNED), fail_store=True, checks=checks)
+
+        final_counters = peer.counters()
+        check(final_counters[0] >= final_counters[2], "manager-registration-counter")
+        report["result"] = "pass"
+        report["phase"] = "complete"
+        report["manager_counts"] = {
+            "register_calls": final_counters[0],
+            "unregister_events": final_counters[1],
+            "explicit_unregister_calls": final_counters[2],
+            "owner_disconnect_removals": final_counters[3],
+            "forwarded_secret_methods": final_counters[4],
+        }
+        report["checks"] = checks
+        report["limitations"] = ["No real NetworkManager activation or host network was exercised."]
+    except CheckFailure as error:
+        report["phase"] = error.phase
+        report["checks"] = checks
+    except Exception as error:
+        frames = traceback.extract_tb(error.__traceback__)[-5:]
+        trace = "-".join(f"{frame.name}-{frame.lineno}" for frame in frames)
+        report["phase"] = f"unexpected-{type(error).__name__}-{trace}"
+        report["checks"] = checks
+    finally:
+        cleanup_ok = True
+        for agent in reversed(agents):
+            try:
+                agent.close()
+            except Exception:
+                cleanup_ok = False
+        if peer is not None:
+            if report["result"] != "pass":
+                report["private_peer_error_markers"] = peer.manager_error_markers()
+                try:
+                    method, error_name, error_class = peer.last_agent_failure()
+                    report["last_agent_failure"] = {
+                        "method": method,
+                        "remote_error_name": error_name,
+                        "classification": error_class,
+                    }
+                except Exception:
+                    report["last_agent_failure"] = {"unavailable": True}
+            cleanup_ok = peer.close() and cleanup_ok
+        report["cleanup"] = "clean" if cleanup_ok else "failed"
+        report["finished_at"] = datetime.now(timezone.utc).isoformat()
+        if not cleanup_ok:
+            report["result"] = "fail"
+            report["cleanup_phase"] = "private-process-cleanup"
+        try:
+            write_report(args.output, report)
+        except Exception as error:
+            report["result"] = "fail"
+            report["phase"] = f"artifact-{type(error).__name__}"
+    print(json.dumps(report, sort_keys=True))
+    return 0 if report["result"] == "pass" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

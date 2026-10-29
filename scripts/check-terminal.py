@@ -207,6 +207,285 @@ def wait_for_shell(pid: int, fd: int, timeout: float) -> bytes:
     raise TimeoutError("interactive Zsh did not exit")
 
 
+def _process_identity(pid: int) -> dict[str, int | str] | None:
+    """Return PID/session identity, with Linux start time when /proc is available."""
+    stat_path = Path(f"/proc/{pid}/stat")
+    try:
+        raw = stat_path.read_text()
+        fields = raw[raw.rfind(")") + 2 :].split()
+        return {
+            "pid": pid,
+            "state": fields[0],
+            "pgid": int(fields[2]),
+            "session": int(fields[3]),
+            "start": int(fields[19]),
+        }
+    except (OSError, ValueError, IndexError):
+        pass
+    try:
+        return {
+            "pid": pid,
+            "state": "?",
+            "pgid": os.getpgid(pid),
+            "session": os.getsid(pid),
+            "start": -1,
+        }
+    except (AttributeError, OSError):
+        return None
+
+
+def _same_process(current: dict[str, int | str] | None, expected: dict[str, int | str]) -> bool:
+    if current is None:
+        return False
+    if any(current[key] != expected[key] for key in ("pid", "pgid", "session")):
+        return False
+    expected_start = expected.get("start", -1)
+    return expected_start == -1 or current.get("start") == expected_start
+
+
+def _process_is_running(expected: dict[str, int | str]) -> bool:
+    current = _process_identity(int(expected["pid"]))
+    if not _same_process(current, expected):
+        return False
+    if current["state"] in ("Z", "X"):
+        return False
+    if current["state"] != "?":
+        return True
+
+    ps = shutil.which("ps")
+    if ps is None:
+        return True
+    try:
+        result = subprocess.run(
+            [ps, "-o", "stat=", "-p", str(expected["pid"])],
+            text=True,
+            capture_output=True,
+            timeout=1,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return True
+    state = result.stdout.strip()
+    return not result.returncode and bool(state) and state[0] not in ("Z", "X")
+
+
+def pty_session_identity(pid: int, timeout: float = 1.0) -> dict[str, int | str] | None:
+    """Capture the new PTY session leader without assuming it inherited a host session."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        identity = _process_identity(pid)
+        if identity and identity["pgid"] == pid and identity["session"] == pid:
+            return identity
+        time.sleep(0.01)
+    return None
+
+
+def _session_snapshot(
+    identity: dict[str, int | str],
+    known: dict[int, dict[str, int | str]],
+) -> dict[int, dict[str, int | str]] | None:
+    """List processes in this verified private PTY session, or return None if unsupported."""
+    anchors = [identity, *known.values()]
+    if not any(
+        expected["session"] == identity["session"]
+        and _same_process(_process_identity(int(expected["pid"])), expected)
+        for expected in anchors
+    ):
+        return None
+    if Path("/proc").is_dir():
+        members = {}
+        for entry in Path("/proc").iterdir():
+            if not entry.name.isdigit():
+                continue
+            member = _process_identity(int(entry.name))
+            if member and member["session"] == identity["session"]:
+                members[int(entry.name)] = member
+        return members
+
+    ps = shutil.which("ps")
+    if ps is None:
+        return None
+    try:
+        result = subprocess.run(
+            [ps, "-axo", "pid=,pgid=,sess=,stat="],
+            text=True,
+            capture_output=True,
+            timeout=2,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode:
+        return None
+    members = {}
+    for line in result.stdout.splitlines():
+        fields = line.split()
+        if len(fields) < 4:
+            continue
+        try:
+            member_pid, pgid, session = map(int, fields[:3])
+        except ValueError:
+            continue
+        if session != identity["session"]:
+            continue
+        member = _process_identity(member_pid)
+        if member and member["pgid"] == pgid and member["session"] == session:
+            members[member_pid] = member | {"state": fields[3][0]}
+    return members
+
+
+def _refresh_session_members(
+    identity: dict[str, int | str] | None,
+    known: dict[int, dict[str, int | str]],
+) -> dict[int, dict[str, int | str]]:
+    if identity is not None:
+        snapshot = _session_snapshot(identity, known)
+        if snapshot is not None:
+            known.update(snapshot)
+    current = {}
+    for pid, expected in list(known.items()):
+        member = _process_identity(pid)
+        if _same_process(member, expected):
+            if member["state"] == "?" and expected.get("state", "?") != "?":
+                member = member | {"state": expected["state"]}
+            current[pid] = member
+            known[pid] = member
+        else:
+            known.pop(pid, None)
+    return current
+
+
+def _signal_owned_process(pid: int, expected: dict[str, int | str], signum: int) -> None:
+    if not _same_process(_process_identity(pid), expected):
+        return
+
+    # pidfds close the check-then-signal PID reuse window where supported.
+    pidfd_open = getattr(os, "pidfd_open", None)
+    pidfd_send_signal = getattr(signal, "pidfd_send_signal", None)
+    if pidfd_open is not None and pidfd_send_signal is not None:
+        try:
+            pidfd = pidfd_open(pid, 0)
+        except OSError:
+            pidfd = None
+        if pidfd is not None:
+            try:
+                if _same_process(_process_identity(pid), expected):
+                    try:
+                        pidfd_send_signal(pidfd, signum)
+                    except ProcessLookupError:
+                        pass
+                return
+            finally:
+                os.close(pidfd)
+
+    # POSIX fallback: repeat the PID, process-group, and session checks as
+    # close to kill(2) as possible. A PTY child remains our unreaped child.
+    if _same_process(_process_identity(pid), expected):
+        try:
+            os.kill(pid, signum)
+        except ProcessLookupError:
+            pass
+
+
+def _signal_pty_session(
+    pid: int,
+    identity: dict[str, int | str] | None,
+    known: dict[int, dict[str, int | str]],
+    signum: int,
+) -> None:
+    current = _refresh_session_members(identity, known)
+    if current:
+        for member_pid, member in current.items():
+            if member["state"] in ("Z", "X"):
+                continue
+            _signal_owned_process(member_pid, member, signum)
+        if identity is not None and _same_process(_process_identity(pid), identity):
+            try:
+                os.killpg(int(identity["pgid"]), signum)
+            except ProcessLookupError:
+                pass
+        return
+
+    # Portable fallback: only signal the verified PTY process group, never the
+    # caller's/native session. Without a process inventory it cannot discover
+    # Zsh job-control groups, but still bounds and reaps the owned leader.
+    if identity is not None:
+        if not _same_process(_process_identity(pid), identity):
+            return
+        # killpg covers immediate children when process inventory APIs are
+        # unavailable, and is restricted to the PTY fork's verified group.
+        try:
+            os.killpg(int(identity["pgid"]), signum)
+        except ProcessLookupError:
+            pass
+    else:
+        # The child remains our unreaped child until waitpid reports it, so
+        # signaling its PID cannot target a process that reused the number.
+        try:
+            finished, _status = os.waitpid(pid, os.WNOHANG)
+        except ChildProcessError:
+            return
+        if not finished:
+            try:
+                os.kill(pid, signum)
+            except ProcessLookupError:
+                pass
+
+
+def _pty_child_reaped(pid: int) -> bool:
+    try:
+        finished, _status = os.waitpid(pid, os.WNOHANG)
+    except ChildProcessError:
+        return True
+    return finished == pid
+
+
+def _wait_for_pty_session(
+    pid: int,
+    identity: dict[str, int | str] | None,
+    known: dict[int, dict[str, int | str]],
+    timeout: float,
+) -> bool:
+    deadline = time.monotonic() + timeout
+    next_snapshot = 0.0
+    while time.monotonic() < deadline:
+        now = time.monotonic()
+        refresh_identity = identity if identity is not None and now >= next_snapshot else None
+        current = _refresh_session_members(refresh_identity, known)
+        if refresh_identity is not None:
+            next_snapshot = now + 0.1
+        reaped = _pty_child_reaped(pid)
+        running = any(member["state"] not in ("Z", "X") for member in current.values())
+        if reaped and not running:
+            return True
+        time.sleep(0.025)
+    return False
+
+
+def stop_pty_session(
+    pid: int,
+    identity: dict[str, int | str] | None = None,
+    *,
+    term_timeout: float = 0.75,
+    kill_timeout: float = 1.5,
+) -> None:
+    """Stop and reap only the owned PTY session, with bounded escalation."""
+    if pid <= 0:
+        return
+    identity = identity or pty_session_identity(pid)
+    known: dict[int, dict[str, int | str]] = {}
+    if identity is not None:
+        snapshot = _session_snapshot(identity, known)
+        if snapshot is not None:
+            known.update(snapshot)
+        known.setdefault(pid, identity)
+    _signal_pty_session(pid, identity, known, signal.SIGTERM)
+    if _wait_for_pty_session(pid, identity, known, term_timeout):
+        return
+    _signal_pty_session(pid, identity, known, signal.SIGKILL)
+    if _wait_for_pty_session(pid, identity, known, kill_timeout):
+        return
+    raise TimeoutError(f"owned PTY session {pid} did not stop after SIGKILL")
+
+
 def check_interactive_watcher(zsh: str, bundle: Path, home: Path, xdg: Path) -> int:
     install = bundle / "interactive"
     install.mkdir(parents=True)
@@ -277,6 +556,7 @@ niri_plus_shell_finish
     pid, fd = pty.fork()
     if pid == 0:
         os.execvpe(zsh, [zsh, "-d", "-i"], isolated_zsh_env(env))
+    identity = pty_session_identity(pid)
     output = bytearray()
     try:
         deadline = time.monotonic() + 8
@@ -303,14 +583,7 @@ niri_plus_shell_finish
         pid = -1
     finally:
         if pid > 0:
-            try:
-                os.kill(pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            try:
-                os.waitpid(pid, 0)
-            except ChildProcessError:
-                pass
+            stop_pty_session(pid, identity)
         try:
             os.close(fd)
         except OSError:
@@ -360,6 +633,79 @@ def pty_read_until(fd: int, marker: bytes, timeout: float, context: str) -> byte
         output.extend(chunk)
     require(marker in output, f"{context}: {output.decode(errors='replace')}")
     return bytes(output)
+
+
+def check_pty_session_cleanup(zsh: str, bundle: Path, home: Path) -> int:
+    """Exercise ignored TERM in a job-control process group and bounded escalation."""
+    test_bin = bundle / "pty-cleanup-bin"
+    test_bin.mkdir()
+    sleep = shutil.which("sleep")
+    require(sleep is not None, "sleep is required for PTY cleanup checks")
+    job_pid_file = bundle / "pty-cleanup-job-pid"
+    put(
+        test_bin / "sleep",
+        "#!/bin/sh\ntrap '' TERM\nprintf '%s\\n' \"$$\" > \"$NIRI_PLUS_TEST_CLEANUP_JOB_PID_FILE\"\nexec "
+        + sleep
+        + ' "$@"\n',
+        executable=True,
+    )
+    env = os.environ.copy() | {
+        "HOME": str(home),
+        "PATH": f"{test_bin}:{os.environ.get('PATH', '/usr/bin:/bin')}",
+        "NIRI_PLUS_TEST_CLEANUP_JOB_PID_FILE": str(job_pid_file),
+    }
+
+    pid, fd = pty.fork()
+    if pid == 0:
+        os.execvpe(zsh, [zsh, "-d", "-f", "-i"], isolated_zsh_env(env))
+    identity = pty_session_identity(pid)
+    try:
+        require(identity is not None, "could not capture the private PTY session identity")
+        os.write(fd, b"trap '' TERM\nsleep 60 &\nprint -r -- NIRI_PLUS_PTY_CLEANUP_READY\n")
+        pty_read_until(fd, b"NIRI_PLUS_PTY_CLEANUP_READY", 3, "cleanup fixture shell did not accept its job")
+        deadline = time.monotonic() + 3
+        while not job_pid_file.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        require(job_pid_file.exists(), "ignored-TERM job did not record its PID")
+        job_pid = int(job_pid_file.read_text().strip())
+        job_identity = _process_identity(job_pid)
+        require(job_identity is not None, "could not capture ignored-TERM job identity")
+        require(
+            job_identity["session"] == identity["session"] and job_identity["pgid"] != identity["pgid"],
+            f"fixture job did not occupy its own process group in the PTY session: {job_identity}",
+        )
+        snapshot = _session_snapshot(identity, {pid: identity})
+        require(snapshot is not None and job_pid in snapshot, "session inventory missed the distinct job-control group")
+
+        _signal_owned_process(job_pid, job_identity, signal.SIGTERM)
+        time.sleep(0.1)
+        still_ignoring = _same_process(_process_identity(job_pid), job_identity)
+        require(still_ignoring, "fixture job did not ignore SIGTERM")
+        _signal_owned_process(pid, identity, signal.SIGTERM)
+        time.sleep(0.1)
+        require(_process_is_running(identity), "fixture PTY leader did not ignore SIGTERM")
+
+        started = time.monotonic()
+        stop_pty_session(pid, identity, term_timeout=0.15, kill_timeout=1.0)
+        elapsed = time.monotonic() - started
+        pid = -1
+        require(elapsed < 2.0, f"PTY cleanup exceeded its bounded escalation window: {elapsed:.3f}s")
+        require(_pty_child_reaped(int(identity["pid"])), "PTY shell leader was not reaped")
+
+        deadline = time.monotonic() + 1
+        while time.monotonic() < deadline:
+            if not _process_is_running(job_identity):
+                break
+            time.sleep(0.025)
+        require(not _process_is_running(job_identity), "SIGKILL escalation left the ignored-TERM job running")
+    finally:
+        if pid > 0:
+            stop_pty_session(pid, identity, term_timeout=0.15, kill_timeout=1.0)
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+    return 4
 
 
 def sleep_log_count(path: Path) -> int:
@@ -460,6 +806,7 @@ niri_plus_shell_finish
     pid, fd = pty.fork()
     if pid == 0:
         os.execvpe(zsh, [zsh, "-d", "-i"], isolated_zsh_env(env))
+    identity = pty_session_identity(pid)
     checks = 0
     try:
         pty_read_until(fd, b"NIRI_PLUS_TRANSITION_PROMPT_READY", 8, "human watcher did not reach its first prompt")
@@ -550,14 +897,7 @@ niri_plus_shell_finish''',
         pid = -1
     finally:
         if pid > 0:
-            try:
-                os.kill(pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            try:
-                os.waitpid(pid, 0)
-            except ChildProcessError:
-                pass
+            stop_pty_session(pid, identity)
         try:
             os.close(fd)
         except OSError:
@@ -755,6 +1095,7 @@ def main() -> int:
         ) = prepare_zsh_completion_fpath(zsh, bundle / "owned-completion-fpath")
         checks += check_isolated_completion_fpath(zsh, bundle, home, xdg)
         checks += check_shell_api(zsh, bundle, home, xdg)
+        checks += check_pty_session_cleanup(zsh, bundle, home)
         with mock.patch.dict(os.environ, {"HOME": str(home)}):
             existing = home / "existing"
             existing.mkdir()

@@ -752,7 +752,7 @@
     },
     {
       "path": "scripts/check-terminal.py",
-      "sha256": "56e7c21873575a1e0d9b04f1e240c2d463b5f885d1902300e601109e37e550dc",
+      "sha256": "69dd659d63dccbeb092cd45f458612b71432d6d078b46b79d9684bfe282e6c14",
       "kind": "isolated verification tool",
       "source": "Niri Plus",
       "notes": "Exercises temporary shell homes, fixture-backed device reads, prompt cleanup, and Session cancellation/dispatch without live desktop operations."

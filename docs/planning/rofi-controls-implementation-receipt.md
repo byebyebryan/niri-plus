@@ -35,7 +35,7 @@ identity and cap their 52em window at 96% of the output. Terminal framing and
 ANSI values are unchanged. Open Wi-Fi, global radio, disconnect, power, pairing
 and trust decisions have explicit target/scope and Cancel-first confirmations.
 
-## Exact component candidate
+## Original isolated qualification candidate
 
 - Code producer commit: `2d9ec75814f787c4ecfc39d848e733bed562ab11`.
 - Version 0.4.0, API 1; **44 files**: 33 desktop, 7 shell, 4 appearance.
@@ -50,6 +50,34 @@ and trust decisions have explicit target/scope and Cancel-first confirmations.
 The archive is retained locally. These hashes do not identify a published
 release URL. The identity remains independently pinned; no personal admission
 selector or immutable published producer record was overwritten.
+
+## Publication review follow-up, 2026-10-29
+
+Review found two Network issues after the original qualification: scan throttling
+compared libnm's CLOCK_BOOTTIME milliseconds with GLib's monotonic microseconds,
+and a saved SAE profile could be missed on a compatible PSK/SAE transition AP.
+The fixes use libnm's matching clock, require native AP/profile compatibility,
+and retain the selected profile's key management for retries. Regression tests
+cover recent/expired/never-scanned adapters, the independent clocks, exact saved
+profile reuse, and native compatibility rejection. The packaging test's old
+100 kB budget was also updated to 128 KiB for the expanded source inventory;
+explicit-input, per-member hash/mode and deterministic-build checks remain.
+
+The reviewed source is `5494554a53527a12f1042a6a742066ec2bb8280c`.
+Its replacement 0.4.0 candidate still has 44 files. Two builds matched, and every
+extracted payload hash/mode was checked:
+
+- Archive SHA-256: `2d1bdcd6c8b19131b740d44df40232e418108763849f758b423afdb782759491`.
+- Manifest SHA-256: `1a614eea6be0421945cd42fdf0ad19e49efa28a68c76eba9d5c9b72b1807f108`.
+- Source suite: 79 tests, 76 passed and 3 native-binding module skips.
+- System-Python native-binding suite: 71 passed, including both new regressions.
+- Extracted replacement bundle: all 14 isolated real-NetworkManager checks
+  passed; host routes, resolver and protected service PIDs were unchanged.
+
+This replacement has no new physical-device acceptance. The X11/Wayland,
+credential-agent, Audio and Bluetooth qualification below belongs to the
+original candidate, whose UI and other backends were not changed by this fix.
+The internal HTML review report also retains that original candidate's hashes.
 
 ## Qualification
 
@@ -106,7 +134,7 @@ Physical Wi-Fi credentials, rfkill/removal, real wallet unlock/compatibility,
 actual output/microphone behavior, and real Bluetooth adapter/keyboard pairing
 remain separate acceptance work. A staged first-host trial with recovery and
 human task checks precedes release/fleet admission; this pass does not claim
-those results. Human visual acceptance of the candidate is also still separate.
+those results. Preview visual feedback does not establish device-task acceptance.
 No other distribution, global service restart, device removal or pairing
 cleanup was introduced.
 

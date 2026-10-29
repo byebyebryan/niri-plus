@@ -42,7 +42,7 @@ PAGES = {
     "recipes/appearance/": ("docs/recipes/appearance.md", "Scoped Neutral Slate appearance fragments for Niri, Rofi, SwayNC, Gtklock, Qt, and KDE."),
     "recipes/terminal/": ("docs/recipes/terminal.md", "Kitty, Zsh, Powerlevel10k, history, completion, and the terminal-centered workflow."),
     "recipes/desktop-utilities/": ("docs/recipes/desktop-utilities.md", "Portable Network, Bluetooth, Audio, and Session entry points for a Niri desktop."),
-    "recipes/rofi-controls/": ("docs/recipes/rofi-controls.md", "Direct Rofi Network, Audio and Bluetooth controls: candidate behavior, installation and acceptance boundaries."),
+    "recipes/rofi-controls/": ("docs/recipes/rofi-controls.md", "Direct Rofi Network, Audio and Bluetooth controls: opt-in release, agent setup and acceptance boundaries."),
     "recipes/displays/": ("docs/recipes/displays.md", "Kanshi display profiles, logical scaling, docking and recovery under Niri."),
     "recipes/login/": ("docs/recipes/login.md", "SDDM session entry and a separately derived Neutral Slate login theme."),
     "recipes/hardware-feedback/": ("docs/recipes/hardware-feedback.md", "Transient volume, microphone and laptop-backlight feedback with the managed helpers."),

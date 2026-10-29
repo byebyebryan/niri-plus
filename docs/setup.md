@@ -28,10 +28,10 @@ report what it verified. For one component, use a [focused recipe](setup-agent.m
   feedback, files, network/Bluetooth entry points, input methods and
   whole-monitor sharing.
 
-The next [direct Rofi controls](recipes/rofi-controls.md) are an unreleased
-candidate with a [stateful design illustration](../design/rofi-controls/index.html).
-They are separate from the published setup path below and have not been
-selected on personal hosts.
+Optional [direct Rofi controls](recipes/rofi-controls.md) add Network, Audio and
+Bluetooth actions in the picker. Their 0.4.0 release and
+[stateful design illustration](../design/rofi-controls/index.html) are separate
+from the 0.3.1 reference setup path below.
 
 ## Starting point
 

@@ -4,10 +4,20 @@ Network, Audio and Bluetooth use the same compact picker as the other Plus
 tools: search, choose a device, then run an explicit action. SwayNC remains the
 place to glance at status. Session and Clipboard keep their existing helpers.
 
-**Unreleased component 0.4.0 candidate.** This source is separate from the
-published 0.3.1 Arch reference and the utilities currently deployed through
-chezmoi. Installing the reference guide does not select this candidate. Release,
-personal-host admission and physical-device acceptance are separate steps.
+**Opt-in component 0.4.0.** These controls are separate from the published
+0.3.1 Arch reference. Installing the numbered reference guide does not select
+them. Component publication, personal-host admission and physical-device
+acceptance are separate steps.
+
+The [0.4.0 release](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.0)
+pins the complete 44-file bundle, API 1:
+
+| Input | Exact value |
+| --- | --- |
+| Source commit | `5494554a53527a12f1042a6a742066ec2bb8280c` |
+| [Component archive](https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.0/niri-plus-components-0.4.0.tar.gz) SHA-256 | `2d1bdcd6c8b19131b740d44df40232e418108763849f758b423afdb782759491` |
+| Root `manifest.json` SHA-256 | `1a614eea6be0421945cd42fdf0ad19e49efa28a68c76eba9d5c9b72b1807f108` |
+| Independent `design/identity.json` SHA-256 | `6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455` |
 
 [Try the interactive illustration](../../design/rofi-controls/index.html).
 It uses fictional devices and simulated outcomes. The green frame marks a
@@ -86,13 +96,20 @@ arguments, environment variables, history, logs and clipboard. Visible pairing
 codes are held in controller memory and rendered only where needed. Masking is
 visual privacy, not a promise of isolated or erased process memory.
 
-## Install a reviewed candidate
+## Install with an agent
 
-These steps are for an agent working from the reviewed candidate checkout or
-its verified component archive. Record the source commit and bundle hash.
+Give your agent this recipe and let it inspect the existing configuration
+authority first. These steps use the exact source checkout or its verified
+component archive above. Record the source commit and bundle hash.
 Inspect existing files and keep preimages before merging; on a managed machine,
 change its configuration authority rather than copying over deployed files.
-No privileged service/network handover is part of this candidate installation.
+No privileged service/network handover is part of this installation.
+
+Set `NIRI_PLUS_CHECKOUT` to a separate checkout at the source commit above; do
+not change another working checkout's branch. Verify its commit and the identity
+digest before using the paths below. Alternatively, verify the release archive's
+SHA-256 before extracting it, check the root manifest hash and every payload
+hash/mode, and supply the independently verified identity alongside that tree.
 
 On Arch, the additional runtime interfaces are `python-gobject`, NetworkManager's
 libnm introspection, `libsecret`, `rofi`, `libpulse` (`pactl`) and `bluez`.
@@ -113,7 +130,7 @@ desktop-bluetooth-menu
 Keep the package and its sibling entrypoints from the **same bundle**. They use
 Python's standard library plus the native bindings; there is no pip installer.
 `~/.local/bin` must be in the graphical session's PATH. Render the independently
-pinned schema-2 identity through the candidate appearance module, then install
+pinned schema-2 identity through the same release's appearance module, then install
 its two new outputs:
 
 | Rendered output | Target |
@@ -122,7 +139,7 @@ its two new outputs:
 | `controls-appearance.json` | `${XDG_CONFIG_HOME:-~/.config}/niri-plus/controls-appearance.json` |
 
 The existing Rofi theme, terminal palette, Kitty behavior and Session/Clipboard
-configuration retain their owners. Install the candidate's three desktop
+configuration retain their owners. Install the release's three desktop
 entries only after the complete package and appearance files are staged.
 The downloadable [example inventory](../../examples/manifest.json) records each
 generated file's producer. The wrappers alone are not standalone downloads.
@@ -134,7 +151,7 @@ staging directory; retain its generated manifest with the execution record.
 
 ```sh
 NIRI_PLUS_DESKTOP="$NIRI_PLUS_CHECKOUT/components/desktop"
-NIRI_PLUS_APPEARANCE="${XDG_CACHE_HOME:-$HOME/.cache}/niri-plus/controls-appearance-candidate"
+NIRI_PLUS_APPEARANCE="${XDG_CACHE_HOME:-$HOME/.cache}/niri-plus/controls-appearance-0.4.0"
 python3 "$NIRI_PLUS_CHECKOUT/components/appearance/render.py" \
   --identity "$NIRI_PLUS_CHECKOUT/design/identity.json" \
   --output "$NIRI_PLUS_APPEARANCE"
@@ -173,9 +190,13 @@ Physical Wi-Fi authentication/rfkill/removal, actual headset/microphone behavior
 and Bluetooth adapter/keyboard pairing still require separate acceptance on an
 authorized device. An isolated protocol or virtual-device pass does not establish
 those results. See the [implementation receipt](../planning/rofi-controls-implementation-receipt.md)
-for the exact candidate and evidence.
+for the exact source and evidence. The Snap pilot additionally exercised the
+frozen release in a private nested Wayland session at scale 1.25, then read
+real Network/Audio/BlueZ inventories and device actions without executing them.
+Connections, audio settings, pairings and protected services stayed unchanged.
+That is startup/read-only acceptance, not a physical action or wallet-unlock pass.
 
 To recover, close the menu, restore the reviewed desktop-entry/config preimages,
-and use the retained native tools. Remove only the candidate files you installed
+and use the retained native tools. Remove only the release files you installed
 after checking for unrelated edits. Do not restart network/audio services, alter
 pairings, stop another discovery client, or restart SDDM as cleanup.

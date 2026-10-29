@@ -35,7 +35,7 @@ parent, then open `http://127.0.0.1:8000/niri-plus/`.
 The build and module checks work offline after dependencies are installed. They
 use declared repository inputs; they do not inspect or operate a desktop.
 
-Direct Rofi controls are an [unreleased 0.4.0 candidate](docs/recipes/rofi-controls.md),
+Direct Rofi controls are an [opt-in 0.4.0 release](docs/recipes/rofi-controls.md),
 separate from the published Arch reference. Native binding tests need the system
 Python with PyGObject/libnm/libsecret; environments without those bindings report
 explicit skips. Run the separate required native gate on an equipped machine:

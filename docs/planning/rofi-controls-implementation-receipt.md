@@ -5,6 +5,11 @@ Component **0.4.0 is an unreleased candidate**. No component release, public-sit
 deployment, personal chezmoi selection or fleet apply was performed in this pass.
 The published Arch reference remains pinned to 0.3.1.
 
+This opening records the implementation pass. The subsequent publication pass
+uses the reviewed replacement tuple below; see the
+[0.4.0 release and current setup recipe](../recipes/rofi-controls.md) for its
+publication status. The earlier captures retain their original source pins.
+
 The [design plan](rofi-controls-pass.md) and
 [pre-implementation review](rofi-controls-design-review.md) define the scope.
 The [candidate recipe](../recipes/rofi-controls.md) describes installation,

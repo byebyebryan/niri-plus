@@ -10,10 +10,10 @@ Agents: follow the numbered stages in order and open each linked recipe before
 applying its part.
 
 The numbered reference still selects released components **0.3.1**. Direct Rofi
-Network/Audio/Bluetooth controls are an independently reviewed **0.4.0 candidate**;
-use the [candidate recipe](recipes/rofi-controls.md) only when that source and
+Network/Audio/Bluetooth controls are an independently pinned **0.4.0 opt-in release**;
+use the [controls recipe](recipes/rofi-controls.md) only when that source and
 scope were selected explicitly. Do not silently replace reference launcher
-entries, release pins, or personal chezmoi selectors with candidate files.
+entries, release pins, or personal chezmoi selectors with these files.
 
 ## Execution contract
 

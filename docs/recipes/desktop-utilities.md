@@ -11,10 +11,10 @@ no-op repeat applies. The [setup record](../../data/setup.json) keeps this
 five-file deployment separate from appearance delivery and physical/device
 acceptance. The steps below are the portable installation path.
 
-The [direct Rofi controls candidate](rofi-controls.md) adds routine device
-actions inside Rofi. Its new package, theme and desktop entries are separate
-from the retained 0.3.1 entrypoints documented here. The candidate is not a
-personal-host deployment or a published-reference replacement yet.
+The [opt-in direct Rofi controls](rofi-controls.md) add routine device
+actions inside Rofi. Their new package, theme and desktop entries are separate
+from the retained 0.3.1 entrypoints documented here. Release 0.4.0 does not
+silently replace this published reference.
 
 ## Requirements
 

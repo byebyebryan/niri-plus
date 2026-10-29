@@ -6,13 +6,13 @@ examples, identifies what remains personal configuration, and records the
 current qualification state. It is a maintenance reference, not a workstation
 installer.
 
-The current source also contains the **unreleased 0.4.0 direct-controls
-candidate**. Its Network/Audio/Bluetooth helpers, shared controller and two
-additional appearance outputs are listed in `components/metadata.json`.
-See the [candidate recipe](recipes/rofi-controls.md) and
+The **opt-in 0.4.0 direct-controls release** adds Network/Audio/Bluetooth helpers,
+a shared controller and two additional appearance outputs, all listed in
+`components/metadata.json`.
+See the [release and installation recipe](recipes/rofi-controls.md) and
 [implementation receipt](planning/rofi-controls-implementation-receipt.md).
-The published archive and personal adoption records below remain 0.3.1.
-Candidate desktop-entry downloads live under
+The Arch reference archive and dated adoption records below remain 0.3.1.
+Direct-control desktop-entry downloads live under
 `examples/desktop/direct-controls/`; the existing entries are frozen 0.3.1
 baseline/recovery examples. Downloadable wrappers require the complete sibling
 `lib/niri_plus_controls` package.
@@ -68,7 +68,7 @@ Established projects keep their implementation and release authority:
 
 ## Immutable bundle and independent selections
 
-The current producer record is [`data/components.json`](../data/components.json).
+The Arch reference producer record is [`data/components.json`](../data/components.json).
 It pins one small deterministic archive, its source commit and manifest hash:
 
 - Version: `0.3.1`, API version `1`
@@ -128,15 +128,15 @@ remain separate follow-ups. Consumer shell adoption is revision
 `c8e058ed491b63b734c591c6dcff2d21ede7f03e`; the final consumer source and
 documentation revision is `43d84fe54a8b07c405fc4461fda5fa14f605043e`.
 
-## Current adoption status
+## 0.3.1 adoption checkpoint
 
-| Module | Current evidence |
+| Module | Evidence at this checkpoint |
 | --- | --- |
 | Desktop | Deployed and converged on Carbon, Starship and Snap. Sixteen shared files matched byte-for-byte; scoped repeat runs made no writes and preserved services, processes and captured policy. |
 | Shell | The 0.3.1 quiet-read correction is deployed and PTY-qualified on all three hosts; see the maintenance acceptance above for fixture results, scoped target preservation and repeat behavior. |
 | Appearance | Original qualification remains at adoption revision `9f2bf9689d27a5698c25c0e604a835b5370b0624` under producer 0.3.0. Its 39 outputs remain identical in 0.3.1; toolkit and image evidence remains historical. The 0.3.1 guarded greeter checks requested zero privileged writes. |
 
-These checkpoints are distinct. The final consumer source revision is
+These dated checkpoints are distinct. The 0.3.1 consumer source revision is
 `43d84fe54a8b07c405fc4461fda5fa14f605043e`; it follows shell adoption revision
 `c8e058ed491b63b734c591c6dcff2d21ede7f03e`. The earlier desktop delivery in
 [`data/setup.json`](../data/setup.json) remains its dated record; it does not

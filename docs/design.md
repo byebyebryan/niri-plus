@@ -20,7 +20,7 @@ The [interactive controls illustration](../design/rofi-controls/index.html)
 shows Network, Audio and Bluetooth in the shared Plus frame: green current
 device framing, independent blue keyboard selection, explicit state labels,
 and an action strip separated from status. The illustration uses fictional,
-stateful sample devices. The [candidate recipe](recipes/rofi-controls.md)
+stateful sample devices. The [controls recipe](recipes/rofi-controls.md)
 explains the native focused-device workflow and its current acceptance boundary.
 
 ## Desktop overview

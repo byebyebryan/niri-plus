@@ -2,7 +2,9 @@
 
 Niri Plus is a desktop for browsing and building: Chrome and Dolphin on the
 interactive side, Kitty and Zsh at the keyboard, with Niri arranging both.
-This page explains what the setup includes and the choices to make.
+This overview is for reference: it explains what the setup includes and the
+choices to make. For installation, we recommend working with an agent using
+the detailed guide linked below.
 
 ## Set up with an agent
 

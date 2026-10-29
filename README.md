@@ -4,9 +4,9 @@ A personal Niri desktop shaped around Chrome, terminals, and coding agents.
 
 **[Explore Niri Plus →](https://dev.byebyebryan.com/niri-plus/)**
 
-Read [the story](docs/story.md) or [take the tour](docs/tour.md). To install,
-give your agent the [setup guide](docs/setup-agent.md), the recommended route.
-The [setup overview](docs/setup.md) explains what is included and the choices.
+Read [the story](docs/story.md), [take the tour](docs/tour.md), or explore the
+[setup overview](docs/setup.md) for reference and explanation. For installation,
+we recommend giving your agent the [detailed setup guide](docs/setup-agent.md).
 The [component source map](docs/components.md)
 explains reusable public code, portable exports and private consumer ownership.
 Chezmoi remains the authority for personal machine configuration and deployment.

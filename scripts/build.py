@@ -667,15 +667,15 @@ def render_markdown(source):
     if source == "docs/story.md":
         toc = '<p class="eyebrow">A personal setup</p><p>Browser interaction.<br>Terminal work.<br>Agents in the everyday.</p><a href="' + BASE + 'tour/">See the desktop →</a>'
     audience = {"docs/story.md": "Personal story", "docs/setup.md": "Setup overview", "docs/setup-agent.md": "Agent instructions"}.get(source, "Desktop guide")
-    next_route, next_label = ("setup/", "Setup overview") if source == "docs/setup-agent.md" else ("setup/agent/", "Set up with an agent")
+    next_route, next_label = ("setup/agent/", "Set up with an agent") if source == "docs/setup.md" else ("setup/", "Setup overview")
     body = f'<div class="wrap document-layout"><aside class="on-this-page" aria-label="On this page"><span class="aside-label">{"The story" if source == "docs/story.md" else "On this page"}</span>{toc}</aside><article class="prose"><p class="eyebrow">Niri Plus / {audience}</p>{body}<div class="article-end"><a href="{BASE}{next_route}">{next_label} →</a><a href="https://github.com/byebyebryan/niri-plus/blob/main/{source}">Read on GitHub ↗</a></div></article></div>'
     return title, body
 
 
 def shell(route, title, description, body):
     navigation = []
-    for target, label in [("story/", "Story"), ("tour/", "Tour"), ("design/", "Design"), ("setup/agent/", "Setup"), ("reference/", "Reference")]:
-        current = "page" if route == target else "location" if target == "setup/agent/" and route.startswith("setup/") else None
+    for target, label in [("story/", "Story"), ("tour/", "Tour"), ("design/", "Design"), ("setup/", "Setup"), ("reference/", "Reference")]:
+        current = "page" if route == target else "location" if target == "setup/" and route.startswith("setup/") else None
         selected = f' aria-current="{current}"' if current else ""
         navigation.append(f'<a href="{BASE}{target}"{selected}>{label}</a>')
     navigation = ''.join(navigation)

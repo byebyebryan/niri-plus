@@ -122,7 +122,8 @@
       },
       "identity": {
         "source_commit": "b62df460884b5a4d5e8c7eeb05c132a0b26814ae",
-        "sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
+        "sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
+        "path": "design/history/neutral-slate-pre-black-workspace.json"
       },
       "guest_software": {
         "niri": "26.04-1",

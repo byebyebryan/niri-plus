@@ -10,7 +10,7 @@ import hashlib
 from html import escape
 from html.parser import HTMLParser
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import posixpath
 import re
 import shutil
@@ -145,6 +145,64 @@ DEMO_CLIPS = {
 }
 
 
+def component_releases():
+    """Read the reviewed immutable tuples independently of the latest release."""
+    catalog = json.loads((ROOT / "data/component-releases.json").read_text())
+    if catalog.get("schema_version") != 1 or not isinstance(catalog.get("releases"), list):
+        raise ValueError("invalid component release catalog")
+    releases = {}
+    for record in catalog["releases"]:
+        if not isinstance(record, dict):
+            raise ValueError("invalid component release record")
+        version = record.get("version")
+        if not isinstance(version, str) or not re.fullmatch(r"\d+\.\d+\.\d+", version) or version in releases:
+            raise ValueError("invalid or duplicate component release version")
+        if record.get("api_version") != 1 or not re.fullmatch(r"[0-9a-f]{40}", str(record.get("source_commit", ""))):
+            raise ValueError("invalid component release source/API")
+        for field in ("archive_sha256", "manifest_sha256"):
+            if not re.fullmatch(r"[0-9a-f]{64}", str(record.get(field, ""))):
+                raise ValueError("invalid component release digest")
+        expected_url = f"https://github.com/byebyebryan/niri-plus/releases/download/components-v{version}/niri-plus-components-{version}.tar.gz"
+        if record.get("archive_url") != expected_url:
+            raise ValueError("component release URL differs from its immutable version")
+        releases[version] = record
+    return releases
+
+
+def validate_capture_versions(versions):
+    """Bind media to its actual release and a retained identity source."""
+    if not isinstance(versions, dict):
+        raise ValueError("desktop demos must record exact source_versions")
+    component_pin = versions.get("components")
+    if not isinstance(component_pin, dict):
+        raise ValueError("desktop demo component pin is missing")
+    released = component_releases().get(component_pin.get("version"))
+    fields = ("version", "source_commit", "archive_sha256", "manifest_sha256")
+    if released is None or any(component_pin.get(key) != released[key] for key in fields):
+        raise ValueError("desktop demo component pin differs from a reviewed immutable release")
+    for optional in ("api_version", "archive_url"):
+        if optional in component_pin and component_pin[optional] != released[optional]:
+            raise ValueError("desktop demo component pin differs from a reviewed immutable release")
+    identity_pin = versions.get("identity")
+    source_path = identity_pin.get("path") if isinstance(identity_pin, dict) else None
+    if not isinstance(source_path, str):
+        raise ValueError("desktop demo identity source path is missing")
+    relative = PurePosixPath(source_path)
+    allowed = source_path == "design/identity.json" or (
+        relative.parts[:2] == ("design", "history") and relative.suffix == ".json"
+    )
+    identity_source = ROOT / source_path
+    if (not allowed or relative.is_absolute() or ".." in relative.parts
+            or relative.as_posix() != source_path or identity_source.is_symlink()
+            or not identity_source.is_file()
+            or not identity_source.resolve().is_relative_to((ROOT / "design").resolve())):
+        raise ValueError("desktop demo identity source path is not a retained design input")
+    identity_hash = hashlib.sha256(identity_source.read_bytes()).hexdigest()
+    if identity_pin.get("sha256") != identity_hash:
+        raise ValueError("desktop demo identity hash differs from its recorded source")
+    return versions
+
+
 def validate_desktop_demo_manifest(provenance, *, require_complete=False):
     """Validate public capture metadata before copying native demo assets."""
     demos = provenance.get("desktop_demos")
@@ -153,18 +211,7 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
     capture_label = demos.get("capture_label")
     if not isinstance(capture_label, str) or "staged" not in capture_label.lower() or "arch" not in capture_label.lower():
         raise ValueError("desktop demos must carry a staged Arch capture label")
-    versions = demos.get("source_versions")
-    if not isinstance(versions, dict) or not versions:
-        raise ValueError("desktop demos must record exact source_versions")
-    component_pin = versions.get("components")
-    current_components = json.loads((ROOT / "data/components.json").read_text())["producer"]
-    component_fields = ("version", "source_commit", "archive_sha256", "manifest_sha256")
-    if not isinstance(component_pin, dict) or any(component_pin.get(key) != current_components[key] for key in component_fields):
-        raise ValueError("desktop demos must use the current verified component bundle")
-    identity_pin = versions.get("identity")
-    current_identity_hash = hashlib.sha256((ROOT / "design/identity.json").read_bytes()).hexdigest()
-    if not isinstance(identity_pin, dict) or identity_pin.get("sha256") != current_identity_hash:
-        raise ValueError("desktop demo identity hash differs from the selected source")
+    validate_capture_versions(demos.get("source_versions"))
     clips = demos.get("clips")
     if not isinstance(clips, list) or not clips or any(not isinstance(item, dict) or not isinstance(item.get("id"), str) for item in clips):
         raise ValueError("desktop demo provenance must define clip records")
@@ -187,6 +234,8 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
     for clip in clips:
         if not isinstance(clip, dict):
             raise ValueError("desktop demo clip records must be objects")
+        if "source_versions" in clip:
+            validate_capture_versions(clip["source_versions"])
         expected = DEMO_CLIPS[clip["id"]]
         if clip.get("video") != expected["video"] or clip.get("poster") != expected["poster"]:
             raise ValueError(f"desktop demo paths differ from the site contract: {clip['id']}")
@@ -481,7 +530,10 @@ def public_files():
     for name in examples:
         if not (name.startswith("examples/") or name in PUBLIC_TOOLS) or ".." in Path(name).parts:
             raise ValueError(f"invalid public example/tool path: {name}")
-    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/components.json", "examples/manifest.json"} | examples | FONT_ASSETS | GENERATED
+    provenance = json.loads((ROOT / "assets/provenance.json").read_text())["desktop_demos"]
+    captures = [provenance["source_versions"], *(clip["source_versions"] for clip in provenance["clips"] if "source_versions" in clip)]
+    retained_identities = {item["identity"]["path"] for item in captures}
+    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/components.json", "data/component-releases.json", "examples/manifest.json"} | retained_identities | examples | FONT_ASSETS | GENERATED
 
 
 def validate_identity_associations(records):
@@ -559,6 +611,7 @@ def demo(name):
     clip = DEMO_CLIPS[name]
     provenance = desktop_demo_provenance()
     record = next(item for item in provenance["clips"] if item["id"] == name)
+    versions = record.get("source_versions", provenance["source_versions"])
     video = link("docs/tour.md", "../" + clip["video"])
     poster = link("docs/tour.md", "../" + clip["poster"])
     capture_label = escape(provenance["capture_label"])
@@ -591,7 +644,7 @@ def demo(name):
     <h3>{escape(clip['title'])}</h3>
     <p>{escape(clip['description'])}</p>
     <p class="native-demo-fixture">Sample content and guest readings: {escape(record['fixture_label'])}</p>
-    <p class="native-demo-duration">{record['duration_seconds']} seconds</p>
+    <p class="native-demo-duration">{record['duration_seconds']} seconds · Captured {escape(record['capture_date'])} · Components {escape(versions['components']['version'])}</p>
     <ol class="native-demo-steps">{steps}</ol>
     <p class="native-demo-links"><span>Setup:</span> {setup_links} <span class="native-demo-provenance">· <a class="native-demo-download" href="{escape(video, quote=True)}">Open or download MP4</a> · <a href="{BASE}assets/provenance.json">Media provenance</a> · <a href="{escape(receipt_link, quote=True)}">Capture receipt</a></span></p>
     <details class="native-demo-details">

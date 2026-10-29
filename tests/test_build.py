@@ -56,7 +56,7 @@ def demo_provenance_fixture():
             "source_versions": {
                 "niri": "26.04",
                 "components": {key: producer[key] for key in ("version", "source_commit", "archive_sha256", "manifest_sha256")},
-                "identity": {"sha256": identity_hash},
+                "identity": {"path": "design/identity.json", "sha256": identity_hash},
             },
             "capture_receipt_path": "docs/planning/desktop-demonstration-receipt.md",
             "separate_guest_checks": [{
@@ -226,6 +226,52 @@ class BuildContracts(unittest.TestCase):
         for path in (clip["video"], clip["poster"]):
             self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), records[path]["sha256"])
             self.assertEqual(records[path]["license"], "MIT")
+
+    def test_capture_pins_remain_bound_to_historical_inputs(self):
+        versions = builder.desktop_demo_provenance()["source_versions"]
+        self.assertEqual(versions["components"]["version"], "0.3.1")
+        self.assertEqual(versions["identity"]["path"], "design/history/neutral-slate-pre-black-workspace.json")
+        with tempfile.TemporaryDirectory() as temporary:
+            isolated = Path(temporary)
+            (isolated / "data").mkdir()
+            (isolated / "design/history").mkdir(parents=True)
+            (isolated / "data/component-releases.json").write_bytes((ROOT / "data/component-releases.json").read_bytes())
+            frozen = versions["identity"]["path"]
+            (isolated / frozen).write_bytes((ROOT / frozen).read_bytes())
+            (isolated / "design/identity.json").write_text('{"different": "current design"}')
+            (isolated / "data/components.json").write_text('{"producer": {"version": "future"}}')
+            with patch.object(builder, "ROOT", isolated):
+                builder.validate_capture_versions(versions)
+                (isolated / frozen).write_text('{"changed": "historical bytes"}')
+                with self.assertRaisesRegex(ValueError, "identity hash differs"):
+                    builder.validate_capture_versions(versions)
+
+    def test_capture_pins_reject_unknown_release_and_unretained_identity(self):
+        original = builder.desktop_demo_provenance()["source_versions"]
+        for field, invalid in (("version", "99.0.0"), ("source_commit", "0" * 40),
+                               ("archive_sha256", "0" * 64), ("manifest_sha256", "0" * 64)):
+            with self.subTest(field=field):
+                versions = json.loads(json.dumps(original))
+                versions["components"][field] = invalid
+                with self.assertRaisesRegex(ValueError, "reviewed immutable release"):
+                    builder.validate_capture_versions(versions)
+        for invalid in (None, "../design/identity.json", "/tmp/identity.json",
+                        "design/history/../identity.json", "assets/provenance.json",
+                        "design/history/missing.json"):
+            with self.subTest(path=invalid):
+                versions = json.loads(json.dumps(original))
+                versions["identity"]["path"] = invalid
+                with self.assertRaisesRegex(ValueError, "identity source path"):
+                    builder.validate_capture_versions(versions)
+
+    def test_each_clip_override_has_its_own_verified_capture_tuple(self):
+        manifest = demo_provenance_fixture()
+        historical = builder.desktop_demo_provenance()["source_versions"]
+        manifest["desktop_demos"]["clips"][0]["source_versions"] = historical
+        builder.validate_desktop_demo_manifest(manifest)
+        historical["components"]["manifest_sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "reviewed immutable release"):
+            builder.validate_desktop_demo_manifest(manifest)
 
     def test_native_demos_have_static_steps_controls_and_staged_provenance(self):
         builder.build(self.output)

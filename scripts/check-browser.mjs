@@ -93,7 +93,13 @@ try {
   }
   await page.goto(origin + "setup/");
   assert.equal(await page.locator("main pre").count(), 0);
-  await page.locator('main a.button[href$="setup/agent/"], main a.button[href="agent/"]').click();
+  const setupAction = page.locator('main a.button[href$="setup/agent/"], main a.button[href="agent/"]');
+  const setupColors = await setupAction.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { foreground: style.color, background: style.backgroundColor };
+  });
+  assert.notEqual(setupColors.foreground, setupColors.background, "prose link styles must preserve button contrast");
+  await setupAction.click();
   assert.match(page.url(), /setup\/agent\/$/);
   assert.equal(new URL(await page.locator('nav a[aria-current="page"]').getAttribute("href"), page.url()).pathname, prefix + "setup/agent/");
   const textLink = page.locator('main a[href$="agent.md"]').first();
@@ -101,7 +107,7 @@ try {
   assert.equal(textResponse.status(), 200);
   assert.ok((await textResponse.text()).startsWith("# Agent setup guide"));
   assert.ok((await textResponse.text()).includes("## Completion report"));
-  checks += 6;
+  checks += 7;
   await page.goto(origin);
   const nativeDemoLink = page.locator('a[href$="tour/#native-reference-demo"]');
   assert.equal(await nativeDemoLink.count(), 1);

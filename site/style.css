@@ -211,7 +211,7 @@
   .prose h3 { margin-block: 30px 15px; }
   .prose > p { color: #bfc5c8; font-size: 15px; line-height: 1.9; margin-block: 18px; max-width: 700px; }
   .prose > h1 + p { color: #d7dadd; font-size: 18px; line-height: 1.8; margin-bottom: 32px; }
-  .prose p a, .prose li a, .prose td a { color: var(--blue); }
+  .prose p a:not(.button), .prose li a:not(.button), .prose td a:not(.button) { color: var(--blue); }
   .prose strong { color: #e3e6e8; }
   .prose ul, .prose ol { color: #bfc5c8; font-size: 14px; line-height: 1.9; padding-left: 23px; margin-block: 22px; }
   .prose li + li { margin-top: 11px; }

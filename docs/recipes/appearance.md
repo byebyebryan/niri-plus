@@ -233,10 +233,12 @@ kitty --config "$HOME/.config/kitty/kitty.conf" \
   --config "$HOME/.config/kitty/neutral-slate.conf"
 ```
 
-In the existing Niri `layout` block, set the background to `#111213`, the
-active focus color to `#a6ceff`, and the inactive focus color to `#81878c`.
-Merge the renderer's `niri-neutral-slate.kdl` fragment into that block; keep
-its proportional widths, gaps, focus-ring width, binds, and other behavior.
+Use the values in the staged `$APPEARANCE/niri-neutral-slate.kdl` fragment.
+Merge its `layout` settings into the existing block and any separate `overview`
+settings at top level. The 0.4.1 identity uses workspace `#000000`, overview
+surround `#111213`, active focus `#a6ceff` and inactive focus `#81878c`. An older
+reference keeps the values in its own verified fragment. Preserve proportional
+widths, gaps, focus-ring width, binds and other behavior.
 Add the cursor selection only if the current config has no cursor block:
 
 ```kdl

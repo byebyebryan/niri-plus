@@ -4,20 +4,21 @@ Network, Audio and Bluetooth use the same compact picker as the other Plus
 tools: search, choose a device, then run an explicit action. SwayNC remains the
 place to glance at status. Session and Clipboard keep their existing helpers.
 
-**Opt-in component 0.4.0.** These controls are separate from the published
+**Opt-in component 0.4.1.** These controls are separate from the published
 0.3.1 Arch reference. Installing the numbered reference guide does not select
 them. Component publication, personal-host admission and physical-device
 acceptance are separate steps.
 
-The [0.4.0 release](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.0)
+The [0.4.1 release](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.1)
 pins the complete 44-file bundle, API 1:
 
 | Input | Exact value |
 | --- | --- |
-| Source commit | `5494554a53527a12f1042a6a742066ec2bb8280c` |
-| [Component archive](https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.0/niri-plus-components-0.4.0.tar.gz) SHA-256 | `2d1bdcd6c8b19131b740d44df40232e418108763849f758b423afdb782759491` |
-| Root `manifest.json` SHA-256 | `1a614eea6be0421945cd42fdf0ad19e49efa28a68c76eba9d5c9b72b1807f108` |
-| Independent `design/identity.json` SHA-256 | `6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455` |
+| Component code commit | `317658ee7913bb58536f6ec1b2575043a9494449` |
+| [Component archive](https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz) SHA-256 | `0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11` |
+| Root `manifest.json` SHA-256 | `30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4` |
+| Identity and public source snapshot | `f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2` |
+| Independent `design/identity.json` SHA-256 | `3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563` |
 
 [Try the interactive illustration](../../design/rofi-controls/index.html).
 It uses fictional devices and simulated outcomes. The green frame marks a
@@ -105,7 +106,8 @@ Inspect existing files and keep preimages before merging; on a managed machine,
 change its configuration authority rather than copying over deployed files.
 No privileged service/network handover is part of this installation.
 
-Set `NIRI_PLUS_CHECKOUT` to a separate checkout at the source commit above; do
+Set `NIRI_PLUS_CHECKOUT` to a separate checkout at the identity/public-source
+snapshot above; do
 not change another working checkout's branch. Verify its commit and the identity
 digest before using the paths below. Alternatively, verify the release archive's
 SHA-256 before extracting it, check the root manifest hash and every payload
@@ -151,7 +153,7 @@ staging directory; retain its generated manifest with the execution record.
 
 ```sh
 NIRI_PLUS_DESKTOP="$NIRI_PLUS_CHECKOUT/components/desktop"
-NIRI_PLUS_APPEARANCE="${XDG_CACHE_HOME:-$HOME/.cache}/niri-plus/controls-appearance-0.4.0"
+NIRI_PLUS_APPEARANCE="${XDG_CACHE_HOME:-$HOME/.cache}/niri-plus/controls-appearance-0.4.1"
 python3 "$NIRI_PLUS_CHECKOUT/components/appearance/render.py" \
   --identity "$NIRI_PLUS_CHECKOUT/design/identity.json" \
   --output "$NIRI_PLUS_APPEARANCE"

@@ -316,4 +316,3 @@ def selected_info(info: Mapping[str, object] | None) -> tuple[str, Mapping[str, 
     if row not in {"target", "action", "choice", "fact", "back", "advanced"}:
         return None
     return str(row), info
-

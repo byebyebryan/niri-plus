@@ -614,4 +614,3 @@ def common_main(argv: list[str] | None = None) -> int:
     parser.add_argument("--utility", required=True, choices=[item.value for item in Utility])
     args, rest = parser.parse_known_args(argv)
     return main_for(Utility(args.utility), rest)
-

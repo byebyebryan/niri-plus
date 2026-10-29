@@ -1045,4 +1045,3 @@ def _find_index(targets: Sequence[TargetSnapshot], ref: TargetRef | None) -> int
     if ref is None:
         return None
     return next((index for index, target in enumerate(targets) if target.ref == ref), None)
-

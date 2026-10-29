@@ -234,7 +234,7 @@
     },
     {
       "path": "examples/desktop/lib/niri_plus_controls/network.py",
-      "sha256": "8b15f8db788795e129aeb52cb919542eef79e58c20262b159ae5747f79f1ffab",
+      "sha256": "02994a8e292796be5e407585d6f56610d5284b74aafff900b8ac7c3572a9f55b",
       "kind": "generated first-party component export",
       "module": "desktop",
       "generated": true,

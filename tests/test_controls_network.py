@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 import time
 import unittest
+from unittest import mock
 import uuid
 
 
@@ -156,7 +157,7 @@ class FakeDevice:
         self.available_connections = None if available_connections is None else list(available_connections)
         self.ipv4 = tuple(ipv4)
         self.ipv6 = tuple(ipv6)
-        self.last_scan = 0
+        self.last_scan = -1
         self.scan_requests = 0
         self.hold_scan = hold_scan
         self.pending_scan = None
@@ -202,7 +203,7 @@ class FakeDevice:
             self.complete_scan(callback, user_data)
 
     def complete_scan(self, callback=None, user_data=None):
-        self.last_scan = load_nm_modules().GLib.get_monotonic_time()
+        self.last_scan = load_nm_modules().NM.utils_get_timestamp_msec()
         if callback is None and self.pending_scan is not None:
             callback, user_data = self.pending_scan
             self.pending_scan = None
@@ -893,6 +894,52 @@ class NetworkBackendContracts(unittest.TestCase):
             recent = backend.execute(self.request(target, "rescan", action.parameters))
             self.assertEqual(recent.kind, ResultKind.COMPLETE)
             self.assertEqual(device.scan_requests, 1)
+        finally:
+            backend.close()
+
+    def test_scan_throttle_uses_native_boottime_milliseconds(self):
+        # The independent GLib clock is deliberately both a different unit and
+        # suspend offset. It must never be compared with NM's LastScan value.
+        clock_ms = 5_000_000
+        for age_ms, expected_requests in ((500, 0), (2000, 1), (2500, 1), (None, 1)):
+            with self.subTest(age_ms=age_ms):
+                device = FakeDevice("/dev/w0", "wlan0")
+                device.last_scan = -1 if age_ms is None else clock_ms - age_ms
+                backend = self.make_backend(FakeClient([device]))
+                try:
+                    target = self.target(backend, kind="wifi-device")
+                    action = next(a for a in backend.actions(target.ref) if a.action_id == "rescan")
+                    with mock.patch.object(NM, "utils_get_timestamp_msec", return_value=clock_ms), \
+                            mock.patch.object(GLib, "get_monotonic_time", return_value=123_456_000):
+                        result = backend.execute(self.request(target, "rescan", action.parameters))
+                    self.assertIn(result.kind, {ResultKind.COMPLETE, ResultKind.PENDING})
+                    self.assertEqual(device.scan_requests, expected_requests)
+                finally:
+                    backend.close()
+
+    def test_sae_saved_profile_matches_native_compatible_transition_ap(self):
+        profile = make_profile("WPA3 saved", b"transition", profile_uuid="sae-saved", security="sae")
+        transition = FakeAP("/ap/transition", b"transition", "00:00:00:00:00:91",
+                            security="wpa-psk", extra_flags=1024, valid_profiles=["sae-saved"])
+        device = FakeDevice("/dev/w0", "wlan0", [transition], available_connections=[profile])
+        client = FakeClient([device], [profile])
+        backend = self.make_backend(client)
+        try:
+            target = self.target(backend, kind="wifi-ap")
+            self.assertEqual(target.state["security"], "wpa-psk")
+            self.assertTrue(target.state["saved"])
+            action = next(a for a in backend.actions(target.ref) if a.action_id == "connect")
+            self.assertEqual(action.parameters["profile_uuid"], "sae-saved")
+            self.assertNotIn("persistence_choice_required", action.parameters)
+            result = backend.execute(self.request(target, "connect", action.parameters))
+            self.assertEqual(result.kind, ResultKind.COMPLETE)
+            self.assertEqual(client.activation_calls[0][0].get_uuid(), "sae-saved")
+            self.assertEqual(client.add_calls, [])
+            self.assertEqual(next(iter(backend._operations.values())).security, "sae")
+
+            transition.valid_profiles.clear()
+            current = self.target(backend, kind="wifi-ap")
+            self.assertFalse(current.state["saved"], "A coarse security-family match cannot override NM's compatibility rejection")
         finally:
             backend.close()
 

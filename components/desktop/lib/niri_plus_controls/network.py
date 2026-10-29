@@ -755,10 +755,14 @@ class NetworkBackend:
             profile_ssid = _bytes(_method(wireless, "get_ssid", default=b"")) if wireless else b""
             interface = _method(connection, "get_interface_name", default="") if connection else ""
             profile_security = self._profile_security(profile)[0]
+            # A PSK/SAE transition AP's display category is coarser than a saved
+            # profile's key management. Native compatibility is authoritative.
             if (
                 uuid_value in available
                 and profile_ssid == ssid
-                and profile_security == security
+                and security in {"open", "wpa-psk", "sae"}
+                and profile_security in {"open", "wpa-psk", "sae"}
+                and (profile_security == security or {profile_security, security} <= {"wpa-psk", "sae"})
                 and (not interface or interface == _method(device, "get_iface", default=""))
                 and any(self._ap_accepts_profile(ap, profile) for ap in aps)
             ):
@@ -1278,7 +1282,7 @@ class NetworkBackend:
                     op.device_path = _path(node.device)
                     op.ap_path = _path(compatible_ap)
                     op.persistence = "saved"
-                    op.security = node.security
+                    op.security = self._profile_security(profile)[0]
                     op.ssid = node.ssid
                     if bool(parameters.get("reentry")):
                         op.kind = "profile-reentry"
@@ -1659,8 +1663,10 @@ class NetworkBackend:
         ), None)
         if existing:
             return self._cache_result(request, OperationResult(ResultKind.PENDING, "A scan for this adapter is already in progress.", target=node.target, pending=existing.pending))
-        monotonic_now = int(_method(self._need_modules().GLib, "get_monotonic_time", default=0) or 0)
-        if now and monotonic_now >= now and monotonic_now - now < int(MAX_SCAN_AGE_SECONDS * 1_000_000):
+        # libnm's last-scan uses CLOCK_BOOTTIME milliseconds, including suspend.
+        # Its matching clock helper avoids both unit and suspend-offset errors.
+        boottime_now_ms = self._need_modules().NM.utils_get_timestamp_msec()
+        if now >= 0 and 0 <= boottime_now_ms - now < int(MAX_SCAN_AGE_SECONDS * 1000):
             return self._cache_result(request, OperationResult(ResultKind.COMPLETE, "A fresh scan is already available for this adapter.", target=node.target))
         op = self._new_operation(request, node, "scan")
         op.device_path = device_path

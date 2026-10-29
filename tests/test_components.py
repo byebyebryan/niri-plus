@@ -44,7 +44,9 @@ class ComponentContracts(unittest.TestCase):
             first = self.archive(root, "first")
             second = self.archive(root, "second")
             self.assertEqual(first.read_bytes(), second.read_bytes())
-            self.assertLess(first.stat().st_size, 100_000)
+            # The 0.4 controls add source modules to the explicit inventory.
+            # Retain a small source-only budget without the old 100 kB cliff.
+            self.assertLess(first.stat().st_size, 128 * 1024)
 
             with tarfile.open(first, "r:gz") as archive:
                 members = archive.getmembers()

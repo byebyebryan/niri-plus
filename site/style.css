@@ -78,7 +78,6 @@
   .build-section { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; padding-block: 86px; }
   .build-section h2 { margin-block: 16px 24px; }
   .build-section p:not(.eyebrow) { font-size: 14px; color: var(--muted); max-width: 390px; }
-  .build-section .button { margin-top: 26px; }
   .recipe-links { align-self: center; }
   .recipe-links a { position: relative; display: block; padding-block: 18px; padding-right: 30px; border-top: 1px solid var(--line); font-size: 16px; text-decoration: none; }
   .recipe-links a:last-child { border-bottom: 1px solid var(--line); }

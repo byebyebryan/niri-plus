@@ -1,9 +1,13 @@
 # Agent setup guide
 
-This is the operational guide for an agent assembling the reference desktop.
-Read the [human setup overview](setup.md) for highlights, or use the
-[plain Markdown version](../setup/agent.md) of this guide. Follow the numbered
-stages in order and open each linked recipe before applying its part.
+**Agent-guided setup is the recommended way to install Niri Plus.** Give this
+operational guide to your agent; it will inspect the target, adapt the setup to
+your choices and verify each stage. A [plain Markdown version](../setup/agent.md)
+is available to share directly. The [setup overview](setup.md) explains the
+desktop and its choices.
+
+Agents: follow the numbered stages in order and open each linked recipe before
+applying its part.
 
 ## Execution contract
 

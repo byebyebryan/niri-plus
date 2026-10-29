@@ -93,9 +93,9 @@ try {
   }
   await page.goto(origin + "setup/");
   assert.equal(await page.locator("main pre").count(), 0);
-  await page.locator('main a[href$="setup/agent/"], main a[href="agent/"]').first().click();
+  await page.locator('main a.button[href$="setup/agent/"], main a.button[href="agent/"]').click();
   assert.match(page.url(), /setup\/agent\/$/);
-  assert.equal(new URL(await page.locator('nav a[aria-current="page"]').getAttribute("href"), page.url()).pathname, prefix + "setup/");
+  assert.equal(new URL(await page.locator('nav a[aria-current="page"]').getAttribute("href"), page.url()).pathname, prefix + "setup/agent/");
   const textLink = page.locator('main a[href$="agent.md"]').first();
   const textResponse = await page.request.get(new URL(await textLink.getAttribute("href"), page.url()).href);
   assert.equal(textResponse.status(), 200);

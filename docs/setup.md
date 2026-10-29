@@ -1,9 +1,26 @@
-# Set up Niri Plus
+# Setup overview
 
 Niri Plus is a desktop for browsing and building: Chrome and Dolphin on the
 interactive side, Kitty and Zsh at the keyboard, with Niri arranging both.
-Adopt the reference desktop or use a few pieces. The [agent setup guide](setup-agent.md)
-holds the commands, verification and recovery details.
+This page explains what the setup includes and the choices to make.
+
+## Set up with an agent
+
+**The recommended way to install Niri Plus is with an agent.** Give it the
+guide, let it inspect your machine, and work through the choices together.
+
+[Set up with an agent](setup-agent.md)
+
+Send the guide with this request:
+
+> Help me set up Niri Plus on this Arch machine using this guide. Inspect the
+> current setup first and preserve my configuration and recovery access. Ask
+> about display, input and power-policy choices, then work through the stages
+> and report what was verified and what still needs my input.
+
+A [plain Markdown guide](../setup/agent.md) is also available for agents that
+prefer text. Both versions of the detailed guide come from the same source.
+For a single component, jump to its [focused recipe](setup-agent.md#focused-recipes).
 
 ## What you get
 
@@ -16,7 +33,7 @@ holds the commands, verification and recovery details.
   feedback, files, network/Bluetooth entry points, input methods and
   whole-monitor sharing.
 
-## Before you start
+## Starting point
 
 Start with **installed Arch Linux x86-64**, a regular sudo account, working
 networking and the [reviewed source](setup-agent.md#inputs-and-working-directory).
@@ -25,7 +42,7 @@ recovery access. Ubuntu/Debian guides are deferred.
 
 ## The setup at a glance
 
-| Stage | Result | Detailed instructions |
+| Stage | Result | Agent steps |
 | --- | --- | --- |
 | Base session | Niri, Kitty, Rofi and portals; a working stock SDDM password login. | [Packages and first login](setup-agent.md#3-install-the-first-session-packages) |
 | Appearance and apps | The selected theme across desktop, terminal and greeter; Chrome and file defaults. | [Appearance, browser and files](setup-agent.md#5-add-the-reference-appearance-and-browser-files) |
@@ -45,19 +62,6 @@ displays off after ten minutes, suspends on battery after thirty minutes, and
 has automatic locking and AC suspend disabled. Choose those settings for your
 own use; the [session details](setup-agent.md#7-wire-wallet-policy-and-authorization-services)
 keep manual locking independent of idle-policy reloads.
-
-## Set it up with an agent
-
-Send your agent the [agent setup guide](setup-agent.md) with this request:
-
-> Help me set up Niri Plus on this Arch machine using this guide. Inspect the
-> current setup first and preserve my configuration and recovery access. Ask
-> about display, input and power-policy choices, then work through the stages
-> and report what was verified and what still needs my input.
-
-A [plain Markdown guide](../setup/agent.md) is also available for agents that
-prefer text. Both versions of the detailed guide come from the same source.
-For a single component, jump to its [focused recipe](setup-agent.md#focused-recipes).
 
 ## What has been checked
 

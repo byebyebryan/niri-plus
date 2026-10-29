@@ -597,12 +597,20 @@ corresponding hardware exists.
 After completing the appearance, session, and input changes, log out to SDDM
 and password-login again. This is the first login after installing `kwallet-pam`
 and Fcitx5, so it exercises the real PAM handoff and starts the packaged input
-method autostart. Check one Fcitx5 process and the KWallet PAM unit; then store
-and read a disposable secret. Keep it in the wallet until after the cold-login
-check:
+method autostart. Check one Fcitx5 process and the KWallet PAM initialization
+result. The initialization process exits after its handoff, so its unit can be
+inactive afterward. Confirm a start during this fresh login, `Result=success`
+and `ExecMainStatus=0`; then verify the provider and store/read a disposable
+secret without another password prompt. Keep it in the wallet until after the
+cold-login check:
 
 ```sh
-systemctl --user is-active plasma-kwallet-pam.service
+systemctl --user show plasma-kwallet-pam.service \
+  -p Type -p RemainAfterExit -p ActiveState -p ExecMainStartTimestamp \
+  -p Result -p ExecMainStatus
+test -n "$(systemctl --user show plasma-kwallet-pam.service -p ExecMainStartTimestamp --value)"
+test "$(systemctl --user show plasma-kwallet-pam.service -p Result --value)" = success
+test "$(systemctl --user show plasma-kwallet-pam.service -p ExecMainStatus --value)" = 0
 systemctl --user status app-org.fcitx.Fcitx5@autostart.service
 pgrep -ax fcitx5
 busctl --user status org.freedesktop.secrets

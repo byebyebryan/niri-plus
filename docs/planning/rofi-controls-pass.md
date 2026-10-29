@@ -1,7 +1,8 @@
 # Direct Rofi controls: design and implementation plan
 
-Status: proposed design, 2026-10-28. This pass creates a plan and an illustrated
-preview; it does not replace utilities or qualify native behavior.
+Status: proposed design, 2026-10-28; Plus picker UI refinement, 2026-10-29.
+This pass creates a plan and an illustrated preview; it does not replace
+utilities or qualify native behavior.
 
 The Arch reference and human/agent setup split are published at `d3e7505`.
 The next improvement is everyday device control: choose Wi-Fi, change audio
@@ -49,6 +50,51 @@ shows that the custom interaction is disproportionately expensive, reconsider
 a configured `networkmanager-dmenu` pilot before committing to a large UI layer.
 No third-party code has been copied in this design pass.
 
+## Shared Plus picker UI
+
+Use SSH Plus, Tmux Plus and Agent Plus as the visual and interaction baseline.
+The new controls should look like additional members of that family. Reuse the
+shared Rofi theme already rendered by `components/appearance/render.py`:
+52em opaque square window with 12px padding, 10px main spacing, the same prompt
+and search field, single-column rows, selected-row fill and 3px left focus edge.
+Keep Noto Sans and the selected Neutral Slate roles. Device rows use a primary
+name and secondary detail line, including a text status; do not introduce a
+separate right-hand status column or a new toolbar.
+
+Follow the existing native order: prompt/search, message region, then rows.
+The message region shows the familiar action strip, for example:
+
+```text
+Network   Search networks…
+
+Enter: [Connect] · Details  │  Tab: Cycle actions
+Wi-Fi on · wlan0 · Home connected
+
+Studio
+wlan0 · Saved · WPA3 Personal · 76%
+```
+
+Bracket and emphasize the current action; leave alternatives readable. Put
+context, progress and errors below that strip in the same message region,
+rather than adding a banner or a second status surface. Use the selected theme
+accent/warning/error roles for new controls. The sibling renderers currently
+include literal blue/warning/red markup values; borrowing their structure does
+not require copying those literals or changing their releases in this pass.
+
+Credential, pending, detail and confirmation views keep this same compact frame.
+Use a breadcrumb prompt where useful, such as `Network › Connect`. Credentials
+are a masked entry, not a form/card layout. Pending uses named Close menu and
+Cancel connection actions; confirmations use ordinary selectable rows, with
+Cancel first and selected by default. The report's sample-password advance,
+simulated outcomes, action-cycle and Run buttons live outside the illustrated
+native window and are explicitly labeled as web-preview controls.
+
+Reuse the theme and public protocol/rendering patterns. Keep SSH/Tmux/Agent
+implementations independently owned; no private imports or new runtime
+dependency on another picker. Extract a small shared rendering helper only
+when concrete consumers justify it. Native backend-specific state stays in
+each utility. Session and Clipboard do not inherit a rewrite from this design.
+
 ## Shared interaction contract
 
 - Up/Down selects a row. Tab/Shift+Tab cycles its named actions; Enter executes
@@ -59,13 +105,14 @@ No third-party code has been copied in this design pass.
 - Left/Right and Ctrl+B/Ctrl+F edit the filter. Escape/Ctrl+G follows Rofi's
   cancel path. Alt+R refreshes device state and requests a bounded Wi-Fi scan
   when supported; it is not a periodic host-work timer.
-- Show the current action beside its key hint, with alternatives visible in
-  muted text. Click selects a row; a labeled action button activates it. Native
-  Rofi pointer behavior must be qualified separately from the HTML illustration.
+- Show the current bracketed action and alternatives in the familiar message
+  strip. Native pointer acceptance follows Rofi's tested behavior; do not add a
+  product-specific Run button. The HTML sketch uses click to select and double
+  click to accept, with separately labeled web-preview controls for touch.
 - Each row has a name plus a readable status line: device, connected/saved,
   signal/security, mute/default as applicable. Use text as well as status color.
   Long names must remain identifiable; a Details page shows the full value.
-- Keep a compact context line above the list and the action hints below it.
+- Keep the action strip and compact context/notices above the list.
   Present unavailable hardware/service and permission errors explicitly. Opening
   the menu must not start services, unblock radios or alter connections.
 - Details pages have a Back row. Escape closes the utility; it does not execute
@@ -273,7 +320,7 @@ it does not establish runtime acceptance of the proposed controls.
 
 ## Design review evidence
 
-The HTML illustration passed 67 owned browser checks at 375/768/1280/1600px,
+The initial HTML illustration passed 67 owned browser checks at 375/768/1280/1600px,
 including filter/action preservation, credential-free sample flows, success,
 failure, retry, explicit cancellation, Escape, Cancel-first confirmation,
 local links and a JavaScript-disabled fallback. Desktop and narrow screenshots
@@ -282,3 +329,13 @@ The unchanged public site builds with 21 pages and 739 checked local links;
 its existing 726 browser checks pass. These are presentation checks, not native
 Rofi or physical-device acceptance. Research clones and generated reports stay
 outside the repository. No host configuration, service or device was changed.
+
+The Plus UI revision passed 94 owned browser checks at the same four widths.
+They cover the input/message/row order, 12px frame padding and 3px selection
+edge, absence of internal app-style action buttons, inline results, filter and
+caret preservation through action cycling, single-click selection/double-click
+acceptance, both pending actions, sample credentials/retry, and Cancel-first
+confirmation. Desktop, narrow and confirmation screenshots were visually
+reviewed. The existing site build and 726 browser checks still pass. These
+results qualify the HTML design illustration only; the native proof gates and
+separate implementation/release/rollout sequence remain in force.

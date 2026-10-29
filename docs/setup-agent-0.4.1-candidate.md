@@ -373,6 +373,16 @@ reports absent hardware or an unavailable provider without silently enabling it.
 Retain `nm-connection-editor`, `pavucontrol`, `nmtui` and `bluetoothctl` as native
 advanced settings and recovery tools.
 
+PipeWire and WirePlumber keep their packaged socket/session ownership. If their
+packages were installed after this user manager was already running, start the
+standard units for the current session before checking audio:
+
+```sh
+systemctl --user start pipewire.socket pipewire-pulse.socket wireplumber.service
+systemctl --user is-active pipewire.socket pipewire-pulse.socket wireplumber.service
+wpctl status
+```
+
 Install the shared launcher helper and entries:
 
 ```sh
@@ -569,15 +579,8 @@ scale 1.5. See the receipt for exact committed text and versions. Do not
 add `GTK_IM_MODULE`, `--enable-wayland-ime`, or a forced text-input version to
 these tested routes.
 
-PipeWire and WirePlumber keep their packaged socket/session ownership. If their
-packages were installed after this user manager was already running, start the
-standard units for the current session before checking audio:
-
-```sh
-systemctl --user start pipewire.socket pipewire-pulse.socket wireplumber.service
-systemctl --user is-active pipewire.socket pipewire-pulse.socket wireplumber.service
-wpctl status
-```
+Retain the packaged audio units started in stage 6; verify them again after
+the fresh login before the playback and microphone checks.
 
 On the fresh-guide replay, an attached virtual ICH9 HDA device
 produced the real PipeWire sink

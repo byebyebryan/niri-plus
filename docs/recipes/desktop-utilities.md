@@ -1,22 +1,20 @@
 # Common desktop utilities
 
-These small application entries put Network, Bluetooth, Audio, and Session
-actions in the regular Rofi application list. Use `Mod+D`, then search for the
-entry by its displayed name. They are portable examples for a Niri session;
-they do not add new keybindings or change power policy on their own.
+Network, Bluetooth, Audio and Session are available from the regular Rofi
+application list: use `Mod+D` and search for the displayed name. The current
+managed desktop uses [direct Rofi controls](rofi-controls.md) for the first
+three and the shared Session helper for locking, logout and power actions.
+Components 0.4.1 are installed on Carbon, Starship and Snap; the
+[managed setup record](../../data/setup.json) keeps installed checks and
+physical-device acceptance separate.
 
-The managed entries are installed on Carbon, Starship and Snap as of
-2026-10-26. They passed native desktop-entry discovery, exact-byte checks and
-no-op repeat applies. The [setup record](../../data/setup.json) keeps this
-five-file deployment separate from appearance delivery and physical/device
-acceptance. The steps below are the portable installation path.
+This page retains the earlier `nmtui`, `bluetoothctl` and `pavucontrol` launchers
+as a simple recovery option. It also owns the conditional network handover and
+shared Session behavior used by the main guide. **Follow the main agent guide
+for current direct-control installation.** Do not install the three legacy
+entries over the direct entries: they deliberately use the same desktop IDs.
 
-The [opt-in direct Rofi controls](rofi-controls.md) add routine device
-actions inside Rofi. Their new package, theme and desktop entries are separate
-from the retained 0.3.1 entrypoints documented here. Release 0.4.0 does not
-silently replace this published reference.
-
-## Requirements
+## Retained entry requirements
 
 | Entry | Required software and readiness |
 | --- | --- |
@@ -30,7 +28,7 @@ install [UDisks2 (`udisks2` on Arch)](https://archlinux.org/packages/extra/x86_6
 available, and install the filesystem support for the media you use. UDisks2
 is not invoked by these four entries.
 
-## Portable files
+## Retained portable files
 
 - [Network entry](../../examples/desktop/niri-plus-network.desktop) runs `kitty -e nmtui`.
 - [Bluetooth entry](../../examples/desktop/niri-plus-bluetooth.desktop) runs `kitty -e bluetoothctl`.
@@ -225,23 +223,28 @@ sudo journalctl -b -u niri-plus-network-handover.service \
 sudo /run/niri-plus-guide/network-rollback.sh
 ```
 
-After a successful handover, `nmtui` in the Rofi Network entry is available.
+After a successful handover, direct Network controls can observe the native
+connection; `nmtui` remains available as a recovery tool.
 The change is local to the selected owner and cloud-init rule; it does not
 configure another machine's networking or alter unrelated interfaces.
 
 ## Install and choose policy
 
-From the main walkthrough, `SOURCE` names the verified example tree. Install
-the helpers, then the desktop entries. These commands write only the listed
-user files; inspect their contents first if you already manage these names:
+For the **legacy launcher option only**, use the reviewed repository checkout.
+The current 0.4.1 staged `SOURCE` intentionally omits the three old device
+entries. In the main walkthrough, `NIRI_PLUS_CHECKOUT` names that checkout.
+These commands overwrite the four listed desktop IDs, so inspect existing
+entries and keep their preimages before choosing this alternative:
 
 ```sh
-install -Dm755 "$SOURCE/examples/desktop/desktop-session-ready" "$HOME/.local/bin/desktop-session-ready"
-install -Dm755 "$SOURCE/examples/desktop/desktop-session-menu" "$HOME/.local/bin/desktop-session-menu"
-install -Dm644 "$SOURCE/examples/desktop/niri-plus-network.desktop" "$HOME/.local/share/applications/niri-plus-network.desktop"
-install -Dm644 "$SOURCE/examples/desktop/niri-plus-bluetooth.desktop" "$HOME/.local/share/applications/niri-plus-bluetooth.desktop"
-install -Dm644 "$SOURCE/examples/desktop/niri-plus-audio.desktop" "$HOME/.local/share/applications/niri-plus-audio.desktop"
-install -Dm644 "$SOURCE/examples/desktop/niri-plus-session.desktop" "$HOME/.local/share/applications/niri-plus-session.desktop"
+LEGACY_SOURCE="$NIRI_PLUS_CHECKOUT"
+test -f "$LEGACY_SOURCE/examples/desktop/niri-plus-network.desktop"
+install -Dm755 "$LEGACY_SOURCE/examples/desktop/desktop-session-ready" "$HOME/.local/bin/desktop-session-ready"
+install -Dm755 "$LEGACY_SOURCE/examples/desktop/desktop-session-menu" "$HOME/.local/bin/desktop-session-menu"
+install -Dm644 "$LEGACY_SOURCE/examples/desktop/niri-plus-network.desktop" "$HOME/.local/share/applications/niri-plus-network.desktop"
+install -Dm644 "$LEGACY_SOURCE/examples/desktop/niri-plus-bluetooth.desktop" "$HOME/.local/share/applications/niri-plus-bluetooth.desktop"
+install -Dm644 "$LEGACY_SOURCE/examples/desktop/niri-plus-audio.desktop" "$HOME/.local/share/applications/niri-plus-audio.desktop"
+install -Dm644 "$LEGACY_SOURCE/examples/desktop/niri-plus-session.desktop" "$HOME/.local/share/applications/niri-plus-session.desktop"
 ```
 
 Choose your own power setting before copying the sample to

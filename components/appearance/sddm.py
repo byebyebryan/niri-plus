@@ -40,6 +40,7 @@ COLOR_KEYS = (
     "secure_input",
     "secure_button",
 )
+OPTIONAL_BACKGROUND_COLOR_KEYS = ("workspace_background", "overview_background")
 HEX_COLOR = re.compile(r"#[0-9a-fA-F]{6}\Z")
 
 
@@ -68,6 +69,11 @@ def _selected_profile(identity):
     colors = profile.get("colors")
     if not isinstance(colors, dict) or any(not isinstance(colors.get(key), str) or not HEX_COLOR.fullmatch(colors[key]) for key in COLOR_KEYS):
         raise ValueError("selected identity has incomplete or invalid desktop role colors")
+    if any(
+        key in colors and (not isinstance(colors[key], str) or not HEX_COLOR.fullmatch(colors[key]))
+        for key in OPTIONAL_BACKGROUND_COLOR_KEYS
+    ):
+        raise ValueError("selected identity has invalid optional desktop background colors")
     shared = identity.get("shared")
     if not isinstance(shared, dict):
         raise ValueError("schema-2 identity has no shared typography and geometry")

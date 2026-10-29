@@ -257,6 +257,69 @@ class ComponentContracts(unittest.TestCase):
         }
         self.assertEqual(appearance.render(compact_identity), artifacts)
 
+    def test_optional_workspace_background_roles_preserve_legacy_and_stay_scoped(self):
+        original_path = ROOT / "design/history/neutral-slate-pre-black-workspace.json"
+        original = json.loads(original_path.read_text())
+        legacy_artifacts = appearance.render(original)
+        fingerprint = hashlib.sha256()
+        for name, data in sorted(legacy_artifacts.items()):
+            fingerprint.update(name.encode() + b"\0" + data.encode() + b"\0")
+        self.assertEqual(
+            fingerprint.hexdigest(),
+            "4aae9f827251a1988ec84c00f4fdfb8f169a5434463fc22bfc4da7935a6b31ce",
+        )
+
+        updated = json.loads(json.dumps(original))
+        selected = next(candidate for candidate in updated["candidates"] if candidate["id"] == "neutral-slate")
+        selected["colors"]["workspace_background"] = "#000000"
+        selected["colors"]["overview_background"] = "#000000"
+        artifacts = appearance.render(updated)
+        niri = artifacts["niri-neutral-slate.kdl"]
+        self.assertIn('overview {\n    backdrop-color "#000000"\n}\n\n', niri)
+        self.assertIn('layout {\n    background-color "#000000"\n', niri)
+        css = artifacts["identity.css"]
+        self.assertIn("--workspace-background:#000000", css)
+        self.assertIn("--overview-background:#000000", css)
+
+        changed = {name for name in legacy_artifacts if legacy_artifacts[name] != artifacts[name]}
+        self.assertEqual(changed, {
+            "controls-appearance.json",
+            "identity.css",
+            "niri-neutral-slate.kdl",
+            "roles.json",
+            "theme.json",
+        })
+
+        for role in ("workspace_background", "overview_background"):
+            with self.subTest(role=role):
+                identity = json.loads(json.dumps(original))
+                selected = next(candidate for candidate in identity["candidates"] if candidate["id"] == "neutral-slate")
+                selected["colors"][role] = "#000000"
+                single_role = appearance.render(identity)
+                niri = single_role["niri-neutral-slate.kdl"]
+                css = single_role["identity.css"]
+                if role == "workspace_background":
+                    self.assertIn('background-color "#000000"', niri)
+                    self.assertNotIn("overview {", niri)
+                    self.assertIn("--workspace-background:#000000", css)
+                    self.assertNotIn("--overview-background:", css)
+                else:
+                    self.assertIn('backdrop-color "#000000"', niri)
+                    self.assertIn('background-color "#111213"', niri)
+                    self.assertIn("--overview-background:#000000", css)
+                    self.assertNotIn("--workspace-background:", css)
+
+    def test_optional_workspace_background_roles_reject_invalid_colors(self):
+        original = json.loads((ROOT / "design/history/neutral-slate-pre-black-workspace.json").read_text())
+        for role in ("workspace_background", "overview_background"):
+            for value in ("#00000", "#gg0000", "#00000000", 0, None):
+                with self.subTest(role=role, value=value):
+                    identity = json.loads(json.dumps(original))
+                    selected = next(candidate for candidate in identity["candidates"] if candidate["id"] == "neutral-slate")
+                    selected["colors"][role] = value
+                    with self.assertRaisesRegex(ValueError, "invalid optional desktop background colors"):
+                        appearance.render(identity)
+
     def test_sddm_derivation_returns_marker_free_immutable_core(self):
         identity = json.loads((ROOT / "design/identity.json").read_text())
         with tempfile.TemporaryDirectory(prefix="niri-plus-sddm-source-") as temporary:

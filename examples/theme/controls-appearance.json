@@ -22,7 +22,9 @@
     "secure_surface": "#202020",
     "secure_input": "#303030",
     "secure_button": "#d0d0d0",
-    "visited_link": "#c8b9d6"
+    "visited_link": "#c8b9d6",
+    "workspace_background": "#000000",
+    "overview_background": "#000000"
   },
   "derived": {
     "current_background": "#353d30",

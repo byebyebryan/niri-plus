@@ -292,12 +292,25 @@ def _kde_colors(colors):
 
 
 def _niri_fragment(colors, shared):
-    return (
-        "// Neutral Slate appearance only. Merge this layout fragment into your existing\n"
-        "// Niri layout block so current sizing, gaps, borders, shadows and behavior stay\n"
-        "// under their current owner.\n"
+    overview = ""
+    if "overview_background" in colors:
+        overview = (
+            "// Neutral Slate appearance only. Add the overview block to your existing Niri\n"
+            "// configuration. Merge the layout fragment into your existing layout block so\n"
+            "// current sizing, gaps, borders, shadows and behavior stay under their current owner.\n"
+            "overview {\n"
+            f'    backdrop-color "{colors["overview_background"]}"\n'
+            "}\n\n"
+        )
+    else:
+        overview = (
+            "// Neutral Slate appearance only. Merge this layout fragment into your existing\n"
+            "// Niri layout block so current sizing, gaps, borders, shadows and behavior stay\n"
+            "// under their current owner.\n"
+        )
+    return overview + (
         "layout {\n"
-        f'    background-color "{colors["canvas"]}"\n'
+        f'    background-color "{colors.get("workspace_background", colors["canvas"])}"\n'
         "\n"
         "    focus-ring {\n"
         f"        width {shared['niri_focus_px']}\n"
@@ -319,6 +332,9 @@ def _identity_css(profile, colors, terminal):
         "secure-input": "secure_input", "secure-button": "secure_button",
     }
     values = ";".join(f"--{name}:{colors[role]}" for name, role in roles.items())
+    for role in ("workspace_background", "overview_background"):
+        if role in colors:
+            values += f";--{role.replace('_', '-')}:" + colors[role]
     values += f';--ui-family:"{profile["ui_font"]}";--mono-family:"{profile["mono_font"]}"'
     values += ";" + ";".join(f"--ansi-{index}:{color}" for index, color in enumerate(terminal["ansi"]))
     values += ";" + ";".join(f"--terminal-{key.replace('_', '-')}:{terminal['colors'][key]}" for key in PUBLIC_KITTY_COLOR_KEYS)

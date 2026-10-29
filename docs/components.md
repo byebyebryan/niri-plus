@@ -13,7 +13,9 @@ See the [release and installation recipe](recipes/rofi-controls.md) and
 [implementation receipt](planning/rofi-controls-implementation-receipt.md).
 Components 0.4.1 are installed through chezmoi on Carbon, Starship and Snap.
 The numbered Arch reference remains 0.3.1 pending its next fresh-base replay.
-Dated adoption records below retain the release they qualified.
+The [current execution receipt](planning/black-workspace-receipt.md) records
+publication, native workspace qualification and scoped fleet delivery. Dated
+adoption records below retain the release they qualified.
 Direct-control desktop-entry downloads live under
 `examples/desktop/direct-controls/`; the existing entries are frozen 0.3.1
 baseline/recovery examples. Downloadable wrappers require the complete sibling

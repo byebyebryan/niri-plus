@@ -82,6 +82,7 @@ PUBLIC_LOCAL_DOCS = {
     "LICENSE",
     "docs/planning/arch-installation-receipt.md",
     "docs/planning/components-0.3.1-receipt.md",
+    "docs/planning/black-workspace-receipt.md",
     "docs/planning/desktop-demonstration-receipt.md",
     "tools/vm/desktop/wlr-compat/README.md",
     "design/rofi-controls/index.html",
@@ -213,6 +214,8 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
     if not isinstance(capture_label, str) or "staged" not in capture_label.lower() or "arch" not in capture_label.lower():
         raise ValueError("desktop demos must carry a staged Arch capture label")
     validate_capture_versions(demos.get("source_versions"))
+    if demos.get("capture_receipt_path") not in PUBLIC_LOCAL_DOCS:
+        raise ValueError("desktop demo capture receipt must be an exported public document")
     clips = demos.get("clips")
     if not isinstance(clips, list) or not clips or any(not isinstance(item, dict) or not isinstance(item.get("id"), str) for item in clips):
         raise ValueError("desktop demo provenance must define clip records")
@@ -237,6 +240,8 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
             raise ValueError("desktop demo clip records must be objects")
         if "source_versions" in clip:
             validate_capture_versions(clip["source_versions"])
+        if "capture_receipt_path" in clip and clip["capture_receipt_path"] not in PUBLIC_LOCAL_DOCS:
+            raise ValueError("desktop demo capture receipt must be an exported public document")
         expected = DEMO_CLIPS[clip["id"]]
         if clip.get("video") != expected["video"] or clip.get("poster") != expected["poster"]:
             raise ValueError(f"desktop demo paths differ from the site contract: {clip['id']}")
@@ -629,7 +634,7 @@ def demo(name):
         )
     steps = "".join(f"<li>{escape(step)}</li>" for step in clip["steps"])
     processing_notes = "".join(f"<li>{escape(note)}</li>" for note in record["processing_notes"])
-    receipt_path = provenance["capture_receipt_path"].removeprefix("docs/")
+    receipt_path = record.get("capture_receipt_path", provenance["capture_receipt_path"]).removeprefix("docs/")
     receipt_link = link("docs/tour.md", receipt_path)
     setup_links = " · ".join(
         f'<a href="{escape(link("docs/tour.md", target), quote=True)}">{escape(label)}</a>'

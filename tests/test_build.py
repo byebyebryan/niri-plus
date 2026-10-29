@@ -84,6 +84,7 @@ class BuildContracts(unittest.TestCase):
             {
                 "docs/planning/arch-installation-receipt.md",
                 "docs/planning/components-0.3.1-receipt.md",
+                "docs/planning/black-workspace-receipt.md",
                 "docs/planning/desktop-demonstration-receipt.md",
                 "docs/planning/rofi-controls-implementation-receipt.md",
             },
@@ -269,7 +270,12 @@ class BuildContracts(unittest.TestCase):
         manifest = demo_provenance_fixture()
         historical = builder.desktop_demo_provenance()["source_versions"]
         manifest["desktop_demos"]["clips"][0]["source_versions"] = historical
+        manifest["desktop_demos"]["clips"][0]["capture_receipt_path"] = "docs/planning/black-workspace-receipt.md"
         builder.validate_desktop_demo_manifest(manifest)
+        manifest["desktop_demos"]["clips"][0]["capture_receipt_path"] = "../unpublished.md"
+        with self.assertRaisesRegex(ValueError, "exported public document"):
+            builder.validate_desktop_demo_manifest(manifest)
+        del manifest["desktop_demos"]["clips"][0]["capture_receipt_path"]
         historical["components"]["manifest_sha256"] = "0" * 64
         with self.assertRaisesRegex(ValueError, "reviewed immutable release"):
             builder.validate_desktop_demo_manifest(manifest)

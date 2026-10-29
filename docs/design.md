@@ -5,11 +5,10 @@ Balanced+ terminal. Clear Blue marks focus and selection; status colors and
 normal/bright terminal pairs stay distinct. Noto Sans UI and Meslo terminal
 typography remain.
 
-The black workspace refinement is being qualified for Carbon, Starship and
-Snap. Their preceding Crisper Neutral Slate and Balanced+ identity is already
-installed. The [deployment record](reference.md#working-setup) distinguishes
-design, installed files and normal-use checks. The gallery below uses sample
-content.
+This identity is installed on Carbon, Starship and Snap through components
+0.4.1. The [deployment record](reference.md#working-setup) distinguishes
+installed checks from physical display and normal-use acceptance. The gallery
+below uses sample content.
 
 The [contrast study](design/contrast.md) retains the preceding desktop baseline
 and terminal comparisons. Balanced+ and the crisper desktop are selected; the

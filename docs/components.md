@@ -11,10 +11,9 @@ The **published 0.4.1 bundle** includes Network/Audio/Bluetooth controls from
 shell and appearance inputs are listed in `components/metadata.json`.
 See the [release and installation recipe](recipes/rofi-controls.md) and
 [implementation receipt](planning/rofi-controls-implementation-receipt.md).
-The controls' 0.4.0 delivery is installed through chezmoi on Carbon, Starship and
-Snap; 0.4.1 delivery is being qualified separately. The numbered Arch reference
-remains 0.3.1 pending its next fresh-base replay. Dated adoption records below
-retain the release they qualified.
+Components 0.4.1 are installed through chezmoi on Carbon, Starship and Snap.
+The numbered Arch reference remains 0.3.1 pending its next fresh-base replay.
+Dated adoption records below retain the release they qualified.
 Direct-control desktop-entry downloads live under
 `examples/desktop/direct-controls/`; the existing entries are frozen 0.3.1
 baseline/recovery examples. Downloadable wrappers require the complete sibling
@@ -22,13 +21,13 @@ baseline/recovery examples. Downloadable wrappers require the complete sibling
 
 ## Public source and example map
 
-| Module | Canonical source at the 0.3.1 producer revision | Public examples and downloads | Consumer boundary |
+| Module | Canonical source in the 0.4.1 bundle | Public examples and downloads | Consumer boundary |
 | --- | --- | --- | --- |
-| Desktop | [`components/desktop/`](https://github.com/byebyebryan/niri-plus/tree/014a14241bd722186ae9248e71162e75cf7af7b1/components/desktop) | [`desktop-session-ready`](../examples/desktop/desktop-session-ready), [`notify-volume`](../examples/feedback/notify-volume), and [`desktop-power`](../examples/session/desktop-power) | Chezmoi supplies host admission, power policy, package choices and existing service wiring. The two session-readiness downloads come from one source. |
-| Shell | [`components/shell/`](https://github.com/byebyebryan/niri-plus/tree/014a14241bd722186ae9248e71162e75cf7af7b1/components/shell) | The [Zsh starter](../examples/terminal/zshrc), [init module](../examples/terminal/init.zsh), and [opt-in fetcher](../examples/terminal/fetch.py) | Chezmoi keeps the personal startup shim, SDK and tool setup, local defaults and history/cache paths. The shared shell also works headlessly without Niri or Wayland. |
-| Appearance | [`components/appearance/`](https://github.com/byebyebryan/niri-plus/tree/014a14241bd722186ae9248e71162e75cf7af7b1/components/appearance) | The [Rofi theme](../examples/theme/neutral-slate.rasi), [SwayNC stylesheet](../examples/theme/swaync.css), [Kitty fragment](../examples/kitty/neutral-slate.conf), and standalone [SDDM preview helper](../examples/login/derive-theme.py) | Chezmoi selects the identity and native keys, merges owned preferences, selects machines and owns root installation. |
+| Desktop | [`components/desktop/`](https://github.com/byebyebryan/niri-plus/tree/317658ee7913bb58536f6ec1b2575043a9494449/components/desktop) | [`desktop-session-ready`](../examples/desktop/desktop-session-ready), [`notify-volume`](../examples/feedback/notify-volume), and [`desktop-power`](../examples/session/desktop-power) | Chezmoi supplies host admission, power policy, package choices and existing service wiring. The two session-readiness downloads come from one source. |
+| Shell | [`components/shell/`](https://github.com/byebyebryan/niri-plus/tree/317658ee7913bb58536f6ec1b2575043a9494449/components/shell) | The [Zsh starter](../examples/terminal/zshrc), [init module](../examples/terminal/init.zsh), and [opt-in fetcher](../examples/terminal/fetch.py) | Chezmoi keeps the personal startup shim, SDK and tool setup, local defaults and history/cache paths. The shared shell also works headlessly without Niri or Wayland. |
+| Appearance | [`components/appearance/`](https://github.com/byebyebryan/niri-plus/tree/317658ee7913bb58536f6ec1b2575043a9494449/components/appearance) | The [Rofi theme](../examples/theme/neutral-slate.rasi), [SwayNC stylesheet](../examples/theme/swaync.css), [Kitty fragment](../examples/kitty/neutral-slate.conf), and standalone [SDDM preview helper](../examples/login/derive-theme.py) | Chezmoi selects the identity and native keys, merges owned preferences, selects machines and owns root installation. |
 
-`components/metadata.json` at the [producer revision](https://github.com/byebyebryan/niri-plus/blob/014a14241bd722186ae9248e71162e75cf7af7b1/components/metadata.json)
+`components/metadata.json` at the [producer revision](https://github.com/byebyebryan/niri-plus/blob/317658ee7913bb58536f6ec1b2575043a9494449/components/metadata.json)
 declares the bundle inputs, public exports and module prerequisites. The
 generated files keep their existing public paths. Their source and hashes are
 recorded in the [example manifest](../examples/manifest.json). Portable profiles

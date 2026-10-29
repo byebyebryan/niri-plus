@@ -8,6 +8,8 @@ Meslo terminal fonts.
 Balanced+ on pure black is the terminal palette. The
 [current design](../design.md) and downloadable appearance examples now use
 that selection. This comparison retains the earlier baseline and alternatives.
+The later pure-black workspace and charcoal overview surround are shown in
+the current design; the desktop specimens here compare UI surface palettes.
 
 <!-- niri-plus:contrast -->
 ## Desktop comparison

@@ -533,7 +533,7 @@ def public_files():
     provenance = json.loads((ROOT / "assets/provenance.json").read_text())["desktop_demos"]
     captures = [provenance["source_versions"], *(clip["source_versions"] for clip in provenance["clips"] if "source_versions" in clip)]
     retained_identities = {item["identity"]["path"] for item in captures}
-    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/components.json", "data/component-releases.json", "examples/manifest.json"} | retained_identities | examples | FONT_ASSETS | GENERATED
+    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/history/setup-20261026.json", "data/components.json", "data/component-releases.json", "examples/manifest.json"} | retained_identities | examples | FONT_ASSETS | GENERATED
 
 
 def validate_identity_associations(records):
@@ -671,7 +671,7 @@ def snapshot():
     deployment = data["deployment"]
     hosts = ", ".join(deployment["rollout_order"])
     summary = deployment.get("summary", "Scoped delivery passed; normal-use visual and device checks remain.")
-    return f'''<div class="snapshot"><div><span class="eyebrow">Appearance delivery / {escape(data['date'])}</span><strong>Neutral Slate · {escape(hosts)}</strong><p>{escape(summary)}</p></div><dl><div><dt>Producer</dt><dd><code>{data['producer_revision'][:10]}</code></dd></div><div><dt>Consumer</dt><dd><code>{data['consumer_revision'][:10]}</code></dd></div><div><dt>SwayNC fork</dt><dd>{escape(fork['package'])} {escape(fork['version'])}</dd></div></dl><a href="{BASE}data/setup.json">Full delivery record ↗</a></div>'''
+    return f'''<div class="snapshot"><div><span class="eyebrow">Managed desktop / {escape(data['date'])}</span><strong>Neutral Slate · {escape(hosts)}</strong><p>{escape(summary)}</p></div><dl><div><dt>Components</dt><dd>{escape(data['component_version'])} · <code>{data['producer_revision'][:10]}</code></dd></div><div><dt>Consumer</dt><dd><code>{data['consumer_revision'][:10]}</code></dd></div><div><dt>SwayNC fork</dt><dd>{escape(fork['package'])} {escape(fork['version'])}</dd></div></dl><a href="{BASE}data/setup.json">Full delivery record ↗</a></div>'''
 
 
 def render_markdown(source):

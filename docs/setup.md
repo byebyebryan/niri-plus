@@ -29,7 +29,7 @@ report what it verified. For one component, use a [focused recipe](setup-agent.m
   whole-monitor sharing.
 
 Optional [direct Rofi controls](recipes/rofi-controls.md) add Network, Audio and
-Bluetooth actions in the picker. Their 0.4.0 release and
+Bluetooth actions in the picker. Their 0.4.1 release and
 [stateful design illustration](../design/rofi-controls/index.html) are separate
 from the 0.3.1 reference setup path below.
 

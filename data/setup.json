@@ -1,109 +1,16 @@
 {
-  "date": "2026-10-26",
-  "scope": "Scoped appearance delivery and common-utility/assembly follow-up; installation and runtime evidence remain separate from physical and fresh-install acceptance",
-  "consumer_revision": "b946b5e27936919d6277d7033a50d5e1d747abf9",
-  "producer_revision": "3fc6ba4b79631fbc4a7967830ca14bb84f1e9cbf",
-  "canonical_identity_sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
+  "date": "2026-10-29",
+  "scope": "0.4.1 managed black workspace refinement and installed direct-controls verification; physical and fresh-Arch acceptance are separate",
+  "consumer_revision": "30c3559b5d69021bd47f5dabd75df33e61480218",
+  "producer_revision": "317658ee7913bb58536f6ec1b2575043a9494449",
+  "component_version": "0.4.1",
+  "canonical_identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
+  "identity_source_revision": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
   "hosts": [
     "Carbon",
     "Starship",
     "Snap"
   ],
-  "deployment": {
-    "status": "installed and converged; active and next-login states recorded per host",
-    "rollout_order": [
-      "Carbon",
-      "Starship",
-      "Snap"
-    ],
-    "host_results": [
-      {
-        "host": "Carbon",
-        "status": "installed and reloaded",
-        "graphical_session_active": true,
-        "scoped_diff_files": 0,
-        "scoped_diff_hooks": 0,
-        "repeat_apply": {
-          "files": "no-op",
-          "hooks": "no-op"
-        },
-        "preserved": [
-          "native processes and service identities",
-          "source work and unrelated settings",
-          "notification bus/history"
-        ],
-        "native_processes_preserved": 6,
-        "notification_count_before": 39,
-        "notification_count_after": 39,
-        "css_diagnostics": 0
-      },
-      {
-        "host": "Starship",
-        "status": "installed; next graphical login",
-        "graphical_session_active": false,
-        "scoped_diff_files": 0,
-        "scoped_diff_hooks": 0,
-        "repeat_apply": {
-          "files": "no-op",
-          "hooks": "no-op"
-        },
-        "preserved": [
-          "native processes and service identities",
-          "source work and unrelated settings",
-          "inactive desktop services"
-        ],
-        "native_processes_preserved": 4,
-        "notification_count_before": null,
-        "notification_count_after": null,
-        "css_diagnostics": null
-      },
-      {
-        "host": "Snap",
-        "status": "installed and reloaded",
-        "graphical_session_active": true,
-        "scoped_diff_files": 0,
-        "scoped_diff_hooks": 0,
-        "repeat_apply": {
-          "files": "no-op",
-          "hooks": "no-op"
-        },
-        "preserved": [
-          "native processes and service identities",
-          "source work and unrelated settings",
-          "notification bus/history"
-        ],
-        "native_processes_preserved": 32,
-        "notification_count_before": 31,
-        "notification_count_after": 31,
-        "css_diagnostics": 0
-      }
-    ],
-    "root_greeter": {
-      "status": "installed and verified; no SDDM restart",
-      "theme_path": "/usr/local/share/sddm/themes/niri-neutral-fe1a7a554ed6",
-      "files_verified_per_host": 24
-    },
-    "remaining_normal_use_checks": [
-      "Normal OLED/application visual review",
-      "Normal login/lock appearance",
-      "Provider-owned RGB/background and faint-text review",
-      "Ordinary device, dock and resume checks"
-    ],
-    "fresh_install_acceptance": false,
-    "new_daily_desktop_captures": false,
-    "change": "Crisper warm desktop palette and independent pure-black Balanced+ terminal; fonts, native input, power, package/utility and runtime selections retained",
-    "summary": "Installed on all three. Carbon and Snap reloaded in place; a subsequent review observed Starship running Niri and its session services.",
-    "runtime_followup": {
-      "date": "2026-10-26",
-      "scope": "utility delivery read-only snapshots",
-      "niri_active_hosts": [
-        "Carbon",
-        "Starship",
-        "Snap"
-      ],
-      "starship": "Subsequent graphical login observed; Niri and owned session services are active."
-    }
-  },
   "shell": "minimal Niri",
   "notifier": "SwayNC fork",
   "locker": "Gtklock",
@@ -115,19 +22,98 @@
     "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
     "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83"
   },
-  "optional_tools": {
-    "agent_plus": "0.15.0a15",
-    "tmux_plus_bundle": "0.12.0a8",
-    "mesh_plus": "0.1.0a24"
-  },
-  "personal_policy": {
-    "display_off_minutes": 10,
-    "automatic_lock": false,
-    "battery_suspend_minutes": 30,
-    "ac_suspend": false,
-    "lock_before_suspend": false
-  },
   "chezmoi_source_visibility": "private",
+  "deployment": {
+    "status": "installed and converged; native startup/callback/read-only checks passed on all three",
+    "rollout_order": [
+      "Snap",
+      "Starship",
+      "Carbon"
+    ],
+    "host_results": [
+      {
+        "host": "Snap",
+        "status": "installed and read-only qualified",
+        "source_revision": "30c3559b5d69021bd47f5dabd75df33e61480218",
+        "native_targets_verified": 23,
+        "changed_targets": [
+          ".config/niri-plus/controls-appearance.json",
+          ".config/niri/config.kdl"
+        ],
+        "scoped_diff_files": 0,
+        "repeat_apply": "no writes",
+        "installed_read_only_probe": "passed",
+        "native_path_and_python_gi": "passed",
+        "protected_home_files": 38,
+        "protected_root_files": 73,
+        "native_processes_preserved": 8,
+        "network_unchanged": true,
+        "packages_unchanged": true,
+        "service_restarts": 0,
+        "physical_device_actions": "not performed",
+        "human_visual_and_device_acceptance": "normal-use follow-up"
+      },
+      {
+        "host": "Starship",
+        "status": "installed and read-only qualified",
+        "source_revision": "30c3559b5d69021bd47f5dabd75df33e61480218",
+        "native_targets_verified": 23,
+        "changed_targets": [
+          ".config/niri-plus/controls-appearance.json",
+          ".config/niri/config.kdl"
+        ],
+        "scoped_diff_files": 0,
+        "repeat_apply": "no writes",
+        "installed_read_only_probe": "passed",
+        "native_path_and_python_gi": "passed",
+        "protected_home_files": 38,
+        "protected_root_files": 75,
+        "native_processes_preserved": 6,
+        "network_unchanged": true,
+        "packages_unchanged": true,
+        "service_restarts": 0,
+        "physical_device_actions": "not performed",
+        "human_visual_and_device_acceptance": "normal-use follow-up"
+      },
+      {
+        "host": "Carbon",
+        "status": "installed and read-only qualified",
+        "source_revision": "30c3559b5d69021bd47f5dabd75df33e61480218",
+        "native_targets_verified": 23,
+        "changed_targets": [
+          ".config/niri-plus/controls-appearance.json",
+          ".config/niri/config.kdl"
+        ],
+        "scoped_diff_files": 0,
+        "repeat_apply": "no writes",
+        "installed_read_only_probe": "passed",
+        "native_path_and_python_gi": "passed",
+        "protected_home_files": 38,
+        "protected_root_files": 75,
+        "native_processes_preserved": 5,
+        "network_unchanged": true,
+        "packages_unchanged": true,
+        "service_restarts": 0,
+        "physical_device_actions": "not performed",
+        "human_visual_and_device_acceptance": "normal-use follow-up"
+      }
+    ],
+    "summary": "Pure-black workspaces and charcoal overview surrounds are installed on all three hosts. Warm UI surfaces, Balanced+ terminal colors and existing sessions are preserved. Physical and human visual checks remain separate.",
+    "root_greeter": {
+      "status": "unchanged; no root writes or SDDM restart",
+      "theme_path": "/usr/local/share/sddm/themes/niri-neutral-fe1a7a554ed6"
+    },
+    "appearance_outputs_verified_per_host": 41,
+    "unchanged_appearance_outputs": 36,
+    "controls_target_set_sha256": "f015c593640ade189f1d28ea006d0da9d3deb0d2a37f6186bd0da1132ce67e1e",
+    "remaining_normal_use_checks": [
+      "OLED/application visual review",
+      "Real Wi-Fi credentials and wallet compatibility",
+      "Physical output and microphone",
+      "Real Bluetooth peripheral actions"
+    ],
+    "fresh_install_acceptance": false
+  },
   "appearance": {
     "profile": "neutral-slate",
     "accent_variant": "clear-blue",
@@ -141,7 +127,16 @@
     "terminal_background": "#000000",
     "terminal_foreground": "#efefec",
     "terminal_background_opacity": 1,
-    "schema_version": 2
+    "schema_version": 2,
+    "workspace_background": "#000000",
+    "overview_background": "#111213"
+  },
+  "personal_policy": {
+    "display_off_minutes": 10,
+    "automatic_lock": false,
+    "battery_suspend_minutes": 30,
+    "ac_suspend": false,
+    "lock_before_suspend": false
   },
   "portals": {
     "baseline": "gtk+wlr",
@@ -155,43 +150,26 @@
     "capture_source_types": [
       "monitor"
     ],
-    "per_window_sharing": "outside selected baseline",
-    "live_browser_capture": "not exercised during package cleanup",
-    "cleanup": {
-      "date": "2026-10-25",
-      "carbon": "No GNOME/KDE portal or Nautilus installed; checked before the host went offline",
-      "starship": "No GNOME/KDE portal or Nautilus installed; no package changes",
-      "snap": {
-        "removed_packages": 20,
-        "removed_installed_bytes": 35651757,
-        "exact_recovery_archives": 20,
-        "shared_gvfs_retained": true,
-        "selected_services": "preserved without restart"
-      },
-      "source_revision": "00dc486a473424be24fec85128cce7b8127c57f3"
-    }
+    "per_window_sharing": "outside selected baseline"
   },
-  "review_revision": "8e1309c086216be365ed5620536a7b7fe5fbbd94",
   "utilities": {
-    "status": "installed and converged on all three hosts",
-    "consumer_revision": "035ad22bfa7e466af642f0970c68b65b42da3be8",
-    "record_name": "niri-plus-utilities-20261026T234508Z",
     "entry_point": "Mod+D",
+    "component_version": "0.4.1",
     "entries": [
       {
         "id": "niri-plus-network.desktop",
         "name": "Network",
-        "command": "kitty -e nmtui"
-      },
-      {
-        "id": "niri-plus-bluetooth.desktop",
-        "name": "Bluetooth",
-        "command": "kitty -e bluetoothctl"
+        "command": "desktop-network-menu"
       },
       {
         "id": "niri-plus-audio.desktop",
         "name": "Audio",
-        "command": "pavucontrol"
+        "command": "desktop-audio-menu"
+      },
+      {
+        "id": "niri-plus-bluetooth.desktop",
+        "name": "Bluetooth",
+        "command": "desktop-bluetooth-menu"
       },
       {
         "id": "niri-plus-session.desktop",
@@ -199,112 +177,24 @@
         "command": "desktop-session-menu"
       }
     ],
-    "host_results": [
-      {
-        "host": "carbon",
-        "commit": "035ad22bfa7e466af642f0970c68b65b42da3be8",
-        "files": 5,
-        "scoped_drift": 0,
-        "repeat_apply": "no writes",
-        "protected_configurations": 15,
-        "native_processes_preserved": 7,
-        "native_services_preserved": 8,
-        "entries": [
-          {
-            "id": "niri-plus-network.desktop",
-            "name": "Network",
-            "command": "kitty -e nmtui"
-          },
-          {
-            "id": "niri-plus-bluetooth.desktop",
-            "name": "Bluetooth",
-            "command": "kitty -e bluetoothctl"
-          },
-          {
-            "id": "niri-plus-audio.desktop",
-            "name": "Audio",
-            "command": "pavucontrol"
-          },
-          {
-            "id": "niri-plus-session.desktop",
-            "name": "Session",
-            "command": "desktop-session-menu"
-          }
-        ],
-        "package_inventory_unchanged": true,
-        "device_or_session_actions": 0
-      },
-      {
-        "host": "starship",
-        "commit": "035ad22bfa7e466af642f0970c68b65b42da3be8",
-        "files": 5,
-        "scoped_drift": 0,
-        "repeat_apply": "no writes",
-        "protected_configurations": 15,
-        "native_processes_preserved": 8,
-        "native_services_preserved": 8,
-        "entries": [
-          {
-            "id": "niri-plus-network.desktop",
-            "name": "Network",
-            "command": "kitty -e nmtui"
-          },
-          {
-            "id": "niri-plus-bluetooth.desktop",
-            "name": "Bluetooth",
-            "command": "kitty -e bluetoothctl"
-          },
-          {
-            "id": "niri-plus-audio.desktop",
-            "name": "Audio",
-            "command": "pavucontrol"
-          },
-          {
-            "id": "niri-plus-session.desktop",
-            "name": "Session",
-            "command": "desktop-session-menu"
-          }
-        ],
-        "package_inventory_unchanged": true,
-        "device_or_session_actions": 0
-      },
-      {
-        "host": "snap",
-        "commit": "035ad22bfa7e466af642f0970c68b65b42da3be8",
-        "files": 5,
-        "scoped_drift": 0,
-        "repeat_apply": "no writes",
-        "protected_configurations": 15,
-        "native_processes_preserved": 9,
-        "native_services_preserved": 8,
-        "entries": [
-          {
-            "id": "niri-plus-network.desktop",
-            "name": "Network",
-            "command": "kitty -e nmtui"
-          },
-          {
-            "id": "niri-plus-bluetooth.desktop",
-            "name": "Bluetooth",
-            "command": "kitty -e bluetoothctl"
-          },
-          {
-            "id": "niri-plus-audio.desktop",
-            "name": "Audio",
-            "command": "pavucontrol"
-          },
-          {
-            "id": "niri-plus-session.desktop",
-            "name": "Session",
-            "command": "desktop-session-menu"
-          }
-        ],
-        "package_inventory_unchanged": true,
-        "device_or_session_actions": 0
-      }
+    "advanced_tools": [
+      "nm-connection-editor",
+      "pavucontrol",
+      "bluetoothctl"
     ],
-    "package_operations": 0,
-    "service_restarts": 0,
-    "device_or_session_actions": 0
-  }
+    "native_providers": [
+      "NetworkManager",
+      "PipeWire/PulseAudio",
+      "BlueZ"
+    ],
+    "new_startup_services": 0
+  },
+  "reference": {
+    "qualified_version": "0.3.1",
+    "candidate_version": "0.4.1",
+    "candidate_status": "fresh-base replay in progress"
+  },
+  "historical_records": [
+    "data/history/setup-20261026.json"
+  ]
 }

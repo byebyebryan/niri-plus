@@ -4,10 +4,9 @@ The bindings below describe my managed Niri desktop. Portable examples and
 component guides let you adopt the parts you want.
 
 The [component source map](components.md) distinguishes published components,
-the tested Arch reference and dated adoption evidence. Components 0.4.0 and its
-direct device controls are installed on Carbon, Starship and Snap. The earlier
-appearance delivery remains historical context; the black workspace refinement
-is being qualified separately.
+the tested Arch reference and dated adoption evidence. Components 0.4.1, direct
+device controls and the black workspace identity are installed on Carbon,
+Starship and Snap. Earlier delivery records retain their historical context.
 
 ## Keyboard reference
 
@@ -67,7 +66,7 @@ Bluetooth retains `bluetoothctl` for deeper settings and recovery. Native
 providers keep device ownership. **Session** retains its existing lock, logout
 and confirmed power actions; see the [utility recipe](recipes/desktop-utilities.md).
 
-The 0.4.0 controls delivery on all three hosts passed exact installed-file,
+The 0.4.1 delivery on all three hosts passed exact installed-file,
 native dependency, fresh callback/startup and no-write repeat checks on
 2026-10-29. Physical Wi-Fi/wallet, speaker/microphone and peripheral actions
 remain normal-use checks. The numbered Arch guide still selects 0.3.1 until
@@ -90,14 +89,13 @@ its updated fresh-base replay passes.
 
 ## Working setup
 
-Crisper Neutral Slate and the independent pure-black Balanced+ terminal are
-installed on Carbon, Starship, and Snap. Scoped file/hook differences are zero
-and repeat applies are no-ops. Carbon and Snap reloaded Niri, Kitty and SwayNC
-in place. Starship had no graphical session during that appearance delivery;
-the subsequent utility review observed its active Niri session and services.
-All 42 captured native processes and service/bus identities from the appearance
-delivery remained.
-The installed greeter theme is
+Crisper Neutral Slate, the pure-black workspace and the independent Balanced+
+terminal are installed on Carbon, Starship and Snap. The overview surround is
+charcoal so empty workspace boundaries remain visible. All 23 scoped targets
+matched their reviewed source; status/diff were empty and repeat applies made
+no writes. This refinement changed only Niri config and controls role metadata.
+Existing UI palettes, terminal colors, packages, services and sessions were
+preserved. The greeter remains
 `/usr/local/share/sddm/themes/niri-neutral-fe1a7a554ed6`; SDDM was not restarted.
 
 This is scoped deployment evidence, not a fresh-install or complete physical

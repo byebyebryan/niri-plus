@@ -43,9 +43,12 @@ p{margin:0 0 14px}.lead{font-size:17px;color:var(--secondary)}.muted,small{color
 .context{font-size:12px;margin:12px 0 0;padding-top:12px;border-top:1px solid var(--separator);color:var(--secondary);overflow-wrap:anywhere}
 .rows{display:flex;flex-direction:column;gap:5px}
 .row{width:100%;text-align:left;display:block;border:0;border-left:3px solid transparent;border-radius:3px;background:transparent;padding:10px 12px;line-height:1.5}
-.row.network-connected{background:var(--raised)}
-.row.network-connected .row-name,.row.network-saved .row-name{font-weight:600}
-.status-connected{color:var(--success);font-weight:600}.status-saved{color:var(--focus);font-weight:600}
+.row.current{background:color-mix(in srgb,var(--success) 18%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--success) 65%,var(--separator))}
+.row.current .row-name,.row.known .row-name{font-weight:600}
+.status-connected,.status-current{color:var(--success);font-weight:600}
+.status-saved,.status-known{color:var(--focus);font-weight:600}
+.status-muted{color:var(--warning);font-weight:600}.status-unavailable{color:var(--muted)}
+.metric{font-variant-numeric:tabular-nums}
 .row.selected{background:var(--selection);border-left-color:var(--focus)}
 .row:hover{border-left-color:var(--border)}.row.selected:hover{border-left-color:var(--focus)}
 .row-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
@@ -101,7 +104,7 @@ footer{margin-top:32px;font-size:12px;color:var(--muted)}[hidden]{display:none!i
     </div>
   </div>
   <p class="caption">Plus picker layout: prompt/search → action strip and inline notices → rows. Same 52em native target, 12px padding and left selection edge. Click selects; double-click accepts in this sketch. Focus the frame or filter for ↑/↓, Tab/Shift+Tab, Enter and Escape; Escape releases focus.</p>
-  <p class="caption"><span class="status-connected">● Connected</span> gets a raised row; <span class="status-saved">◇ Saved</span> gets an emphasized name and label. The blue fill and left edge show keyboard selection independently. Use “Compare row states” to see all three at once.</p>
+  <p class="caption" id="state-legend"><span class="status-connected">● Connected</span> has a green-tinted background and outline; <span class="status-saved">◇ Saved</span> keeps an emphasized name and label. Blue fill and the left edge show keyboard selection; the green outline and state label persist when selected. Use “Compare row states” to see the distinction.</p>
   <fieldset class="preview-controls">
     <legend>Web preview controls · outside the native UI</legend>
     <div class="preview-buttons"><button id="previous-action">← Action</button><button id="next-action">Next action →</button><button id="run">Run selected</button></div>
@@ -129,7 +132,7 @@ footer{margin-top:32px;font-size:12px;color:var(--muted)}[hidden]{display:none!i
   <h2>Keep the desktop easy to reason about.</h2>
   <p class="muted">SwayNC shows status. Rofi performs short actions. NetworkManager, BlueZ and the existing audio stack keep control of devices. Session and Clipboard retain their tested behavior.</p>
   <details><summary>Close menu versus cancel connection</summary><p class="muted" style="margin-top:12px">Before submission, Escape means no action. After NetworkManager accepts a connection, closing the menu leaves that native request running. “Cancel connection” is a separate targeted action. It must never disconnect a replacement connection started elsewhere. It also does not promise to restore the previous network.</p></details>
-  <div class="links"><a href="http://starship:8787/reports/5cf4d46d49c7e85ce60462bec672953ef559fe3f84c334b7600dec9218a9a6b4/">Previous design preview</a><a href="../../docs/planning/rofi-controls-pass.md">Full plan, scope and acceptance gates →</a><a href="https://dev.byebyebryan.com/niri-plus/design/">Current desktop identity</a><a href="https://dev.byebyebryan.com/niri-plus/setup/">Published setup overview</a></div>
+  <div class="links"><a href="http://starship:8787/reports/8e684129ed5bb400428abdbae23e205b6734b6b8997f2d27a1b228d9cb022cca/">Previous design preview</a><a href="../../docs/planning/rofi-controls-pass.md">Full plan, scope and acceptance gates →</a><a href="https://dev.byebyebryan.com/niri-plus/design/">Current desktop identity</a><a href="https://dev.byebyebryan.com/niri-plus/setup/">Published setup overview</a></div>
 </section>
 </main>
 <footer>Plus UI design refinement · 2026-10-29 · sample names and documentation-range addresses · no component release or host rollout in this pass.</footer>
@@ -149,13 +152,14 @@ const networks=[
  {id:'advanced',name:'Advanced settings…',sub:'Profiles, enterprise Wi-Fi, VPN and addressing',state:'',actions:['Open settings']}
 ];
 const inventories={Network:networks,Audio:[
- {id:'speakers',name:'USB speakers',sub:'Output · 45% · not muted',state:'Default',actions:['Details','Volume +5%','Volume −5%','Mute']},
- {id:'headphones',name:'Headphones',sub:'Output · 30% · not muted',state:'Available',actions:['Set default','Details','Volume +5%','Volume −5%','Mute']},
- {id:'mic',name:'USB microphone',sub:'Input · 65% · muted',state:'Default input',actions:['Details','Unmute','Volume +5%','Volume −5%']},
+ {id:'speakers',name:'USB speakers',sub:'Output · 45% · not muted',state:'Default output',role:'output',isDefault:true,volume:45,muted:false,available:true,actions:['Details','Volume +5%','Volume −5%','Mute']},
+ {id:'headphones',name:'Headphones',sub:'Output · 30% · not muted',state:'Available',role:'output',isDefault:false,volume:30,muted:false,available:true,actions:['Set default','Details','Volume +5%','Volume −5%','Mute']},
+ {id:'mic',name:'USB microphone',sub:'Input · 65% · muted',state:'Default input',role:'input',isDefault:true,volume:65,muted:true,available:true,actions:['Details','Unmute','Volume +5%','Volume −5%']},
+ {id:'hdmi',name:'HDMI / DisplayPort',sub:'Output · cable disconnected',state:'Unavailable',role:'output',available:false,actions:['Details']},
  {id:'mixer',name:'Advanced mixer…',sub:'Per-app routing, device profiles and existing streams',state:'',actions:['Open mixer']}
 ],Bluetooth:[
- {id:'keyboard',name:'Mechanical keyboard',sub:'Paired · trusted · battery 82%',state:'Connected',actions:['Details','Disconnect']},
- {id:'bt-headphones',name:'Wireless headphones',sub:'Paired · trusted · battery unknown',state:'Disconnected',actions:['Connect','Details']},
+ {id:'keyboard',name:'Mechanical keyboard',sub:'Paired · trusted · battery 82%',state:'Connected',device:true,connected:true,paired:true,battery:82,actions:['Details','Disconnect']},
+ {id:'bt-headphones',name:'Wireless headphones',sub:'Paired · trusted · battery unknown',state:'Disconnected',device:true,connected:false,paired:true,battery:null,actions:['Connect','Details']},
  {id:'bt-power',name:'Bluetooth adapter',sub:'hci0 · powered on',state:'On',actions:['Turn off']},
  {id:'discover',name:'Find and pair a device…',sub:'Following slice: bounded discovery and confirmation',state:'Planned',actions:['Preview pairing scope']}
 ],Session:[
@@ -167,6 +171,35 @@ const inventories={Network:networks,Audio:[
 ]};
 const context={Network:'Wi-Fi on · wlan0 · Home connected',Audio:'Output: USB speakers · input: USB microphone',Bluetooth:'hci0 on · 1 device connected',Session:'Existing actions · illustrated with current identity'};
 const descriptions={Network:'Active and saved networks, nearby Wi-Fi, connection details, radio state and refresh. Advanced settings stays one handoff away.',Audio:'Choose a default output or input, change volume and mute. Per-app mixing and profiles remain in Pavucontrol. This is a scope sketch.',Bluetooth:'Reconnect paired devices and control adapter power first. Discovery and pairing follow with explicit confirmation and trust. This is a scope sketch.',Session:'Keep the existing Session helper: independent locking, native logout, captured suspend policy and Cancel-first restart/shutdown.'};
+const legends={
+ Network:'<span class="status-connected">● Connected</span> has a green-tinted background and outline; <span class="status-saved">◇ Saved</span> keeps an emphasized name and label. Blue fill and the left edge show keyboard selection; the green outline and state label persist when selected.',
+ Audio:'Green outlines identify the <span class="status-current">● Default output/input</span>. Volume and <span class="status-muted">Muted</span> are independent states. Unavailable devices stay readable and offer Details only. Default does not mean playing or recording.',
+ Bluetooth:'<span class="status-connected">● Connected</span> uses the green frame; <span class="status-known">◇ Paired</span> alone has no active background. Rows show connection state and battery percentage or “Battery unknown”. Pairing and connection are distinct.',
+ Session:'Session keeps its existing action and confirmation behavior. Blue fill and the left edge show the selected action.'
+};
+function rowPresentation(r){
+ const classes=[],parts=[];
+ const label=(kind,value)=>`<span class="status-${kind}">${text(value)}</span>`;
+ if(category==='Network'){
+  if(r.state==='Connected'){classes.push('current','network-connected');parts.push(label('connected','● Connected'));}
+  else if(r.state==='Saved'){classes.push('known','network-saved');parts.push(label('saved','◇ Saved'));}
+  else if(r.state)parts.push(text(r.state));
+  if(r.sub)parts.push(text(r.sub));
+ }else if(category==='Audio'&&r.role){
+  if(!r.available){classes.push('unavailable');parts.push(label('unavailable','Unavailable'),text(r.role==='input'?'Input':'Output'),'Cable disconnected');}
+  else{
+   if(r.isDefault){classes.push('current','audio-default');parts.push(label('current','● Default '+r.role));}
+   else parts.push(text(r.role==='input'?'Input':'Output'));
+   parts.push(Number.isFinite(r.volume)?`<span class="metric">${text(r.volume)}%</span>`:'Volume unknown');
+   parts.push(r.muted?label('muted','Muted'):'Unmuted');
+  }
+ }else if(category==='Bluetooth'&&r.device){
+  if(r.connected){classes.push('current','bluetooth-connected');parts.push(label('connected','● Connected'));if(r.paired)parts.push('Paired');}
+  else{if(r.paired){classes.push('known','bluetooth-paired');parts.push(label('known','◇ Paired'));}parts.push('Disconnected');}
+  parts.push(r.connected&&Number.isFinite(r.battery)?`<span class="metric">${text(r.battery)}% battery</span>`:'Battery unknown');
+ }else{if(r.state)parts.push(text(r.state));if(r.sub)parts.push(text(r.sub));}
+ return {classes,detail:parts.join(' · ')};
+}
 
 function items(){return inventories[category].filter(r=>(r.name+' '+r.sub+' '+r.state).toLowerCase().includes(filter.toLowerCase()));}
 function row(){return inventories[category].find(r=>r.id===selected);}
@@ -218,6 +251,8 @@ function render(){
  $('#filter').placeholder={Network:'Search networks…',Audio:'Search devices…',Bluetooth:'Search devices…',Session:'Search actions…'}[category];
  $('#aside-title').textContent=category==='Network'?'Network first':category==='Session'?'Preserve the existing flow':category+' follows';
  $('#aside-copy').textContent=descriptions[category];
+ $('#state-legend').innerHTML=legends[category]+(category==='Session'?'':' Use “Compare row states” to move selection away from current devices.');
+ $('#compare-states').disabled=category==='Session'||view!=='list';
  document.querySelectorAll('[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===category)));
  document.querySelectorAll('[data-step]').forEach(e=>e.classList.toggle('current',e.dataset.step===view));
  $('.flow').hidden=category!=='Network';
@@ -228,10 +263,8 @@ function render(){
   const list=items();if(!list.some(r=>r.id===selected)){selected=list[0]?.id;action=0;}
   for(const r of list){
    const b=document.createElement('button');b.className='row';b.tabIndex=-1;b.dataset.id=r.id;
-   const networkState=category==='Network'&&['Connected','Saved'].includes(r.state)?r.state.toLowerCase():'';
-   if(networkState)b.classList.add('network-'+networkState);
-   const status=networkState?`<span class="status-${networkState}">${networkState==='connected'?'●':'◇'} ${text(r.state)}</span>`:text(r.state);
-   b.innerHTML=`<span class="row-name">${text(r.name)}</span><small>${status}${r.state&&r.sub?' · ':''}${text(r.sub)}</small>`;
+   const presentation=rowPresentation(r);b.classList.add(...presentation.classes);
+   b.innerHTML=`<span class="row-name">${text(r.name)}</span><small>${presentation.detail}</small>`;
    b.onclick=()=>{selected=r.id;action=0;paintSelection();$('.rofi').focus({preventScroll:true});};
    b.ondblclick=()=>{selected=r.id;action=0;run();};$('#rows').append(b);
   }
@@ -301,7 +334,7 @@ $('.rofi').addEventListener('keydown',e=>{
 });
 $('#previous-action').onclick=previewAction(()=>cycle(-1));$('#next-action').onclick=previewAction(()=>cycle(1));$('#run').onclick=previewAction(run);
 $('#credential-continue').onclick=previewAction(()=>setView('review'));
-$('#compare-states').onclick=previewAction(()=>{chooseCategory('Network');selected='atelier';paintSelection();});
+$('#compare-states').onclick=previewAction(()=>{const currentCategory=category;chooseCategory(currentCategory);selected={Network:'atelier',Audio:'headphones',Bluetooth:'bt-headphones'}[currentCategory]||selected;paintSelection();});
 $('#new-wifi').onclick=previewAction(()=>{chooseCategory('Network');target=networks.find(r=>r.id==='atelier');selected=target.id;setView('password');});
 $('#disconnect').onclick=previewAction(()=>{chooseCategory('Network');selected='home';action=1;run();});
 $('#reset').onclick=()=>chooseCategory('Network');

@@ -88,17 +88,41 @@ accent/warning/error roles for new controls. The sibling renderers currently
 include literal blue/warning/red markup values; borrowing their structure does
 not require copying those literals or changing their releases in this pass.
 
-Distinguish connection state from keyboard selection. A connected Wi-Fi row
-uses the existing raised/active surface, an emphasized name and a green
-`● Connected` label. An available saved network keeps the normal row surface,
-with an emphasized name and a light-blue `◇ Saved` label. New networks stay
-plain. Keep labels inline in the secondary line; they do not form a new column.
-The selected row still uses the blue fill and 3px focus edge, overriding any
-active background while retaining the Connected/Saved label. Both labels must
-remain legible on normal, raised and selected surfaces. Connection state is
-never conveyed by color alone. Native implementation should map active
-connections to Rofi's existing active-row styling and use escaped text/markup
-for saved labels; recheck selected-row contrast in the installed renderer.
+Distinguish device state from keyboard selection. Current connection/default
+rows get a persistent green-tinted background and thin green outline, plus an
+emphasized name and explicit status label. Derive this treatment from existing
+roles: 18% success over surface for the fill, 65% success over separator for
+the outline. It is a component state treatment within the selected identity,
+not a new desktop palette. Blue fill and the 3px left edge continue to mean
+keyboard selection. When a current row is selected, blue replaces its green
+fill while its green outline and state label persist.
+
+| Utility | Green framed row | Other row states |
+| --- | --- | --- |
+| Network | `● Connected` | Saved: emphasized name and light-blue `◇ Saved` label, normal background. New networks stay plain. |
+| Audio | `● Default output` or `● Default input` | Show volume and independent Unmuted/amber Muted state. Available alternatives have normal backgrounds. Unavailable devices stay readable with Details only. |
+| Bluetooth | `● Connected` | Paired but disconnected: `◇ Paired · Disconnected`, normal background. Show fresh battery percentage or Battery unknown. |
+
+Audio defaults describe configured routing; they do not establish current
+playback, recording or whether old streams moved. A default microphone may
+also be muted: retain both facts and never let its green frame imply that it
+is recording or unmuted. Missing volume/battery values must not become zero.
+Bluetooth pairing, trust and connection stay distinct; full trust/identity
+details remain available without crowding the row. Connection progress and
+failure need explicit text when those later flows are implemented; they must
+not inherit a successful green frame before native success is observed.
+
+Keep labels in the secondary line, without a new column or live meter. State
+must remain readable without color. Verify label contrast on normal, tinted
+and selected backgrounds, including amber Muted on a selected default input.
+The HTML comparison control works separately in Network, Audio and Bluetooth.
+
+Native implementation should project backend facts into row states, use
+supported Rofi active-row/markup mechanisms and qualify combined current and
+selected styling. Compute derived opaque colors from the identity; do not
+assume CSS color-mix or inset box shadows transfer directly to Rasi/Pango.
+Scope any additional native styling to these controls, retaining the other
+Plus pickers' appearance and independent release ownership.
 
 Credential, pending, detail and confirmation views keep this same compact frame.
 Use a breadcrumb prompt where useful, such as `Network › Connect`. Credentials
@@ -365,3 +389,10 @@ Connected/Saved cues as keyboard selection moves, and at least 4.5:1 text
 contrast for both labels on normal, raised and selected backgrounds. The
 comparison scene and narrow layout were reviewed; the existing 726 site
 checks still pass. No native helper or host configuration changed.
+
+The shared device-state revision passed 154 preview checks: persistent green
+fill/outline versus blue keyboard selection, selection-safe status contrast,
+Audio default/input/output/mute/availability combinations, and Bluetooth
+connection/pairing/battery distinctions. All three utility scenes were checked
+at four widths, with desktop/narrow comparison screenshots reviewed. The
+existing site build and browser checks remain separate from native acceptance.

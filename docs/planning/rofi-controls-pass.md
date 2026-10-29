@@ -68,18 +68,37 @@ The message region shows the familiar action strip, for example:
 Network   Search networks…
 
 Enter: [Connect] · Details  │  Tab: Cycle actions
+
+────────────────────────────────────────────
+
 Wi-Fi on · wlan0 · Home connected
 
 Studio
-wlan0 · Saved · WPA3 Personal · 76%
+◇ Saved · wlan0 · WPA3 Personal · 76%
 ```
 
 Bracket and emphasize the current action; leave alternatives readable. Put
 context, progress and errors below that strip in the same message region,
-rather than adding a banner or a second status surface. Use the selected theme
+rather than adding a banner or a second status surface. Give the two areas a
+clear paragraph gap and a subtle separator: the HTML target uses a 1px
+separator with 12px space on each side. Native proof must qualify spacing and
+the divider through supported Rofi text/theme mechanisms; do not assume that
+HTML paragraph borders exist in a Pango message. Use the selected theme
 accent/warning/error roles for new controls. The sibling renderers currently
 include literal blue/warning/red markup values; borrowing their structure does
 not require copying those literals or changing their releases in this pass.
+
+Distinguish connection state from keyboard selection. A connected Wi-Fi row
+uses the existing raised/active surface, an emphasized name and a green
+`● Connected` label. An available saved network keeps the normal row surface,
+with an emphasized name and a light-blue `◇ Saved` label. New networks stay
+plain. Keep labels inline in the secondary line; they do not form a new column.
+The selected row still uses the blue fill and 3px focus edge, overriding any
+active background while retaining the Connected/Saved label. Both labels must
+remain legible on normal, raised and selected surfaces. Connection state is
+never conveyed by color alone. Native implementation should map active
+connections to Rofi's existing active-row styling and use escaped text/markup
+for saved labels; recheck selected-row contrast in the installed renderer.
 
 Credential, pending, detail and confirmation views keep this same compact frame.
 Use a breadcrumb prompt where useful, such as `Network › Connect`. Credentials
@@ -339,3 +358,10 @@ confirmation. Desktop, narrow and confirmation screenshots were visually
 reviewed. The existing site build and 726 browser checks still pass. These
 results qualify the HTML design illustration only; the native proof gates and
 separate implementation/release/rollout sequence remain in force.
+
+The action/status separation and Wi-Fi state refinement passed 117 preview
+checks, including the separator spacing, loaded Semibold face, persistent
+Connected/Saved cues as keyboard selection moves, and at least 4.5:1 text
+contrast for both labels on normal, raised and selected backgrounds. The
+comparison scene and narrow layout were reviewed; the existing 726 site
+checks still pass. No native helper or host configuration changed.

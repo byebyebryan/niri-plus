@@ -5,7 +5,8 @@
 <meta name="color-scheme" content="dark">
 <title>Niri Plus · Direct Rofi controls design</title>
 <style>
-@font-face{font-family:Noto;src:url('../assets/fonts/noto.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:Noto;src:url('../assets/fonts/noto.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Noto;src:url('../assets/fonts/noto-semibold.woff2') format('woff2');font-weight:600;font-display:swap}
 :root{--canvas:#111213;--surface:#1b1d1f;--raised:#303336;--input:#111315;--border:#81878c;--separator:#454b50;--text:#efefec;--secondary:#c9cbc8;--muted:#aaaeac;--accent:#6eafff;--focus:#a6ceff;--selection:#294e75;--warning:#e9b55f;--error:#f27d78;--success:#a9d180}
 
 *{box-sizing:border-box}
@@ -39,9 +40,12 @@ p{margin:0 0 14px}.lead{font-size:17px;color:var(--secondary)}.muted,small{color
 .message{padding:8px 10px;border:1px solid var(--border);border-radius:3px;background:var(--input);color:var(--secondary)}
 .action-hint{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
 .chosen{font-weight:600;color:var(--accent)}.chosen.warn{color:var(--warning)}
-.context{font-size:12px;margin:8px 0 0;color:var(--secondary);overflow-wrap:anywhere}
+.context{font-size:12px;margin:12px 0 0;padding-top:12px;border-top:1px solid var(--separator);color:var(--secondary);overflow-wrap:anywhere}
 .rows{display:flex;flex-direction:column;gap:5px}
 .row{width:100%;text-align:left;display:block;border:0;border-left:3px solid transparent;border-radius:3px;background:transparent;padding:10px 12px;line-height:1.5}
+.row.network-connected{background:var(--raised)}
+.row.network-connected .row-name,.row.network-saved .row-name{font-weight:600}
+.status-connected{color:var(--success);font-weight:600}.status-saved{color:var(--focus);font-weight:600}
 .row.selected{background:var(--selection);border-left-color:var(--focus)}
 .row:hover{border-left-color:var(--border)}.row.selected:hover{border-left-color:var(--focus)}
 .row-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
@@ -97,12 +101,13 @@ footer{margin-top:32px;font-size:12px;color:var(--muted)}[hidden]{display:none!i
     </div>
   </div>
   <p class="caption">Plus picker layout: prompt/search → action strip and inline notices → rows. Same 52em native target, 12px padding and left selection edge. Click selects; double-click accepts in this sketch. Focus the frame or filter for ↑/↓, Tab/Shift+Tab, Enter and Escape; Escape releases focus.</p>
+  <p class="caption"><span class="status-connected">● Connected</span> gets a raised row; <span class="status-saved">◇ Saved</span> gets an emphasized name and label. The blue fill and left edge show keyboard selection independently. Use “Compare row states” to see all three at once.</p>
   <fieldset class="preview-controls">
     <legend>Web preview controls · outside the native UI</legend>
     <div class="preview-buttons"><button id="previous-action">← Action</button><button id="next-action">Next action →</button><button id="run">Run selected</button></div>
     <div class="preview-buttons" id="credential-controls" hidden><button id="credential-continue">Continue with sample credential</button></div>
     <div id="outcome-controls" hidden><p style="margin-top:12px">Choose a fictional result for the pending connection:</p><div class="preview-buttons"><button data-outcome="success">Simulate connected</button><button data-outcome="failure">Simulate wrong password</button><button data-outcome="limited">Simulate limited access</button></div></div>
-    <div class="preview-buttons"><button id="new-wifi">Try new Wi-Fi</button><button id="disconnect">Preview disconnect</button><button id="reset">Reset sample</button></div>
+    <div class="preview-buttons"><button id="compare-states">Compare row states</button><button id="new-wifi">Try new Wi-Fi</button><button id="disconnect">Preview disconnect</button><button id="reset">Reset sample</button></div>
   </fieldset>
   <noscript><p>The interactive sketch requires JavaScript. The journey above and the design plan below remain readable.</p></noscript>
 </section>
@@ -124,7 +129,7 @@ footer{margin-top:32px;font-size:12px;color:var(--muted)}[hidden]{display:none!i
   <h2>Keep the desktop easy to reason about.</h2>
   <p class="muted">SwayNC shows status. Rofi performs short actions. NetworkManager, BlueZ and the existing audio stack keep control of devices. Session and Clipboard retain their tested behavior.</p>
   <details><summary>Close menu versus cancel connection</summary><p class="muted" style="margin-top:12px">Before submission, Escape means no action. After NetworkManager accepts a connection, closing the menu leaves that native request running. “Cancel connection” is a separate targeted action. It must never disconnect a replacement connection started elsewhere. It also does not promise to restore the previous network.</p></details>
-  <div class="links"><a href="http://starship:8787/reports/ffccbab5aabdfc58e5c458775bb74e99ce616145d9915447ed00a19ff5f109b7/">Previous design preview</a><a href="../../docs/planning/rofi-controls-pass.md">Full plan, scope and acceptance gates →</a><a href="https://dev.byebyebryan.com/niri-plus/design/">Current desktop identity</a><a href="https://dev.byebyebryan.com/niri-plus/setup/">Published setup overview</a></div>
+  <div class="links"><a href="http://starship:8787/reports/5cf4d46d49c7e85ce60462bec672953ef559fe3f84c334b7600dec9218a9a6b4/">Previous design preview</a><a href="../../docs/planning/rofi-controls-pass.md">Full plan, scope and acceptance gates →</a><a href="https://dev.byebyebryan.com/niri-plus/design/">Current desktop identity</a><a href="https://dev.byebyebryan.com/niri-plus/setup/">Published setup overview</a></div>
 </section>
 </main>
 <footer>Plus UI design refinement · 2026-10-29 · sample names and documentation-range addresses · no component release or host rollout in this pass.</footer>
@@ -223,7 +228,10 @@ function render(){
   const list=items();if(!list.some(r=>r.id===selected)){selected=list[0]?.id;action=0;}
   for(const r of list){
    const b=document.createElement('button');b.className='row';b.tabIndex=-1;b.dataset.id=r.id;
-   b.innerHTML=`<span class="row-name">${text(r.name)}</span><small>${text([r.state,r.sub].filter(Boolean).join(' · '))}</small>`;
+   const networkState=category==='Network'&&['Connected','Saved'].includes(r.state)?r.state.toLowerCase():'';
+   if(networkState)b.classList.add('network-'+networkState);
+   const status=networkState?`<span class="status-${networkState}">${networkState==='connected'?'●':'◇'} ${text(r.state)}</span>`:text(r.state);
+   b.innerHTML=`<span class="row-name">${text(r.name)}</span><small>${status}${r.state&&r.sub?' · ':''}${text(r.sub)}</small>`;
    b.onclick=()=>{selected=r.id;action=0;paintSelection();$('.rofi').focus({preventScroll:true});};
    b.ondblclick=()=>{selected=r.id;action=0;run();};$('#rows').append(b);
   }
@@ -293,6 +301,7 @@ $('.rofi').addEventListener('keydown',e=>{
 });
 $('#previous-action').onclick=previewAction(()=>cycle(-1));$('#next-action').onclick=previewAction(()=>cycle(1));$('#run').onclick=previewAction(run);
 $('#credential-continue').onclick=previewAction(()=>setView('review'));
+$('#compare-states').onclick=previewAction(()=>{chooseCategory('Network');selected='atelier';paintSelection();});
 $('#new-wifi').onclick=previewAction(()=>{chooseCategory('Network');target=networks.find(r=>r.id==='atelier');selected=target.id;setView('password');});
 $('#disconnect').onclick=previewAction(()=>{chooseCategory('Network');selected='home';action=1;run();});
 $('#reset').onclick=()=>chooseCategory('Network');

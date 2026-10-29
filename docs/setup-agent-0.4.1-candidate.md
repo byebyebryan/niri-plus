@@ -209,6 +209,24 @@ else
 fi
 ```
 
+The Niri starter has no `PATH` override. Before the first login, make later
+user-local launchers discoverable. Print the account's absolute home path and
+merge the line into a top-level Niri `environment` block; create that block if
+absent. Do not put `~` or `$HOME` in the KDL value. If you already customize
+`PATH`, retain its other required directories:
+
+```sh
+printf 'PATH "%s/.local/bin:/usr/local/bin:/usr/bin"\n' "$HOME"
+```
+
+This sets the environment of Niri-spawned apps, including Rofi, clipboard and
+device controls, feedback helpers and Kanshi. It does not replace the systemd
+user-manager environment. Validate the merged config before login:
+
+```sh
+niri validate --config "$HOME/.config/niri/config.kdl"
+```
+
 The portal profile selects GTK for file/access/settings/notification interfaces
 and WLR for whole-monitor capture. Individual-window capture remains outside
 this reference. If a VirtIO/VirGL guest reproduces the documented whole-monitor
@@ -540,15 +558,8 @@ the systemd user-manager environment; the appearance recipe's `environment.d`
 file covers user services only. See the [Fcitx Wayland guide](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland/en)
 for toolkit-specific behavior.
 
-The Niri starter has no `PATH` override. For Niri-spawned commands such as
-Kanshi, the Rofi Session helper, feedback helpers, and the clipboard launcher,
-print the account's absolute home path and merge that line into the same
-`environment` block. Do not put `~` or `$HOME` in the KDL value. If you already
-customize `PATH`, retain its other required directories:
-
-```sh
-printf 'PATH "%s/.local/bin:/usr/local/bin:/usr/bin"\n' "$HOME"
-```
+Keep the user-local `PATH` configured in stage 3 when merging these environment
+values; do not replace the existing block.
 
 Fresh-guide checks passed for native composition in Chrome 156
 launched with `--ozone-platform=wayland` only and Kitty 0.49.2 using native

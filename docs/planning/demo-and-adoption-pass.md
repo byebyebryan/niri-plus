@@ -219,16 +219,16 @@ VM acceptance does not establish physical-host PAM/wallet or hardware behavior.
 | --- | --- | --- |
 | A. Workstation lab — complete | Retained Starship tools/network and clean Arch checkpoint. | Measured results and recovery inputs are in the pilot receipt. |
 | B. Capture pilot — complete | Still, 24.5-second browser/terminal clip and receipt. | Native rendering/capture passed; full desktop and clean-install acceptance remain separate. |
-| C. Desktop assembly — complete locally | Browser/files/portal tasks, SwayNC/clipboard, service wiring and assembly notes. | Work packages 0-3 pass with recorded public inputs. |
-| D. Media/site — complete locally | Overview/focused clips, posters, captions, setup links and provenance. | Work package 4 passes; locally reviewed changes are ready for a separate publication decision. |
-| E. Complete Arch guide/replay — following milestone | Wider desktop coverage, corrected guide and clean-base replay. | Documented tasks plus reboot/login/teardown/relogin pass without undocumented fixes. |
-| F. Rofi controls design — after the Arch guide | Network-first interaction/state design and bounded implementation plan. | Actions, credentials, cancellation, errors, pending state, ownership and delivery are settled before implementation. |
+| C. Desktop assembly — complete | Browser/files/portal tasks, SwayNC/clipboard, service wiring and assembly notes. | Work packages 0-3 pass with recorded public inputs. |
+| D. Media/site — published | Overview/focused clips, posters, captions, setup links and provenance. | Published site at `d3e7505`; native media acceptance remains bounded by its receipts. |
+| E. Complete Arch guide/replay — complete and published | Wider desktop coverage, corrected guide, clean-base replay and separate human/agent guides. | See the [installation receipt](arch-installation-receipt.md); publication at `d3e7505` does not establish physical hardware acceptance. |
+| F. Rofi controls design — proposed for review | [Network-first plan and sample preview](rofi-controls-pass.md), followed by Audio and Bluetooth. | Native interaction and credential/lifecycle proofs precede implementation admission; no replacement or rollout in the design pass. |
 | Publication/reuse — per accepted milestone | Checked media/guide updates and retained lab artifacts. | Publish within authorization; stop guests when idle and retain useful images. |
 
-C–D are complete locally as recorded in the [desktop receipt](desktop-demonstration-receipt.md).
-They do not depend on E/F, and accepted media can be published independently
-of the complete guide.
-Keep implementation, local review and publication statuses distinct.
+C–D retain the evidence recorded in the [desktop receipt](desktop-demonstration-receipt.md).
+The completed guide, setup-audience split and media were published at `d3e7505`.
+F is a new design milestone; it does not inherit authorization for component
+release, native changes or fleet rollout from the preceding publication.
 
 Ubuntu/Debian and other distribution trials are outside this sequence. Do not
 create guests, select releases, add dependency abstractions or delay Arch work

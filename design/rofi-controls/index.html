@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Niri Plus · Direct Rofi controls design</title>
+<style>
+@font-face{font-family:Noto;src:url('../assets/fonts/noto.woff2') format('woff2');font-weight:100 900;font-display:swap}
+:root{--canvas:#111213;--surface:#1b1d1f;--raised:#303336;--input:#111315;--border:#81878c;--separator:#454b50;--text:#efefec;--secondary:#c9cbc8;--muted:#aaaeac;--accent:#6eafff;--focus:#a6ceff;--selection:#294e75;--warning:#e9b55f;--error:#f27d78;--success:#a9d180}
+*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--text);font:15px/1.65 Noto,'Noto Sans',sans-serif}a{color:var(--accent);text-underline-offset:3px}button,input{font:inherit;color:inherit}button{border:1px solid var(--separator);border-radius:3px;background:var(--raised);padding:7px 12px;cursor:pointer;line-height:1.5}button:hover{border-color:var(--border)}button:focus-visible,input:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:3px}.primary{background:var(--accent);border-color:var(--accent);color:#111315}button[aria-pressed=true]{border-color:var(--accent);background:var(--selection)}.wrap{max-width:1192px;margin:auto;padding:36px 28px 64px}header{max-width:880px;margin-bottom:28px}.eyebrow{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}h1{font-size:clamp(28px,4vw,42px);font-weight:600;letter-spacing:-.035em;line-height:1.2;margin:0 0 16px}h2{font-size:21px;font-weight:500;line-height:1.4;margin:0 0 10px}h3{font-size:16px;font-weight:500;margin:20px 0 8px}p{margin:0 0 14px}.lead{font-size:17px;color:var(--secondary)}.muted,small{color:var(--muted)}.notice{padding:10px 14px;border-left:3px solid var(--warning);background:var(--surface);color:var(--secondary);font-size:13px;margin:20px 0}.layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:28px;align-items:start}.categories{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.caption{font-size:12px;color:var(--muted);margin:8px 0 18px}.rofi{border:1px solid var(--border);background:var(--surface);max-width:100%;min-height:452px;box-shadow:0 16px 50px #0005;outline-offset:4px}.rofi-top{padding:16px 20px 12px;border-bottom:1px solid var(--separator)}.rofi-title{display:flex;gap:12px;align-items:baseline;justify-content:space-between}.rofi-title h2{font-size:17px;margin:0}.chip{color:var(--accent);font-size:12px}.context{font-size:13px;color:var(--secondary);margin:3px 0 0}.filter-wrap{padding:12px 16px 4px}.filter{width:100%;min-height:36px;border:1px solid var(--separator);border-radius:3px;background:var(--input);padding:6px 10px}.rows{padding:8px;min-height:276px}.row{width:100%;text-align:left;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;border:1px solid transparent;border-radius:3px;background:transparent;padding:9px 12px;min-height:55px}.row.selected{background:var(--selection);border-color:var(--accent)}.row-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}.row small{font-size:12px;display:block}.state{font-size:12px;color:var(--secondary);align-self:center;white-space:nowrap}.ok{color:var(--success)}.warn{color:var(--warning)}.error{color:var(--error)}.actionbar{border-top:1px solid var(--separator);padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}.actionbar .run{margin-left:auto}.cycle{padding:5px 9px;font-size:12px}.current-action{font-size:13px}.current-action strong{font-weight:500;color:var(--accent)}.screen{padding:18px 12px}.screen h3{font-size:18px;margin:0 0 12px}.screen p{color:var(--secondary);font-size:14px}.screen .big-status{font-size:25px;line-height:1.4;margin-bottom:12px}.mask{background:var(--input);border:1px solid var(--border);font-size:23px;letter-spacing:.15em;padding:8px 12px;margin:12px 0}.screen-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.screen-actions button{font-size:13px}.keys{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);padding:0 16px 10px}kbd{font:inherit;color:var(--secondary)}.aside{border-top:2px solid var(--accent);padding-top:14px}.aside p,.aside li{font-size:14px;color:var(--secondary)}.aside ul{padding-left:18px}.aside h2{font-size:17px}.flow{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 18px}.flow span{font-size:12px;color:var(--secondary);border-bottom:2px solid var(--separator);padding:4px 0}.flow span.current{border-color:var(--accent);color:var(--text)}.scenario{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}.scenario button{font-size:12px;background:transparent}.section{margin-top:36px;padding-top:24px;border-top:1px solid var(--separator)}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{padding:16px;background:var(--surface);border-top:2px solid var(--separator)}.card h3{margin:0 0 6px}.card p{font-size:14px;color:var(--secondary);margin:0}.number{color:var(--accent);font-size:12px;display:block;margin-bottom:7px}.links{display:flex;flex-wrap:wrap;gap:18px;margin-top:24px;font-size:14px}noscript p{padding:16px;border:1px solid var(--warning)}.static-flow{color:var(--secondary);font-size:14px}.static-flow li{margin-bottom:6px}footer{margin-top:32px;font-size:12px;color:var(--muted)}[hidden]{display:none!important}@media(max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}.aside{max-width:760px;display:grid;grid-template-columns:1fr 1fr;gap:16px}.aside h2{grid-column:1/-1}.aside h3{margin-top:0}.cards{grid-template-columns:1fr}.rofi{min-height:440px}}@media(max-width:480px){.wrap{padding:24px 16px 40px}.aside{display:block}.rofi-top{padding:12px}.rows{padding:6px}.row{padding:8px;gap:4px}.state{font-size:11px}.actionbar{padding:10px;gap:6px}.actionbar .run{margin-left:0}.rofi-title{align-items:center}.rofi-title .chip{font-size:10px}.keys{gap:8px}.row-name{font-size:14px}}
+</style>
+<div class="wrap">
+<header>
+  <p class="eyebrow">Niri Plus / next desktop pass</p>
+  <h1>Everyday controls, a few keystrokes away.</h1>
+  <p class="lead">Choose Wi-Fi, switch output, connect headphones. Familiar launcher entries, one compact interaction style.</p>
+  <p class="notice"><strong>Design illustration · fictional data.</strong> These controls simulate outcomes in this page only. They do not operate the computer or collect passwords. Native Rofi behavior still needs qualification.</p>
+</header>
+<main>
+<div class="layout">
+<section aria-label="Interactive sample controls">
+  <div class="categories" aria-label="Choose utility">
+    <button data-category="Network" aria-pressed="true">Network · first</button>
+    <button data-category="Audio" aria-pressed="false">Audio</button>
+    <button data-category="Bluetooth" aria-pressed="false">Bluetooth</button>
+    <button data-category="Session" aria-pressed="false">Session · existing</button>
+  </div>
+  <div class="flow" aria-label="Network journey"><span data-step="list" class="current">1 Choose</span><span data-step="password">2 Credential</span><span data-step="review">3 Review</span><span data-step="pending">4 Connecting</span><span data-step="result">5 Result</span></div>
+  <div class="rofi" tabindex="0" aria-label="Sample Rofi window; focus for Up, Down, Tab, Enter and Escape">
+    <div class="rofi-top"><div class="rofi-title"><h2 id="title">Network</h2><span class="chip">Neutral Slate / sample</span></div><p class="context" id="context">Wi-Fi on · wlan0 · Home connected</p></div>
+    <div class="filter-wrap"><label class="muted" for="filter" style="font-size:12px">Filter sample devices</label><input class="filter" id="filter" placeholder="Type to filter…" autocomplete="off" spellcheck="false"></div>
+    <div class="rows" id="rows">
+      <div class="static-flow"><p>Network-first design:</p><ol><li>Select a saved or nearby Wi-Fi network.</li><li>Supply credentials if needed.</li><li>Choose Connect and remember or Connect once.</li><li>See progress and a specific result.</li></ol><p>Audio and Bluetooth follow the same visual and action conventions. Session keeps its existing guarded actions.</p></div>
+    </div>
+    <div class="actionbar" id="actionbar" hidden></div>
+    <div class="keys"><span><kbd>↑ ↓</kbd> rows</span><span><kbd>Tab / Shift+Tab</kbd> actions</span><span><kbd>Enter</kbd> run</span><span><kbd>Esc / Ctrl+G</kbd> close</span></div>
+  </div>
+  <p class="caption">Illustrated proportions; native target keeps the current 52em launcher with viewport constraints. Focus the frame for the keyboard sketch; Escape releases focus. Page buttons also work with ordinary browser navigation.</p>
+  <div class="scenario"><button id="new-wifi">Try new Wi-Fi</button><button id="disconnect">Preview disconnect</button><button id="reset">Reset sample</button></div>
+  <noscript><p>The interactive sketch requires JavaScript. The journey above and the design plan below remain readable.</p></noscript>
+</section>
+<aside class="aside">
+  <h2 id="aside-title">Network first</h2>
+  <div><h3>Routine actions here</h3><p id="aside-copy">Active and saved networks, nearby Wi-Fi, connection details, radio state and refresh. Advanced settings stays one handoff away.</p><h3>State is part of the design</h3><p>Connecting is a visible state. A specific failure offers a next step. Accepted by the backend does not mean connected.</p></div>
+  <div><h3>One interaction language</h3><ul><li>Up/Down chooses the object.</li><li>Tab changes its named action.</li><li>Enter runs the visible action.</li><li>The filter and selection stay put.</li></ul><p>Warm surfaces, crisp text, Clear Blue selection. No palette change.</p></div>
+</aside>
+</div>
+<section class="section">
+  <h2>A complete Network flow before more menus.</h2>
+  <div class="cards">
+    <div class="card"><span class="number">01 / Network</span><h3>Connect with confidence</h3><p>Saved and new personal Wi-Fi, readable progress, guarded disconnect, credentials and cancellation. Prove the Rofi and native credential lifecycles first.</p></div>
+    <div class="card"><span class="number">02 / Audio</span><h3>Pick what you hear</h3><p>Output/input, default device, volume and mute. Keep per-app mixing and profile changes in Pavucontrol. Default changes do not silently move existing streams.</p></div>
+    <div class="card"><span class="number">03 / Bluetooth</span><h3>Reconnect, then pair</h3><p>Paired devices and power first. Add bounded discovery, pairing and passkey confirmation after that. Trust is an explicit choice.</p></div>
+  </div>
+</section>
+<section class="section">
+  <h2>Keep the desktop easy to reason about.</h2>
+  <p class="muted">SwayNC shows status. Rofi performs short actions. NetworkManager, BlueZ and the existing audio stack keep control of devices. Session and Clipboard retain their tested behavior.</p>
+  <details><summary>Close menu versus cancel connection</summary><p class="muted" style="margin-top:12px">Before submission, Escape means no action. After NetworkManager accepts a connection, closing the menu leaves that native request running. “Cancel connection” is a separate targeted action. It must never disconnect a replacement connection started elsewhere. It also does not promise to restore the previous network.</p></details>
+  <div class="links"><a href="../../docs/planning/rofi-controls-pass.md">Full plan, scope and acceptance gates →</a><a href="https://dev.byebyebryan.com/niri-plus/design/">Current desktop identity</a><a href="https://dev.byebyebryan.com/niri-plus/setup/">Published setup overview</a></div>
+</section>
+</main>
+<footer>Proposed design · 2026-10-28 · sample names and documentation-range addresses · no component release or host rollout in this pass.</footer>
+</div>
+<script>
+const $ = (s) => document.querySelector(s);
+const text = (s) => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+let category='Network', view='list', selected='home', action=0, filter='', target=null, result='', tone='ok', confirmAction='', preference='remember';
+const networks=[
+ {id:'home',name:'Home',sub:'wlan0 · WPA2 Personal · 88%',state:'Connected',actions:['Details','Disconnect']},
+ {id:'studio',name:'Studio',sub:'wlan0 · WPA3 Personal · 76%',state:'Saved',actions:['Connect','Details']},
+ {id:'atelier',name:'Atelier',sub:'wlan0 · WPA3 Personal · 69%',state:'New',actions:['Connect','Details']},
+ {id:'guest',name:'Guest Wi-Fi',sub:'wlan0 · Open network · 55%',state:'Open',actions:['Connect','Details']},
+ {id:'radio',name:'Wi-Fi radio',sub:'wlan0 · software radio enabled',state:'On',actions:['Turn off']},
+ {id:'refresh',name:'Refresh networks',sub:'Read fresh state and request a bounded scan',state:'',actions:['Refresh']},
+ {id:'advanced',name:'Advanced settings…',sub:'Profiles, enterprise Wi-Fi, VPN and addressing',state:'',actions:['Open settings']}
+];
+const inventories={Network:networks,Audio:[
+ {id:'speakers',name:'USB speakers',sub:'Output · 45% · not muted',state:'Default',actions:['Details','Volume +5%','Volume −5%','Mute']},
+ {id:'headphones',name:'Headphones',sub:'Output · 30% · not muted',state:'Available',actions:['Set default','Details','Volume +5%','Volume −5%','Mute']},
+ {id:'mic',name:'USB microphone',sub:'Input · 65% · muted',state:'Default input',actions:['Details','Unmute','Volume +5%','Volume −5%']},
+ {id:'mixer',name:'Advanced mixer…',sub:'Per-app routing, device profiles and existing streams',state:'',actions:['Open mixer']}
+],Bluetooth:[
+ {id:'keyboard',name:'Mechanical keyboard',sub:'Paired · trusted · battery 82%',state:'Connected',actions:['Details','Disconnect']},
+ {id:'bt-headphones',name:'Wireless headphones',sub:'Paired · trusted · battery unknown',state:'Disconnected',actions:['Connect','Details']},
+ {id:'bt-power',name:'Bluetooth adapter',sub:'hci0 · powered on',state:'On',actions:['Turn off']},
+ {id:'discover',name:'Find and pair a device…',sub:'Following slice: bounded discovery and confirmation',state:'Planned',actions:['Preview pairing scope']}
+],Session:[
+ {id:'lock',name:'Lock',sub:'Independent desktop lock service',state:'',actions:['Lock']},
+ {id:'logout',name:'Log out',sub:'Native Niri confirmation',state:'',actions:['Log out']},
+ {id:'suspend',name:'Suspend',sub:'Existing captured power and lock policy',state:'',actions:['Suspend']},
+ {id:'restart',name:'Restart',sub:'Cancel-first confirmation',state:'',actions:['Restart']},
+ {id:'shutdown',name:'Shut down',sub:'Cancel-first confirmation',state:'',actions:['Shut down']}
+]};
+const context={Network:'Wi-Fi on · wlan0 · Home connected',Audio:'Output: USB speakers · input: USB microphone',Bluetooth:'hci0 on · 1 device connected',Session:'Existing actions · illustrated with current identity'};
+const descriptions={Network:'Active and saved networks, nearby Wi-Fi, connection details, radio state and refresh. Advanced settings stays one handoff away.',Audio:'Choose a default output or input, change volume and mute. Per-app mixing and profiles remain in Pavucontrol. This is a scope sketch.',Bluetooth:'Reconnect paired devices and control adapter power first. Discovery and pairing follow with explicit confirmation and trust. This is a scope sketch.',Session:'Keep the existing Session helper: independent locking, native logout, captured suspend policy and Cancel-first restart/shutdown.'};
+function items(){return inventories[category].filter(r=>(r.name+' '+r.sub+' '+r.state).toLowerCase().includes(filter.toLowerCase()));}
+function row(){return inventories[category].find(r=>r.id===selected);}
+function button(label, fn, cls=''){const b=document.createElement('button');b.textContent=label;b.className=cls;b.onclick=fn;return b;}
+function message(title,body,buttons){$('#rows').innerHTML=`<div class="screen"><h3>${text(title)}</h3><p>${text(body)}</p><div class="screen-actions"></div></div>`;const group=$('.screen-actions');buttons.forEach(b=>group.append(button(...b)));}
+function toList(){view='list';action=0;render();}
+function showResult(title,kind='ok'){view='result';result=title;tone=kind;render();}
+function render(){
+ $('#title').textContent=category;
+ $('#context').textContent=view==='pending'?`Connecting to ${target.name} · ${preference==='once'?'this connection only':'remember for this user'}`:context[category];
+ $('#aside-title').textContent=category==='Network'?'Network first':category==='Session'?'Preserve the existing flow':category+' follows';
+ $('#aside-copy').textContent=descriptions[category];
+ document.querySelectorAll('[data-category]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===category)));
+ document.querySelectorAll('[data-step]').forEach(e=>e.classList.toggle('current',e.dataset.step===view));
+ $('.flow').hidden=category!=='Network';
+ $('.filter-wrap').hidden=view!=='list';$('#actionbar').hidden=view!=='list';
+ if(view==='list'){
+  const list=items();if(!list.some(r=>r.id===selected)){selected=list[0]?.id;action=0;}
+  $('#rows').replaceChildren();
+  for(const r of list){const b=button('',()=>{selected=r.id;action=0;render();});b.className='row'+(r.id===selected?' selected':'');b.dataset.id=r.id;b.setAttribute('aria-pressed',String(r.id===selected));b.innerHTML=`<span><span class="row-name">${text(r.name)}</span><small>${text(r.sub)}</small></span><span class="state ${r.state==='Connected'?'ok':''}">${text(r.state)}</span>`;$('#rows').append(b);}
+  if(!list.length)$('#rows').innerHTML='<p class="muted" style="padding:12px">No sample matches. Clear the filter or close the menu.</p>';
+  const r=row();$('#actionbar').replaceChildren();
+  if(r){const label=document.createElement('span');label.className='current-action';label.innerHTML=`Enter → <strong>${text(r.actions[action]||r.actions[0])}</strong>`;$('#actionbar').append(label);if(r.actions.length>1){$('#actionbar').append(button('← action',()=>cycle(-1),'cycle'),button('Next action →',()=>cycle(1),'cycle'));}$('#actionbar').append(button(r.actions[action]||r.actions[0],activate,'primary run'));}
+ }else if(view==='password'){
+  message(`Connect to ${target.name}`,'WPA3 Personal · wlan0. Credential presentation only; this page has no password input.',[['Continue with sample credential',()=>{view='review';render();},'primary'],['Cancel',toList]]);
+  const mask=document.createElement('div');mask.className='mask';mask.setAttribute('aria-label','Illustrated masked password, not an input');mask.textContent='••••••••••••';$('.screen').insertBefore(mask,$('.screen-actions'));
+ }else if(view==='review'){
+  message(`Connect to ${target.name}`,target.id==='guest'?'This is an open network. Choose how to connect; no credential is requested.':'Personal Wi-Fi · wlan0. A remembered profile belongs to this user; existing profiles keep their settings.',[['Connect and remember',()=>pending('remember'),'primary'],['Connect once',()=>pending('once')],['Cancel',toList]]);
+ }else if(view==='pending'){
+  message('Connecting…',`${target.name} · wlan0 · authenticating, then obtaining an address. Closing this menu leaves the submitted native request running.`,[['Cancel connection',()=>showResult('Connection cancelled','warn')],['Close menu',close]]);
+  const p=document.createElement('p');p.className='caption';p.textContent='Report-only outcome controls — choose a fictional result:';$('.screen').append(p);
+  const controls=document.createElement('div');controls.className='screen-actions';controls.append(button('Simulate connected',()=>showResult('Connected')),button('Simulate wrong password',()=>showResult('Authentication failed','error')),button('Simulate limited access',()=>showResult('Connected · limited access','warn')));$('.screen').append(controls);
+ }else if(view==='result'){
+  message(result,result==='Authentication failed'?'The sample credential was rejected. Retry asks again; there is no automatic credential loop.':result==='Connected'?'Observed connection active · 192.0.2.42. This does not establish Internet access.':result==='Connection cancelled'?'The explicit action cancelled this sample attempt. A previous connection is not automatically restored.':'Sample outcome only. Native state remains authoritative.',[[result==='Authentication failed'?'Retry':'Back to devices',()=>{if(result==='Authentication failed'){view='password';render();}else toList();},'primary'],['Close',close]]);$('.screen h3').className=tone;
+ }else if(view==='details'){
+  message(target.name,`${target.sub} · ${target.state}. Full names and device identity belong here; details never expose a saved password.`,[['Back',toList]]);
+ }else if(view==='confirm'){
+  message(confirmAction+'?',category==='Network'?'This may interrupt current connections on the selected adapter. Cancel is the default choice.':'This affects the selected device or session. Cancel is the default choice.',[['Cancel',toList],['Confirm '+confirmAction.toLowerCase(),()=>showResult('Sample: '+confirmAction,'warn')]]);
+ }else if(view==='closed'){
+  message('Menu closed','The sketch released its focus. No device or connection on this computer was changed.',[['Reopen sample',toList,'primary']]);
+ }
+ if(view!=='list'&&view!=='closed')$('.screen-actions button')?.focus({preventScroll:true});
+}
+function pending(mode){preference=mode;view='pending';render();}
+function close(){view='closed';render();$('#reset').focus();}
+function cycle(step){const r=row();if(!r)return;action=(action+step+r.actions.length)%r.actions.length;render();}
+function activate(){const r=row();if(!r)return;target=r;const a=r.actions[action]||r.actions[0];
+ if(a==='Details'){view='details';render();}
+ else if(category==='Network'&&a==='Connect'){if(r.id==='atelier'){view='password';render();}else if(r.id==='guest'){view='review';render();}else pending('remember');}
+ else if(['Disconnect','Turn off','Restart','Shut down','Log out'].includes(a)){confirmAction=a;view='confirm';render();}
+ else if(a==='Refresh')showResult('Sample scan complete');
+ else if(a.startsWith('Open '))showResult('Advanced tool handoff illustrated');
+ else if(a==='Preview pairing scope')showResult('Pairing: following Bluetooth slice','warn');
+ else showResult('Sample: '+a);
+}
+function chooseCategory(name){category=name;view='list';filter='';$('#filter').value='';selected=inventories[name][0].id;action=0;render();}
+document.querySelectorAll('[data-category]').forEach(b=>b.onclick=()=>chooseCategory(b.dataset.category));
+$('#filter').addEventListener('input',e=>{filter=e.target.value;action=0;render();});
+$('.rofi').addEventListener('keydown',e=>{
+ if(e.key==='Escape'||(e.ctrlKey&&e.key==='g')){e.preventDefault();close();return;}
+ if(e.target!==$('.rofi')||view!=='list')return;
+ if(e.key==='Tab'){e.preventDefault();cycle(e.shiftKey?-1:1);}
+ else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();const list=items();if(!list.length)return;const at=list.findIndex(r=>r.id===selected);selected=list[(at+(e.key==='ArrowDown'?1:-1)+list.length)%list.length].id;action=0;render();}
+ else if(e.key==='Enter'){e.preventDefault();activate();}
+});
+$('#new-wifi').onclick=()=>{chooseCategory('Network');target=networks.find(r=>r.id==='atelier');selected=target.id;view='password';render();};
+$('#disconnect').onclick=()=>{chooseCategory('Network');selected='home';action=1;activate();};
+$('#reset').onclick=()=>chooseCategory('Network');
+render();
+</script>
+</html>

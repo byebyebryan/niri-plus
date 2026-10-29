@@ -62,10 +62,10 @@ login/lock surfaces. All content is an illustration with fictional values.
 
 ## Palette
 
-The workspace and overview backgrounds use `#000000`. UI canvas, panels and
-raised controls retain separate warm-charcoal roles, so black behind windows
-does not flatten the applications themselves. Login and lock surfaces retain
-their neutral secure palette.
+The workspace background uses `#000000`. The overview places those black
+workspaces against a charcoal `#111213` surround, keeping empty workspace
+boundaries visible. UI canvas, panels and raised controls retain their own
+warm-charcoal roles. Login and lock surfaces retain their neutral secure palette.
 
 The desktop palette names each color's job. The terminal has independent
 background, foreground, cursor, selection, and sixteen ANSI values. Its error,

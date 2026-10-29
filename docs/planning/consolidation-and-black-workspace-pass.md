@@ -55,14 +55,18 @@ the existing identity, with one maintained theme.
 | Surface | Proposed result | Acceptance |
 | --- | --- | --- |
 | Empty workspace and gaps around windows | Opaque `#000000` | Native lossless capture has black interior background samples, including an empty workspace. |
-| Overview backdrop and workspace transitions | Explicit `#000000` | Check the installed Niri version, overview navigation and empty-workspace legibility at normal and fractional scales. |
+| Overview backdrop and workspace transitions | Explicit charcoal `#111213` around black workspaces | Native all-black trial hid empty workspace boundaries; preserve those boundaries at normal and fractional scales. |
 | Application/control surfaces | Existing warm Neutral Slate | Rofi, SwayNC, GTK/Qt and Dolphin keep their current surface and selection roles. |
 | Terminal | Existing pure-black Balanced+ | All framing, sixteen ANSI values, typography and input/session behavior stay identical. |
 | Login and locking | Existing neutral secure surfaces | Greeter core bytes/name, root installation and Gtklock appearance stay identical. |
 | Website | Existing reading surfaces; black in desktop specimens | Show the actual workspace treatment without turning every page or card black. |
 
-Add explicit selected color roles, provisionally `workspace_background` and
-`overview_background`, instead of redefining `canvas`. Validate their RGB form.
+Add explicit selected color roles `workspace_background = #000000` and
+`overview_background = #111213`, instead of redefining `canvas`. The native
+all-black overview trial passed pixel/navigation checks but lost the visible
+boundary of an empty workspace. Sol selected the charcoal surround at the
+planned legibility review; retain that trial's receipt as historical evidence.
+Validate both roles' RGB form.
 Keep schema-2 identities usable: an identity without the workspace role retains
 its prior canvas mapping, and one without the overview role emits no new
 overview setting. Prove old-identity rendering parity rather than assuming it.

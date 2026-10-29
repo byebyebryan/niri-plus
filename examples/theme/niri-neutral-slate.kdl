@@ -2,7 +2,7 @@
 // configuration. Merge the layout fragment into your existing layout block so
 // current sizing, gaps, borders, shadows and behavior stay under their current owner.
 overview {
-    backdrop-color "#000000"
+    backdrop-color "#111213"
 }
 
 layout {

@@ -84,3 +84,11 @@ Independent Niri, Chrome, Kitty, Rofi and other software retain their own
 licenses. This notice applies to the original captures, not their software.
 Exact component/identity pins, source hashes, processing and separate review
 status are recorded in provenance.json and the current execution receipt.
+
+assets/demo-desktop-041.mp4 and demo-desktop-041.png: original native staged-Arch
+overview capture and poster, GPL-3.0-only, Copyright 2026 Bryan Bai. The recording
+includes the SwayNC fork interface; its exact source/recipe tuple is retained in
+provenance.json. Other application interfaces and fonts retain their own
+licenses. Content is public Niri Plus material, the guest-only local desktop
+fixture and public Git metadata from octocat/Hello-World. This attribution does
+not change the licenses, bytes or provenance of the earlier recordings.

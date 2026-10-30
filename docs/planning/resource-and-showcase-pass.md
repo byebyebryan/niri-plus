@@ -1,12 +1,12 @@
 # Resource check and current desktop showcase
 
-Status: execution authorized through a Luna goal loop, 2026-10-30 UTC. The user selected a quick resource pass
-and a fuller current-theme showcase. Hardware/device acceptance, optional
-agent/remote integration and installed-system diagnostics will proceed through
-daily use and concrete bug reports; they are not new projects in this pass.
-The approved scope includes the VM observations, capture, site integration and
-reviewed publication below. Sol retains design/copy and final acceptance;
-Luna Max handles bounded technical work.
+Status: resource observation, native capture and site integration accepted,
+2026-10-30 UTC. The [execution receipt](resource-and-showcase-receipt.md)
+records measured results, the current overview, preserved media and validation.
+Exact-head publication and VM preservation evidence are retained outside Git.
+Sol owns design/copy and final acceptance; Luna Max handles bounded technical
+work. Hardware/device acceptance, optional agent/remote integration and
+installed-system diagnostics remain daily-use follow-ups.
 
 ## Outcome
 

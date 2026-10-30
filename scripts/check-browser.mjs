@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 
 const output = path.resolve(process.argv[2] || "dist");
 const prefix = "/niri-plus/";
-const routes = ["", "story/", "tour/", "design/", "design/contrast/", "architecture/", "components/", "setup/", "setup/agent/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/rofi-controls/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
+const routes = ["", "story/", "tour/", "tour/earlier/", "design/", "design/contrast/", "architecture/", "components/", "setup/", "setup/agent/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/rofi-controls/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
 const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".mp4": "video/mp4", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
 
 function parseByteRange(header, size) {
@@ -84,7 +84,7 @@ try {
       const brokenImages = await page.locator("img").evaluateAll((images) => images.filter((image) => !image.closest("video") && (!image.complete || image.naturalWidth === 0)).map((image) => ({src: image.getAttribute("src"), complete: image.complete, width: image.naturalWidth})));
       assert.deepEqual(brokenImages, [], `broken image: ${route}`);
       checks += 6;
-      if (process.env.NIRI_SCREENSHOTS && ["", "tour/", "design/", "design/contrast/", "recipes/terminal/", "setup/", "setup/agent/", "recipes/login/", "recipes/session/", "recipes/input/", "recipes/desktop-utilities/"].includes(route) && [375, 1280].includes(width)) {
+      if (process.env.NIRI_SCREENSHOTS && ["", "tour/", "tour/earlier/", "design/", "design/contrast/", "recipes/terminal/", "setup/", "setup/agent/", "recipes/login/", "recipes/session/", "recipes/input/", "recipes/desktop-utilities/"].includes(route) && [375, 1280].includes(width)) {
         await page.evaluate(() => document.fonts.ready);
         await fs.mkdir(process.env.NIRI_SCREENSHOTS, { recursive: true });
         await page.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `${route.replaceAll("/", "-") || "home"}-${width}.png`), fullPage: true });
@@ -115,7 +115,10 @@ try {
   assert.equal(await nativeDemoLink.count(), 1);
   await nativeDemoLink.click();
   assert.match(page.url(), /tour\/#native-reference-demo$/);
-  assert.equal(await page.locator("[data-native-demo]").count(), 5);
+  assert.equal(await page.locator("[data-native-demo]").count(), 2);
+  assert.equal(await page.locator("[data-native-demo]").first().getAttribute("data-native-demo"), "desktop");
+  const earlierLink = page.locator('main a[href$="tour/earlier/"], main a[href="earlier/"]').first();
+  assert.equal(await earlierLink.count(), 1);
   const provenanceResponse = await page.request.get(origin + "assets/provenance.json");
   assert.equal(provenanceResponse.status(), 200);
   const provenance = await provenanceResponse.json();
@@ -131,7 +134,8 @@ try {
   const invalidRange = await page.request.get(origin + "assets/demo-overview.mp4", { headers: { Range: "bytes=999999999999999-" } });
   assert.equal(invalidRange.status(), 416);
   checks += 5;
-  for (const name of ["overview", "browser-files", "terminal", "information", "controls"]) {
+  for (const name of ["desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
+    await page.goto(origin + (["desktop", "controls"].includes(name) ? "tour/" : "tour/earlier/"));
     const selector = `[data-native-demo="${name}"] video`;
     const video = page.locator(selector);
     assert.equal(await video.count(), 1);
@@ -178,24 +182,23 @@ try {
       image.src = url;
     }), await video.getAttribute("poster"));
     assert.deepEqual(poster, { width: 1920, height: 1080 });
-    if (name === "overview") {
-      await video.evaluate((element) => element.focus());
-      assert.equal(await video.evaluate((element) => document.activeElement === element), true);
-      await page.keyboard.press("Space");
-      await page.waitForFunction((selector) => {
-        const element = document.querySelector(selector);
-        return element && !element.paused && element.currentTime > 0.1;
-      }, selector, { timeout: 10000 });
-      const beforeSeek = await video.evaluate((element) => element.currentTime);
-      await video.evaluate((element) => { element.currentTime = Math.min(element.duration / 2, element.currentTime + 1); });
-      await page.waitForFunction(({ selector, before }) => {
-        const element = document.querySelector(selector);
-        return element && !element.seeking && element.currentTime > before + 0.5;
-      }, { selector, before: beforeSeek }, { timeout: 10000 });
-      await page.keyboard.press("Space");
-      await page.waitForFunction((selector) => document.querySelector(selector)?.paused, selector);
-    }
-    checks += name === "overview" ? 13 : 11;
+    await video.scrollIntoViewIfNeeded();
+    await video.evaluate((element) => element.focus());
+    assert.equal(await video.evaluate((element) => document.activeElement === element), true);
+    await page.keyboard.press("Space");
+    await page.waitForFunction((selector) => {
+      const element = document.querySelector(selector);
+      return element && !element.paused && element.currentTime > 0.1;
+    }, selector, { timeout: 10000 });
+    const beforeSeek = await video.evaluate((element) => element.currentTime);
+    await video.evaluate((element) => { element.currentTime = Math.min(element.duration / 2, element.currentTime + 1); });
+    await page.waitForFunction(({ selector, before }) => {
+      const element = document.querySelector(selector);
+      return element && !element.seeking && element.currentTime > before + 0.5;
+    }, { selector, before: beforeSeek }, { timeout: 10000 });
+    await page.keyboard.press("Space");
+    await page.waitForFunction((selector) => document.querySelector(selector)?.paused, selector);
+    checks += 13;
   }
   await page.setViewportSize({ width: 375, height: 900 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
@@ -337,7 +340,7 @@ try {
   checks += 2;
   const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 900 } });
   const staticPage = await noScript.newPage();
-  for (const route of ["", "story/", "tour/", "design/", "design/contrast/", "components/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "setup/agent/", "reference/"]) {
+  for (const route of ["", "story/", "tour/", "tour/earlier/", "design/", "design/contrast/", "components/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "setup/agent/", "reference/"]) {
     await staticPage.goto(origin + route);
     assert.ok((await staticPage.locator("main").innerText()).length > 400);
     assert.equal(await staticPage.locator("[data-scene-controls]:visible").count(), 0);
@@ -346,10 +349,14 @@ try {
     checks += 4;
   }
   await staticPage.goto(origin + "tour/");
-  assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 5);
+  assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 2);
   assert.equal(await staticPage.locator("[data-native-demo] video[autoplay]").count(), 0);
   assert.ok((await staticPage.locator("[data-native-demo]").allInnerTexts()).join(" ").includes("Mod+Y"));
-  assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 15);
+  assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 7);
+  await staticPage.goto(origin + "tour/earlier/");
+  assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 4);
+  assert.equal(await staticPage.locator("[data-native-demo] video[autoplay]").count(), 0);
+  assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 12);
   checks += 4;
   await staticPage.goto(origin + "design/");
   assert.equal(await staticPage.locator("[data-surface-panel]:visible").count(), 4);

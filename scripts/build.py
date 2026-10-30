@@ -32,6 +32,7 @@ PAGES = {
     "design/contrast/": ("docs/design/contrast.md", "Compare a clearer warm desktop and a separate pure-black terminal palette with the current Neutral Slate design."),
     "story/": ("docs/story.md", "The personal story behind a desktop shaped around Chrome, terminals, and coding agents."),
     "tour/": ("docs/tour.md", "Explore browser, terminal, notification, clipboard, and remote-host workflows."),
+    "tour/earlier/": ("docs/tour-earlier.md", "Earlier native Arch recordings, retained with their original capture dates, source pins and appearance."),
     "architecture/": ("docs/architecture.md", "How Niri, SwayNC, Rofi, Kitty, and small session services fit together."),
     "components/": ("docs/components.md", "Canonical Niri Plus component sources, public exports, consumer boundaries, and release status."),
     "setup/": ("docs/setup.md", "A concise overview of the Arch reference desktop, what it includes, and the choices to make."),
@@ -54,10 +55,12 @@ SOURCES = {source: route for route, (source, _) in PAGES.items()}
 ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png"}
 DEMO_ASSETS = {
     f"assets/demo-{scene}.{suffix}"
-    for scene in ("overview", "browser-files", "terminal", "information", "controls")
+    for scene in ("overview", "browser-files", "terminal", "information", "controls", "desktop-041")
     for suffix in ("mp4", "png")
 }
 SWAYNC_DEMO_ASSETS = {
+    "assets/demo-desktop-041.mp4",
+    "assets/demo-desktop-041.png",
     "assets/demo-overview.mp4",
     "assets/demo-overview.png",
     "assets/demo-information.mp4",
@@ -83,12 +86,31 @@ PUBLIC_LOCAL_DOCS = {
     "docs/planning/arch-installation-receipt.md",
     "docs/planning/components-0.3.1-receipt.md",
     "docs/planning/black-workspace-receipt.md",
+    "docs/planning/resource-and-showcase-receipt.md",
     "docs/planning/desktop-demonstration-receipt.md",
     "tools/vm/desktop/wlr-compat/README.md",
     "design/rofi-controls/index.html",
     "docs/planning/rofi-controls-implementation-receipt.md",
 }
 DEMO_CLIPS = {
+    "desktop": {
+        "video": "assets/demo-desktop-041.mp4",
+        "poster": "assets/demo-desktop-041.png",
+        "id": "demo-desktop",
+        "title": "A day between two halves",
+        "description": "Chrome and Kitty share a black workspace. Files, information, clipboard history and device controls appear when the task calls for them.",
+        "steps": [
+            "Move between Chrome and Kitty, and open Niri's overview.",
+            "Download a public sample, open it in Dolphin, and select it in Chrome's GTK file chooser.",
+            "Inspect the sample project in the native Zsh terminal.",
+            "Open SwayNC with Mod+N and clipboard history with Mod+Y, then check Audio and return to work.",
+        ],
+        "setup": [
+            ("Setup overview", "setup.md"),
+            ("Files and defaults", "recipes/files.md"),
+            ("Kitty and Zsh", "recipes/terminal.md"),
+        ],
+    },
     "controls": {
         "video": "assets/demo-controls.mp4",
         "poster": "assets/demo-controls.png",
@@ -280,7 +302,7 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
             raise ValueError(f"desktop demo must record its video codec: {clip['id']}")
         if not isinstance(clip.get("pixel_format"), str) or not clip["pixel_format"].strip():
             raise ValueError(f"desktop demo must record its pixel format: {clip['id']}")
-        if clip["id"] in {"overview", "information"}:
+        if clip["id"] in {"overview", "information", "desktop"}:
             swaync_pin = clip.get("additional_source_versions", {}).get("swaync")
             if not isinstance(swaync_pin, dict) or any(swaync_pin.get(key) != value for key, value in SWAYNC_PIN.items()):
                 raise ValueError(f"SwayNC-containing clip must record the exact fork and recipe source tuple: {clip['id']}")
@@ -666,7 +688,7 @@ def demo(name):
     <h3>{escape(clip['title'])}</h3>
     <p>{escape(clip['description'])}</p>
     <p class="native-demo-fixture">Sample content and guest readings: {escape(record['fixture_label'])}</p>
-    <p class="native-demo-duration">{record['duration_seconds']} seconds · Captured {escape(record['capture_date'])} · Components {escape(versions['components']['version'])}</p>
+    <p class="native-demo-duration">{record['duration_seconds']:.1f} seconds · Captured {escape(record['capture_date'])} · Components {escape(versions['components']['version'])}</p>
     <ol class="native-demo-steps">{steps}</ol>
     <p class="native-demo-links"><span>Setup:</span> {setup_links} <span class="native-demo-provenance">· <a class="native-demo-download" href="{escape(video, quote=True)}">Open or download MP4</a> · <a href="{BASE}assets/provenance.json">Media provenance</a> · <a href="{escape(receipt_link, quote=True)}">Capture receipt</a></span></p>
     <details class="native-demo-details">
@@ -757,8 +779,10 @@ def render_markdown(source):
         return title, f'<article class="wrap contrast-study"><p class="eyebrow">Niri Plus / Contrast study</p>{body}</article>'
     if source == "docs/story.md":
         toc = '<p class="eyebrow">A personal setup</p><p>Browser interaction.<br>Terminal work.<br>Agents in the everyday.</p><a href="' + BASE + 'tour/">See the desktop →</a>'
-    audience = {"docs/story.md": "Personal story", "docs/setup.md": "Setup overview", "docs/setup-agent.md": "Agent instructions"}.get(source, "Desktop guide")
+    audience = {"docs/story.md": "Personal story", "docs/setup.md": "Setup overview", "docs/setup-agent.md": "Agent instructions", "docs/tour-earlier.md": "Earlier recordings"}.get(source, "Desktop guide")
     next_route, next_label = ("setup/agent/", "Set up with an agent") if source == "docs/setup.md" else ("setup/", "Setup overview")
+    if source == "docs/tour-earlier.md":
+        next_route, next_label = "tour/", "Current desktop tour"
     body = f'<div class="wrap document-layout"><aside class="on-this-page" aria-label="On this page"><span class="aside-label">{"The story" if source == "docs/story.md" else "On this page"}</span>{toc}</aside><article class="prose"><p class="eyebrow">Niri Plus / {audience}</p>{body}<div class="article-end"><a href="{BASE}{next_route}">{next_label} →</a><a href="https://github.com/byebyebryan/niri-plus/blob/main/{source}">Read on GitHub ↗</a></div></article></div>'
     return title, body
 
@@ -766,7 +790,7 @@ def render_markdown(source):
 def shell(route, title, description, body):
     navigation = []
     for target, label in [("story/", "Story"), ("tour/", "Tour"), ("design/", "Design"), ("setup/", "Setup"), ("reference/", "Reference")]:
-        current = "page" if route == target else "location" if target == "setup/" and route.startswith("setup/") else None
+        current = "page" if route == target else "location" if target in {"setup/", "tour/"} and route.startswith(target) else None
         selected = f' aria-current="{current}"' if current else ""
         navigation.append(f'<a href="{BASE}{target}"{selected}>{label}</a>')
     navigation = ''.join(navigation)

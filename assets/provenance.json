@@ -139,6 +139,24 @@
       "license": "MIT",
       "description": "Unedited native PNG captured during the controls recording, showing actual default audio devices and their original volume/mute state.",
       "capture_date": "2026-10-30"
+    },
+    {
+      "path": "assets/demo-desktop-041.mp4",
+      "sha256": "4a78cfa72a3d704f0cbd6416434dd90ad6d90c7fef99ad11cafa63a44c6fae35",
+      "source": "Staged installed-Arch 0.4.1 working guest, captured 2026-10-30; see docs/planning/resource-and-showcase-receipt.md.",
+      "license": "GPL-3.0-only",
+      "description": "Continuous native desktop overview: Chrome and Kitty, Niri overview, downloaded Markdown opened through Dolphin, GTK chooser and same-byte upload, actual Git output, SwayNC, clipboard and Audio.",
+      "capture_date": "2026-10-30",
+      "capture_label": "Staged Arch Linux x86_64 guest"
+    },
+    {
+      "path": "assets/demo-desktop-041.png",
+      "sha256": "863107cf7db9740113bbd0f7aa0c4d2c2b1aae9622a888aafadfba5f99d543af",
+      "source": "Staged installed-Arch 0.4.1 working guest, captured 2026-10-30; see docs/planning/resource-and-showcase-receipt.md.",
+      "license": "GPL-3.0-only",
+      "description": "Unedited native pre-take rehearsal PNG of the prepared opening scene, with the public Story page beside Kitty and the public sample project. Not a decoded frame from the video.",
+      "capture_date": "2026-10-30",
+      "capture_label": "Staged Arch Linux x86_64 guest"
     }
   ],
   "desktop_demos": {
@@ -477,6 +495,112 @@
           }
         },
         "capture_receipt_path": "docs/planning/black-workspace-receipt.md"
+      },
+      {
+        "id": "desktop",
+        "video": "assets/demo-desktop-041.mp4",
+        "poster": "assets/demo-desktop-041.png",
+        "width": 1920,
+        "height": 1080,
+        "duration_seconds": 82.433333,
+        "frame_count": 2473,
+        "average_frame_rate": "74220/2473",
+        "video_codec": "h264",
+        "pixel_format": "yuv420p",
+        "capture_date": "2026-10-30",
+        "source_capture_sha256": "4a78cfa72a3d704f0cbd6416434dd90ad6d90c7fef99ad11cafa63a44c6fae35",
+        "source_captures": null,
+        "poster_source": {
+          "path": "assets/demo-desktop-041.png",
+          "sha256": "863107cf7db9740113bbd0f7aa0c4d2c2b1aae9622a888aafadfba5f99d543af",
+          "method": "Unedited native pre-take rehearsal PNG of the same prepared opening scene; not a decoded frame from this MP4."
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Public Niri Plus Story, local download/upload fixture and guest-only Hello-World project; actual guest CPU/RAM/Ethernet and virtual audio. Wi-Fi and Bluetooth hardware are absent.",
+        "processing_notes": [
+          "Continuous wf-recorder capture of the native 1920x1080 output at scale 1, targeting 30 fps with libx264. Public MP4 bytes equal the raw guest capture; no cuts, overlays, compositing, time stretching or reused footage.",
+          "Native keyboard and pointer actions operate real applications. The 252-byte Markdown download opens in Nvim through Dolphin, then the GTK chooser selects the same file and the local fixture confirms matching upload bytes. Sharing buttons are not activated.",
+          "Silent H.264 High/yuv420p. TV range was requested and the encoder log reports yuv420p(tv), but ffprobe has no explicit color_range field; no conversion was applied afterward.",
+          "Measured duration 82.433333 seconds; average frame-rate field 74220/2473, nominal cadence 30/1. Full ffmpeg decode passes with 2473 decoded frames; the container reports 2474 frames. Decoded frames divided by container duration is 30.0 per second.",
+          "Decoded scene frames were reviewed at their encoded timestamps. A whole-frame blackdetect check found no interval of at least 0.20 seconds with at least 99.9% of pixels below the 10% luma threshold.",
+          "Poster is a separate unedited native pre-take rehearsal PNG. The temporary 1920x1080 Kanshi profile is restored byte-for-byte to the original 1280x800 profile; audio remains output 40%, input 100%, both unmuted.",
+          "SSH Plus, Tmux Plus and Agent Plus are absent from this guest. The optional insert is deferred rather than adding authentication or remote infrastructure for the recording."
+        ],
+        "additional_source_versions": {
+          "swaync": {
+            "package": "swaync-bryan",
+            "version": "0.12.6-15",
+            "recipe_revision": "cd1038d1c824f256ecb5a448d78df9f71b64850a",
+            "recipe_archive_sha256": "297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0",
+            "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
+            "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83"
+          }
+        },
+        "agent_review": "passed",
+        "automated_review": "passed",
+        "human_review": "pending",
+        "source_versions": {
+          "public_source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+          "components": {
+            "version": "0.4.1",
+            "api_version": 1,
+            "source_commit": "317658ee7913bb58536f6ec1b2575043a9494449",
+            "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
+            "archive_sha256": "0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11",
+            "manifest_sha256": "30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4"
+          },
+          "identity": {
+            "source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+            "path": "design/history/neutral-slate-black-workspace.json",
+            "sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+          },
+          "guest_software": {
+            "cliphist": "1:0.7.0-2",
+            "fcitx5": "5.1.23-1",
+            "google-chrome": "156.0.8078.47-1",
+            "gtklock": "5.0.0-1",
+            "kanshi": "1.9.0-1",
+            "kitty": "0.49.2-1",
+            "niri": "26.04-1",
+            "pipewire": "1:1.6.10-1",
+            "polkit-kde-agent": "6.8.2-1",
+            "rofi": "2.0.0-1",
+            "swayidle": "1.9.1-1",
+            "swaync-bryan": "0.12.6-15",
+            "wireplumber": "0.5.18-1",
+            "xdg-desktop-portal": "1.22.1-2",
+            "xdg-desktop-portal-gtk": "1.15.3-2",
+            "xdg-desktop-portal-wlr": "0.8.2-1.3",
+            "zsh": "5.9.2-1",
+            "wf_recorder": "0.6.0-2",
+            "ffmpeg": "2:9.0.2-2"
+          },
+          "browser_content": {
+            "url": "https://dev.byebyebryan.com/niri-plus/story/",
+            "source_commit": "25539e7f1cb977a82551fde43c40658da1f14489",
+            "served_html_sha256": "07895417a15c84393bfe66f652e0b498abf51d56d02af03ab23e07e62cf4199b",
+            "account_state": "signed out; public Story content",
+            "verification": "Served Story HTML SHA-256 rechecked before site integration; bytes match the prepared capture content."
+          },
+          "git_sample": {
+            "remote": "https://github.com/octocat/Hello-World",
+            "repo_path": "/home/demo/code/public-sample",
+            "commit": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+            "branch": "public-sample",
+            "working_tree": "clean"
+          },
+          "local_fixture": {
+            "path": "tools/vm/desktop/sample_server.py",
+            "source_commit": "25539e7f1cb977a82551fde43c40658da1f14489",
+            "sha256": "757f1392d979e639b1878162e01d516c8ae5fb57b8b0b901ab0d87a7c71f44ee",
+            "url": "http://127.0.0.1:8765",
+            "sample_sha256": "c2440ff35a67921e891877abc7f210c9c869ff38f2c5c973fcd319147b5a2275",
+            "sample_size_bytes": 252,
+            "upload_storage": "in-memory comparison only"
+          }
+        },
+        "capture_receipt_path": "docs/planning/resource-and-showcase-receipt.md"
       }
     ],
     "capture_receipt_path": "docs/planning/desktop-demonstration-receipt.md"

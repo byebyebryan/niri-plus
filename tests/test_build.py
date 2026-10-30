@@ -47,7 +47,7 @@ def demo_provenance_fixture():
             "agent_review": "passed",
             "automated_review": "passed",
             "human_review": "pending",
-            **({"additional_source_versions": {"swaync": builder.SWAYNC_PIN}} if name in {"overview", "information"} else {}),
+            **({"additional_source_versions": {"swaync": builder.SWAYNC_PIN}} if name in {"overview", "information", "desktop"} else {}),
         })
     return {
         "files": files,
@@ -77,7 +77,7 @@ class BuildContracts(unittest.TestCase):
 
     def test_complete_site_has_checked_links_and_only_allowlisted_planning_docs(self):
         result = builder.build(self.output)
-        self.assertEqual(result["pages"], 23)
+        self.assertEqual(result["pages"], 24)
         self.assertGreater(result["local_links"], 200)
         self.assertEqual(
             {path.relative_to(self.output).as_posix() for path in (self.output / "docs").rglob("*") if path.is_file()},
@@ -85,6 +85,7 @@ class BuildContracts(unittest.TestCase):
                 "docs/planning/arch-installation-receipt.md",
                 "docs/planning/components-0.3.1-receipt.md",
                 "docs/planning/black-workspace-receipt.md",
+                "docs/planning/resource-and-showcase-receipt.md",
                 "docs/planning/desktop-demonstration-receipt.md",
                 "docs/planning/rofi-controls-implementation-receipt.md",
             },
@@ -283,11 +284,19 @@ class BuildContracts(unittest.TestCase):
     def test_native_demos_have_static_steps_controls_and_staged_provenance(self):
         builder.build(self.output)
         tour = (self.output / "tour/index.html").read_text()
-        self.assertEqual(tour.count("<video "), 5)
-        self.assertEqual(tour.count('controls preload="none"'), 5)
-        self.assertEqual(tour.count('type="video/mp4"'), 5)
-        self.assertEqual(tour.count('class="native-demo-download"'), 5)
-        self.assertEqual(tour.count("Open or download MP4"), 5)
+        self.assertEqual(tour.count("<video "), 2)
+        self.assertEqual(tour.count('controls preload="none"'), 2)
+        self.assertEqual(tour.count('type="video/mp4"'), 2)
+        self.assertEqual(tour.count('class="native-demo-download"'), 2)
+        self.assertEqual(tour.count("Open or download MP4"), 2)
+        archive = (self.output / "tour/earlier/index.html").read_text()
+        self.assertEqual(archive.count("<video "), 4)
+        self.assertIn('data-native-demo="desktop"', tour)
+        self.assertNotIn('data-native-demo="overview"', tour)
+        self.assertIn('href="/niri-plus/tour/earlier/"', tour)
+        self.assertIn("Components 0.4.1", tour)
+        self.assertIn("Components 0.3.1", archive)
+        self.assertNotIn("Components 0.4.1", archive)
         self.assertNotIn(" autoplay", tour)
         self.assertIn("Mod+N", tour)
         self.assertIn("Mod+Y", tour)
@@ -303,7 +312,7 @@ class BuildContracts(unittest.TestCase):
         self.assertIn('src="/niri-plus/assets/arch-reference/black-workspace-041.png"', design)
         self.assertIn('href="/niri-plus/tour/#native-reference-demo"', design)
         provenance = json.loads((self.output / "assets/provenance.json").read_text())
-        self.assertEqual(len(provenance["desktop_demos"]["clips"]), 5)
+        self.assertEqual(len(provenance["desktop_demos"]["clips"]), 6)
         self.assertTrue(all(item["human_review"] == "pending" for item in provenance["desktop_demos"]["clips"]))
         self.assertTrue(all(item["automated_review"] == "passed" for item in provenance["desktop_demos"]["clips"]))
         sharing = provenance["desktop_demos"]["separate_guest_checks"][0]
@@ -539,12 +548,17 @@ class BuildContracts(unittest.TestCase):
         self.assertIn('href="../recipes/appearance/"', text)
         self.assertIn('href="https://dev.byebyebryan.com/niri-plus/design/"', text)
         tour = (self.output / "tour/index.html").read_text()
-        self.assertIn('poster="../assets/demo-overview.png"', tour)
-        self.assertIn('src="../assets/demo-overview.mp4"', tour)
-        self.assertIn('href="../assets/demo-overview.mp4"', tour)
+        self.assertIn('poster="../assets/demo-desktop-041.png"', tour)
+        self.assertIn('src="../assets/demo-desktop-041.mp4"', tour)
+        self.assertIn('href="../assets/demo-desktop-041.mp4"', tour)
         self.assertIn('href="../docs/planning/desktop-demonstration-receipt.md"', tour)
         self.assertIn('href="../tools/vm/desktop/wlr-compat/README.md"', tour)
         self.assertIn('href="https://dev.byebyebryan.com/niri-plus/tour/"', tour)
+        archive = (self.output / "tour/earlier/index.html").read_text()
+        self.assertIn('poster="../../assets/demo-overview.png"', archive)
+        self.assertIn('src="../../assets/demo-overview.mp4"', archive)
+        self.assertIn('href="../../assets/demo-overview.mp4"', archive)
+        self.assertIn('href="../"', archive)
         for path in ("docs/planning/desktop-demonstration-receipt.md", "tools/vm/desktop/wlr-compat/README.md"):
             self.assertTrue((self.output / path).is_file(), path)
 

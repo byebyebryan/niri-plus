@@ -36,7 +36,7 @@ It is an illustration; no desktop action is performed.
 
 The frame below shows the current desktop running in the staged Arch reference:
 Chrome beside Kitty/Zsh, with a black workspace and the selected native theme.
-It uses public content and a guest sample project. [Watch the device controls](tour.md#native-reference-demo)
+It uses public content and a guest sample project. [Watch the desktop overview](tour.md#native-reference-demo)
 or explore the earlier [browser/files](tour.md#browser-and-files),
 [terminal](tour.md#terminals-and-agents), and
 [information/clipboard](tour.md#information-when-i-want-it) recordings.

@@ -152,7 +152,7 @@ start services, or import capture-pilot state.
 Install the staging prerequisites and choose a new output path:
 
 ```sh
-sudo pacman -S --needed curl git python unzip
+sudo pacman -S --needed curl git less python unzip
 mkdir -p "$HOME/.local/share/niri-plus"
 python3 "$NIRI_PLUS_CHECKOUT/scripts/stage-arch-reference.py" \
   --inputs "$NIRI_PLUS_CHECKOUT/tools/reference/inputs.json" \

@@ -6,29 +6,18 @@ that shaped it.
 
 ## Native reference demo
 
-The current recording shows native Audio and Network controls beside Chrome
-and Kitty in a staged Arch guest. The workspace is pure black, with warm
-Neutral Slate controls and the Balanced+ terminal palette. The browser shows
-public Niri Plus content and the terminal uses a guest sample Git project.
-Ethernet and virtual-audio readings come from the guest.
+The current overview follows browser and file work, a native terminal, and
+information and controls on demand. It runs in the staged Arch reference with
+the pure-black workspace, warm Neutral Slate surfaces and Balanced+ terminal.
+The content is public sample material; device readings come from the guest.
 
-<!-- niri-plus:demo-controls -->
-Open Audio, inspect device details, adjust and restore its volume/mute state,
-then inspect the connected Ethernet link in Network.
-<!-- /niri-plus:demo-controls -->
+<!-- niri-plus:demo-desktop -->
+Move between Chrome and Kitty, open a downloaded file, choose one to send,
+and use the panel, clipboard and Audio before returning to work.
+<!-- /niri-plus:demo-desktop -->
 
-## Earlier workflow overview
-
-The following 0.3.1 recordings retain the earlier charcoal workspace. The
-overview combines the browser/files and information clips with a 12-second
-excerpt from the earlier terminal pilot. Each player identifies its capture
-date and component version. These are staged VM demonstrations with public
-sample content.
-
-<!-- niri-plus:demo-overview -->
-Watch the staged Arch desktop move between browser and terminal work, with
-information and clipboard tools available on demand.
-<!-- /niri-plus:demo-overview -->
+The [earlier recordings](tour-earlier.md) retain their original 0.3.1 inputs,
+dates and charcoal workspace. They remain available as detailed task examples.
 
 ## Explore the workflow
 
@@ -52,12 +41,8 @@ leaves plenty of useful work for the mouse.
 **Try the pieces:** start with [the base desktop](setup-agent.md#3-install-the-first-session-packages)
 and its portal and file-dialog checks.
 
-<!-- niri-plus:demo-browser-files -->
-The staged guest downloads a public Markdown sample and SVG, opens them through
-Dolphin with the guest's Neovim default and Gwenview, then selects the original
-Markdown file in Chrome's native GTK upload chooser. The sample page reports
-the received byte count and hash.
-<!-- /niri-plus:demo-browser-files -->
+The [earlier browser/files recording](tour-earlier.md#browser-and-files) shows
+the full download, default-application and native file-chooser sequence.
 
 ## Terminals and agents
 
@@ -77,11 +62,8 @@ management.
 **Try the pieces:** [Agent Plus](https://dev.byebyebryan.com/fleet-plus/projects/agent-plus/)
 and the [launcher reference](reference.md#launchers).
 
-<!-- niri-plus:demo-terminal -->
-The reused pilot clip shows a local Chrome sample page beside Kitty and Zsh,
-including a guest-guarded project check and keyboard navigation. It is the
-terminal/browser scene, not the later full desktop demonstration.
-<!-- /niri-plus:demo-terminal -->
+The [earlier terminal recording](tour-earlier.md#terminal-and-browser) shows
+the original guest sample check and column navigation.
 
 ## Information when I want it
 
@@ -100,15 +82,22 @@ cards hide, and battery estimates follow the reported charge limit. Volume and
 brightness keys show brief replaceable feedback. Clipboard history is a separate
 Rofi picker on `Mod+Y`, with text and images kept in their original form.
 
-<!-- niri-plus:demo-information -->
-The staged guest shows SwayNC's actual CPU, RAM and Ethernet readings; absent
-GPU, battery and Bluetooth cards hide on this VM. The Rofi clipboard picker
-restores exact public sample text and image, deletes one selected item, keeps
-history on Cancel, and clears it only after confirmation.
-<!-- /niri-plus:demo-information -->
+The [earlier information/clipboard recording](tour-earlier.md#information-and-clipboard)
+shows the full text/image restore, Delete, Cancel and confirmed Clear sequence.
 
 **Try the pieces:** [notifications](recipes/notifications.md) and
 [clipboard history](recipes/clipboard.md).
+
+## Device controls
+
+Network, Audio and Bluetooth use Rofi's search, named actions and separate
+device state. The focused recording shows actual Ethernet and virtual audio
+beside Chrome and Kitty. Wi-Fi and Bluetooth hardware are absent in the guest.
+
+<!-- niri-plus:demo-controls -->
+Open Audio, inspect device details, adjust and restore its volume/mute state,
+then inspect the connected Ethernet link in Network.
+<!-- /niri-plus:demo-controls -->
 
 ## Work that can move between machines
 
@@ -128,13 +117,15 @@ The interactive walkthrough and identity gallery remain illustrations. The
 Agent Plus image is a real Rofi rendering with sample data, and the SwayNC image
 is an isolated native rendering with its fixture values labelled separately.
 The recordings show actual software in staged Arch guests with public sample
-content. The 0.4.1 controls clip and black-workspace still come from the current
-reference; the four earlier clips keep their original 0.3.1 inputs and bytes.
-The terminal clip reuses its accepted earlier pilot. Whole-monitor browser
-sharing is not shown in any clip. Sharing is checked separately and recorded
+content. The current overview, 0.4.1 controls clip and black-workspace still
+come from the current reference; the [four earlier clips](tour-earlier.md)
+keep their original 0.3.1 inputs and bytes. The earlier terminal clip reuses
+its accepted pilot. Whole-monitor browser sharing is not shown in any clip.
+Sharing is checked separately and recorded
 in the relevant receipt; both reference guests needed the conditional
 [WLR compatibility package](../tools/vm/desktop/wlr-compat/README.md).
-Read the [current reference and capture receipt](planning/black-workspace-receipt.md)
+Read the [current showcase receipt](planning/resource-and-showcase-receipt.md),
+the [reference and controls receipt](planning/black-workspace-receipt.md)
 or the [earlier demonstration receipt](planning/desktop-demonstration-receipt.md).
 The [media record](../assets/provenance.json) lists versions, measurements,
 source and output hashes, fixture labels, processing and separate review status.

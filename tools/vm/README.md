@@ -1,5 +1,12 @@
 # Niri Plus Arch VM pilot and desktop task assembly
 
+**Historical 0.3.1 tooling.** This directory retains the original pilot and
+incremental assembler with their recorded input pins. Do not run them over the
+current reference to refresh it. The current
+[Arch agent guide](../../docs/setup-agent.md) owns the installation route;
+the [resource/showcase receipt](../../docs/planning/resource-and-showcase-receipt.md)
+records the later 0.4.1 working-guest observation and capture procedure.
+
 This directory documents two stages on the retained Niri Plus reference VM:
 the capture pilot setup and the incremental desktop task assembly applied on
 top of it. The core desktop assembly is complete in an already installed

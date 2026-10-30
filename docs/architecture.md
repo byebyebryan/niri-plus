@@ -80,6 +80,16 @@ terminal, and basic desktop remain understandable without them. The source map
 shows which public downloads come from shared modules and which decisions stay
 in private chezmoi or the independent projects.
 
+## A short resource observation
+
+A controlled 4-vCPU/8-GiB Arch guest observation measured the selected core
+session processes at about 0.10% of one vCPU while quiet, 0.45% with SwayNC open,
+and 0.12% after it closed. Two launcher cycles left no Rofi process in final
+quiet. The [dated resource receipt](planning/resource-and-showcase-receipt.md#measured-scope)
+defines the process cohort, readable-memory coverage and sampling limits.
+These are short guest observations; applications and the collector are
+attributed separately, and physical laptop/GPU/battery behavior is outside them.
+
 ## A shared visual identity
 
 The [design guide](design.md) presents Neutral Slate's warm UI surfaces,

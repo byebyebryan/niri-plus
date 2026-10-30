@@ -107,6 +107,10 @@ the immutable commit and SHA-256 for each tarball; [third-party notices](../../e
 records license and attribution details. The selected versions follow the
 existing public checkouts rather than a floating branch.
 
+On Arch, include `less` with Git for ordinary interactive pager commands such
+as `git log`, unless you have explicitly selected another pager. Use
+`git --no-pager log` when you want output directly in the terminal.
+
 The main walkthrough exports `SOURCE` as the verified examples tree. Choose a
 new directory below your home directory and run the staged fetcher manually:
 

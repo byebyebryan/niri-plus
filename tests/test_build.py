@@ -93,7 +93,7 @@ class BuildContracts(unittest.TestCase):
         self.assertTrue((self.output / "tools/vm/desktop/wlr-compat/README.md").is_file())
         self.assertFalse((self.output / "AGENTS.md").exists())
         self.assertIn("I love terminal life", (self.output / "story/index.html").read_text())
-        self.assertIn("Illustrated walkthrough", (self.output / "index.html").read_text())
+        self.assertIn("Captured Arch reference", (self.output / "index.html").read_text())
         self.assertIn('href="/niri-plus/tour/#native-reference-demo"', (self.output / "index.html").read_text())
         for page in self.output.rglob("*.html"):
             self.assertNotIn("https://github.com/byebyebryan/dotfiles", page.read_text())

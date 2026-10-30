@@ -52,7 +52,7 @@ PAGES = {
     "reference/": ("docs/reference.md", "Search the keyboard reference, explore source versions, and download portable examples."),
 }
 SOURCES = {source: route for route, (source, _) in PAGES.items()}
-ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png"}
+ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "workflow-browser.png", "workflow-terminal.png", "workflow-panel.png", "workflow-controls.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png"}
 DEMO_ASSETS = {
     f"assets/demo-{scene}.{suffix}"
     for scene in ("overview", "browser-files", "terminal", "information", "controls", "desktop-041")

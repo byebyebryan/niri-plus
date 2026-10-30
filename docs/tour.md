@@ -22,10 +22,9 @@ dates and charcoal workspace. They remain available as detailed task examples.
 ## Explore the workflow
 
 <!-- niri-plus:workbench -->
-The illustrated walkthrough has four scenes: browser and files, terminals and
-agents, notifications and clipboard, and work across hosts. Each scene explains
-the action, its keyboard entry point, and the components involved. It uses
-fictional content to show the workflow; it is not a recording of a live session.
+Explore real captured moments: browser and files, terminal work, the system
+panel, and Audio controls. Open a full-size frame or watch the corresponding
+scene in the native recording.
 <!-- /niri-plus:workbench -->
 
 ## Browser and files
@@ -113,8 +112,8 @@ explains the independently useful projects and their prerequisites.
 
 ## About the demonstrations
 
-The interactive walkthrough and identity gallery remain illustrations. The
-Agent Plus image is a real Rofi rendering with sample data, and the SwayNC image
+The workflow explorer uses unedited frames from the current native overview.
+The identity gallery remains illustrative. The Agent Plus image is a real Rofi rendering with sample data, and the SwayNC image
 is an isolated native rendering with its fixture values labelled separately.
 The recordings show actual software in staged Arch guests with public sample
 content. The current overview, 0.4.1 controls clip and black-workspace still

@@ -157,6 +157,58 @@
       "description": "Unedited native pre-take rehearsal PNG of the prepared opening scene, with the public Story page beside Kitty and the public sample project. Not a decoded frame from the video.",
       "capture_date": "2026-10-30",
       "capture_label": "Staged Arch Linux x86_64 guest"
+    },
+    {
+      "path": "assets/workflow-browser.png",
+      "sha256": "b21287aac88ec8edfaacc605ed5463305b0680d5b554e084a4c2a34d4c6624af",
+      "source": "Unedited decoded frame from assets/demo-desktop-041.mp4, captured 2026-10-30; see desktop_walkthrough and docs/planning/resource-and-showcase-receipt.md.",
+      "license": "GPL-3.0-only",
+      "description": "GTK file chooser selecting the downloaded public Markdown file beside the browser.",
+      "capture_date": "2026-10-30",
+      "capture_label": "Staged Arch Linux x86_64 guest",
+      "source_video": "assets/demo-desktop-041.mp4",
+      "source_video_sha256": "4a78cfa72a3d704f0cbd6416434dd90ad6d90c7fef99ad11cafa63a44c6fae35",
+      "encoded_pts_seconds": 31.6,
+      "frame_index": 948
+    },
+    {
+      "path": "assets/workflow-terminal.png",
+      "sha256": "1d4dd6fbe36f0fb41a3e1743664c3aedd927c7570e0f60306f570727d0570d8a",
+      "source": "Unedited decoded frame from assets/demo-desktop-041.mp4, captured 2026-10-30; see desktop_walkthrough and docs/planning/resource-and-showcase-receipt.md.",
+      "license": "GPL-3.0-only",
+      "description": "Kitty and Zsh showing real Git output from the guest-only Hello-World project beside Chrome.",
+      "capture_date": "2026-10-30",
+      "capture_label": "Staged Arch Linux x86_64 guest",
+      "source_video": "assets/demo-desktop-041.mp4",
+      "source_video_sha256": "4a78cfa72a3d704f0cbd6416434dd90ad6d90c7fef99ad11cafa63a44c6fae35",
+      "encoded_pts_seconds": 43.6,
+      "frame_index": 1308
+    },
+    {
+      "path": "assets/workflow-panel.png",
+      "sha256": "ff64795de3b03fdffdeafa34f598b5b5ce3f39208d89c7ea627f60cdd6a5d5a5",
+      "source": "Unedited decoded frame from assets/demo-desktop-041.mp4, captured 2026-10-30; see desktop_walkthrough and docs/planning/resource-and-showcase-receipt.md.",
+      "license": "GPL-3.0-only",
+      "description": "SwayNC showing the guest CPU, RAM and Ethernet readings beside the browser and terminal.",
+      "capture_date": "2026-10-30",
+      "capture_label": "Staged Arch Linux x86_64 guest",
+      "source_video": "assets/demo-desktop-041.mp4",
+      "source_video_sha256": "4a78cfa72a3d704f0cbd6416434dd90ad6d90c7fef99ad11cafa63a44c6fae35",
+      "encoded_pts_seconds": 48.6,
+      "frame_index": 1458
+    },
+    {
+      "path": "assets/workflow-controls.png",
+      "sha256": "dd036fac6e58bd26eba5d321a2a5ab19d85b0423ceba2377058e26235f3e9d4e",
+      "source": "Unedited decoded frame from assets/demo-desktop-041.mp4, captured 2026-10-30; see desktop_walkthrough and docs/planning/resource-and-showcase-receipt.md.",
+      "license": "GPL-3.0-only",
+      "description": "Rofi Audio showing actual default virtual output and input devices, their volume and mute state.",
+      "capture_date": "2026-10-30",
+      "capture_label": "Staged Arch Linux x86_64 guest",
+      "source_video": "assets/demo-desktop-041.mp4",
+      "source_video_sha256": "4a78cfa72a3d704f0cbd6416434dd90ad6d90c7fef99ad11cafa63a44c6fae35",
+      "encoded_pts_seconds": 58.0,
+      "frame_index": 1740
     }
   ],
   "desktop_demos": {
@@ -651,5 +703,46 @@
     ],
     "license_context": "Renderer/source/theme are GPL-3.0-only; include fork source attribution and accurate fixture-data caption when reusing screenshots"
   },
-  "desktop_walkthrough": "HTML/CSS illustration with fictional content; not a recording"
+  "desktop_walkthrough": {
+    "type": "native captured frames",
+    "description": "Unedited decoded frames from the current continuous native overview; public/local sample content and actual guest readings.",
+    "source_video": "assets/demo-desktop-041.mp4",
+    "source_video_sha256": "4a78cfa72a3d704f0cbd6416434dd90ad6d90c7fef99ad11cafa63a44c6fae35",
+    "components_version": "0.4.1",
+    "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
+    "capture_date": "2026-10-30",
+    "scenes": [
+      {
+        "id": "browser",
+        "image": "assets/workflow-browser.png",
+        "encoded_pts_seconds": 31.6,
+        "frame_index": 948,
+        "watch_from_seconds": 16.0
+      },
+      {
+        "id": "terminal",
+        "image": "assets/workflow-terminal.png",
+        "encoded_pts_seconds": 43.6,
+        "frame_index": 1308,
+        "watch_from_seconds": 38.0
+      },
+      {
+        "id": "panel",
+        "image": "assets/workflow-panel.png",
+        "encoded_pts_seconds": 48.6,
+        "frame_index": 1458,
+        "watch_from_seconds": 45.0
+      },
+      {
+        "id": "controls",
+        "image": "assets/workflow-controls.png",
+        "encoded_pts_seconds": 58.0,
+        "frame_index": 1740,
+        "watch_from_seconds": 56.0
+      }
+    ],
+    "processing": "Exact decoded PNG frames copied without cropping, overlays, recoloring or retouching. Watch links open the original MP4 at the relevant scene.",
+    "agent_review": "passed",
+    "human_review": "pending"
+  }
 }

@@ -92,3 +92,10 @@ provenance.json. Other application interfaces and fonts retain their own
 licenses. Content is public Niri Plus material, the guest-only local desktop
 fixture and public Git metadata from octocat/Hello-World. This attribution does
 not change the licenses, bytes or provenance of the earlier recordings.
+
+assets/workflow-browser.png, workflow-terminal.png, workflow-panel.png and
+workflow-controls.png: GPL-3.0-only, Copyright 2026 Bryan Bai. Exact unedited
+PNG frames decoded from demo-desktop-041.mp4. Encoded timestamps, source-video
+SHA-256 and output hashes are recorded in provenance.json. These frames carry
+the same capture attribution as their source recording above; application
+interfaces and fonts retain their own licenses.

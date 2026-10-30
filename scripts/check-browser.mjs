@@ -307,20 +307,56 @@ try {
     checks += 1;
   }
   checks += 14;
-  await page.setViewportSize({ width: 1280, height: 1000 });
+  const workflow = provenance.desktop_walkthrough;
+  assert.equal(workflow.type, "native captured frames");
+  assert.equal(workflow.source_video, "assets/demo-desktop-041.mp4");
   for (const route of ["", "tour/"]) {
-    await page.goto(origin + route);
-    for (const scene of ["terminal", "panel", "remote", "browser"]) {
-      const button = page.locator(`[data-scene-button="${scene}"]`);
-      await button.focus();
-      await page.keyboard.press("Enter");
-      assert.equal(await button.getAttribute("aria-pressed"), "true");
-      assert.equal(await page.locator(".desktop-stage").getAttribute("data-scene"), scene);
-      assert.equal(await page.locator('[data-scene-button][aria-pressed="true"]').count(), 1);
-      checks += 3;
+    for (const width of [375, 1280]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.goto(origin + route);
+      const workbench = page.locator("[data-workbench]");
+      assert.equal(await workbench.locator(".desktop-stage, [data-scene-overlay]").count(), 0);
+      for (const scene of workflow.scenes) {
+        const button = workbench.locator(`[data-scene-button="${scene.id}"]`);
+        await button.focus();
+        await page.keyboard.press("Enter");
+        assert.equal(await button.getAttribute("aria-pressed"), "true");
+        assert.equal(await workbench.locator("[data-scene-panel]:visible").count(), 1);
+        const panel = workbench.locator("[data-scene-panel]:visible");
+        assert.equal(await panel.getAttribute("data-scene-panel"), scene.id);
+        assert.equal(await workbench.locator('[data-scene-button][aria-pressed="true"]').count(), 1);
+        const image = panel.locator("img");
+        await image.scrollIntoViewIfNeeded();
+        await image.evaluate((element) => element.decode());
+        assert.deepEqual(await image.evaluate((element) => [element.naturalWidth, element.naturalHeight]), [1920, 1080]);
+        assert.ok((await image.getAttribute("src")).endsWith(scene.image));
+        const watch = new URL(await panel.locator('.scene-links a').first().getAttribute("href"), page.url());
+        assert.ok(watch.pathname.endsWith(workflow.source_video));
+        assert.equal(watch.hash, `#t=${scene.watch_from_seconds}`);
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        if (process.env.NIRI_SCREENSHOTS) await workbench.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `workflow-${route ? "tour" : "home"}-${scene.id}-${width}.png`) });
+        checks += 9;
+      }
+      await page.keyboard.press("Home");
+      assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "browser");
+      await page.keyboard.press("ArrowRight");
+      assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "terminal");
+      await page.keyboard.press("End");
+      assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "controls");
+      await page.keyboard.press("ArrowRight");
+      assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "browser");
+      await page.keyboard.press("ArrowLeft");
+      assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "controls");
+      checks += 6;
     }
-    assert.equal(await page.locator(".desktop-stage .window").first().evaluate((node) => getComputedStyle(node).transitionDuration), "0s");
   }
+  // Verify the browser honors a watch link's temporal fragment on the real MP4.
+  const watchLink = page.locator('[data-scene-panel="controls"] .scene-links a').first();
+  await watchLink.click();
+  await page.waitForFunction(() => document.querySelector("video")?.currentTime >= 55.9);
+  assert.ok(await page.locator("video").evaluate((element) => element.currentTime < 60));
+  await page.locator("video").evaluate((element) => element.pause());
+  checks += 2;
   await page.goto(origin + "reference/");
   const input = page.getByLabel("Find a key or task");
   await input.fill("clipboard");
@@ -344,6 +380,11 @@ try {
     await staticPage.goto(origin + route);
     assert.ok((await staticPage.locator("main").innerText()).length > 400);
     assert.equal(await staticPage.locator("[data-scene-controls]:visible").count(), 0);
+    if (["", "tour/"].includes(route)) {
+      assert.equal(await staticPage.locator("[data-scene-panel]:visible").count(), 4);
+      assert.equal(await staticPage.locator("[data-scene-panel] .scene-links a:first-child").count(), 4);
+      checks += 2;
+    }
     assert.equal(await staticPage.locator("[data-surface-switcher]:visible").count(), 0);
     assert.ok(await staticPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     checks += 4;

@@ -1,19 +1,32 @@
-<figure class="workbench" data-workbench>
-  <div class="workbench-top"><span><i aria-hidden="true"></i> The everyday desktop</span><span>Illustrated walkthrough</span></div>
-  <div class="desktop-stage" data-scene="browser">
-    <div class="window browser-window">
-      <div class="window-chrome"><span class="window-dots" aria-hidden="true">● ● ●</span><span class="window-label">Chrome</span><span aria-hidden="true">＋</span></div>
-      <div class="address-bar"><span aria-hidden="true">← &nbsp; → &nbsp; ↻</span><span>notes.example / things-to-make</span></div>
-      <div class="browser-content"><p class="mock-eyebrow">A LITTLE SPACE TO EXPLORE</p><p class="mock-title">Read something.<br>Make something.</p><div class="mock-landscape" aria-hidden="true"><span></span><span></span><span></span></div><div class="mock-lines" aria-hidden="true"><i></i><i></i><i></i></div><div class="download-chip"><span aria-hidden="true">↓</span><span>field-notes.pdf <small>Ready to open in Dolphin</small></span><span aria-hidden="true">↗</span></div></div>
-    </div>
-    <div class="window terminal-window">
-      <div class="window-chrome"><span class="window-dots" aria-hidden="true">● ● ●</span><span class="window-label">Kitty</span><span aria-hidden="true">⌘</span></div>
-      <div class="terminal-content"><p class="terminal-path">~/projects/something-good</p><p><span class="prompt">❯</span> git diff --stat</p><p class="terminal-output"> config.kdl &nbsp; | 8 ++++----<br> 1 file changed</p><p><span class="prompt">❯</span> niri validate</p><p class="terminal-success">✓ Configuration is valid.</p><div class="agent-note"><p class="mock-eyebrow">NATIVE CODING AGENT</p><p>Help me understand<br>how this is configured.</p><span class="agent-response">Inspect. Explain. Review.</span></div><p class="terminal-last"><span class="prompt">❯</span> <span class="cursor" aria-hidden="true"></span></p></div>
-    </div>
-    <div class="desktop-overlay" hidden data-scene-overlay></div>
-    <div class="workspace-track" aria-hidden="true"><i></i><i></i><i></i><span>scrolling columns</span><span>→</span></div>
+<figure class="workbench" data-workbench aria-label="Recorded workflow scenes">
+  <div class="workbench-top"><span><i aria-hidden="true"></i> The everyday desktop</span><span>Captured Arch reference</span></div>
+  <div class="scene-controls" hidden data-scene-controls role="group" aria-label="Choose a recorded workflow scene">
+    <button type="button" data-scene-button="browser" aria-controls="workflow-browser" aria-pressed="true">01 <span>Browse</span></button>
+    <button type="button" data-scene-button="terminal" aria-controls="workflow-terminal" aria-pressed="false">02 <span>Build</span></button>
+    <button type="button" data-scene-button="panel" aria-controls="workflow-panel" aria-pressed="false">03 <span>Check</span></button>
+    <button type="button" data-scene-button="controls" aria-controls="workflow-controls" aria-pressed="false">04 <span>Controls</span></button>
   </div>
-  <div class="scene-controls" hidden data-scene-controls role="group" aria-label="Choose a workflow scene"><button type="button" data-scene-button="browser" aria-pressed="true">01 <span>Browse</span></button><button type="button" data-scene-button="terminal" aria-pressed="false">02 <span>Build</span></button><button type="button" data-scene-button="panel" aria-pressed="false">03 <span>Check</span></button><button type="button" data-scene-button="remote" aria-pressed="false">04 <span>Connect</span></button></div>
-  <figcaption class="scene-caption"><div aria-live="polite" aria-atomic="true"><span class="scene-name" data-scene-name>Browser &amp; files</span><p data-scene-description>Chrome for interactive work. Dolphin and file dialogs for the natural next step.</p></div><span class="key-hint" data-scene-key><kbd>Mod</kbd> + <kbd>B</kbd></span></figcaption>
-  <p class="illustration-note">Illustrated from the configuration, using fictional content. This is not a live desktop recording.</p>
+  <div class="workflow-scenes" aria-live="polite">
+    <section class="workflow-scene" id="workflow-browser" data-scene-panel="browser" aria-label="Browser &amp; files">
+      <a class="workflow-frame" href="@@BASE@@assets/workflow-browser.png" aria-label="Open the full-size browser &amp; files capture"><img src="@@BASE@@assets/workflow-browser.png" width="1920" height="1080" alt="Chrome&#x27;s GTK file chooser selecting the downloaded Markdown sample, with the public browser fixture behind it." loading="lazy"></a>
+      <div class="scene-caption"><div><strong class="scene-name">Browser &amp; files</strong><p>Download in Chrome, open from Dolphin, and choose the same file to send.</p></div><span class="key-hint">Files <kbd>Mod</kbd> + <kbd>E</kbd></span></div>
+      <div class="scene-links"><a href="@@BASE@@assets/demo-desktop-041.mp4#t=16">Watch this scene <span aria-hidden="true">↗</span></a><a href="@@BASE@@recipes/files/">Files &amp; defaults <span aria-hidden="true">→</span></a><span>Frame 0:31.6</span></div>
+    </section>
+    <section class="workflow-scene" id="workflow-terminal" data-scene-panel="terminal" aria-label="Build at the keyboard">
+      <a class="workflow-frame" href="@@BASE@@assets/workflow-terminal.png" aria-label="Open the full-size build at the keyboard capture"><img src="@@BASE@@assets/workflow-terminal.png" width="1920" height="1080" alt="Kitty and Zsh showing Git status and a real commit from the guest-only Hello-World project, beside Chrome." loading="lazy"></a>
+      <div class="scene-caption"><div><strong class="scene-name">Build at the keyboard</strong><p>A native Zsh prompt, readable Git output, and the browser within reach.</p></div><span class="key-hint">Terminal <kbd>Mod</kbd> + <kbd>T</kbd></span></div>
+      <div class="scene-links"><a href="@@BASE@@assets/demo-desktop-041.mp4#t=38">Watch this scene <span aria-hidden="true">↗</span></a><a href="@@BASE@@recipes/terminal/">Kitty &amp; Zsh <span aria-hidden="true">→</span></a><span>Frame 0:43.6</span></div>
+    </section>
+    <section class="workflow-scene" id="workflow-panel" data-scene-panel="panel" aria-label="Information on demand">
+      <a class="workflow-frame" href="@@BASE@@assets/workflow-panel.png" aria-label="Open the full-size information on demand capture"><img src="@@BASE@@assets/workflow-panel.png" width="1920" height="1080" alt="SwayNC&#x27;s System and Network cards showing the guest&#x27;s actual CPU, RAM and Ethernet readings beside Chrome and Kitty." loading="lazy"></a>
+      <div class="scene-caption"><div><strong class="scene-name">Information on demand</strong><p>Open SwayNC, check the available system and network readings, then return to work.</p></div><span class="key-hint">Panel <kbd>Mod</kbd> + <kbd>N</kbd></span></div>
+      <div class="scene-links"><a href="@@BASE@@assets/demo-desktop-041.mp4#t=45">Watch this scene <span aria-hidden="true">↗</span></a><a href="@@BASE@@recipes/notifications/">The panel <span aria-hidden="true">→</span></a><span>Frame 0:48.6</span></div>
+    </section>
+    <section class="workflow-scene" id="workflow-controls" data-scene-panel="controls" aria-label="Device controls">
+      <a class="workflow-frame" href="@@BASE@@assets/workflow-controls.png" aria-label="Open the full-size device controls capture"><img src="@@BASE@@assets/workflow-controls.png" width="1920" height="1080" alt="Rofi Audio showing the guest&#x27;s default virtual output unmuted at 40 percent and input unmuted at 100 percent." loading="lazy"></a>
+      <div class="scene-caption"><div><strong class="scene-name">Device controls</strong><p>Find an audio device, see its state, and choose a named action in Rofi.</p></div><span class="key-hint">Launcher <kbd>Mod</kbd> + <kbd>D</kbd></span></div>
+      <div class="scene-links"><a href="@@BASE@@assets/demo-desktop-041.mp4#t=56">Watch this scene <span aria-hidden="true">↗</span></a><a href="@@BASE@@recipes/rofi-controls/">Device controls <span aria-hidden="true">→</span></a><span>Frame 0:58.0</span></div>
+    </section>
+  </div>
+  <figcaption class="capture-note">Unedited frames from the staged Arch reference · Components 0.4.1 · 2026-10-30. Public sample content and actual guest readings. <a href="@@BASE@@assets/provenance.json">Capture sources</a>.</figcaption>
 </figure>

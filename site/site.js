@@ -8,6 +8,15 @@ document.querySelectorAll("[data-workbench]").forEach((workbench) => {
     buttons.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.sceneButton === name)));
     panels.forEach((panel) => { panel.hidden = panel.dataset.scenePanel !== name; });
   };
+  const captureControls = workbench.querySelector("[data-capture-controls]");
+  const captureToggle = captureControls.querySelector("[data-capture-toggle]");
+  captureControls.hidden = false;
+  captureToggle.addEventListener("click", () => {
+    const fullDesktop = workbench.dataset.captureView !== "desktop";
+    workbench.dataset.captureView = fullDesktop ? "desktop" : "detail";
+    captureToggle.textContent = fullDesktop ? "Show detail" : "Show full desktop";
+    workbench.querySelector("[data-capture-label]").textContent = fullDesktop ? "Full desktop" : "Detail view";
+  });
   controls.hidden = false;
   activate(buttons[0].dataset.sceneButton);
   buttons.forEach((button, index) => {

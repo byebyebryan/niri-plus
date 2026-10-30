@@ -717,32 +717,94 @@
         "image": "assets/workflow-browser.png",
         "encoded_pts_seconds": 31.6,
         "frame_index": 948,
-        "watch_from_seconds": 16.0
+        "watch_from_seconds": 16.0,
+        "detail_crops": {
+          "desktop": [
+            165,
+            45,
+            800,
+            300
+          ],
+          "mobile": [
+            170,
+            45,
+            480,
+            300
+          ]
+        }
       },
       {
         "id": "terminal",
         "image": "assets/workflow-terminal.png",
         "encoded_pts_seconds": 43.6,
         "frame_index": 1308,
-        "watch_from_seconds": 38.0
+        "watch_from_seconds": 38.0,
+        "detail_crops": {
+          "desktop": [
+            960,
+            0,
+            800,
+            280
+          ],
+          "mobile": [
+            960,
+            0,
+            480,
+            280
+          ]
+        }
       },
       {
         "id": "panel",
         "image": "assets/workflow-panel.png",
         "encoded_pts_seconds": 48.6,
         "frame_index": 1458,
-        "watch_from_seconds": 45.0
+        "watch_from_seconds": 45.0,
+        "detail_crops": {
+          "desktop": [
+            1470,
+            0,
+            450,
+            320
+          ],
+          "mobile": [
+            1470,
+            0,
+            450,
+            320
+          ]
+        }
       },
       {
         "id": "controls",
         "image": "assets/workflow-controls.png",
         "encoded_pts_seconds": 58.0,
         "frame_index": 1740,
-        "watch_from_seconds": 56.0
+        "watch_from_seconds": 56.0,
+        "detail_crops": {
+          "desktop": [
+            440,
+            309,
+            800,
+            463
+          ],
+          "mobile": [
+            448,
+            320,
+            480,
+            430
+          ]
+        }
       }
     ],
-    "processing": "Exact decoded PNG frames copied without cropping, overlays, recoloring or retouching. Watch links open the original MP4 at the relevant scene.",
+    "processing": "Original decoded PNG frames are retained byte-for-byte without overlays, recoloring or retouching. CSS crops focus the detail view; the Full desktop view and image links show the complete source. Watch links open the original MP4 at the relevant scene.",
     "agent_review": "passed",
-    "human_review": "pending"
+    "human_review": "pending",
+    "presentation": {
+      "default_view": "detail",
+      "method": "CSS viewport crops; source image bytes remain unchanged.",
+      "coordinate_system": "[x, y, width, height] in the original 1920x1080 frame; mobile applies at viewport widths of 560 CSS pixels or less.",
+      "full_desktop_view": "Uncropped 1920x1080 source frame."
+    }
   }
 }

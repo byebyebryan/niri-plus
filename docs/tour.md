@@ -23,8 +23,9 @@ dates and charcoal workspace. They remain available as detailed task examples.
 
 <!-- niri-plus:workbench -->
 Explore real captured moments: browser and files, terminal work, the system
-panel, and Audio controls. Open a full-size frame or watch the corresponding
-scene in the native recording.
+panel, and Audio controls. The detail view brings the active UI closer; switch
+to the full desktop for context, open the original frame, or watch the scene
+in the native recording.
 <!-- /niri-plus:workbench -->
 
 ## Browser and files

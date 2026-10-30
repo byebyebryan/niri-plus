@@ -326,18 +326,31 @@ try {
         assert.equal(await panel.getAttribute("data-scene-panel"), scene.id);
         assert.equal(await workbench.locator('[data-scene-button][aria-pressed="true"]').count(), 1);
         const image = panel.locator("img");
-        await image.scrollIntoViewIfNeeded();
+        await panel.locator(".workflow-frame").scrollIntoViewIfNeeded();
         await image.evaluate((element) => element.decode());
         assert.deepEqual(await image.evaluate((element) => [element.naturalWidth, element.naturalHeight]), [1920, 1080]);
         assert.ok((await image.getAttribute("src")).endsWith(scene.image));
+        const detailScale = await image.evaluate((element) => element.getBoundingClientRect().width / element.closest(".workflow-frame").clientWidth);
+        assert.ok(detailScale >= 1.9, `scene should show an enlarged detail: ${scene.id}`);
         const watch = new URL(await panel.locator('.scene-links a').first().getAttribute("href"), page.url());
         assert.ok(watch.pathname.endsWith(workflow.source_video));
         assert.equal(watch.hash, `#t=${scene.watch_from_seconds}`);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         if (process.env.NIRI_SCREENSHOTS) await workbench.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `workflow-${route ? "tour" : "home"}-${scene.id}-${width}.png`) });
-        checks += 9;
+        checks += 10;
       }
+      const toggle = workbench.locator("[data-capture-toggle]");
+      await toggle.focus();
+      await page.keyboard.press("Enter");
+      assert.equal(await workbench.getAttribute("data-capture-view"), "desktop");
+      assert.equal(await workbench.locator("[data-capture-label]").innerText(), "Full desktop");
+      assert.equal(await workbench.locator("[data-scene-panel]:visible").getAttribute("data-scene-panel"), "controls");
+      const fullScale = await workbench.locator("[data-scene-panel]:visible img").evaluate((element) => element.getBoundingClientRect().width / element.closest(".workflow-frame").clientWidth);
+      assert.ok(Math.abs(fullScale - 1) < 0.01);
+      await workbench.locator('[data-scene-button="controls"]').focus();
       await page.keyboard.press("Home");
+      assert.equal(await workbench.getAttribute("data-capture-view"), "desktop");
+      checks += 5;
       assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "browser");
       await page.keyboard.press("ArrowRight");
       assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "terminal");
@@ -347,7 +360,10 @@ try {
       assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "browser");
       await page.keyboard.press("ArrowLeft");
       assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "controls");
-      checks += 6;
+      await toggle.click();
+      assert.equal(await workbench.getAttribute("data-capture-view"), "detail");
+      assert.equal(await workbench.locator("[data-scene-panel]:visible").getAttribute("data-scene-panel"), "controls");
+      checks += 8;
     }
   }
   // Verify the browser honors a watch link's temporal fragment on the real MP4.
@@ -380,6 +396,7 @@ try {
     await staticPage.goto(origin + route);
     assert.ok((await staticPage.locator("main").innerText()).length > 400);
     assert.equal(await staticPage.locator("[data-scene-controls]:visible").count(), 0);
+    assert.equal(await staticPage.locator("[data-capture-controls]:visible").count(), 0);
     if (["", "tour/"].includes(route)) {
       assert.equal(await staticPage.locator("[data-scene-panel]:visible").count(), 4);
       assert.equal(await staticPage.locator("[data-scene-panel] .scene-links a:first-child").count(), 4);

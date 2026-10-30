@@ -1,4 +1,4 @@
-<figure class="workbench" data-workbench aria-label="Recorded workflow scenes">
+<figure class="workbench" data-workbench data-capture-view="detail" aria-label="Recorded workflow scenes">
   <div class="workbench-top"><span><i aria-hidden="true"></i> The everyday desktop</span><span>Captured Arch reference</span></div>
   <div class="scene-controls" hidden data-scene-controls role="group" aria-label="Choose a recorded workflow scene">
     <button type="button" data-scene-button="browser" aria-controls="workflow-browser" aria-pressed="true">01 <span>Browse</span></button>
@@ -6,27 +6,31 @@
     <button type="button" data-scene-button="panel" aria-controls="workflow-panel" aria-pressed="false">03 <span>Check</span></button>
     <button type="button" data-scene-button="controls" aria-controls="workflow-controls" aria-pressed="false">04 <span>Controls</span></button>
   </div>
-  <div class="workflow-scenes" aria-live="polite">
-    <section class="workflow-scene" id="workflow-browser" data-scene-panel="browser" aria-label="Browser &amp; files">
-      <a class="workflow-frame" href="@@BASE@@assets/workflow-browser.png" aria-label="Open the full-size browser &amp; files capture"><img src="@@BASE@@assets/workflow-browser.png" width="1920" height="1080" alt="Chrome&#x27;s GTK file chooser selecting the downloaded Markdown sample, with the public browser fixture behind it." loading="lazy"></a>
+  <div class="capture-view-controls" hidden data-capture-controls>
+    <span data-capture-label aria-live="polite">Detail view</span>
+    <button type="button" data-capture-toggle aria-controls="workflow-scenes">Show full desktop</button>
+  </div>
+  <div class="workflow-scenes" id="workflow-scenes" aria-live="polite">
+    <section class="workflow-scene" id="workflow-browser" data-scene-panel="browser" aria-label="Browser &amp; files" style="--capture-x:165;--capture-y:45;--capture-w:800;--capture-h:300;--capture-mobile-x:170;--capture-mobile-y:45;--capture-mobile-w:480;--capture-mobile-h:300">
+      <a class="workflow-frame" href="@@BASE@@assets/workflow-browser.png" aria-label="Open the full-size browser &amp; files capture"><img class="workflow-capture" src="@@BASE@@assets/workflow-browser.png" width="1920" height="1080" alt="The GTK file chooser with the public Markdown sample path and file list." loading="lazy"></a>
       <div class="scene-caption"><div><strong class="scene-name">Browser &amp; files</strong><p>Download in Chrome, open from Dolphin, and choose the same file to send.</p></div><span class="key-hint">Files <kbd>Mod</kbd> + <kbd>E</kbd></span></div>
       <div class="scene-links"><a href="@@BASE@@assets/demo-desktop-041.mp4#t=16">Watch this scene <span aria-hidden="true">↗</span></a><a href="@@BASE@@recipes/files/">Files &amp; defaults <span aria-hidden="true">→</span></a><span>Frame 0:31.6</span></div>
     </section>
-    <section class="workflow-scene" id="workflow-terminal" data-scene-panel="terminal" aria-label="Build at the keyboard">
-      <a class="workflow-frame" href="@@BASE@@assets/workflow-terminal.png" aria-label="Open the full-size build at the keyboard capture"><img src="@@BASE@@assets/workflow-terminal.png" width="1920" height="1080" alt="Kitty and Zsh showing Git status and a real commit from the guest-only Hello-World project, beside Chrome." loading="lazy"></a>
+    <section class="workflow-scene" id="workflow-terminal" data-scene-panel="terminal" aria-label="Build at the keyboard" style="--capture-x:960;--capture-y:0;--capture-w:800;--capture-h:280;--capture-mobile-x:960;--capture-mobile-y:0;--capture-mobile-w:480;--capture-mobile-h:280">
+      <a class="workflow-frame" href="@@BASE@@assets/workflow-terminal.png" aria-label="Open the full-size build at the keyboard capture"><img class="workflow-capture" src="@@BASE@@assets/workflow-terminal.png" width="1920" height="1080" alt="Kitty and Zsh showing Git status and a real commit from the guest-only Hello-World project." loading="lazy"></a>
       <div class="scene-caption"><div><strong class="scene-name">Build at the keyboard</strong><p>A native Zsh prompt, readable Git output, and the browser within reach.</p></div><span class="key-hint">Terminal <kbd>Mod</kbd> + <kbd>T</kbd></span></div>
       <div class="scene-links"><a href="@@BASE@@assets/demo-desktop-041.mp4#t=38">Watch this scene <span aria-hidden="true">↗</span></a><a href="@@BASE@@recipes/terminal/">Kitty &amp; Zsh <span aria-hidden="true">→</span></a><span>Frame 0:43.6</span></div>
     </section>
-    <section class="workflow-scene" id="workflow-panel" data-scene-panel="panel" aria-label="Information on demand">
-      <a class="workflow-frame" href="@@BASE@@assets/workflow-panel.png" aria-label="Open the full-size information on demand capture"><img src="@@BASE@@assets/workflow-panel.png" width="1920" height="1080" alt="SwayNC&#x27;s System and Network cards showing the guest&#x27;s actual CPU, RAM and Ethernet readings beside Chrome and Kitty." loading="lazy"></a>
+    <section class="workflow-scene" id="workflow-panel" data-scene-panel="panel" aria-label="Information on demand" style="--capture-x:1470;--capture-y:0;--capture-w:450;--capture-h:320;--capture-mobile-x:1470;--capture-mobile-y:0;--capture-mobile-w:450;--capture-mobile-h:320">
+      <a class="workflow-frame" href="@@BASE@@assets/workflow-panel.png" aria-label="Open the full-size information on demand capture"><img class="workflow-capture" src="@@BASE@@assets/workflow-panel.png" width="1920" height="1080" alt="SwayNC&#x27;s System and Network cards showing the guest&#x27;s actual CPU, RAM and Ethernet readings." loading="lazy"></a>
       <div class="scene-caption"><div><strong class="scene-name">Information on demand</strong><p>Open SwayNC, check the available system and network readings, then return to work.</p></div><span class="key-hint">Panel <kbd>Mod</kbd> + <kbd>N</kbd></span></div>
       <div class="scene-links"><a href="@@BASE@@assets/demo-desktop-041.mp4#t=45">Watch this scene <span aria-hidden="true">↗</span></a><a href="@@BASE@@recipes/notifications/">The panel <span aria-hidden="true">→</span></a><span>Frame 0:48.6</span></div>
     </section>
-    <section class="workflow-scene" id="workflow-controls" data-scene-panel="controls" aria-label="Device controls">
-      <a class="workflow-frame" href="@@BASE@@assets/workflow-controls.png" aria-label="Open the full-size device controls capture"><img src="@@BASE@@assets/workflow-controls.png" width="1920" height="1080" alt="Rofi Audio showing the guest&#x27;s default virtual output unmuted at 40 percent and input unmuted at 100 percent." loading="lazy"></a>
+    <section class="workflow-scene" id="workflow-controls" data-scene-panel="controls" aria-label="Device controls" style="--capture-x:440;--capture-y:309;--capture-w:800;--capture-h:463;--capture-mobile-x:448;--capture-mobile-y:320;--capture-mobile-w:480;--capture-mobile-h:430">
+      <a class="workflow-frame" href="@@BASE@@assets/workflow-controls.png" aria-label="Open the full-size device controls capture"><img class="workflow-capture" src="@@BASE@@assets/workflow-controls.png" width="1920" height="1080" alt="Rofi Audio showing the guest&#x27;s default virtual output unmuted at 40 percent and input unmuted at 100 percent." loading="lazy"></a>
       <div class="scene-caption"><div><strong class="scene-name">Device controls</strong><p>Find an audio device, see its state, and choose a named action in Rofi.</p></div><span class="key-hint">Launcher <kbd>Mod</kbd> + <kbd>D</kbd></span></div>
       <div class="scene-links"><a href="@@BASE@@assets/demo-desktop-041.mp4#t=56">Watch this scene <span aria-hidden="true">↗</span></a><a href="@@BASE@@recipes/rofi-controls/">Device controls <span aria-hidden="true">→</span></a><span>Frame 0:58.0</span></div>
     </section>
   </div>
-  <figcaption class="capture-note">Unedited frames from the staged Arch reference · Components 0.4.1 · 2026-10-30. Public sample content and actual guest readings. <a href="@@BASE@@assets/provenance.json">Capture sources</a>.</figcaption>
+  <figcaption class="capture-note">Staged Arch reference · Components 0.4.1 · 2026-10-30. Detail views crop the original frames; full desktop views retain the context. Public sample content and actual guest readings. <a href="@@BASE@@assets/provenance.json">Capture sources</a>.</figcaption>
 </figure>

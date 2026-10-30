@@ -213,7 +213,7 @@ class BuildContracts(unittest.TestCase):
         manifest["desktop_demos"]["clips"] = [next(item for item in manifest["desktop_demos"]["clips"] if item["id"] == "terminal")]
         manifest["files"] = [item for item in manifest["files"] if "demo-terminal." in item["path"]]
         self.assertEqual([item["id"] for item in builder.validate_desktop_demo_manifest(manifest)["clips"]], ["terminal"])
-        with self.assertRaisesRegex(ValueError, "exactly the four site clips"):
+        with self.assertRaisesRegex(ValueError, "complete site clip inventory"):
             builder.validate_desktop_demo_manifest(manifest, require_complete=True)
 
     def test_reused_terminal_pilot_assets_match_their_source_receipt(self):
@@ -283,27 +283,27 @@ class BuildContracts(unittest.TestCase):
     def test_native_demos_have_static_steps_controls_and_staged_provenance(self):
         builder.build(self.output)
         tour = (self.output / "tour/index.html").read_text()
-        self.assertEqual(tour.count("<video "), 4)
-        self.assertEqual(tour.count('controls preload="none"'), 4)
-        self.assertEqual(tour.count('type="video/mp4"'), 4)
-        self.assertEqual(tour.count('class="native-demo-download"'), 4)
-        self.assertEqual(tour.count("Open or download MP4"), 4)
+        self.assertEqual(tour.count("<video "), 5)
+        self.assertEqual(tour.count('controls preload="none"'), 5)
+        self.assertEqual(tour.count('type="video/mp4"'), 5)
+        self.assertEqual(tour.count('class="native-demo-download"'), 5)
+        self.assertEqual(tour.count("Open or download MP4"), 5)
         self.assertNotIn(" autoplay", tour)
         self.assertIn("Mod+N", tour)
         self.assertIn("Mod+Y", tour)
-        self.assertIn("public sample content", tour)
+        self.assertIn("public sample content", " ".join(tour.split()))
         self.assertIn("Media provenance", tour)
         self.assertIn("Capture receipt", tour)
-        self.assertIn("sharing is not shown in any clip", tour)
+        self.assertIn("sharing is not shown in any clip", " ".join(tour.split()))
         self.assertIn('href="/niri-plus/recipes/files/"', tour)
         self.assertIn('href="/niri-plus/recipes/terminal/"', tour)
         self.assertIn('href="/niri-plus/recipes/notifications/"', tour)
         self.assertIn('href="/niri-plus/recipes/clipboard/"', tour)
         design = (self.output / "design/index.html").read_text()
-        self.assertIn('src="/niri-plus/assets/demo-overview.png"', design)
+        self.assertIn('src="/niri-plus/assets/arch-reference/black-workspace-041.png"', design)
         self.assertIn('href="/niri-plus/tour/#native-reference-demo"', design)
         provenance = json.loads((self.output / "assets/provenance.json").read_text())
-        self.assertEqual(len(provenance["desktop_demos"]["clips"]), 4)
+        self.assertEqual(len(provenance["desktop_demos"]["clips"]), 5)
         self.assertTrue(all(item["human_review"] == "pending" for item in provenance["desktop_demos"]["clips"]))
         self.assertTrue(all(item["automated_review"] == "passed" for item in provenance["desktop_demos"]["clips"]))
         sharing = provenance["desktop_demos"]["separate_guest_checks"][0]

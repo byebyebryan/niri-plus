@@ -6,11 +6,24 @@ that shaped it.
 
 ## Native reference demo
 
-The reference demonstration uses a staged Arch guest and public sample content.
-The overview combines the full browser/files and information clips with a
-12-second excerpt from the earlier terminal pilot. Each clip identifies its
-source scene and any reused footage. These are staged VM demonstrations, not
-recordings of my daily desktop or evidence of a full-installation qualification.
+The current recording shows native Audio and Network controls beside Chrome
+and Kitty in a staged Arch guest. The workspace is pure black, with warm
+Neutral Slate controls and the Balanced+ terminal palette. The browser shows
+public Niri Plus content and the terminal uses a guest sample Git project.
+Ethernet and virtual-audio readings come from the guest.
+
+<!-- niri-plus:demo-controls -->
+Open Audio, inspect device details, adjust and restore its volume/mute state,
+then inspect the connected Ethernet link in Network.
+<!-- /niri-plus:demo-controls -->
+
+## Earlier workflow overview
+
+The following 0.3.1 recordings retain the earlier charcoal workspace. The
+overview combines the browser/files and information clips with a 12-second
+excerpt from the earlier terminal pilot. Each player identifies its capture
+date and component version. These are staged VM demonstrations with public
+sample content.
 
 <!-- niri-plus:demo-overview -->
 Watch the staged Arch desktop move between browser and terminal work, with
@@ -114,13 +127,15 @@ explains the independently useful projects and their prerequisites.
 The interactive walkthrough and identity gallery remain illustrations. The
 Agent Plus image is a real Rofi rendering with sample data, and the SwayNC image
 is an isolated native rendering with its fixture values labelled separately.
-The recordings show actual software in a staged Arch guest with public sample
-content. The terminal clip is byte-identical to the accepted earlier pilot; it
-is not a fresh scene from the later demonstration. Whole-monitor browser
-sharing is not shown in any clip. It passed separately with an explicit WLR
-compatibility package in this VM only; the core assembler and fleet defaults do
-not select that package. Read the [guest demonstration receipt](planning/desktop-demonstration-receipt.md)
-and its [WLR compatibility note](../tools/vm/desktop/wlr-compat/README.md).
+The recordings show actual software in staged Arch guests with public sample
+content. The 0.4.1 controls clip and black-workspace still come from the current
+reference; the four earlier clips keep their original 0.3.1 inputs and bytes.
+The terminal clip reuses its accepted earlier pilot. Whole-monitor browser
+sharing is not shown in any clip. Sharing is checked separately and recorded
+in the relevant receipt; both reference guests needed the conditional
+[WLR compatibility package](../tools/vm/desktop/wlr-compat/README.md).
+Read the [current reference and capture receipt](planning/black-workspace-receipt.md)
+or the [earlier demonstration receipt](planning/desktop-demonstration-receipt.md).
 The [media record](../assets/provenance.json) lists versions, measurements,
 source and output hashes, fixture labels, processing and separate review status.
 

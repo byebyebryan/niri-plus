@@ -1,10 +1,15 @@
 # Desktop consolidation and black workspace pass
 
-Status: execution authorized, 2026-10-29. The user approved this plan through a
-Luna goal loop, including its publication and scoped fleet delivery. Sol owns
-design, copy, integration and acceptance; Luna Max owns bounded technical
-implementation and validation. Execution results are recorded separately from
-the plan's required gates.
+Status: components 0.4.1 published and delivered to all three selected hosts;
+fresh Arch reference qualified and checkpointed on 2026-10-30 UTC. Current
+native controls media, the updated guide and both site variants passed final
+checks. The [execution receipt](black-workspace-receipt.md) records measured
+results and remaining human/device acceptance.
+
+The user approved this plan through a Luna goal loop, including publication and
+scoped fleet delivery. Sol owns design, copy, integration and acceptance; Luna
+Max owns bounded technical implementation and validation. The sections below
+retain the plan and its original starting point.
 
 ## Outcome
 

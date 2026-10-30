@@ -51,10 +51,10 @@ PAGES = {
     "reference/": ("docs/reference.md", "Search the keyboard reference, explore source versions, and download portable examples."),
 }
 SOURCES = {source: route for route, (source, _) in PAGES.items()}
-ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png"}
+ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png"}
 DEMO_ASSETS = {
     f"assets/demo-{scene}.{suffix}"
-    for scene in ("overview", "browser-files", "terminal", "information")
+    for scene in ("overview", "browser-files", "terminal", "information", "controls")
     for suffix in ("mp4", "png")
 }
 SWAYNC_DEMO_ASSETS = {
@@ -89,6 +89,22 @@ PUBLIC_LOCAL_DOCS = {
     "docs/planning/rofi-controls-implementation-receipt.md",
 }
 DEMO_CLIPS = {
+    "controls": {
+        "video": "assets/demo-controls.mp4",
+        "poster": "assets/demo-controls.png",
+        "id": "demo-controls",
+        "title": "Device controls, on demand",
+        "description": "Audio and Network open beside Chrome and Kitty in the current black-workspace desktop. Device state stays separate from the named actions and keyboard selection.",
+        "steps": [
+            "Open Audio from Mod+D, inspect its default devices, and select Details with Tab and Enter.",
+            "Adjust the virtual output's volume and mute state, then restore the original settings.",
+            "Open Network, inspect the connected Ethernet link and its address, then close the menu.",
+        ],
+        "setup": [
+            ("Direct Rofi controls", "recipes/rofi-controls.md"),
+            ("Agent installation guide", "setup-agent.md#6-install-the-selected-notification-and-clipboard-paths"),
+        ],
+    },
     "overview": {
         "video": "assets/demo-overview.mp4",
         "poster": "assets/demo-overview.png",
@@ -223,7 +239,7 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
     if len(clip_ids) != len(set(clip_ids)) or set(clip_ids) - set(DEMO_CLIPS):
         raise ValueError("desktop demo provenance has duplicate or unknown clips")
     if require_complete and set(clip_ids) != set(DEMO_CLIPS):
-        raise ValueError("desktop demo provenance must define exactly the four site clips")
+        raise ValueError("desktop demo provenance must define the complete site clip inventory")
     file_records = provenance.get("files")
     if not isinstance(file_records, list):
         raise ValueError("asset provenance files must be a list")

@@ -115,7 +115,7 @@ try {
   assert.equal(await nativeDemoLink.count(), 1);
   await nativeDemoLink.click();
   assert.match(page.url(), /tour\/#native-reference-demo$/);
-  assert.equal(await page.locator("[data-native-demo]").count(), 4);
+  assert.equal(await page.locator("[data-native-demo]").count(), 5);
   const provenanceResponse = await page.request.get(origin + "assets/provenance.json");
   assert.equal(provenanceResponse.status(), 200);
   const provenance = await provenanceResponse.json();
@@ -131,7 +131,7 @@ try {
   const invalidRange = await page.request.get(origin + "assets/demo-overview.mp4", { headers: { Range: "bytes=999999999999999-" } });
   assert.equal(invalidRange.status(), 416);
   checks += 5;
-  for (const name of ["overview", "browser-files", "terminal", "information"]) {
+  for (const name of ["overview", "browser-files", "terminal", "information", "controls"]) {
     const selector = `[data-native-demo="${name}"] video`;
     const video = page.locator(selector);
     assert.equal(await video.count(), 1);
@@ -346,10 +346,10 @@ try {
     checks += 4;
   }
   await staticPage.goto(origin + "tour/");
-  assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 4);
+  assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 5);
   assert.equal(await staticPage.locator("[data-native-demo] video[autoplay]").count(), 0);
   assert.ok((await staticPage.locator("[data-native-demo]").allInnerTexts()).join(" ").includes("Mod+Y"));
-  assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 12);
+  assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 15);
   checks += 4;
   await staticPage.goto(origin + "design/");
   assert.equal(await staticPage.locator("[data-surface-panel]:visible").count(), 4);

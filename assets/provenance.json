@@ -26,7 +26,7 @@
       "sha256": "cf3b011f4d111cc3bd767adde484b28b3fb6ce7e7414b49d0f6269e653ca66ef",
       "source": "Unedited still from the second fresh Arch guide replay; Chrome displays the local Niri Plus reference fixture and live Fcitx composition.",
       "license": "MIT",
-      "description": "Native Chrome Wayland text input at scale 1.5. The first fixture field contains committed 你好latin; a live Pinyin candidate popup is open at the second field. The local fixture uses no account or external service.",
+      "description": "Native Chrome Wayland text input at scale 1.5. The first fixture field contains committed \u4f60\u597dlatin; a live Pinyin candidate popup is open at the second field. The local fixture uses no account or external service.",
       "capture_date": "2026-10-28",
       "capture_label": "Staged Arch Linux x86_64 guest, fresh E3 replay",
       "captured_components": "Chrome 156.0.8078.47-1; Fcitx5 5.1.23-1; fcitx5-chinese-addons 5.1.15-2",
@@ -108,6 +108,37 @@
       "source": "Decoded 4-second frame from the unaltered 2026-10-28 native information recording.",
       "license": "GPL-3.0-only",
       "description": "Unedited 1920x1080 SwayNC poster frame; source UI attribution is in assets/LICENSES.txt."
+    },
+    {
+      "path": "assets/arch-reference/black-workspace-041.png",
+      "sha256": "86585bf69e9c9ba6335685cf8d0623998de847c942f8866d623f252c72d63a46",
+      "license": "MIT",
+      "source": "Unedited lossless native frame from the accepted 0.4.1 Arch reference working guest; Chrome displays the public Niri Plus Story page beside the installed Kitty/Zsh sample Git project.",
+      "description": "Current pure-black workspace, warm Neutral Slate browser and native Balanced+ terminal, with Kitty keyboard focus.",
+      "capture_date": "2026-10-30",
+      "capture_label": "Staged Arch Linux x86_64 guest, 0.4.1 reference",
+      "capture_receipt_path": "docs/planning/black-workspace-receipt.md",
+      "captured_components": "Niri 26.04-1; Chrome 156.0.8078.47-1; Kitty 0.49.2-1; Zsh 5.9.2-1",
+      "identity_source": "design/history/neutral-slate-black-workspace.json",
+      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
+      "agent_review": "passed: primary Sol visual review",
+      "human_review": "pending"
+    },
+    {
+      "path": "assets/demo-controls.mp4",
+      "sha256": "f587e58d6dac06e60efd72d7f970c036bdd04173b4141a7ad1e614e2d9bc95aa",
+      "source": "Unedited native capture from the accepted 0.4.1 Arch reference working guest; see docs/planning/black-workspace-receipt.md.",
+      "license": "MIT",
+      "description": "Silent native Audio and Network controls demonstration beside the public Niri Plus Story page and a guest-only public Git sample.",
+      "capture_date": "2026-10-30"
+    },
+    {
+      "path": "assets/demo-controls.png",
+      "sha256": "212dadf25fb16f5df51de6bf1e61e5dff79bb0d4fccd250eccedf4f653e39148",
+      "source": "Unedited native capture from the accepted 0.4.1 Arch reference working guest; see docs/planning/black-workspace-receipt.md.",
+      "license": "MIT",
+      "description": "Unedited native PNG captured during the controls recording, showing actual default audio devices and their original volume/mute state.",
+      "capture_date": "2026-10-30"
     }
   ],
   "desktop_demos": {
@@ -171,6 +202,34 @@
         "scope": "Staged Arch QEMU/VirtIO guest only. Installed explicitly after the core assembler; not selected by the assembler, not a fleet/default adoption, and not a fresh-install qualification. The repository 0.8.4 package and unmodified upstream 0.8.2 failed this VM share test.",
         "recipe_path": "tools/vm/desktop/wlr-compat/README.md",
         "receipt_path": "docs/planning/desktop-demonstration-receipt.md#virtio-wlr-sharing-compatibility"
+      },
+      {
+        "id": "wlr-whole-monitor-sharing-041",
+        "status": "passed during the fresh 0.4.1 Arch reference replay with the conditional guest compatibility package",
+        "package": {
+          "name": "xdg-desktop-portal-wlr",
+          "version": "0.8.2-1.3",
+          "upstream_commit": "01171a150b705cf07066ebc0fb7e1ff537027bec",
+          "upstream_archive_sha256": "04ad0e4a7717265475fd394b614092d70909ff2089c08bb2b90adde9e8c436cd",
+          "patches": [
+            {
+              "name": "trace-buffer-constraints.patch",
+              "sha256": "5e5d82645eb2e6e4eba23b472dc29b43e01a653da228c4a7fdcaef9349a43c0b"
+            },
+            {
+              "name": "fallback-unsupported-dmabuf.patch",
+              "sha256": "b719065f86a917de28ab633f82c4ee44035f5afec9a4863526b05893a354c10c"
+            }
+          ],
+          "local_package_sha256": "9c6f9e958f34653ba8c6bae38562b4a077da3b1c57d9f05b7c5f2d0e79dd42fb"
+        },
+        "observed_result": "Native Chrome whole-monitor capture at 1280x800 advanced from 120 to 540 frames, then stopped at 918. After power-off/start and password login, a new capture advanced from 120 to 240, then stopped at 450. Stop ended tracks and removed each exact capture source/input node and link.",
+        "recorded_in_clips": false,
+        "components_version": "0.4.1",
+        "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
+        "scope": "Fresh installed-Arch QEMU/VirtIO guest only. Stock 0.8.4 produced zero frames before this documented conditional selection. This is neither a fleet/default adoption nor physical hardware or human playback acceptance.",
+        "recipe_path": "tools/vm/desktop/wlr-compat/README.md",
+        "receipt_path": "docs/planning/black-workspace-receipt.md#tested-packages-and-virtio-sharing"
       }
     ],
     "clips": [
@@ -345,6 +404,79 @@
         "agent_review": "passed",
         "automated_review": "passed",
         "human_review": "pending"
+      },
+      {
+        "id": "controls",
+        "video": "assets/demo-controls.mp4",
+        "poster": "assets/demo-controls.png",
+        "width": 1920,
+        "height": 1080,
+        "duration_seconds": 35.4,
+        "frame_count": 1062,
+        "average_frame_rate": "5315/177",
+        "video_codec": "h264",
+        "pixel_format": "yuv420p",
+        "capture_date": "2026-10-30",
+        "source_capture_sha256": "f587e58d6dac06e60efd72d7f970c036bdd04173b4141a7ad1e614e2d9bc95aa",
+        "source_captures": null,
+        "poster_source": {
+          "path": "assets/demo-controls.png",
+          "sha256": "212dadf25fb16f5df51de6bf1e61e5dff79bb0d4fccd250eccedf4f653e39148",
+          "method": "Native lossless PNG captured during the same recording."
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Public Niri Plus Story page and guest-only Hello-World sample; actual Ethernet and ICH9 virtual audio. Wi-Fi and Bluetooth hardware are absent.",
+        "processing_notes": [
+          "Direct wf-recorder capture of the native 1920x1080 output at scale 1, targeting 30 fps with libx264. Published MP4 bytes are identical to the raw capture; no cuts, overlays, compositing or reused footage.",
+          "Silent H.264 High/yuv420p. TV range was requested and logged by the recorder, but ffprobe reports color_range=unknown; no color conversion was applied afterward.",
+          "Measured duration 35.4 seconds, average frame rate 5315/177. Full ffmpeg decode passed with 1062 decoded frames and no errors. The container reports 1063 packets/frames, with the final packet flagged discard.",
+          "Poster is a separate unedited native PNG captured during the recording. Audio returns to output 40% and input 100%, both unmuted."
+        ],
+        "agent_review": "passed",
+        "automated_review": "passed",
+        "human_review": "pending",
+        "source_versions": {
+          "public_source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+          "components": {
+            "version": "0.4.1",
+            "api_version": 1,
+            "source_commit": "317658ee7913bb58536f6ec1b2575043a9494449",
+            "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
+            "archive_sha256": "0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11",
+            "manifest_sha256": "30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4"
+          },
+          "identity": {
+            "source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+            "path": "design/history/neutral-slate-black-workspace.json",
+            "sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+          },
+          "guest_software": {
+            "niri": "26.04-1 (binary 26.04, commit 8ed0da4)",
+            "kanshi": "1.9.0-1",
+            "rofi": "2.0.0-1",
+            "kitty": "0.49.2-1",
+            "zsh": "5.9.2-1",
+            "google_chrome": "156.0.8078.47-1",
+            "wf_recorder": "0.6.0-2",
+            "ffmpeg": "2:9.0.2-2",
+            "grim": "1.5.0-2"
+          },
+          "browser_content": {
+            "url": "https://dev.byebyebryan.com/niri-plus/story/",
+            "source_commit": "45e8144e26533b6519fceddfa00647088697aab5",
+            "served_html_sha256": "07895417a15c84393bfe66f652e0b498abf51d56d02af03ab23e07e62cf4199b",
+            "account_state": "signed out; public Story content"
+          },
+          "git_sample": {
+            "remote": "https://github.com/octocat/Hello-World",
+            "repo_path": "/home/demo/code/public-sample",
+            "commit": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+            "branch": "public-sample",
+            "working_tree": "clean"
+          }
+        },
+        "capture_receipt_path": "docs/planning/black-workspace-receipt.md"
       }
     ],
     "capture_receipt_path": "docs/planning/desktop-demonstration-receipt.md"

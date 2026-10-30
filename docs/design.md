@@ -34,18 +34,17 @@ The overview shows browser work beside a terminal, with focus on the terminal.
 It is an illustration; no desktop action is performed.
 <!-- /niri-plus:overview -->
 
-The frame below is a poster from the earlier 0.3.1 staged Arch overview, before
-the black workspace refinement. The recording
-shows actual Chrome, Kitty/Zsh, and SwayNC surfaces with public local sample
-content; its 12-second terminal excerpt reuses the earlier pilot. It is not a
-recording of my daily desktop. [Watch the native overview](tour.md#native-reference-demo)
-or see the focused [browser and files](tour.md#browser-and-files),
+The frame below shows the current desktop running in the staged Arch reference:
+Chrome beside Kitty/Zsh, with a black workspace and the selected native theme.
+It uses public content and a guest sample project. [Watch the device controls](tour.md#native-reference-demo)
+or explore the earlier [browser/files](tour.md#browser-and-files),
 [terminal](tour.md#terminals-and-agents), and
-[information and clipboard](tour.md#information-when-i-want-it) demonstrations.
+[information/clipboard](tour.md#information-when-i-want-it) recordings.
 
-![Native staged Arch overview poster, showing Chrome beside Kitty/Zsh and the SwayNC panel with public local sample content](../assets/demo-overview.png)
+![Current native staged Arch desktop with Chrome and Kitty over a pure-black workspace.](../assets/arch-reference/black-workspace-041.png)
 
-*Earlier 0.3.1 staged guest capture · public local sample content · charcoal workspace. The terminal excerpt is reused pilot footage.*
+*Native staged Arch guest · components 0.4.1 · public sample content.
+[Capture details and review status](planning/black-workspace-receipt.md#media-and-publication).*
 
 ## Surface gallery
 

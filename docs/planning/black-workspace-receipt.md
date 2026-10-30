@@ -1,9 +1,10 @@
 # Black workspace and desktop consolidation receipt
 
-Recorded 2026-10-29. This implements the [consolidation plan](consolidation-and-black-workspace-pass.md).
+Recorded 2026-10-29; fresh-reference and media results added 2026-10-30 UTC.
+This implements the [consolidation plan](consolidation-and-black-workspace-pass.md).
 Components 0.4.1 and the selected identity are published, and the scoped update
-is installed on Carbon, Starship and Snap. The fresh-Arch reference is qualified and checkpointed. Current capture and
-publication results are recorded separately below.
+is installed on Carbon, Starship and Snap. The fresh-Arch reference is qualified
+and checkpointed. Capture and publication checks are recorded separately below.
 
 ## Selected appearance
 
@@ -170,7 +171,51 @@ acceptance remain explicit follow-ups.
 
 ## Media and publication
 
-The four earlier desktop clips remain byte-identical, labeled with their
-original 0.3.1 component tuple, retained identity and capture dates. Current
-controls media and a black-workspace still are pending the accepted replay.
-Human playback review remains separate from automated browser/media checks.
+The [current controls recording](../../assets/demo-controls.mp4) and
+[desktop still](../../assets/arch-reference/black-workspace-041.png) were captured
+on 2026-10-30 from the accepted reference's separate working copy. The native
+output was 1920×1080 at scale 1. Chrome shows the public Niri Plus Story page;
+Kitty/Zsh shows the clean `public-sample` branch of
+`octocat/Hello-World` at `7fd1a60b01f91b314f59955a4e4d4e80d8edf11d`.
+The recording opens Audio, inspects its device details, adjusts volume and mute,
+restores the original settings, then inspects the connected Ethernet link in
+Network and returns to the desktop. Wi-Fi and Bluetooth hardware are absent.
+
+The 35.4-second silent H.264 High/yuv420p MP4 is the original recorder output,
+with no cuts, overlays, compositing or reused footage. Its SHA-256 is
+`f587e58d6dac06e60efd72d7f970c036bdd04173b4141a7ad1e614e2d9bc95aa`.
+Full decode passed without errors: 1,062 decoded frames, measured average rate
+`5315/177`. The container lists 1,063 packets/frames with the final packet
+flagged discard. TV range was requested and logged by wf-recorder, while
+ffprobe reports `color_range=unknown`; no later color conversion was applied.
+The native PNG poster was captured during the same take. Recorder/tool versions,
+all output hashes, processing, exact source pins and review states are in the
+[media record](../../assets/provenance.json).
+
+The clip and still use components 0.4.1 and the retained black-workspace identity.
+The browser's public page was separately verified against source
+`45e8144e26533b6519fceddfa00647088697aab5`. The four earlier desktop clips
+remain byte-identical, labeled with their original 0.3.1 component tuple,
+retained identity and capture dates. Neither those recordings nor the new clip
+shows monitor sharing; its independent warm/cold checks are described above.
+Two unsuccessful recording trials are retained privately outside Git.
+
+Sol reviewed the native still and sampled frames across the full sequence.
+Full decode passed; the final site also checks native playback, seeking,
+responsive layout and static fallbacks before publication. Human playback and
+physical OLED/aesthetic acceptance remain pending.
+
+The final normal and portable builds each contain 23 pages, 152 files and
+824 checked local links. Each passed 764 owned browser checks across widths
+375, 768, 1280 and 1600, with interactive and JavaScript-disabled paths and no
+browser errors. The source suite ran 88 tests with three native-GI modules
+delegated to the explicit system-Python gate; desktop checks passed 31 and
+shell checks passed 85. Component exports matched their sources. Publication
+uses the checked main revision through GitHub Pages; direct served-byte
+verification is retained with the deployment evidence.
+
+The final shell gate also exposed a race in its own interactive test harness:
+it accepted an intermediate prompt before the transition had finished. Submitting
+each fixture phase as one compound command removed that ambiguity. The delayed
+transition reproducer and all 85 shell checks passed. No published component
+code or release bytes changed for this test correction.

@@ -72,3 +72,15 @@ captures, segments, processing and output hashes.
 The interactive desktop illustration and social image are original code-rendered
 Niri Plus artwork under the repository MIT license.
 Niri Plus is independent of the Niri project.
+
+assets/arch-reference/black-workspace-041.png, demo-controls.mp4 and
+demo-controls.png: original native staged-Arch capture media, captured
+2026-10-30, MIT, Copyright 2026 Bryan Bai. They show the public Niri Plus Story
+page, an owned guest sample Git checkout, Kitty/Zsh and the Niri Plus Rofi
+controls. No account or private device content is included. The sample Git
+checkout is https://github.com/octocat/Hello-World at commit
+7fd1a60b01f91b314f59955a4e4d4e80d8edf11d; the frame shows public Git metadata.
+Independent Niri, Chrome, Kitty, Rofi and other software retain their own
+licenses. This notice applies to the original captures, not their software.
+Exact component/identity pins, source hashes, processing and separate review
+status are recorded in provenance.json and the current execution receipt.

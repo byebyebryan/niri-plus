@@ -24,6 +24,16 @@ It uses fictional devices and simulated outcomes. The green frame marks a
 connected/default device; blue marks keyboard selection. Muted, Saved and
 Paired remain readable text states.
 
+## Native controls in use
+
+The staged Arch reference shows actual Ethernet and virtual-audio devices
+beside Chrome and Kitty. Wi-Fi and Bluetooth hardware are absent in this guest.
+
+<!-- niri-plus:demo-controls -->
+Open Audio, inspect Details, adjust and restore its volume/mute state, then
+inspect the connected Ethernet link in Network.
+<!-- /niri-plus:demo-controls -->
+
 ## Everyday use
 
 Open `Mod+D` and choose **Network**, **Audio** or **Bluetooth**. Up/Down moves

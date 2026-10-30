@@ -1,30 +1,27 @@
 {
   "schema_version": 1,
   "components": {
-    "version": "0.3.1",
+    "version": "0.4.1",
     "api_version": 1,
-    "source_commit": "014a14241bd722186ae9248e71162e75cf7af7b1",
-    "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.3.1/niri-plus-components-0.3.1.tar.gz",
-    "archive_sha256": "868d9de46f54af9b9f563dd52cd94df9358fafaf9c9b33666c557c05d318a843",
-    "manifest_sha256": "de3e981f8bb76d2b4ccfbf7f2722e81fc9f73edf7b62de11cad55f7a209e7ed3"
+    "source_commit": "317658ee7913bb58536f6ec1b2575043a9494449",
+    "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
+    "archive_sha256": "0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11",
+    "manifest_sha256": "30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4"
   },
   "identity": {
     "path": "design/identity.json",
-    "sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455"
+    "sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
   },
   "public_source": {
     "repository": "https://github.com/byebyebryan/niri-plus.git",
-    "commit": "b62df460884b5a4d5e8c7eeb05c132a0b26814ae",
-    "examples_manifest_sha256": "6919c539d34848f8587f1f3b2d2fb045372e1c2810bbffa9f1b6dc7db1a89222",
+    "commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+    "examples_manifest_sha256": "1cc868c86bc288ea9b09bd3f300033bfad2e3a5d0da4ca5e8a5ea68c409f9055",
     "assets": [
       "examples/clipboard/config",
       "examples/clipboard/profiles/minimal-niri/clipboard-history@.service",
       "examples/clipboard/rofi-clipboard",
       "examples/desktop/desktop-session-menu",
       "examples/desktop/desktop-session-ready",
-      "examples/desktop/niri-plus-audio.desktop",
-      "examples/desktop/niri-plus-bluetooth.desktop",
-      "examples/desktop/niri-plus-network.desktop",
       "examples/desktop/niri-plus-session.desktop",
       "examples/desktop/power.toml.example",
       "examples/displays/kanshi.conf",

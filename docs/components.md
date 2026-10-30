@@ -12,7 +12,8 @@ shell and appearance inputs are listed in `components/metadata.json`.
 See the [release and installation recipe](recipes/rofi-controls.md) and
 [implementation receipt](planning/rofi-controls-implementation-receipt.md).
 Components 0.4.1 are installed through chezmoi on Carbon, Starship and Snap.
-The numbered Arch reference remains 0.3.1 pending its next fresh-base replay.
+The [numbered Arch reference](setup-agent.md) now selects 0.4.1 and has its
+own [fresh-base replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference).
 The [current execution receipt](planning/black-workspace-receipt.md) records
 publication, native workspace qualification and scoped fleet delivery. Dated
 adoption records below retain the release they qualified.

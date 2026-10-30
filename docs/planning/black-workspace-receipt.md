@@ -2,8 +2,8 @@
 
 Recorded 2026-10-29. This implements the [consolidation plan](consolidation-and-black-workspace-pass.md).
 Components 0.4.1 and the selected identity are published, and the scoped update
-is installed on Carbon, Starship and Snap. Fresh-Arch replay and current capture
-results will be recorded here before the installation reference is promoted.
+is installed on Carbon, Starship and Snap. The fresh-Arch reference is qualified and checkpointed. Current capture and
+publication results are recorded separately below.
 
 ## Selected appearance
 
@@ -78,18 +78,95 @@ follow-ups. The installed read-only checks do not claim those results.
 
 ## Fresh Arch reference
 
-The final frozen replay is in progress from a new offline copy of the installed
-Arch base. It uses public inputs, an ordinary sudo account and stock SDDM
-password login before theming. Existing reference/demo/base checkpoints remain
-protected, and the VM is autostart-disabled. The operational route is still
-0.3.1 until the 0.4.1 task matrix and recovery checkpoint pass.
+The 0.4.1 reference passed on 2026-10-30 UTC, starting from a new offline copy
+of installed Arch Linux x86-64 with 184 packages and an ordinary sudo account.
+The run used the published 44-file bundle, independently pinned identity and
+31 public examples. The stopped, accepted state is preserved as
+`arch-reference-0.4.1`, with matching disk, EFI variables, inactive domain
+and reviewed task matrix. Both source and checkpoint image checks passed;
+all 17 files in the earlier base/reference/demo checkpoints retained their
+original size and SHA-256. Autostart remains disabled.
 
-The first development attempt found that Qt6ct warns when
-`QT_QPA_PLATFORMTHEME=qt5ct:qt6ct`. Native Qt5 and Qt6 plugin/palette probes
-showed that the single `qt5ct` name selects the matching installed plugin for
-both versions while preserving colors and fonts and removing that warning.
-The public recipe was corrected; managed hosts already used the single name.
-The final replay starts from a fresh base with the corrected frozen recipe.
+### Guide findings and exact inputs
+
+The initial reviewed guide was commit
+`7903048f008f98673b8b323dfa7e1342b8cb38c7`, SHA-256
+`3c56f1a8077e1c8dcb8c442b3d22632a4c705f26d4a35e981224d6f1d9de2010`.
+The execution record retains these public amendments and the affected checks:
+
+| Revision | Correction | Verification |
+| --- | --- | --- |
+| `7903048` | Use the single `qt5ct` platform-theme name for both installed Qt versions. | A separate development attempt found Qt6ct's warning with the combined name. The accepted run began again from a fresh base; native Qt5/Qt6 plugins, fonts and palette passed without that warning. |
+| `e47fbbf` | Move user-local launcher PATH setup before its first use. | Applied during stage 6 of the run; real Niri-spawned Rofi/helpers and later fresh/cold logins resolved the installed commands. |
+| `e31c57b` | Start packaged audio units before testing controls; distinguish the retained legacy entries from direct controls. | Native socket/service owners, direct entries and virtual output actions passed. The three legacy entries were kept out of the selected stage. |
+| `bcaccd7` | Check PAM initialization completion and native wallet operation. | The short-lived initializer exited 0 with `Result=success`; Secret Service/portal owners and disposable store/read passed without another password prompt. PAM stayed unchanged. |
+
+This is a fresh-base run with reviewed guide amendments and repeated affected
+gates. The code, identity and public-example pins in the published-input table
+stayed fixed. The promoted guide names the same input inventory as
+`tools/reference/inputs.json`; the earlier inventory is retained under
+`tools/reference/history/inputs-0.3.1.json`.
+
+The execution review also caught two omitted installation steps in the lab
+runner: Session's helper and the hardware-feedback helpers/bindings. Their
+existing guide commands were completed and their native tasks tested before
+the accepted checkpoint. No first-party implementation or release pin changed.
+
+### Native task matrix
+
+| Area | Observed result | Boundary |
+| --- | --- | --- |
+| Login and appearance | Stock SDDM password login/logout/relogin before theming; themed password login after changes, restart and cold start. Native GTK, Qt5/Qt6, Rofi and Kitty use the staged appearance; workspace is black with a charcoal overview. | Compositor/image evidence; physical/OLED review remains separate. |
+| Browser and files | Ordinary signed-out Chrome first run; PDF in Chrome, image in Gwenview, audio/video defaults in mpv. Native GTK upload returned the exact downloaded PDF bytes. Ark extraction matched the archive's README bytes. | Public disposable samples and actual app paths. |
+| Storage and authorization | Native polkit Cancel denied and authentication allowed. A newly created 64 MiB serial-mapped scratch disk passed authorized UDisks mount, user write/read/hash comparison and unmount. | Scratch was detached and retained; no existing disk was formatted. |
+| Wallet | Real password login initialized KWallet; disposable store/read and retained lookup after cold login matched without a second password prompt. Test secret cleared. | Basic Secret Service/PAM proof; real NM credential/schema compatibility remains a device follow-up. |
+| Locking and idle | Invalid input kept one Gtklock alive; correct input unlocked it. Repeated lock kept one process. Idle reload preserved the active locker. The session's normal lock request worked. | Selected power policy retained; physical suspend/resume remains separate. |
+| Panel and clipboard | Fresh-login panel showed live CPU/RAM and Ethernet/IP; missing cards hid. Exact text/PNG restore, selected Delete, Cancel-first Clear and confirmed Clear passed. | Guest readings and owned sample clipboard only. |
+| Network controls | Real connected `eth0`, saved profile and IPv4 details; named action cycling, Back and Cancel worked. NetworkManager handover retained the original address, DNS and HTTPS, with rollback armed first and cancelled after verification. | Guest-only cloud-init/networkd handover; Wi-Fi hardware absent. |
+| Audio controls and feedback | Output 40%→45%→40%, mute/unmute, input helper mute/unmute at 100%, all restored. Output volume keys and transient banners worked; expired feedback left history count zero. | Virtual mic-key injection did not toggle input; that key path is unverified. Backlight absent; brightness helper/binds installed. |
+| Playback | Actual ICH9 HDA playback reached ALSA RUNNING and produced nonzero monitor signal; volume/mute baseline restored. | Physical/SPICE audibility and microphone signal unverified. |
+| Displays and input | One Kanshi owner changed scale 1→1.5→1 and restored config. Native Pinyin preedit, cancellation, selection and committed `你好latin` passed in Kitty and Chrome at fractional scale. | Virtual output; physical docking/hotplug/EDID not exercised. |
+| Terminal | Four pinned shell trees verified; new Kitty used installed Zsh, first prompt fetched gitstatusd, history and completion worked. An actual public-sample Git branch appeared in the prompt. | Account login shell stayed Bash; no private shell/cache import. |
+| Monitor sharing | Native Entire Screen capture advanced frames with the documented VirtIO compatibility package, including after cold start. Stop released the exact owned PipeWire nodes/link. | Monitor-only; conditional guest package described below. |
+| Lifecycle | Cancel-first Restart preserved boot ID; confirmed Restart changed it and returned to themed login. Normal logout stopped Niri/Fcitx/Kanshi/SwayNC and graphical targets; relogin restored one owner each. Final Session Shut down powered off the guest. | Same guarded domain/disk/EFI/NIC; autostart disabled. |
+
+### Tested packages and VirtIO sharing
+
+| Component | Recorded package version |
+| --- | --- |
+| Niri / SDDM / Rofi | `26.04-1` / `0.21.0-7` / `2.0.0-1` |
+| Chrome / Kitty / Zsh | `156.0.8078.47-1` / `0.49.2-1` / `5.9.2-1` |
+| Qt selectors | `qt5ct 1.9-2`, `qt6ct 0.11-9` |
+| SwayNC fork / Gtklock / Cliphist | `0.12.6-15` / `5.0.0-1` / `1:0.7.0-2` |
+| PipeWire / WirePlumber | `1:1.6.10-1` / `0.5.18-1` |
+| NetworkManager / GTK portal | `1.58.1-2` / `1.15.3-2` |
+| Fcitx / KWallet / KWallet PAM | `5.1.23-1` / `6.31.0-1` / `6.8.2-1` |
+
+Stock WLR `0.8.4-1` created a running stream but delivered zero frames in this
+VirtIO guest. Native Stop released its nodes. The existing
+[conditional compatibility recipe](../../tools/vm/desktop/wlr-compat/README.md)
+was then built from upstream commit `01171a150b705cf07066ebc0fb7e1ff537027bec`,
+source archive SHA-256
+`04ad0e4a7717265475fd394b614092d70909ff2089c08bb2b90adde9e8c436cd`.
+The local `0.8.2-1.3` package SHA-256 is
+`9c6f9e958f34653ba8c6bae38562b4a077da3b1c57d9f05b7c5f2d0e79dd42fb`.
+Its normal user/D-Bus activation matched the new binary, with no drop-ins.
+
+The native preview reached frames 120→540 and a later stop at 918. After full
+power-off/start and password login, a new capture reached 120→240 and stopped
+at 450. Both stops ended tracks and removed their exact source/input nodes and
+link while the normal backend remained available. The stock recovery package
+is retained, SHA-256
+`85efdb0e0fcafea76a24c766b4022d6a2a0176bb132a597b9e8fd5bbc634cab8`.
+This compatibility selection is local to the guest; fleet portal defaults were
+preserved.
+
+The accepted checkpoint disk SHA-256 is
+`686a1604b028d5af27ee8252b1dae45ebbd8d1531f5ee7e5327a154056fe4299`;
+matching EFI variables SHA-256 is
+`a7c55acadd982035e5653924c474f920254d9c6e16527a637085ba2273405edd`.
+The working copy is used separately for capture. Hardware-only and human
+acceptance remain explicit follow-ups.
 
 ## Media and publication
 

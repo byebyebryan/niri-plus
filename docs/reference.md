@@ -69,8 +69,9 @@ and confirmed power actions; see the [utility recipe](recipes/desktop-utilities.
 The 0.4.1 delivery on all three hosts passed exact installed-file,
 native dependency, fresh callback/startup and no-write repeat checks on
 2026-10-29. Physical Wi-Fi/wallet, speaker/microphone and peripheral actions
-remain normal-use checks. The numbered Arch guide still selects 0.3.1 until
-its updated fresh-base replay passes.
+remain normal-use checks. The [Arch agent guide](setup-agent.md) now selects
+0.4.1; its [fresh-base receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
+records the separate guest tasks and documented VirtIO sharing branch.
 
 ## Session and hardware ownership
 

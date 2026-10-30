@@ -4,10 +4,9 @@ Network, Audio and Bluetooth use the same compact picker as the other Plus
 tools: search, choose a device, then run an explicit action. SwayNC remains the
 place to glance at status. Session and Clipboard keep their existing helpers.
 
-**Opt-in component 0.4.1.** These controls are separate from the published
-0.3.1 Arch reference. Installing the numbered reference guide does not select
-them. Component publication, personal-host admission and physical-device
-acceptance are separate steps.
+**Component 0.4.1.** These controls are included in the [Arch reference](../setup-agent.md)
+and can be installed separately. Component publication, personal-host admission
+and physical-device acceptance have their own checks.
 
 The [0.4.1 release](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.1)
 pins the complete 44-file bundle, API 1:

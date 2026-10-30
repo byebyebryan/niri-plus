@@ -20,7 +20,7 @@ report what it verified. For one component, use a [focused recipe](setup-agent.m
 ## What you get
 
 - **A coherent desktop:** warm Neutral Slate surfaces, Clear Blue focus,
-  Noto/Meslo fonts and a separate pure-black Balanced+ terminal palette.
+  a pure-black workspace, Noto/Meslo fonts and a separate Balanced+ terminal palette.
   [See the design](design.md).
 - **Tools on demand:** Rofi for apps and utilities, SwayNC for notifications
   and system information, Cliphist for text/image history. No permanent bar.
@@ -28,10 +28,10 @@ report what it verified. For one component, use a [focused recipe](setup-agent.m
   feedback, files, network/Bluetooth entry points, input methods and
   whole-monitor sharing.
 
-Optional [direct Rofi controls](recipes/rofi-controls.md) add Network, Audio and
-Bluetooth actions in the picker. Their 0.4.1 release and
-[stateful design illustration](../design/rofi-controls/index.html) are separate
-from the 0.3.1 reference setup path below.
+The 0.4.1 reference includes [direct Rofi controls](recipes/rofi-controls.md)
+for Network, Audio and Bluetooth. Native tools remain available for deeper
+settings and recovery. The [stateful illustration](../design/rofi-controls/index.html)
+explains the shared action and status presentation with sample devices.
 
 ## Starting point
 
@@ -66,7 +66,7 @@ keep manual locking independent of idle-policy reloads.
 ## What has been checked
 
 The reference passed a fresh installed-Arch VM replay. The [installation
-receipt](planning/arch-installation-receipt.md) records the results and the VM's
+receipt](planning/black-workspace-receipt.md#fresh-arch-reference) records the results and the VM's
 VirtIO sharing workaround; physical hardware and human acceptance remain
 separate. See the [component source map](components.md) for release and
 personal-host deployment status.

@@ -4,7 +4,7 @@ Historical implementation receipt, 2026-10-29. The candidate results below
 describe the implementation pass. **0.4.0 was subsequently published and
 delivered to Carbon, Starship and Snap**; the [current recipe](../recipes/rofi-controls.md)
 records the released tuple and acceptance limits. The numbered Arch reference
-remains 0.3.1 pending its updated replay.
+now selects 0.4.1 after its [fresh-base replay](black-workspace-receipt.md#fresh-arch-reference).
 
 This opening records the implementation pass. The subsequent publication pass
 uses the reviewed replacement tuple below; see the

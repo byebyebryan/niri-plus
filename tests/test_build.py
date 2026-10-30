@@ -159,7 +159,7 @@ class BuildContracts(unittest.TestCase):
         self.assertEqual(ime["captured_components"], "Chrome 156.0.8078.47-1; Fcitx5 5.1.23-1; fcitx5-chinese-addons 5.1.15-2")
         self.assertIn("observed packaging discrepancy", ime["component_license_sources"])
         setup = (self.output / "setup/index.html").read_text()
-        self.assertIn(f'href="{builder.BASE}docs/planning/arch-installation-receipt.md"', setup)
+        self.assertIn(f'href="{builder.BASE}docs/planning/black-workspace-receipt.md#fresh-arch-reference"', setup)
         receipt = (self.output / "docs/planning/arch-installation-receipt.md").read_text()
         self.assertIn("https://dev.byebyebryan.com/niri-plus/setup/", receipt)
         self.assertNotIn("arch-installation-pass.md", receipt)
@@ -393,6 +393,15 @@ class BuildContracts(unittest.TestCase):
         self.assertEqual(current["identity"]["sha256"], hashlib.sha256((ROOT / current["identity"]["path"]).read_bytes()).hexdigest())
         self.assertTrue(current["modules"]["appearance"]["fleet_rollout_complete"])
         self.assertEqual(current["modules"]["appearance"]["verified_derived_outputs_per_host"], 41)
+        # Reference qualification has its own immutable tuple; it may lag a later producer.
+        inputs = json.loads((ROOT / "tools/reference/inputs.json").read_text())
+        reference = current["reference"]
+        self.assertEqual(inputs["components"]["version"], reference["qualified_version"])
+        qualified = builder.component_releases()[reference["qualified_version"]]
+        for field, expected in qualified.items():
+            self.assertEqual(inputs["components"][field], expected)
+        self.assertEqual(inputs["identity"]["sha256"], reference["identity_sha256"])
+        self.assertEqual(inputs["public_source"]["commit"], reference["public_source_commit"])
 
     def test_broken_local_anchor_is_rejected(self):
         builder.build(self.output)

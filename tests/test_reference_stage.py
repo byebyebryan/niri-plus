@@ -302,7 +302,7 @@ class ArchReferenceStageTests(unittest.TestCase):
 
 class CurrentPublishedReferenceTests(unittest.TestCase):
     def test_published_041_bytes_and_complete_direct_controls_stage(self):
-        inputs = json.loads((ROOT / "tools/reference/inputs-0.4.1-candidate.json").read_text())
+        inputs = json.loads((ROOT / "tools/reference/inputs.json").read_text())
         with tempfile.TemporaryDirectory(prefix="niri-plus-current-reference-") as temporary:
             base = Path(temporary)
             code_tree = base / "code"

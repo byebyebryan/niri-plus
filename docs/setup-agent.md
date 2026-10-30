@@ -9,11 +9,10 @@ desktop and its choices.
 Agents: follow the numbered stages in order and open each linked recipe before
 applying its part.
 
-The numbered reference still selects released components **0.3.1**. Direct Rofi
-Network/Audio/Bluetooth controls are an independently pinned **0.4.0 opt-in release**;
-use the [controls recipe](recipes/rofi-controls.md) only when that source and
-scope were selected explicitly. Do not silently replace reference launcher
-entries, release pins, or personal chezmoi selectors with these files.
+**Arch reference 0.4.1.** This route includes direct Network, Audio and
+Bluetooth controls, a pure-black workspace and the selected Neutral Slate
+appearance. The [dated replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
+records native task results, guide amendments and remaining hardware checks.
 
 ## Execution contract
 
@@ -68,7 +67,7 @@ explicit; they are not passes.
 Use a reviewed checkout of [Niri Plus](https://github.com/byebyebryan/niri-plus)
 containing this guide, its input inventory and `scripts/stage-arch-reference.py`.
 Record its revision before starting. The input stager and reference dashboard
-profile are checkout files, separate from the published components 0.3.1
+profile are checkout files, separate from the published components 0.4.1
 archive. If a specific revision or source export was supplied, use that exact
 source; do not substitute the older component archive or a private machine's
 configuration.
@@ -89,7 +88,9 @@ test -f "$NIRI_PLUS_CHECKOUT/tools/reference/inputs.json"
 ```
 
 The selected reference is Neutral Slate with Clear Blue focus, a pure-black
-Balanced+ Kitty palette, and Noto Sans/Meslo typography. The session uses SDDM
+workspace and Balanced+ Kitty palette, and Noto Sans/Meslo typography. Its
+overview retains a charcoal surround so empty black workspaces have visible
+boundaries. The session uses SDDM
 and Niri, GTK portals for file/access/settings/notification interfaces, WLR for
 whole-monitor capture, and the pinned SwayNC fork for the on-demand dashboard.
 The focused [recipes](#focused-recipes) retain the details for each part.
@@ -102,14 +103,10 @@ recipe](recipes/notifications.md); fetched Zsh dependencies include their own
 fonts, GTK themes, and icon themes remain governed by their upstream terms and
 package notices; Chrome presents its own terms on first run.
 
-> **Locally qualified reference, 2026-10-28:** The written route passed from a
-> fresh installed-Arch base, including password login, wallet unlock, locking,
-> input, files, clipboard, audio feedback, reboot and logout/relogin. Whole-monitor
-> sharing passed again after a full guest power-off/start using the documented
-> VirtIO compatibility branch. This qualifies the tested Arch guest; physical
-> hardware, human acceptance and personal-host deployment remain separate. The
-> [installation receipt](planning/arch-installation-receipt.md) records exact
-> inputs, results, recovery and limits.
+> **Verified scope:** a fresh installed-Arch VM, public inputs and the native
+> desktop tasks in the [replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference).
+> The guest needed the documented VirtIO monitor-sharing branch. Physical
+> hardware and human acceptance remain separate.
 
 ## 1. Prepare the account and record the starting state
 
@@ -141,13 +138,13 @@ starting another network manager or display manager.
 
 ## 2. Stage the reviewed inputs
 
-The first-party helper and its input inventory are candidate source files in the
+The first-party helper and its input inventory are checkout source files in the
 Niri Plus checkout containing this guide; the helper is not part of the
-published 0.3.1 component archive. It runs as your user and writes only into a
+published 0.4.1 component archive. It runs as your user and writes only into a
 new output tree. It verifies the immutable component archive, its manifest and
-all 27 payloads; the independently pinned identity; and the listed public
+all 44 payloads; the independently pinned identity; and the listed public
 examples from source commit
-[`b62df460884b5a4d5e8c7eeb05c132a0b26814ae`](https://github.com/byebyebryan/niri-plus/tree/b62df460884b5a4d5e8c7eeb05c132a0b26814ae).
+[`f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2`](https://github.com/byebyebryan/niri-plus/tree/f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2).
 It then renders appearance previews and writes `provenance.json` with the input
 and output hashes. It does not install packages, write normal configuration,
 start services, or import capture-pilot state.
@@ -158,13 +155,14 @@ Install the staging prerequisites and choose a new output path:
 sudo pacman -S --needed curl git python unzip
 mkdir -p "$HOME/.local/share/niri-plus"
 python3 "$NIRI_PLUS_CHECKOUT/scripts/stage-arch-reference.py" \
-  --output "$HOME/.local/share/niri-plus/arch-reference-0.3.1"
+  --inputs "$NIRI_PLUS_CHECKOUT/tools/reference/inputs.json" \
+  --output "$HOME/.local/share/niri-plus/arch-reference-0.4.1"
 ```
 
 Set these paths for the commands below:
 
 ```sh
-export STAGE="$HOME/.local/share/niri-plus/arch-reference-0.3.1"
+export STAGE="$HOME/.local/share/niri-plus/arch-reference-0.4.1"
 export SOURCE="$STAGE/source"
 export BUNDLE="$STAGE/bundle"
 export APPEARANCE="$STAGE/appearance"
@@ -209,6 +207,24 @@ else
     "$HOME/.config/xdg-desktop-portal/niri-portals.conf" &&
   niri validate --config "$HOME/.config/niri/config.kdl"
 fi
+```
+
+The Niri starter has no `PATH` override. Before the first login, make later
+user-local launchers discoverable. Print the account's absolute home path and
+merge the line into a top-level Niri `environment` block; create that block if
+absent. Do not put `~` or `$HOME` in the KDL value. If you already customize
+`PATH`, retain its other required directories:
+
+```sh
+printf 'PATH "%s/.local/bin:/usr/local/bin:/usr/bin"\n' "$HOME"
+```
+
+This sets the environment of Niri-spawned apps, including Rofi, clipboard and
+device controls, feedback helpers and Kanshi. It does not replace the systemd
+user-manager environment. Validate the merged config before login:
+
+```sh
+niri validate --config "$HOME/.config/niri/config.kdl"
 ```
 
 The portal profile selects GTK for file/access/settings/notification interfaces
@@ -261,7 +277,7 @@ sudo pacman -S --needed \
   adw-gtk-theme ark base-devel bluez bluez-utils brightnessctl \
   breeze breeze-cursors breeze-icons cliphist dconf fcitx5 \
   fcitx5-chinese-addons fcitx5-configtool fcitx5-gtk fcitx5-qt \
-  fontconfig fzf gsettings-desktop-schemas gtk3 gtk4 gtk4-layer-shell \
+  fontconfig fzf python-gobject nm-connection-editor gsettings-desktop-schemas gtk3 gtk4 gtk4-layer-shell \
   gwenview kanshi kwallet kwallet-pam libadwaita libgee libnotify libsecret \
   libpulse json-glib granite7 mpv neovim networkmanager pavucontrol \
   pipewire pipewire-audio pipewire-pulse polkit polkit-kde-agent qt5-wayland qt5ct \
@@ -280,7 +296,8 @@ merge, a reversible GSettings profile for GTK appearance, and the Qt-only
 systemd user-service environment profile. The pavucontrol GTK4 dark-surface
 check passed through the selected GSettings preference with `GTK_THEME` unset.
 The notification recipe owns the selected SwayNC stylesheet target. Merge the
-Niri fragment into the starter's existing `layout` block, keep its proportional
+Niri fragment's `layout` settings into the starter's existing `layout` block
+and add its separate top-level `overview` block, keep its proportional
 columns and bindings, and validate the complete file after each change. Use the
 [login recipe](recipes/login.md) to preview the pinned greeter theme and install
 it only after the stock password login passed. Use the matching renderer
@@ -311,8 +328,8 @@ run. Review its terms and browser-default/telemetry choices yourself, and leave
 the browser signed out. Do not pass first-run suppression flags or reuse an
 isolated lab profile. Use disposable PDF, image, audio/video, and archive
 samples to check defaults, browser download/open/upload, and safe archive
-extraction. UDisks mounting uses a new disposable disk for its
-read/write/unmount check.
+extraction. After stage 7 supplies authorization, check UDisks mounting with
+a new explicitly authorized disposable disk for read/write/unmount.
 
 **Stage 5 gate:** The selected GTK, Qt/KDE, Rofi, Kitty and greeter layers
 come from the same staged identity. Inspect real application surfaces and
@@ -333,23 +350,38 @@ and its paired 200-item Cliphist config. The [clipboard recipe](recipes/clipboar
 has the exact targets and `niri.service` wants. Do not combine it with the
 separate portable collector unit.
 
-Add the current Rofi entries for Network, Bluetooth, Audio, and Session from
-`$SOURCE/examples/desktop/`. They retain their native device and session owners.
+Network, Audio and Bluetooth use direct Rofi controls from the verified bundle.
+Session keeps its existing helper. Install the complete controls library,
+wrappers and derived appearance before installing their launcher entries.
+NetworkManager, the audio server and BlueZ retain device ownership; opening a
+menu does not start a missing provider or change a connection.
+
 The Niri starter binds `Mod+D` to the normal Rofi application list. Preserve it
-or merge this line into an existing Niri `binds` block when it is absent; the
-individual entries do not need separate key bindings:
+or merge this line into an existing Niri `binds` block when it is absent:
 
 ```kdl
 Mod+D { spawn "rofi" "-show" "drun"; }
 ```
 
-Use the `nmtui` Network entry only after NetworkManager owns the link. The
+Use Network after NetworkManager owns the link. The
 [network owner handover](recipes/desktop-utilities.md#network-owner-handover)
 is a narrow conditional example for the exact cloud-init/networkd starting
 state; a system already owned by NetworkManager skips it. Package installation
 does not start BlueZ. Start the packaged `bluetooth.service` only when an
-adapter is present and ready; do not run a second daemon. The reference menu
-entry uses `bluetoothctl`, while `bluetuith` is an optional terminal UI.
+adapter is present and ready; do not run a second daemon. The Bluetooth menu
+reports absent hardware or an unavailable provider without silently enabling it.
+Retain `nm-connection-editor`, `pavucontrol`, `nmtui` and `bluetoothctl` as native
+advanced settings and recovery tools.
+
+PipeWire and WirePlumber keep their packaged socket/session ownership. If their
+packages were installed after this user manager was already running, start the
+standard units for the current session before checking audio:
+
+```sh
+systemctl --user start pipewire.socket pipewire-pulse.socket wireplumber.service
+systemctl --user is-active pipewire.socket pipewire-pulse.socket wireplumber.service
+wpctl status
+```
 
 Install the shared launcher helper and entries:
 
@@ -358,25 +390,47 @@ install -Dm755 "$SOURCE/examples/desktop/desktop-session-ready" \
   "$HOME/.local/bin/desktop-session-ready"
 install -Dm755 "$SOURCE/examples/desktop/desktop-session-menu" \
   "$HOME/.local/bin/desktop-session-menu"
-install -Dm644 "$SOURCE/examples/desktop/niri-plus-network.desktop" \
+install -d -m755 "$HOME/.local/bin" "$HOME/.local/lib/niri_plus_controls"
+for helper in desktop-controls desktop-network-menu desktop-audio-menu desktop-bluetooth-menu; do
+  install -m755 "$BUNDLE/components/desktop/bin/$helper" "$HOME/.local/bin/$helper"
+done
+for module in "$BUNDLE"/components/desktop/lib/niri_plus_controls/*.py; do
+  install -m644 "$module" "$HOME/.local/lib/niri_plus_controls/"
+done
+install -Dm644 "$APPEARANCE/niri-plus-controls.rasi" \
+  "$HOME/.config/rofi/niri-plus-controls.rasi"
+install -Dm644 "$APPEARANCE/controls-appearance.json" \
+  "$HOME/.config/niri-plus/controls-appearance.json"
+python3 -c 'import gi; gi.require_version("NM", "1.0"); gi.require_version("Secret", "1"); from gi.repository import NM, Secret, Gio'
+install -Dm644 "$BUNDLE/components/desktop/share/applications/niri-plus-network.desktop" \
   "$HOME/.local/share/applications/niri-plus-network.desktop"
-install -Dm644 "$SOURCE/examples/desktop/niri-plus-bluetooth.desktop" \
+install -Dm644 "$BUNDLE/components/desktop/share/applications/niri-plus-bluetooth.desktop" \
   "$HOME/.local/share/applications/niri-plus-bluetooth.desktop"
-install -Dm644 "$SOURCE/examples/desktop/niri-plus-audio.desktop" \
+install -Dm644 "$BUNDLE/components/desktop/share/applications/niri-plus-audio.desktop" \
   "$HOME/.local/share/applications/niri-plus-audio.desktop"
 install -Dm644 "$SOURCE/examples/desktop/niri-plus-session.desktop" \
   "$HOME/.local/share/applications/niri-plus-session.desktop"
 ```
 
-The [desktop-utility recipe](recipes/desktop-utilities.md) records each service
-owner. Use the [hardware-feedback recipe](recipes/hardware-feedback.md) to
+Check the graphical session's `PATH` resolves all four installed wrappers and
+that each menu opens through the application list. In each landing list,
+Tab/Shift+Tab cycle Open and Details; Enter runs the visible action. Back restores
+the filter and selection, and Escape/Ctrl+G closes the menu. The
+[controls recipe](recipes/rofi-controls.md) records credentials, pairing,
+advanced-tool and recovery behavior. A VM without wireless hardware verifies
+its unavailable state, not physical Wi-Fi or Bluetooth operation.
+
+The [desktop-utility recipe](recipes/desktop-utilities.md) records Session and
+the older recovery entry points. Use the [hardware-feedback recipe](recipes/hardware-feedback.md) to
 install both helpers from `SOURCE` and merge all six hardware-key binds from the
 verified fragment into the existing Niri `binds` block.
 
 **Stage 6 gate:** One notification owner, two paired clipboard collectors,
 and the intended launcher entries are installed. Exercise the panel, exact
-text/image restore and Delete/Cancel/Clear. Check feedback only on available
-devices. Network and Bluetooth retain their selected native owners.
+text/image restore and Delete/Cancel/Clear. Open each actual controls entry;
+check device state, named actions, Details, Back and cancellation. Exercise
+available audio output/input separately and record absent Wi-Fi/Bluetooth.
+Check feedback only on available devices. Native providers retain ownership.
 
 ## 7. Wire wallet, policy, and authorization services
 
@@ -514,15 +568,8 @@ the systemd user-manager environment; the appearance recipe's `environment.d`
 file covers user services only. See the [Fcitx Wayland guide](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland/en)
 for toolkit-specific behavior.
 
-The Niri starter has no `PATH` override. For Niri-spawned commands such as
-Kanshi, the Rofi Session helper, feedback helpers, and the clipboard launcher,
-print the account's absolute home path and merge that line into the same
-`environment` block. Do not put `~` or `$HOME` in the KDL value. If you already
-customize `PATH`, retain its other required directories:
-
-```sh
-printf 'PATH "%s/.local/bin:/usr/local/bin:/usr/bin"\n' "$HOME"
-```
+Keep the user-local `PATH` configured in stage 3 when merging these environment
+values; do not replace the existing block.
 
 Fresh-guide checks passed for native composition in Chrome 156
 launched with `--ozone-platform=wayland` only and Kitty 0.49.2 using native
@@ -532,15 +579,8 @@ scale 1.5. See the receipt for exact committed text and versions. Do not
 add `GTK_IM_MODULE`, `--enable-wayland-ime`, or a forced text-input version to
 these tested routes.
 
-PipeWire and WirePlumber keep their packaged socket/session ownership. If their
-packages were installed after this user manager was already running, start the
-standard units for the current session before checking audio:
-
-```sh
-systemctl --user start pipewire.socket pipewire-pulse.socket wireplumber.service
-systemctl --user is-active pipewire.socket pipewire-pulse.socket wireplumber.service
-wpctl status
-```
+Retain the packaged audio units started in stage 6; verify them again after
+the fresh login before the playback and microphone checks.
 
 On the fresh-guide replay, an attached virtual ICH9 HDA device
 produced the real PipeWire sink
@@ -557,12 +597,20 @@ corresponding hardware exists.
 After completing the appearance, session, and input changes, log out to SDDM
 and password-login again. This is the first login after installing `kwallet-pam`
 and Fcitx5, so it exercises the real PAM handoff and starts the packaged input
-method autostart. Check one Fcitx5 process and the KWallet PAM unit; then store
-and read a disposable secret. Keep it in the wallet until after the cold-login
-check:
+method autostart. Check one Fcitx5 process and the KWallet PAM initialization
+result. The initialization process exits after its handoff, so its unit can be
+inactive afterward. Confirm a start during this fresh login, `Result=success`
+and `ExecMainStatus=0`; then verify the provider and store/read a disposable
+secret without another password prompt. Keep it in the wallet until after the
+cold-login check:
 
 ```sh
-systemctl --user is-active plasma-kwallet-pam.service
+systemctl --user show plasma-kwallet-pam.service \
+  -p Type -p RemainAfterExit -p ActiveState -p ExecMainStartTimestamp \
+  -p Result -p ExecMainStatus
+test -n "$(systemctl --user show plasma-kwallet-pam.service -p ExecMainStartTimestamp --value)"
+test "$(systemctl --user show plasma-kwallet-pam.service -p Result --value)" = success
+test "$(systemctl --user show plasma-kwallet-pam.service -p ExecMainStatus --value)" = 0
 systemctl --user status app-org.fcitx.Fcitx5@autostart.service
 pgrep -ax fcitx5
 busctl --user status org.freedesktop.secrets
@@ -612,8 +660,10 @@ Before claiming the reference complete, run the tasks in the login, files,
 notifications, clipboard, session, display, input, and hardware-feedback
 recipes. Reboot to SDDM, password-login, test core tasks, log out, and log in
 again. Record package versions and whether each required service has exactly one
-owner. A required manual repair returns the guide to review; incorporate it in
-the owning recipe before a separate fresh replay.
+owner. Resolve a failed gate in its owning source and record the change before
+continuing. Repeat affected commands and native tasks from saved preimages or
+a fresh working copy; restage changed component/identity pins before testing.
+Report every guide amendment and which gates were repeated.
 
 Keep backups of any native files changed and exact preimages for privileged
 SDDM files. To back out a user service, stop only the unit introduced, remove
@@ -642,9 +692,9 @@ final running/stopped state. State whether the requested scope is complete or
 which required task is unresolved. Do not push, publish or extend to other
 hosts unless that was part of the user's request.
 
-The dated [installation receipt](planning/arch-installation-receipt.md) records
-the earlier fresh Arch VM qualification. Moving this walkthrough into an agent
-guide does not establish a new native replay or physical-host acceptance.
+The dated [installation receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
+records the 0.4.1 fresh-base run, its reviewed guide amendments and repeated
+gates. Physical-host and human acceptance remain separate.
 
 ## Focused recipes
 

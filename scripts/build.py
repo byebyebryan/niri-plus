@@ -52,13 +52,15 @@ PAGES = {
     "reference/": ("docs/reference.md", "Search the keyboard reference, explore source versions, and download portable examples."),
 }
 SOURCES = {source: route for route, (source, _) in PAGES.items()}
-ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "workflow-browser.png", "workflow-terminal.png", "workflow-panel.png", "workflow-controls.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png"}
+ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "workflow-browser.png", "workflow-terminal.png", "workflow-panel.png", "workflow-controls.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png", "arch-reference/desktop-800.png"}
 DEMO_ASSETS = {
     f"assets/demo-{scene}.{suffix}"
-    for scene in ("overview", "browser-files", "terminal", "information", "controls", "desktop-041")
+    for scene in ("overview", "browser-files", "terminal", "information", "controls", "desktop-041", "desktop-800", "controls-800")
     for suffix in ("mp4", "png")
 }
 SWAYNC_DEMO_ASSETS = {
+    "assets/demo-desktop-800.mp4",
+    "assets/demo-desktop-800.png",
     "assets/demo-desktop-041.mp4",
     "assets/demo-desktop-041.png",
     "assets/demo-overview.mp4",
@@ -87,12 +89,49 @@ PUBLIC_LOCAL_DOCS = {
     "docs/planning/components-0.3.1-receipt.md",
     "docs/planning/black-workspace-receipt.md",
     "docs/planning/resource-and-showcase-receipt.md",
+    "docs/planning/desktop-800-receipt.md",
     "docs/planning/desktop-demonstration-receipt.md",
     "tools/vm/desktop/wlr-compat/README.md",
     "design/rofi-controls/index.html",
     "docs/planning/rofi-controls-implementation-receipt.md",
 }
 DEMO_CLIPS = {
+    "desktop-800": {
+        "video": "assets/demo-desktop-800.mp4",
+        "poster": "assets/demo-desktop-800.png",
+        "id": "demo-desktop-800",
+        "title": "A day between two halves",
+        "description": "Chrome and Kitty share a black workspace. Files, information, clipboard history and device controls appear when the task calls for them.",
+        "steps": [
+            "Move between Chrome and Kitty, and open Niri's overview.",
+            "Download a public sample, open it in Dolphin, and select it in Chrome's GTK file chooser.",
+            "Inspect the sample project in the native Zsh terminal.",
+            "Open SwayNC with Mod+N and clipboard history with Mod+Y, then check Audio and return to work.",
+        ],
+        "setup": [
+            ("Setup overview", "setup.md"),
+            ("Files and defaults", "recipes/files.md"),
+            ("Kitty and Zsh", "recipes/terminal.md"),
+        ],
+        "dimensions": (1280, 800),
+    },
+    "controls-800": {
+        "video": "assets/demo-controls-800.mp4",
+        "poster": "assets/demo-controls-800.png",
+        "id": "demo-controls-800",
+        "title": "Device controls, on demand",
+        "description": "Audio and Network open beside Chrome and Kitty in the current black-workspace desktop. Device state stays separate from the named actions and keyboard selection.",
+        "steps": [
+            "Open Audio from Mod+D, inspect its default devices, and select Details with Tab and Enter.",
+            "Adjust the virtual output's volume and mute state, then restore the original settings.",
+            "Open Network, inspect the connected Ethernet link and its address, then close the menu.",
+        ],
+        "setup": [
+            ("Direct Rofi controls", "recipes/rofi-controls.md"),
+            ("Agent installation guide", "setup-agent.md#6-install-the-selected-notification-and-clipboard-paths"),
+        ],
+        "dimensions": (1280, 800),
+    },
     "desktop": {
         "video": "assets/demo-desktop-041.mp4",
         "poster": "assets/demo-desktop-041.png",
@@ -283,8 +322,9 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
         expected = DEMO_CLIPS[clip["id"]]
         if clip.get("video") != expected["video"] or clip.get("poster") != expected["poster"]:
             raise ValueError(f"desktop demo paths differ from the site contract: {clip['id']}")
-        if clip.get("width") != 1920 or clip.get("height") != 1080:
-            raise ValueError(f"desktop demo must record 1920x1080 dimensions: {clip['id']}")
+        width, height = expected.get("dimensions", (1920, 1080))
+        if clip.get("width") != width or clip.get("height") != height:
+            raise ValueError(f"desktop demo must record {width}x{height} dimensions: {clip['id']}")
         duration = clip.get("duration_seconds")
         if not isinstance(duration, (int, float)) or isinstance(duration, bool) or duration <= 0:
             raise ValueError(f"desktop demo must record its measured duration: {clip['id']}")
@@ -302,7 +342,7 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
             raise ValueError(f"desktop demo must record its video codec: {clip['id']}")
         if not isinstance(clip.get("pixel_format"), str) or not clip["pixel_format"].strip():
             raise ValueError(f"desktop demo must record its pixel format: {clip['id']}")
-        if clip["id"] in {"overview", "information", "desktop"}:
+        if clip["id"] in {"overview", "information", "desktop", "desktop-800"}:
             swaync_pin = clip.get("additional_source_versions", {}).get("swaync")
             if not isinstance(swaync_pin, dict) or any(swaync_pin.get(key) != value for key, value in SWAYNC_PIN.items()):
                 raise ValueError(f"SwayNC-containing clip must record the exact fork and recipe source tuple: {clip['id']}")
@@ -371,7 +411,19 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
         clip_record = records_by_path[clip["video"]]
         source_capture_hash = clip.get("source_capture_sha256")
         if source_capture_hash is not None:
-            if source_capture_hash != clip_record["sha256"]:
+            remux = clip.get("container_remux")
+            if remux is not None:
+                if (
+                    not isinstance(remux, dict)
+                    or remux.get("method") != "ffmpeg-copy-faststart"
+                    or remux.get("reencoded") is not False
+                    or remux.get("input_sha256") != source_capture_hash
+                    or remux.get("output_sha256") != clip_record["sha256"]
+                    or not re.fullmatch(r"[0-9a-f]{64}", str(remux.get("input_stream_sha256", "")))
+                    or remux.get("input_stream_sha256") != remux.get("output_stream_sha256")
+                ):
+                    raise ValueError(f"desktop demo remux must preserve its compressed video stream and identify both containers: {clip['id']}")
+            elif source_capture_hash != clip_record["sha256"]:
                 raise ValueError(f"desktop demo focused capture must be byte-identical to its recorded source: {clip['id']}")
         else:
             for source in clip["source_captures"]:
@@ -420,8 +472,9 @@ def validate_desktop_demo_sources():
                 raise ValueError(f"desktop demo poster is not a PNG: {path}")
             width = int.from_bytes(header[16:20], "big")
             height = int.from_bytes(header[20:24], "big")
-            if (width, height) != (1920, 1080):
-                raise ValueError(f"desktop demo poster must be 1920x1080: {path}")
+            clip = next(item for item in provenance["desktop_demos"]["clips"] if item["poster"] == path)
+            if (width, height) != (clip["width"], clip["height"]):
+                raise ValueError(f"desktop demo poster dimensions differ from its recording: {path}")
         elif len(payload) < 12 or payload[4:8] != b"ftyp":
             raise ValueError(f"desktop demo video is not an MP4 file: {path}")
     return provenance
@@ -679,7 +732,7 @@ def demo(name):
         for label, target in clip["setup"]
     )
     return f'''<figure class="native-demo" id="{clip['id']}" data-native-demo="{name}">
-  <video class="native-demo-video" controls preload="none" playsinline width="{record['width']}" height="{record['height']}" poster="{poster}" aria-label="{escape(clip['title'], quote=True)} video" aria-describedby="{clip['id']}-summary">
+  <video class="native-demo-video" controls preload="none" playsinline width="{record['width']}" height="{record['height']}" style="aspect-ratio: {record['width']} / {record['height']}" poster="{poster}" aria-label="{escape(clip['title'], quote=True)} video" aria-describedby="{clip['id']}-summary">
     <source src="{video}" type="video/mp4">
     <a class="native-demo-fallback" href="{video}"><img src="{poster}" width="{record['width']}" height="{record['height']}" alt="{escape(clip['title'], quote=True)} poster; open the video file to play the native desktop recording">Open or download the video.</a>
   </video>
@@ -688,7 +741,7 @@ def demo(name):
     <h3>{escape(clip['title'])}</h3>
     <p>{escape(clip['description'])}</p>
     <p class="native-demo-fixture">Sample content and guest readings: {escape(record['fixture_label'])}</p>
-    <p class="native-demo-duration">{record['duration_seconds']:.1f} seconds · Captured {escape(record['capture_date'])} · Components {escape(versions['components']['version'])}</p>
+    <p class="native-demo-duration">{record['duration_seconds']:.1f} seconds · {record['width']}×{record['height']} · Captured {escape(record['capture_date'])} · Components {escape(versions['components']['version'])}</p>
     <ol class="native-demo-steps">{steps}</ol>
     <p class="native-demo-links"><span>Setup:</span> {setup_links} <span class="native-demo-provenance">· <a class="native-demo-download" href="{escape(video, quote=True)}">Open or download MP4</a> · <a href="{BASE}assets/provenance.json">Media provenance</a> · <a href="{escape(receipt_link, quote=True)}">Capture receipt</a></span></p>
     <details class="native-demo-details">
@@ -722,7 +775,7 @@ def render_markdown(source):
     text = (ROOT / source).read_text()
     parser = MarkdownIt("commonmark", {"html": False}).enable("table")
     enhancements = {}
-    pattern = re.compile(r"^<!-- niri-plus:([a-z-]+) -->\n(.*?)\n<!-- /niri-plus:\1 -->$", re.M | re.S)
+    pattern = re.compile(r"^<!-- niri-plus:([a-z0-9-]+) -->\n(.*?)\n<!-- /niri-plus:\1 -->$", re.M | re.S)
 
     def slot(match):
         name, fallback = match.groups()
@@ -783,7 +836,7 @@ def render_markdown(source):
     next_route, next_label = ("setup/agent/", "Set up with an agent") if source == "docs/setup.md" else ("setup/", "Setup overview")
     if source == "docs/tour-earlier.md":
         next_route, next_label = "tour/", "Current desktop tour"
-    body = f'<div class="wrap document-layout"><aside class="on-this-page" aria-label="On this page"><span class="aside-label">{"The story" if source == "docs/story.md" else "On this page"}</span>{toc}</aside><article class="prose"><p class="eyebrow">Niri Plus / {audience}</p>{body}<div class="article-end"><a href="{BASE}{next_route}">{next_label} →</a><a href="https://github.com/byebyebryan/niri-plus/blob/main/{source}">Read on GitHub ↗</a></div></article></div>'
+    body = f'<div class="wrap document-layout"><aside class="on-this-page" aria-label="On this page"><details class="sidebar-contents"><summary aria-label="Page contents" title="Show page contents"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="3.5" width="15" height="13" rx="1.5" stroke="currentColor"/><path d="M7 4v12" stroke="currentColor"/><path d="M4 7h1M4 10h1M4 13h1" stroke="currentColor"/></svg><span>{"The story" if source == "docs/story.md" else "On this page"}</span></summary><div class="sidebar-links">{toc}</div></details></aside><article class="prose"><p class="eyebrow">Niri Plus / {audience}</p>{body}<div class="article-end"><a href="{BASE}{next_route}">{next_label} →</a><a href="https://github.com/byebyebryan/niri-plus/blob/main/{source}">Read on GitHub ↗</a></div></article></div>'
     return title, body
 
 

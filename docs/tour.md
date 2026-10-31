@@ -9,23 +9,23 @@ that shaped it.
 The current overview follows browser and file work, a native terminal, and
 information and controls on demand. It runs in the staged Arch reference with
 the pure-black workspace, warm Neutral Slate surfaces and Balanced+ terminal.
+The videos use native **1280×800 at scale 1**, with the full desktop in view.
 The content is public sample material; device readings come from the guest.
 
-<!-- niri-plus:demo-desktop -->
+<!-- niri-plus:demo-desktop-800 -->
 Move between Chrome and Kitty, open a downloaded file, choose one to send,
 and use the panel, clipboard and Audio before returning to work.
-<!-- /niri-plus:demo-desktop -->
+<!-- /niri-plus:demo-desktop-800 -->
 
-The [earlier recordings](tour-earlier.md) retain their original 0.3.1 inputs,
-dates and charcoal workspace. They remain available as detailed task examples.
+The [earlier recordings](tour-earlier.md) retain their original inputs, capture
+dates and resolution, including the previous 1080p overview and controls.
 
 ## Explore the workflow
 
 <!-- niri-plus:workbench -->
 Explore real captured moments: browser and files, terminal work, the system
-panel, and Audio controls. The detail view brings the active UI closer; switch
-to the full desktop for context, open the original frame, or watch the scene
-in the native recording.
+panel, and Audio controls. Each 1280×800 capture keeps the full desktop visible.
+Open the original frame or watch the scene in the native recording.
 <!-- /niri-plus:workbench -->
 
 ## Browser and files
@@ -94,10 +94,10 @@ Network, Audio and Bluetooth use Rofi's search, named actions and separate
 device state. The focused recording shows actual Ethernet and virtual audio
 beside Chrome and Kitty. Wi-Fi and Bluetooth hardware are absent in the guest.
 
-<!-- niri-plus:demo-controls -->
+<!-- niri-plus:demo-controls-800 -->
 Open Audio, inspect device details, adjust and restore its volume/mute state,
 then inspect the connected Ethernet link in Network.
-<!-- /niri-plus:demo-controls -->
+<!-- /niri-plus:demo-controls-800 -->
 
 ## Work that can move between machines
 
@@ -113,18 +113,20 @@ explains the independently useful projects and their prerequisites.
 
 ## About the demonstrations
 
-The workflow explorer uses unedited frames from the current native overview.
+The workflow explorer uses independent, unedited native 800p stills captured
+before the new recordings; its watch links open the related scenes.
 The identity gallery remains illustrative. The Agent Plus image is a real Rofi rendering with sample data, and the SwayNC image
 is an isolated native rendering with its fixture values labelled separately.
 The recordings show actual software in staged Arch guests with public sample
-content. The current overview, 0.4.1 controls clip and black-workspace still
-come from the current reference; the [four earlier clips](tour-earlier.md)
-keep their original 0.3.1 inputs and bytes. The earlier terminal clip reuses
+content. The current videos and stills use native 1280×800 capture at scale 1, keeping
+the full desktop visible. The [six earlier videos](tour-earlier.md) retain their
+original 1920×1080 frames, source inputs and bytes. The earlier terminal clip reuses
 its accepted pilot. Whole-monitor browser sharing is not shown in any clip.
 Sharing is checked separately and recorded
 in the relevant receipt; both reference guests needed the conditional
 [WLR compatibility package](../tools/vm/desktop/wlr-compat/README.md).
-Read the [current showcase receipt](planning/resource-and-showcase-receipt.md),
+Read the [800p capture receipt](planning/desktop-800-receipt.md),
+the [previous showcase receipt](planning/resource-and-showcase-receipt.md),
 the [reference and controls receipt](planning/black-workspace-receipt.md)
 or the [earlier demonstration receipt](planning/desktop-demonstration-receipt.md).
 The [media record](../assets/provenance.json) lists versions, measurements,

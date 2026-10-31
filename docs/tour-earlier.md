@@ -1,9 +1,27 @@
 # Earlier desktop recordings
 
-These staged Arch recordings show the desktop before the pure-black workspace
-refinement. Their original components 0.3.1, appearance inputs, capture dates
-and media bytes are retained. For the current desktop, return to the
-[native overview](tour.md#native-reference-demo).
+These staged Arch recordings retain their original 1920×1080 resolution,
+source pins, capture dates and media bytes. The main Tour now uses native
+1280×800 capture. Return to the [current overview](tour.md#native-reference-demo).
+
+## Previous black-workspace overview
+
+The previous 0.4.1 overview shows the same selected identity at 1080p. It is
+retained with its original continuous take and capture receipt.
+
+<!-- niri-plus:demo-desktop -->
+Browser and files, terminal work, information, clipboard and Audio on demand.
+<!-- /niri-plus:demo-desktop -->
+
+## Previous device controls
+
+The 0.4.1 Audio/Network capture retains its original native 1080p take.
+
+<!-- niri-plus:demo-controls -->
+Inspect and adjust virtual audio, restore its state, and inspect Ethernet.
+<!-- /niri-plus:demo-controls -->
+
+The following four 0.3.1 recordings retain the earlier charcoal workspace.
 
 ## Workflow overview
 

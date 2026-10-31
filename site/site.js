@@ -1,5 +1,24 @@
 "use strict";
 
+document.querySelectorAll(".sidebar-contents").forEach((details) => {
+  const summary = details.querySelector("summary");
+  const compact = matchMedia("(max-width: 900px)");
+  details.open = matchMedia("(min-width: 1100px)").matches;
+  const updateTitle = () => { summary.title = details.open ? "Hide page contents" : "Show page contents"; };
+  details.addEventListener("toggle", updateTitle);
+  details.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && details.open) {
+      details.open = false;
+      summary.focus();
+      event.preventDefault();
+    }
+  });
+  details.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => { if (compact.matches) details.open = false; }));
+  document.addEventListener("pointerdown", (event) => { if (compact.matches && details.open && !details.contains(event.target)) details.open = false; });
+  compact.addEventListener("change", (event) => { if (event.matches) details.open = false; });
+  updateTitle();
+});
+
 document.querySelectorAll("[data-workbench]").forEach((workbench) => {
   const controls = workbench.querySelector("[data-scene-controls]");
   const buttons = [...controls.querySelectorAll("[data-scene-button]")];
@@ -8,15 +27,6 @@ document.querySelectorAll("[data-workbench]").forEach((workbench) => {
     buttons.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.sceneButton === name)));
     panels.forEach((panel) => { panel.hidden = panel.dataset.scenePanel !== name; });
   };
-  const captureControls = workbench.querySelector("[data-capture-controls]");
-  const captureToggle = captureControls.querySelector("[data-capture-toggle]");
-  captureControls.hidden = false;
-  captureToggle.addEventListener("click", () => {
-    const fullDesktop = workbench.dataset.captureView !== "desktop";
-    workbench.dataset.captureView = fullDesktop ? "desktop" : "detail";
-    captureToggle.textContent = fullDesktop ? "Show detail" : "Show full desktop";
-    workbench.querySelector("[data-capture-label]").textContent = fullDesktop ? "Full desktop" : "Detail view";
-  });
   controls.hidden = false;
   activate(buttons[0].dataset.sceneButton);
   buttons.forEach((button, index) => {

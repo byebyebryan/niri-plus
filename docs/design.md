@@ -14,6 +14,14 @@ The [contrast study](design/contrast.md) retains the preceding desktop baseline
 and terminal comparisons. Balanced+ and the crisper desktop are selected; the
 other terminal options remain references.
 
+## Capturing the desktop
+
+Current showcase videos and stills use **1280×800 at scale 1**. The smaller
+native desktop makes interface text readable while keeping both working halves
+and the surrounding desktop in view. Images preserve their complete frame and
+native aspect ratio. Use the full-size image or video controls for closer reading.
+Earlier capture and qualification records retain their original dimensions.
+
 ## Direct device controls
 
 The [interactive controls illustration](../design/rofi-controls/index.html)
@@ -41,10 +49,10 @@ or explore the earlier [browser/files](tour.md#browser-and-files),
 [terminal](tour.md#terminals-and-agents), and
 [information/clipboard](tour.md#information-when-i-want-it) recordings.
 
-![Current native staged Arch desktop with Chrome and Kitty over a pure-black workspace.](../assets/arch-reference/black-workspace-041.png)
+![Current native staged Arch desktop with Chrome and Kitty over a pure-black workspace.](../assets/arch-reference/desktop-800.png)
 
-*Native staged Arch guest · components 0.4.1 · public sample content.
-[Capture details and review status](planning/black-workspace-receipt.md#media-and-publication).*
+*Native 1280×800 staged Arch guest · components 0.4.1 · public sample content.
+[Capture details and review status](planning/desktop-800-receipt.md).*
 
 ## Surface gallery
 

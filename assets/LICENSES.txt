@@ -93,9 +93,24 @@ licenses. Content is public Niri Plus material, the guest-only local desktop
 fixture and public Git metadata from octocat/Hello-World. This attribution does
 not change the licenses, bytes or provenance of the earlier recordings.
 
+assets/demo-desktop-800.mp4 and demo-desktop-800.png: original native 1280x800
+staged-Arch overview and poster, captured 2026-10-30 UTC, GPL-3.0-only,
+Copyright 2026 Bryan Bai. The SwayNC interface retains its attribution to
+Erik Reider and contributors and the exact source/license links above.
+The new take contains no reused footage. MP4 faststart remuxing preserves the
+compressed video stream; provenance.json records raw/output container hashes.
+
+assets/demo-controls-800.mp4 and demo-controls-800.png: original native
+1280x800 staged-Arch Audio/Network recording and poster, captured 2026-10-30
+UTC (ending 2026-10-31 UTC), MIT, Copyright 2026 Bryan Bai. These capture the
+running Niri Plus controls with public content and guest-only device readings.
+Independent applications retain their own licenses.
+
 assets/workflow-browser.png, workflow-terminal.png, workflow-panel.png and
-workflow-controls.png: GPL-3.0-only, Copyright 2026 Bryan Bai. Exact unedited
-PNG frames decoded from demo-desktop-041.mp4. Encoded timestamps, source-video
-SHA-256 and output hashes are recorded in provenance.json. These frames carry
-the same capture attribution as their source recording above; application
-interfaces and fonts retain their own licenses.
+workflow-controls.png: independent native 1280x800 grim stills from the accepted
+2026-10-30 trial, reused byte-for-byte without crops or retouching. The gallery
+set conservatively retains its GPL-3.0-only attribution; the SwayNC panel's
+source and license are linked above. These are separate captures, not frames
+extracted from the new overview MP4. assets/arch-reference/desktop-800.png is
+an exact copy of the browser/terminal still, original capture MIT, Copyright
+2026 Bryan Bai. See provenance.json for separate timestamps and source pins.

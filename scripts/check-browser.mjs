@@ -116,7 +116,7 @@ try {
   await nativeDemoLink.click();
   assert.match(page.url(), /tour\/#native-reference-demo$/);
   assert.equal(await page.locator("[data-native-demo]").count(), 2);
-  assert.equal(await page.locator("[data-native-demo]").first().getAttribute("data-native-demo"), "desktop");
+  assert.equal(await page.locator("[data-native-demo]").first().getAttribute("data-native-demo"), "desktop-800");
   const earlierLink = page.locator('main a[href$="tour/earlier/"], main a[href="earlier/"]').first();
   assert.equal(await earlierLink.count(), 1);
   const provenanceResponse = await page.request.get(origin + "assets/provenance.json");
@@ -134,8 +134,8 @@ try {
   const invalidRange = await page.request.get(origin + "assets/demo-overview.mp4", { headers: { Range: "bytes=999999999999999-" } });
   assert.equal(invalidRange.status(), 416);
   checks += 5;
-  for (const name of ["desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
-    await page.goto(origin + (["desktop", "controls"].includes(name) ? "tour/" : "tour/earlier/"));
+  for (const name of ["desktop-800", "controls-800", "desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
+    await page.goto(origin + (["desktop-800", "controls-800"].includes(name) ? "tour/" : "tour/earlier/"));
     const selector = `[data-native-demo="${name}"] video`;
     const video = page.locator(selector);
     assert.equal(await video.count(), 1);
@@ -171,7 +171,7 @@ try {
     await video.evaluate((element) => element.load());
     await page.waitForFunction((selector) => document.querySelector(selector)?.readyState >= 1, selector, { timeout: 15000 });
     const metadata = await video.evaluate((element) => ({ width: element.videoWidth, height: element.videoHeight, duration: element.duration, paused: element.paused }));
-    assert.deepEqual([metadata.width, metadata.height], [1920, 1080]);
+    assert.deepEqual([metadata.width, metadata.height], [clip.width, clip.height]);
     assert.ok(metadata.duration > 0 && Number.isFinite(metadata.duration));
     assert.ok(Math.abs(metadata.duration - clip.duration_seconds) < 0.1, `duration differs from measured provenance for ${name}`);
     assert.equal(metadata.paused, true, "native clips must wait for explicit playback");
@@ -181,7 +181,7 @@ try {
       image.onerror = () => resolve(null);
       image.src = url;
     }), await video.getAttribute("poster"));
-    assert.deepEqual(poster, { width: 1920, height: 1080 });
+    assert.deepEqual(poster, { width: clip.width, height: clip.height });
     await video.scrollIntoViewIfNeeded();
     await video.evaluate((element) => element.focus());
     assert.equal(await video.evaluate((element) => document.activeElement === element), true);
@@ -307,9 +307,38 @@ try {
     checks += 1;
   }
   checks += 14;
+  // Native details keep page contents on the left, and give media more room when closed.
+  for (const width of [375, 768, 1280, 1600]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto(origin + "tour/");
+    const contents = page.locator(".sidebar-contents");
+    const summary = contents.locator("summary");
+    assert.equal(await contents.evaluate((node) => node.open), width >= 1100);
+    if (width >= 1100) {
+      const expanded = (await page.locator(".prose").boundingBox()).width;
+      await summary.focus();
+      await page.keyboard.press("Enter");
+      assert.equal(await contents.evaluate((node) => node.open), false);
+      assert.ok((await page.locator(".prose").boundingBox()).width > expanded + 40);
+      await page.keyboard.press("Enter");
+      await page.keyboard.press("Escape");
+      assert.equal(await contents.evaluate((node) => node.open), false);
+      assert.equal(await summary.evaluate((node) => document.activeElement === node), true);
+      const aside = await page.locator(".on-this-page").boundingBox();
+      const main = await page.locator(".prose").boundingBox();
+      assert.ok(aside.x + aside.width <= main.x);
+    } else {
+      await summary.click();
+      assert.equal(await contents.evaluate((node) => node.open), true);
+      await contents.locator('a[href="#explore-the-workflow"]').click();
+      assert.equal(await contents.evaluate((node) => node.open), false);
+    }
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+    checks += 7;
+  }
   const workflow = provenance.desktop_walkthrough;
   assert.equal(workflow.type, "native captured frames");
-  assert.equal(workflow.source_video, "assets/demo-desktop-041.mp4");
+  assert.equal(workflow.related_video, "assets/demo-desktop-800.mp4");
   for (const route of ["", "tour/"]) {
     for (const width of [375, 1280]) {
       await page.setViewportSize({ width, height: 1000 });
@@ -328,29 +357,21 @@ try {
         const image = panel.locator("img");
         await panel.locator(".workflow-frame").scrollIntoViewIfNeeded();
         await image.evaluate((element) => element.decode());
-        assert.deepEqual(await image.evaluate((element) => [element.naturalWidth, element.naturalHeight]), [1920, 1080]);
+        assert.deepEqual(await image.evaluate((element) => [element.naturalWidth, element.naturalHeight]), [1280, 800]);
         assert.ok((await image.getAttribute("src")).endsWith(scene.image));
-        const detailScale = await image.evaluate((element) => element.getBoundingClientRect().width / element.closest(".workflow-frame").clientWidth);
-        assert.ok(detailScale >= 1.9, `scene should show an enlarged detail: ${scene.id}`);
-        const watch = new URL(await panel.locator('.scene-links a').first().getAttribute("href"), page.url());
-        assert.ok(watch.pathname.endsWith(workflow.source_video));
+        const fullScale = await image.evaluate((element) => element.getBoundingClientRect().width / element.closest(".workflow-frame").clientWidth);
+        assert.ok(Math.abs(fullScale - 1) < 0.01, `scene should retain the full desktop: ${scene.id}`);
+        const watch = new URL(await panel.locator('.scene-links a[href*=".mp4"]').getAttribute("href"), page.url());
+        assert.ok(watch.pathname.endsWith(workflow.related_video));
         assert.equal(watch.hash, `#t=${scene.watch_from_seconds}`);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         if (process.env.NIRI_SCREENSHOTS) await workbench.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `workflow-${route ? "tour" : "home"}-${scene.id}-${width}.png`) });
         checks += 10;
       }
-      const toggle = workbench.locator("[data-capture-toggle]");
-      await toggle.focus();
-      await page.keyboard.press("Enter");
-      assert.equal(await workbench.getAttribute("data-capture-view"), "desktop");
-      assert.equal(await workbench.locator("[data-capture-label]").innerText(), "Full desktop");
-      assert.equal(await workbench.locator("[data-scene-panel]:visible").getAttribute("data-scene-panel"), "controls");
-      const fullScale = await workbench.locator("[data-scene-panel]:visible img").evaluate((element) => element.getBoundingClientRect().width / element.closest(".workflow-frame").clientWidth);
-      assert.ok(Math.abs(fullScale - 1) < 0.01);
+      assert.equal(await workbench.locator("[data-capture-toggle]").count(), 0);
       await workbench.locator('[data-scene-button="controls"]').focus();
       await page.keyboard.press("Home");
-      assert.equal(await workbench.getAttribute("data-capture-view"), "desktop");
-      checks += 5;
+      checks += 1;
       assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "browser");
       await page.keyboard.press("ArrowRight");
       assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "terminal");
@@ -360,17 +381,15 @@ try {
       assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "browser");
       await page.keyboard.press("ArrowLeft");
       assert.equal(await page.locator(":focus").getAttribute("data-scene-button"), "controls");
-      await toggle.click();
-      assert.equal(await workbench.getAttribute("data-capture-view"), "detail");
-      assert.equal(await workbench.locator("[data-scene-panel]:visible").getAttribute("data-scene-panel"), "controls");
       checks += 8;
     }
   }
   // Verify the browser honors a watch link's temporal fragment on the real MP4.
-  const watchLink = page.locator('[data-scene-panel="controls"] .scene-links a').first();
+  const watchLink = page.locator('[data-scene-panel="controls"] .scene-links a[href*=".mp4"]').first();
+  const watchTime = Number(new URL(await watchLink.getAttribute("href"), page.url()).hash.slice(3));
   await watchLink.click();
-  await page.waitForFunction(() => document.querySelector("video")?.currentTime >= 55.9);
-  assert.ok(await page.locator("video").evaluate((element) => element.currentTime < 60));
+  await page.waitForFunction((time) => document.querySelector("video")?.currentTime >= time - 0.1, watchTime);
+  assert.ok(await page.locator("video").evaluate((element, time) => element.currentTime < time + 5, watchTime));
   await page.locator("video").evaluate((element) => element.pause());
   checks += 2;
   await page.goto(origin + "reference/");
@@ -395,6 +414,13 @@ try {
   for (const route of ["", "story/", "tour/", "tour/earlier/", "design/", "design/contrast/", "components/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "setup/agent/", "reference/"]) {
     await staticPage.goto(origin + route);
     assert.ok((await staticPage.locator("main").innerText()).length > 400);
+    const nativeContents = staticPage.locator(".sidebar-contents");
+    if (await nativeContents.count()) {
+      await nativeContents.locator("summary").click();
+      assert.equal(await nativeContents.evaluate((node) => node.open), true);
+      assert.ok(await nativeContents.locator("a").first().isVisible());
+      checks += 2;
+    }
     assert.equal(await staticPage.locator("[data-scene-controls]:visible").count(), 0);
     assert.equal(await staticPage.locator("[data-capture-controls]:visible").count(), 0);
     if (["", "tour/"].includes(route)) {
@@ -412,9 +438,9 @@ try {
   assert.ok((await staticPage.locator("[data-native-demo]").allInnerTexts()).join(" ").includes("Mod+Y"));
   assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 7);
   await staticPage.goto(origin + "tour/earlier/");
-  assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 4);
+  assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 6);
   assert.equal(await staticPage.locator("[data-native-demo] video[autoplay]").count(), 0);
-  assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 12);
+  assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 19);
   checks += 4;
   await staticPage.goto(origin + "design/");
   assert.equal(await staticPage.locator("[data-surface-panel]:visible").count(), 4);

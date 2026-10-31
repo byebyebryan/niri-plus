@@ -27,8 +27,8 @@ def demo_provenance_fixture():
             "id": name,
             "video": contract["video"],
             "poster": contract["poster"],
-            "width": 1920,
-            "height": 1080,
+            "width": contract.get("dimensions", (1920, 1080))[0],
+            "height": contract.get("dimensions", (1920, 1080))[1],
             "duration_seconds": 30.0,
             "frame_count": 900,
             "average_frame_rate": "30000/1001",
@@ -47,7 +47,7 @@ def demo_provenance_fixture():
             "agent_review": "passed",
             "automated_review": "passed",
             "human_review": "pending",
-            **({"additional_source_versions": {"swaync": builder.SWAYNC_PIN}} if name in {"overview", "information", "desktop"} else {}),
+            **({"additional_source_versions": {"swaync": builder.SWAYNC_PIN}} if name in {"overview", "information", "desktop", "desktop-800"} else {}),
         })
     return {
         "files": files,
@@ -86,6 +86,7 @@ class BuildContracts(unittest.TestCase):
                 "docs/planning/components-0.3.1-receipt.md",
                 "docs/planning/black-workspace-receipt.md",
                 "docs/planning/resource-and-showcase-receipt.md",
+                "docs/planning/desktop-800-receipt.md",
                 "docs/planning/desktop-demonstration-receipt.md",
                 "docs/planning/rofi-controls-implementation-receipt.md",
             },
@@ -281,6 +282,24 @@ class BuildContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "reviewed immutable release"):
             builder.validate_desktop_demo_manifest(manifest)
 
+    def test_faststart_remux_requires_matching_stream_hashes_and_container_provenance(self):
+        manifest = demo_provenance_fixture()
+        clip = manifest["desktop_demos"]["clips"][0]
+        clip["source_capture_sha256"] = "1" * 64
+        clip["container_remux"] = {
+            "method": "ffmpeg-copy-faststart", "reencoded": False,
+            "input_sha256": "1" * 64, "output_sha256": "0" * 64,
+            "input_stream_sha256": "2" * 64, "output_stream_sha256": "2" * 64,
+        }
+        builder.validate_desktop_demo_manifest(manifest)
+        for key, value in (("reencoded", True), ("input_sha256", "3" * 64),
+                           ("output_sha256", "3" * 64), ("output_stream_sha256", "3" * 64)):
+            with self.subTest(field=key):
+                changed = json.loads(json.dumps(manifest))
+                changed["desktop_demos"]["clips"][0]["container_remux"][key] = value
+                with self.assertRaisesRegex(ValueError, "remux must preserve"):
+                    builder.validate_desktop_demo_manifest(changed)
+
     def test_native_demos_have_static_steps_controls_and_staged_provenance(self):
         builder.build(self.output)
         tour = (self.output / "tour/index.html").read_text()
@@ -290,13 +309,14 @@ class BuildContracts(unittest.TestCase):
         self.assertEqual(tour.count('class="native-demo-download"'), 2)
         self.assertEqual(tour.count("Open or download MP4"), 2)
         archive = (self.output / "tour/earlier/index.html").read_text()
-        self.assertEqual(archive.count("<video "), 4)
-        self.assertIn('data-native-demo="desktop"', tour)
+        self.assertEqual(archive.count("<video "), 6)
+        self.assertIn('data-native-demo="desktop-800"', tour)
+        self.assertIn('data-native-demo="desktop"', archive)
         self.assertNotIn('data-native-demo="overview"', tour)
         self.assertIn('href="/niri-plus/tour/earlier/"', tour)
         self.assertIn("Components 0.4.1", tour)
         self.assertIn("Components 0.3.1", archive)
-        self.assertNotIn("Components 0.4.1", archive)
+        self.assertIn("Components 0.4.1", archive)
         self.assertNotIn(" autoplay", tour)
         self.assertIn("Mod+N", tour)
         self.assertIn("Mod+Y", tour)
@@ -309,10 +329,10 @@ class BuildContracts(unittest.TestCase):
         self.assertIn('href="/niri-plus/recipes/notifications/"', tour)
         self.assertIn('href="/niri-plus/recipes/clipboard/"', tour)
         design = (self.output / "design/index.html").read_text()
-        self.assertIn('src="/niri-plus/assets/arch-reference/black-workspace-041.png"', design)
+        self.assertIn('src="/niri-plus/assets/arch-reference/desktop-800.png"', design)
         self.assertIn('href="/niri-plus/tour/#native-reference-demo"', design)
         provenance = json.loads((self.output / "assets/provenance.json").read_text())
-        self.assertEqual(len(provenance["desktop_demos"]["clips"]), 6)
+        self.assertEqual(len(provenance["desktop_demos"]["clips"]), 8)
         self.assertTrue(all(item["human_review"] == "pending" for item in provenance["desktop_demos"]["clips"]))
         self.assertTrue(all(item["automated_review"] == "passed" for item in provenance["desktop_demos"]["clips"]))
         sharing = provenance["desktop_demos"]["separate_guest_checks"][0]
@@ -548,9 +568,9 @@ class BuildContracts(unittest.TestCase):
         self.assertIn('href="../recipes/appearance/"', text)
         self.assertIn('href="https://dev.byebyebryan.com/niri-plus/design/"', text)
         tour = (self.output / "tour/index.html").read_text()
-        self.assertIn('poster="../assets/demo-desktop-041.png"', tour)
-        self.assertIn('src="../assets/demo-desktop-041.mp4"', tour)
-        self.assertIn('href="../assets/demo-desktop-041.mp4"', tour)
+        self.assertIn('poster="../assets/demo-desktop-800.png"', tour)
+        self.assertIn('src="../assets/demo-desktop-800.mp4"', tour)
+        self.assertIn('href="../assets/demo-desktop-800.mp4"', tour)
         self.assertIn('href="../docs/planning/desktop-demonstration-receipt.md"', tour)
         self.assertIn('href="../tools/vm/desktop/wlr-compat/README.md"', tour)
         self.assertIn('href="https://dev.byebyebryan.com/niri-plus/tour/"', tour)

@@ -1,0 +1,4 @@
+// Optional manual display-away binding. Include or merge only when selected.
+binds {
+    Mod+Shift+P repeat=false { spawn "desktop-away" "away"; }
+}

@@ -325,6 +325,9 @@ class CurrentPublishedReferenceTests(unittest.TestCase):
             with mock.patch.object(stage.os, "geteuid", return_value=1000):
                 stage.stage_reference(output, inputs_path, fetcher=lambda _url, **_kwargs: archive)
             library = output / "bundle/components/desktop/lib/niri_plus_controls"
+            # The optional 0.5.0 route must not enroll the qualified default.
+            self.assertFalse((output / "bundle/components/desktop/bin/desktop-away").exists())
+            self.assertFalse((output / "bundle/components/desktop/systemd/user/desktop-away.service").exists())
             self.assertEqual(len(list(library.glob("*.py"))), 13)
             for name in ("desktop-network-menu", "desktop-audio-menu", "desktop-bluetooth-menu", "desktop-controls"):
                 self.assertTrue((output / "bundle/components/desktop/bin" / name).is_file())

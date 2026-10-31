@@ -25,6 +25,7 @@ Starship and Snap. Earlier delivery records retain their historical context.
 | Notification panel | Mod+N |
 | Clipboard history | Mod+Y |
 | Manual lock | Ctrl+Alt+Delete |
+| Manual display-away (optional companion) | Mod+Shift+P |
 | Niri overview | Mod+O |
 | Native key overlay | Mod+Shift+/ |
 | Focus a column | Mod+H/L or Mod+Left/Right |
@@ -34,6 +35,11 @@ Starship and Snap. Earlier delivery records retain their historical context.
 | Fullscreen window | Mod+Shift+F |
 | Screenshot | Print |
 <!-- /niri-plus:keys -->
+
+`Mod+Shift+P` is available when the separately pinned `desktop-away` companion
+is selected and its optional binding is included. The [away-mode
+recipe](recipes/away-mode.md) explains its manual latch and how to add the
+binding without replacing the rest of your Niri config.
 
 ## Launchers
 
@@ -81,6 +87,7 @@ records the separate guest tasks and documented VirtIO sharing branch.
 | Window/session navigation | Niri | Keyboard, pointer, touchpad, window layout, and the native quit confirmation. |
 | Output profiles | Kanshi | Selects monitor layouts; does not own the shell or display-manager theme. |
 | Idle and power | swayidle and the session policy | Display-off, lock, suspend, lid, and battery timing remain explicit policy. |
+| Manual display-away | Optional `desktop-away` companion | Explicit away entry keeps displays off until input returns; it does not own automatic idle or suspend. |
 | Manual lock | Gtklock through `desktop-lock.service` | An independent user unit keeps manual locks separate from idle reloads. |
 | Portals | GTK / WLR / KWallet | GTK owns file/access/settings/notification interfaces; WLR supplies whole-monitor capture; KWallet owns secrets. |
 | Input methods | Fcitx5 | Text composition and candidate UI remain separate from the keyboard layout. |
@@ -137,6 +144,9 @@ and [files/default applications](recipes/files.md).
   [picker](../examples/clipboard/rofi-clipboard): sample service and frozen helper.
 - [Manual lock service](../examples/session/desktop-lock.service): a focused
   Gtklock service example.
+- [Optional away-mode binding](../examples/session/profiles/minimal-niri/away-mode.kdl)
+  and [installation recipe](recipes/away-mode.md): keep it separate from automatic
+  idle and suspend policy.
 - [Common utility recipe](recipes/desktop-utilities.md): portable application
   launchers and Session power-policy example.
 

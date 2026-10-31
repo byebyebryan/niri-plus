@@ -33,6 +33,11 @@ for Network, Audio and Bluetooth. Native tools remain available for deeper
 settings and recovery. The [stateful illustration](../design/rofi-controls/index.html)
 explains the shared action and status presentation with sample devices.
 
+Manual display-away is a separate, opt-in extension from components 0.5.0. It
+does not change the numbered reference's 0.4.1 selection or automatic power
+policy; see the [away-mode recipe](recipes/away-mode.md) after the reference is
+complete.
+
 ## Starting point
 
 Start with **installed Arch Linux x86-64**, a regular sudo account, working
@@ -50,6 +55,10 @@ recovery access. Ubuntu/Debian guides are deferred.
 | Session services | Wallet unlock, authorization, locking and an explicitly chosen power policy. | [Wallet and session ownership](setup-agent.md#7-wire-wallet-policy-and-authorization-services) |
 | Your workflow | Actual display profiles, input languages, audio, Kitty and the pinned Zsh setup. | [Displays, input and terminal](setup-agent.md#8-add-display-input-audio-and-shell-workflows) |
 | Check the whole system | Native tasks, reboot, logout/relogin, sharing and a recovery record. | [Verification and handoff](setup-agent.md#9-replay-the-task-checklist-and-recover-cleanly) |
+
+After the reference, optionally stage the manual display-away companion from
+its independent 0.5.0 pin. This branch is separate from the reference's
+required acceptance and from the desktop's automatic idle/suspend policy.
 
 ## Make it fit your machine
 

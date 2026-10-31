@@ -8,8 +8,10 @@ and how I prefer to maintain it.
 Chrome and Dolphin serve browser and file interaction. Kitty and native coding
 agents serve terminal work. Niri arranges their windows. Rofi provides launchers;
 SwayNC provides notifications and system information. Session services handle
-clipboard collection, idle policy, manual locking, authorization, and battery
-monitoring. Chezmoi owns my configuration and deployment.
+clipboard collection, automatic idle policy, manual display-away, locking,
+authorization, and battery monitoring. Chezmoi owns my configuration and
+deployment. The optional away latch has its own session service and does not
+add another automatic idle or suspend policy.
 <!-- /niri-plus:architecture -->
 
 ## The desktop layer
@@ -25,6 +27,7 @@ monitoring. Chezmoi owns my configuration and deployment.
 | Clipboard | Cliphist and wl-clipboard | Collect text and images; a Rofi picker restores the original item. |
 | Locking | Gtklock | Manual locks through an independent user service. |
 | Idle and power | swayidle and desktop-power | Explicit display, suspend, and battery policy per machine. |
+| Manual display-away | Optional `desktop-away` companion | A user-entered latch keeps displays off during unattended work; it leaves automatic idle and suspend policy with their existing owners. |
 | Authorization | polkit-kde-agent | Graphical authorization prompts when an application needs them. |
 | Login and outputs | SDDM, Kanshi | Display-manager login theme and independent monitor profiles. |
 | Portals and input | xdg-desktop-portal, Fcitx5, Niri input | File/screen integration, input methods, and compositor-owned keyboard/touchpad behavior. |
@@ -47,6 +50,11 @@ baseline utility entries](recipes/desktop-utilities.md) remain separate from
 session policy. UDisks2 and polkit
 authorize removable-drive access; external monitor brightness is separate from
 the laptop backlight controls.
+
+The [manual display-away recipe](recipes/away-mode.md) describes the separate
+opt-in latch. Normal video and presentation inhibitors remain with the existing
+session policy; once explicitly latched away, the companion deliberately
+ignores application inhibitors while correcting display wakeups.
 
 The [Arch walkthrough](setup.md) connects each owner to its installation
 and recovery guide, including display profiles, login, power services, input

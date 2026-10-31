@@ -64,13 +64,8 @@ def require_hash(value: Any, label: str) -> str:
     return value
 
 
-def validate_inputs(inputs: Any) -> dict[str, Any]:
-    if not isinstance(inputs, dict) or set(inputs) != {"schema_version", "components", "identity", "public_source"}:
-        raise ValueError("input inventory must define schema_version, components, identity, and public_source")
-    if inputs.get("schema_version") != 1:
-        raise ValueError("unsupported Arch reference input inventory schema")
-
-    components = inputs["components"]
+def validate_component_pin(components: Any) -> dict[str, Any]:
+    """Validate the immutable release tuple shared by input stagers."""
     if not isinstance(components, dict) or set(components) != {
         "version", "api_version", "source_commit", "archive_url", "archive_sha256", "manifest_sha256"
     }:
@@ -91,6 +86,16 @@ def validate_inputs(inputs: Any) -> dict[str, Any]:
         raise ValueError("component archive URL must match the immutable GitHub release URL for its version")
     require_hash(components.get("archive_sha256"), "component archive")
     require_hash(components.get("manifest_sha256"), "component manifest")
+    return components
+
+
+def validate_inputs(inputs: Any) -> dict[str, Any]:
+    if not isinstance(inputs, dict) or set(inputs) != {"schema_version", "components", "identity", "public_source"}:
+        raise ValueError("input inventory must define schema_version, components, identity, and public_source")
+    if inputs.get("schema_version") != 1:
+        raise ValueError("unsupported Arch reference input inventory schema")
+
+    validate_component_pin(inputs["components"])
 
     identity = inputs["identity"]
     if not isinstance(identity, dict) or set(identity) != {"path", "sha256"}:

@@ -91,6 +91,7 @@ class BuildContracts(unittest.TestCase):
                 "docs/planning/capture-refresh-site-800-receipt.md",
                 "docs/planning/agent-plus-800-receipt.md",
                 "docs/planning/desktop-demonstration-receipt.md",
+                "docs/planning/desktop-away-integration.md",
                 "docs/planning/rofi-controls-implementation-receipt.md",
             },
         )
@@ -210,6 +211,31 @@ class BuildContracts(unittest.TestCase):
                         linked_sources.add(path)
         self.assertTrue({"docs/planning/demo-and-adoption-pass.md", "docs/planning/capture-pilot-receipt.md",
                          "tools/vm/desktop/assemble-desktop.sh", "tools/vm/README.md"} <= linked_sources)
+
+    def test_optional_away_stager_dependencies_and_profile_are_public(self):
+        builder.build(self.output, portable=True)
+        paths = {
+            "scripts/check-desktop-away.py",
+            "scripts/stage-arch-reference.py",
+            "scripts/stage-desktop-away.py",
+            "tools/reference/away-inputs.json",
+            "examples/session/profiles/minimal-niri/away-mode.kdl",
+        }
+        manifest = json.loads((self.output / "examples/manifest.json").read_text())
+        records = {record["path"]: record for record in manifest["files"]}
+        self.assertTrue(paths <= set(records))
+        for relative in paths:
+            data = (self.output / relative).read_bytes()
+            self.assertEqual(hashlib.sha256(data).hexdigest(), records[relative]["sha256"], relative)
+
+        core = json.loads((ROOT / "tools/reference/inputs.json").read_text())
+        away = json.loads((self.output / "tools/reference/away-inputs.json").read_text())
+        self.assertEqual(core["components"]["version"], "0.4.1")
+        self.assertEqual(away["components"]["version"], "0.5.0")
+        self.assertEqual(away["selected_files"], [
+            "components/desktop/bin/desktop-away",
+            "components/desktop/systemd/user/desktop-away.service",
+        ])
 
     def test_native_demo_provenance_contract_requires_measured_public_evidence(self):
         manifest = demo_provenance_fixture()

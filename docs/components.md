@@ -86,8 +86,13 @@ component version beside the player.
 The optional 0.5.0 [manual display-away companion](recipes/away-mode.md) adds a
 display-off latch for unattended agent work. It can observe input through
 Niri's input-only Wayland notifications without broader device permissions.
-Its consumer admission is independent of the established 0.4.1 desktop,
-shell and appearance qualification and the recorded Arch reference below.
+The [standalone stager](../scripts/stage-desktop-away.py) verifies the complete
+0.5.0 archive but selects only the helper and service, using its separate
+[input pin](../tools/reference/away-inputs.json) and the shared
+[archive verifier](../scripts/stage-arch-reference.py). Keep the established
+0.4.1 core selection; do not replace it with the full 0.5.0 bundle. Consumer
+admission is independent of the 0.4.1 desktop, shell and appearance
+qualification and the recorded Arch reference below.
 
 The [qualified baseline producer and consumer record](../data/components.json) pins
 the published bundle and independently selected identity:
@@ -114,6 +119,9 @@ The release pin is separate from other inputs and choices:
   dependency staging is separate from sourcing Zsh.
 - Host profiles and native settings remain consumer decisions. Publishing a
   module does not select it on a machine.
+- The current away selection is helper/unit only from 0.5.0 beside the 0.4.1
+  core. A future single-bundle selection requires a separately qualified next
+  whole bundle and consumer review.
 
 ## Earlier qualification
 

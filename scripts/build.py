@@ -86,7 +86,14 @@ DEMO_ASSET_LICENSES = {
 }
 FONT_ASSETS = {f"assets/{directory}/{font}.{suffix}" for font in ["noto", "noto-medium", "noto-semibold", "meslo", "source-han"] for directory, suffix in [("fonts", "woff2"), ("licenses", "txt")]}
 GENERATED = {"data/identity.json", "data/contrast-study.json", "assets/identity.css", "assets/fonts/provenance.json", "examples/kitty/neutral-slate.conf", "setup/agent.md"}
-PUBLIC_TOOLS = {"scripts/check-terminal.py", "scripts/check-desktop.py"}
+PUBLIC_TOOLS = {
+    "scripts/check-desktop-away.py",
+    "scripts/check-desktop.py",
+    "scripts/check-terminal.py",
+    "scripts/stage-arch-reference.py",
+    "scripts/stage-desktop-away.py",
+    "tools/reference/away-inputs.json",
+}
 PUBLIC_LOCAL_DOCS = {
     "LICENSE",
     "docs/planning/arch-installation-receipt.md",
@@ -98,6 +105,7 @@ PUBLIC_LOCAL_DOCS = {
     "docs/planning/capture-refresh-site-800-receipt.md",
     "docs/planning/agent-plus-800-receipt.md",
     "docs/planning/desktop-demonstration-receipt.md",
+    "docs/planning/desktop-away-integration.md",
     "tools/vm/desktop/wlr-compat/README.md",
     "design/rofi-controls/index.html",
     "docs/planning/rofi-controls-implementation-receipt.md",

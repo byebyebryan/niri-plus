@@ -177,6 +177,10 @@ deliberately not fetched from the pinned public snapshot.
 component payloads and rendered appearance. Record its exact paths and hashes.
 An existing or failed staging output is not a successful new stage.
 
+This numbered route selects only the components 0.4.1 reference pin. Manual
+display-away is an optional post-reference branch with its own 0.5.0 input pin;
+it is not part of this stage or the required reference acceptance.
+
 ## 3. Install the first-session packages
 
 Install Niri, SDDM, the selected portal providers, and the basic window,
@@ -696,6 +700,24 @@ The dated [installation receipt](planning/black-workspace-receipt.md#fresh-arch-
 records the 0.4.1 fresh-base run, its reviewed guide amendments and repeated
 gates. Physical-host and human acceptance remain separate.
 
+## Optional post-reference branch: manual display-away
+
+After completing the numbered 0.4.1 reference, you may separately select the
+manual away companion. Read the [away-mode recipe](recipes/away-mode.md) for its
+0.5.0 pin, staged-file review, install paths, optional key binding, status and
+rollback. It retains `desktop-power`/`swayidle` as the automatic idle and
+suspend owner; do not connect automatic resume to the manual away latch.
+
+Record this extension separately from the required reference checklist:
+
+| Optional extension | Completion record |
+| --- | --- |
+| Manual display-away, if selected | State `not selected`, or record the reviewed 0.5.0 provenance, installed helper/unit, exact Niri include or merge, selected input backend, away/resume/stop restoration result and rollback preimages. Keep physical input and panel acceptance separate. |
+
+The [integration record](planning/desktop-away-integration.md) summarizes the
+current release split and dated host evidence. It does not extend or replace the
+preserved 0.4.1 VM and media receipts.
+
 ## Focused recipes
 
 - [SDDM login and greeter](recipes/login.md)
@@ -704,6 +726,7 @@ gates. Physical-host and human acceptance remain separate.
 - [Notifications and dashboard](recipes/notifications.md)
 - [Clipboard history](recipes/clipboard.md)
 - [Locking and session services](recipes/session.md)
+- [Optional manual display-away](recipes/away-mode.md)
 - [Display profiles](recipes/displays.md)
 - [Fcitx5 input](recipes/input.md)
 - [Volume and brightness feedback](recipes/hardware-feedback.md)

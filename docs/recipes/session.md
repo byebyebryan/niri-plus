@@ -62,6 +62,8 @@ idle listener such as swayidle, in addition to the lock service.
 For unattended SSH/browser-agent work, the optional
 [manual display-away companion](away-mode.md) can keep displays off until input
 returns, independently of the automatic idle policy described below.
+Use its explicit resume command only for an explicit away latch; do not connect
+`desktop-away resume` to swayidle's automatic resume event.
 
 My current machines power off displays after ten minutes. Battery suspend is
 after thirty minutes, with no automatic suspend on external power. Automatic

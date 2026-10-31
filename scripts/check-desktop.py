@@ -152,8 +152,19 @@ def main():
         for path in entries:
             subprocess.run(["desktop-file-validate", str(path)], check=True)
             checks += 1
-        for name in ("examples/niri/config.kdl", "examples/feedback/binds.kdl"):
+        for name in ("examples/niri/config.kdl", "examples/feedback/binds.kdl",
+                     "examples/session/profiles/minimal-niri/away-mode.kdl"):
             subprocess.run(["niri", "validate", "--config", str(ROOT / name)], check=True, capture_output=True)
+            checks += 1
+        with tempfile.TemporaryDirectory(prefix="niri-plus-away-profile-check-") as temporary:
+            profile = Path(temporary)
+            (profile / "local").mkdir()
+            (profile / "local/away-mode.kdl").write_bytes(
+                (ROOT / "examples/session/profiles/minimal-niri/away-mode.kdl").read_bytes())
+            (profile / "config.kdl").write_text(
+                (ROOT / "examples/niri/config.kdl").read_text() + '\ninclude "local/away-mode.kdl"\n')
+            subprocess.run(["niri", "validate", "--config", str(profile / "config.kdl")],
+                           check=True, capture_output=True)
             checks += 1
     print(json.dumps({"checks": checks, "native": args.native, "live_desktop_operations": 0}, sort_keys=True))
 

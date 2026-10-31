@@ -561,6 +561,14 @@
       "sha256": "13099e63aa6fe92eff9c72207e2bf4e07ef15d6069d9f6981cdea76ac254bb14"
     },
     {
+      "path": "examples/session/profiles/minimal-niri/away-mode.kdl",
+      "sha256": "794feeb125fe8c13f691008a7c3950b8056da78f1a1c084891dade3d3592daf2",
+      "kind": "authored optional Niri profile",
+      "source": "Niri Plus manual display-away setup",
+      "profile": "minimal-niri",
+      "notes": "One optional Mod+Shift+P binding for the separately selected desktop-away companion; include or merge only when selected."
+    },
+    {
       "path": "examples/session/profiles/minimal-niri/desktop-lock.service",
       "sha256": "91aa32d063a0bde20300e4626869435c558794b7a6154e022cc6698fea99f948",
       "kind": "generated first-party component export",
@@ -768,11 +776,18 @@
       "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
     },
     {
+      "path": "scripts/check-desktop-away.py",
+      "sha256": "dd8596c3450022f2a55ce9dc4a8be7b638d93cccb490674d4d5dece7eafc302d",
+      "kind": "isolated verification tool",
+      "source": "Niri Plus",
+      "notes": "Exercises the away helper with isolated fixtures; it does not operate the user's desktop."
+    },
+    {
       "path": "scripts/check-desktop.py",
       "kind": "isolated example check",
       "source": "Niri Plus utility and desktop assembly pass, 2026-10-26",
       "notes": "Portable example; inspect and adapt before installation. No clean-machine or physical acceptance claim.",
-      "sha256": "5f53712e0128183fbbba4b92e4209e27bf9bc27b59770fe6aa61125390b21100"
+      "sha256": "519ba118ebbf215f4c072b1dec4a246c8b8af8b2ffb96dac9de9701f1932f83d"
     },
     {
       "path": "scripts/check-terminal.py",
@@ -780,6 +795,27 @@
       "kind": "isolated verification tool",
       "source": "Niri Plus",
       "notes": "Exercises temporary shell homes, fixture-backed device reads, prompt cleanup, and Session cancellation/dispatch without live desktop operations."
+    },
+    {
+      "path": "scripts/stage-arch-reference.py",
+      "sha256": "0947fccdbbe9e16e0dd0ff6ef34cee480e6c7d8c7c17e7fabeef214b90c3ec7c",
+      "kind": "input staging tool and archive verifier",
+      "source": "Niri Plus",
+      "notes": "Verifies immutable component archives and stages the separately pinned Arch reference inputs to a new directory; it does not install or qualify a desktop."
+    },
+    {
+      "path": "scripts/stage-desktop-away.py",
+      "sha256": "4b3532cac84952b918e17ca150f6b8dba7c77515c9b8a30ace753bc9537af672",
+      "kind": "optional release staging tool",
+      "source": "Niri Plus",
+      "notes": "Verifies the full immutable archive and stages only the selected away helper and unit to a new directory; it does not install files or services."
+    },
+    {
+      "path": "tools/reference/away-inputs.json",
+      "sha256": "2e40e843cf3695178a2bf5f8eb86702f5d168cb50fe88266107194f477c3478f",
+      "kind": "immutable optional component selection",
+      "source": "Niri Plus",
+      "notes": "Pins components 0.5.0 for the optional away-only helper and unit; the numbered core reference remains independently pinned at 0.4.1."
     }
   ]
 }

@@ -4,7 +4,7 @@ A personal Niri desktop shaped around Chrome, terminals, and coding agents.
 
 **[Explore Niri Plus →](https://dev.byebyebryan.com/niri-plus/)**
 
-Read [the story](docs/story.md), [take the tour](docs/tour.md), or explore the
+Take [the tour](docs/tour.md), or explore the
 [setup overview](docs/setup.md) for reference and explanation. For installation,
 we recommend giving your agent the [detailed setup guide](docs/setup-agent.md).
 The [component source map](docs/components.md)
@@ -52,7 +52,7 @@ checks are recorded in the [implementation receipt](docs/planning/rofi-controls-
 
 ## Repository layout
 
-- `docs/`: story, tour, architecture, setup, component ownership and recipes.
+- `docs/`: background notes, tour, architecture, setup, component ownership and recipes.
 - `site/`: page layout, CSS, and small browser enhancements.
 - `components/`: reusable desktop, shell and appearance sources.
 - `components/metadata.json`: explicit bundle inputs, module prerequisites and

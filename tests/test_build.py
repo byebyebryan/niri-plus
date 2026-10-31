@@ -94,11 +94,33 @@ class BuildContracts(unittest.TestCase):
         )
         self.assertTrue((self.output / "tools/vm/desktop/wlr-compat/README.md").is_file())
         self.assertFalse((self.output / "AGENTS.md").exists())
-        self.assertIn("I love terminal life", (self.output / "story/index.html").read_text())
+        self.assertIn("I love terminal life", (ROOT / "docs/story.md").read_text())
         self.assertIn("Captured Arch reference", (self.output / "index.html").read_text())
         self.assertIn('href="/niri-plus/tour/#native-reference-demo"', (self.output / "index.html").read_text())
         for page in self.output.rglob("*.html"):
             self.assertNotIn("https://github.com/byebyebryan/dotfiles", page.read_text())
+
+    def test_retired_story_redirects_without_publishing_the_notes(self):
+        builder.build(self.output, portable=True)
+        retired = builder.Page((self.output / "story/index.html").read_text())
+        self.assertEqual(retired.canonicals, [builder.SITE])
+        self.assertEqual(retired.refreshes, ["0; url=../"])
+        self.assertEqual(retired.robots, ["noindex"])
+        self.assertIn('href="../"', (self.output / "story/index.html").read_text())
+        self.assertNotIn("story/", (self.output / "sitemap.xml").read_text())
+        self.assertNotIn("docs/story.md", builder.public_files())
+        for page in self.output.rglob("*.html"):
+            text = page.read_text()
+            self.assertNotIn("I love terminal life", text)
+            self.assertFalse(any(
+                urlsplit(urljoin(builder.SITE + page.relative_to(self.output).as_posix(), target)).path == builder.BASE + "story/"
+                for target in builder.Page(text).links
+            ), page)
+        # A broken redirect must fail the same build validation as any other page.
+        redirect = self.output / "story/index.html"
+        redirect.write_text(redirect.read_text().replace("0; url=../", "0; url=../../"))
+        with self.assertRaisesRegex(ValueError, "retired-page redirect"):
+            builder.validate(self.output)
 
     def test_setup_audiences_share_one_detailed_guide_with_usable_text_links(self):
         builder.build(self.output, portable=True)

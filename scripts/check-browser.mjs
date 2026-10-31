@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 
 const output = path.resolve(process.argv[2] || "dist");
 const prefix = "/niri-plus/";
-const routes = ["", "story/", "tour/", "tour/earlier/", "design/", "design/contrast/", "architecture/", "components/", "setup/", "setup/agent/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/rofi-controls/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
+const routes = ["", "tour/", "tour/earlier/", "design/", "design/contrast/", "architecture/", "components/", "setup/", "setup/agent/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/rofi-controls/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
 const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".mp4": "video/mp4", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
 
 function parseByteRange(header, size) {
@@ -83,7 +83,8 @@ try {
       await page.waitForFunction(() => [...document.images].filter((image) => !image.closest("video")).every((image) => image.complete && image.naturalWidth > 0), null, { timeout: 10000 });
       const brokenImages = await page.locator("img").evaluateAll((images) => images.filter((image) => !image.closest("video") && (!image.complete || image.naturalWidth === 0)).map((image) => ({src: image.getAttribute("src"), complete: image.complete, width: image.naturalWidth})));
       assert.deepEqual(brokenImages, [], `broken image: ${route}`);
-      checks += 6;
+      assert.equal(await page.locator('a[href]').evaluateAll((links) => links.filter((link) => new URL(link.href).pathname.endsWith('/niri-plus/story/')).length), 0, 'retired Story links must stay out of the site');
+      checks += 7;
       if (process.env.NIRI_SCREENSHOTS && ["", "tour/", "tour/earlier/", "design/", "design/contrast/", "recipes/terminal/", "setup/", "setup/agent/", "recipes/login/", "recipes/session/", "recipes/input/", "recipes/desktop-utilities/"].includes(route) && [375, 1280].includes(width)) {
         await page.evaluate(() => document.fonts.ready);
         await fs.mkdir(process.env.NIRI_SCREENSHOTS, { recursive: true });
@@ -91,6 +92,10 @@ try {
       }
     }
   }
+  await page.goto(origin + "story/");
+  await page.waitForURL(origin);
+  assert.match(await page.locator("h1").innerText(), /Two halves/);
+  checks += 2;
   await page.goto(origin);
   await page.locator('nav a', { hasText: "Setup" }).click();
   assert.equal(page.url(), origin + "setup/");
@@ -425,7 +430,7 @@ try {
   checks += 2;
   const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 375, height: 900 } });
   const staticPage = await noScript.newPage();
-  for (const route of ["", "story/", "tour/", "tour/earlier/", "design/", "design/contrast/", "components/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "setup/agent/", "reference/"]) {
+  for (const route of ["", "tour/", "tour/earlier/", "design/", "design/contrast/", "components/", "recipes/terminal/", "recipes/desktop-utilities/", "setup/", "setup/agent/", "reference/"]) {
     await staticPage.goto(origin + route);
     assert.ok((await staticPage.locator("main").innerText()).length > 400);
     const nativeContents = staticPage.locator(".sidebar-contents");
@@ -446,6 +451,10 @@ try {
     assert.ok(await staticPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     checks += 4;
   }
+  await staticPage.goto(origin + "story/");
+  await staticPage.waitForURL(origin);
+  assert.match(await staticPage.locator("h1").innerText(), /Two halves/);
+  checks += 2;
   await staticPage.goto(origin + "tour/");
   assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 2);
   assert.equal(await staticPage.locator("[data-native-demo] video[autoplay]").count(), 0);

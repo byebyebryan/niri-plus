@@ -30,7 +30,6 @@ BASE = urlsplit(SITE).path
 PAGES = {
     "design/": ("docs/design.md", "Neutral Slate: appearance, behavior, palette, typography, and setup for the Niri Plus desktop."),
     "design/contrast/": ("docs/design/contrast.md", "Compare a clearer warm desktop and a separate pure-black terminal palette with the current Neutral Slate design."),
-    "story/": ("docs/story.md", "The personal story behind a desktop shaped around Chrome, terminals, and coding agents."),
     "tour/": ("docs/tour.md", "Explore browser, terminal, notification, clipboard, and remote-host workflows."),
     "tour/earlier/": ("docs/tour-earlier.md", "Earlier native Arch recordings, retained with their original capture dates, source pins and appearance."),
     "architecture/": ("docs/architecture.md", "How Niri, SwayNC, Rofi, Kitty, and small session services fit together."),
@@ -51,6 +50,7 @@ PAGES = {
     "recipes/files/": ("docs/recipes/files.md", "Default applications, browser file interaction and removable-media ownership."),
     "reference/": ("docs/reference.md", "Search the keyboard reference, explore source versions, and download portable examples."),
 }
+REDIRECTS = {"story/": ""}
 SOURCES = {source: route for route, (source, _) in PAGES.items()}
 ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "workflow-browser.png", "workflow-terminal.png", "workflow-panel.png", "workflow-controls.png", "agent-plus.png", "agent-plus-800.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png", "arch-reference/desktop-800.png"}
 DEMO_ASSETS = {
@@ -862,19 +862,17 @@ def render_markdown(source):
     toc = ''.join(f'<a href="#{a}">{escape(t)}</a>' for a, t in headings)
     if source == "docs/design/contrast.md":
         return title, f'<article class="wrap contrast-study"><p class="eyebrow">Niri Plus / Contrast study</p>{body}</article>'
-    if source == "docs/story.md":
-        toc = '<p class="eyebrow">A personal setup</p><p>Browser interaction.<br>Terminal work.<br>Agents in the everyday.</p><a href="' + BASE + 'tour/">See the desktop →</a>'
-    audience = {"docs/story.md": "Personal story", "docs/setup.md": "Setup overview", "docs/setup-agent.md": "Agent instructions", "docs/tour-earlier.md": "Earlier recordings"}.get(source, "Desktop guide")
+    audience = {"docs/setup.md": "Setup overview", "docs/setup-agent.md": "Agent instructions", "docs/tour-earlier.md": "Earlier recordings"}.get(source, "Desktop guide")
     next_route, next_label = ("setup/agent/", "Set up with an agent") if source == "docs/setup.md" else ("setup/", "Setup overview")
     if source == "docs/tour-earlier.md":
         next_route, next_label = "tour/", "Current desktop tour"
-    body = f'<div class="wrap document-layout"><aside class="on-this-page" aria-label="On this page"><details class="sidebar-contents"><summary aria-label="Page contents" title="Show page contents"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="3.5" width="15" height="13" rx="1.5" stroke="currentColor"/><path d="M7 4v12" stroke="currentColor"/><path d="M4 7h1M4 10h1M4 13h1" stroke="currentColor"/></svg><span>{"The story" if source == "docs/story.md" else "On this page"}</span></summary><div class="sidebar-links">{toc}</div></details></aside><article class="prose"><p class="eyebrow">Niri Plus / {audience}</p>{body}<div class="article-end"><a href="{BASE}{next_route}">{next_label} →</a><a href="https://github.com/byebyebryan/niri-plus/blob/main/{source}">Read on GitHub ↗</a></div></article></div>'
+    body = f'<div class="wrap document-layout"><aside class="on-this-page" aria-label="On this page"><details class="sidebar-contents"><summary aria-label="Page contents" title="Show page contents"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="3.5" width="15" height="13" rx="1.5" stroke="currentColor"/><path d="M7 4v12" stroke="currentColor"/><path d="M4 7h1M4 10h1M4 13h1" stroke="currentColor"/></svg><span>On this page</span></summary><div class="sidebar-links">{toc}</div></details></aside><article class="prose"><p class="eyebrow">Niri Plus / {audience}</p>{body}<div class="article-end"><a href="{BASE}{next_route}">{next_label} →</a><a href="https://github.com/byebyebryan/niri-plus/blob/main/{source}">Read on GitHub ↗</a></div></article></div>'
     return title, body
 
 
 def shell(route, title, description, body):
     navigation = []
-    for target, label in [("story/", "Story"), ("tour/", "Tour"), ("design/", "Design"), ("setup/", "Setup"), ("reference/", "Reference")]:
+    for target, label in [("tour/", "Tour"), ("design/", "Design"), ("setup/", "Setup"), ("reference/", "Reference")]:
         current = "page" if route == target else "location" if target in {"setup/", "tour/"} and route.startswith(target) else None
         selected = f' aria-current="{current}"' if current else ""
         navigation.append(f'<a href="{BASE}{target}"{selected}>{label}</a>')
@@ -885,6 +883,14 @@ def shell(route, title, description, body):
     return Template((ROOT / "site/layout.html").read_text()).substitute(title=escape(title), description=escape(description, quote=True), canonical=SITE + route, site=SITE, base=BASE, navigation=navigation, body=body, page_assets=page_assets, theme_canvas=working_identity()["direction"]["colors"]["canvas"])
 
 
+def redirect_page(route, target):
+    relative = posixpath.relpath(target or ".", route) + "/"
+    body = f'<article class="wrap prose"><h1>Continue to Niri Plus</h1><p><a href="{BASE}{target}">Open Niri Plus →</a></p></article>'
+    page = shell(target, "Niri Plus", "Explore the Niri Plus desktop.", body)
+    metadata = f'<meta name="robots" content="noindex"><meta http-equiv="refresh" content="0; url={relative}">'
+    return page.replace("</head>", metadata + "\n</head>")
+
+
 class Page(HTMLParser):
     def __init__(self, text):
         super().__init__()
@@ -892,6 +898,8 @@ class Page(HTMLParser):
         self.links = []
         self.counts = Counter()
         self.canonicals = []
+        self.refreshes = []
+        self.robots = []
         self.feed(text)
 
     def handle_starttag(self, tag, attrs):
@@ -901,6 +909,10 @@ class Page(HTMLParser):
             self.ids.append(attrs["id"])
         if tag == "link" and attrs.get("rel") == "canonical":
             self.canonicals.append(attrs.get("href"))
+        if tag == "meta" and attrs.get("http-equiv", "").lower() == "refresh":
+            self.refreshes.append(attrs.get("content"))
+        if tag == "meta" and attrs.get("name") == "robots":
+            self.robots.append(attrs.get("content"))
         for attribute in ("src", "href", "poster"):
             if attrs.get(attribute):
                 self.links.append(attrs[attribute])
@@ -910,7 +922,7 @@ class Page(HTMLParser):
 
 def validate(output):
     validate_desktop_demo_sources()
-    inventory = {"index.html", *(route + "index.html" for route in PAGES), *public_files(), "sitemap.xml", ".nojekyll"}
+    inventory = {"index.html", *(route + "index.html" for route in (*PAGES, *REDIRECTS)), *public_files(), "sitemap.xml", ".nojekyll"}
     actual = {p.relative_to(output).as_posix() for p in output.rglob("*") if p.is_file()}
     if actual != inventory:
         raise ValueError(f"public inventory mismatch: missing={inventory-actual}, extra={actual-inventory}")
@@ -920,8 +932,12 @@ def validate(output):
         route = name.removesuffix("index.html")
         if page.counts["h1"] != 1 or page.counts["main"] != 1 or len(page.ids) != len(set(page.ids)):
             raise ValueError(f"{name}: invalid landmarks or duplicate IDs")
-        if page.canonicals != [SITE + route]:
+        if page.canonicals != [SITE + REDIRECTS.get(route, route)]:
             raise ValueError(f"{name}: invalid canonical URL")
+        if route in REDIRECTS:
+            relative = posixpath.relpath(REDIRECTS[route] or ".", route) + "/"
+            if page.refreshes != [f"0; url={relative}"] or page.robots != ["noindex"]:
+                raise ValueError(f"{name}: invalid retired-page redirect")
         for target in page.links:
             url = urlsplit(urljoin(SITE + route, target))
             if url.netloc != urlsplit(SITE).netloc or not url.path.startswith(BASE):
@@ -1022,6 +1038,10 @@ def build(output, portable=False):
         target = output / route / "index.html"
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(shell(route, title, description, body))
+    for route, destination in REDIRECTS.items():
+        target = output / route / "index.html"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(redirect_page(route, destination))
     (output / ".nojekyll").touch()
     (output / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + ''.join(f'<url><loc>{SITE}{route}</loc></url>' for route in ["", *PAGES]) + '</urlset>\n')
     if portable:

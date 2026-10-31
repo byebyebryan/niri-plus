@@ -2,7 +2,8 @@
 
 This repository owns the presentation, personal story, desktop assembly guides,
 and reusable first-party modules under `components/`. Preserve the first-person
-story in `docs/story.md`. Niri Plus owns these shared modules and their public
+story in `docs/story.md` as background notes; the standalone Story page is
+retired from the site. Niri Plus owns these shared modules and their public
 bundle format; independent projects retain their own implementation and release
 authority. Chezmoi remains the authority for Bryan's personal machine selection,
 configuration, and deployment.

@@ -24,6 +24,14 @@
       "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
       "archive_sha256": "0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11",
       "manifest_sha256": "30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4"
+    },
+    {
+      "version": "0.5.0",
+      "api_version": 1,
+      "source_commit": "4c79ff18cc12152ce072c000bf00131fc2efda15",
+      "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.5.0/niri-plus-components-0.5.0.tar.gz",
+      "archive_sha256": "c7522cafa49b814e5268dc57392ad3de99c5ee1906b08693a7097475029cf35c",
+      "manifest_sha256": "e38cccdadd2a6e9edcdce12eceadf5754215595db1514bab95e1c902be9cd9a6"
     }
   ]
 }

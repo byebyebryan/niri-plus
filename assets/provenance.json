@@ -256,6 +256,34 @@
       "width": 1280,
       "height": 800,
       "capture_receipt_path": "docs/planning/desktop-800-receipt.md"
+    },
+    {
+      "path": "assets/agent-plus-800.png",
+      "sha256": "a0ab6d4759a73990d6dbb3c435ce1549498c483e64512979dd0bc14f21fb3417",
+      "license": "MIT",
+      "source": "Unedited native grim PNG from the staged 1280x800 Arch reference. Agent Plus production Rofi frame rendered with documentation sample rows and the installed Niri Plus Rofi theme.",
+      "description": "Agent Plus sample frame over Chrome and Kitty in the current Neutral Slate desktop. Fictional hosts, environments and window titles; no provider discovery, agent sessions or remote actions.",
+      "width": 1280,
+      "height": 800,
+      "capture_utc": "2026-10-31T01:12:09.446704+00:00",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_receipt_path": "docs/planning/agent-plus-800-receipt.md",
+      "agent_plus_source": {
+        "repository": "https://github.com/byebyebryan/rofi-agent-plus",
+        "commit": "0230ce9288598842f5e8a6affc4593f332ba2d8a",
+        "version": "0.15.0a17",
+        "frame_sha256": "3c5f2c4c5b1444ec716f7d77ebc27f1f1213449fbe07b80dddbfc521c84cce6c",
+        "source_files": {
+          "scripts/render-preview": "9df19f4d3c53f0fe6279714fae3b89aa5e461cafe29f9617ffdedad9d8f5dc9a",
+          "rofi_agent_plus/rofi.py": "d592674c20509558132072940b1d4e9e59590134e5bdfcf2cdfe8961c17c5af8"
+        }
+      },
+      "components_version": "0.4.1",
+      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
+      "processing": "Exact native PNG bytes, without crop, resize, overlays or retouching. Production presentation frame is sampled; full Agent Plus runtime is not installed or exercised in this guest.",
+      "agent_review": "passed",
+      "human_review": "pending"
     }
   ],
   "desktop_demos": {

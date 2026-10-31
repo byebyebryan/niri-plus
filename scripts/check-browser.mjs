@@ -333,19 +333,22 @@ try {
       await contents.locator('a[href="#explore-the-workflow"]').click();
       assert.equal(await contents.evaluate((node) => node.open), false);
     }
-    const panelCapture = page.locator(".native-panel-shot");
-    const panelImage = panelCapture.locator("img");
-    await panelImage.scrollIntoViewIfNeeded();
-    await panelImage.evaluate((node) => node.decode());
-    assert.deepEqual(await panelImage.evaluate((node) => [node.naturalWidth, node.naturalHeight]), [1280, 800]);
-    const imageBounds = await panelImage.boundingBox();
-    const frameBounds = await panelCapture.locator(".native-panel-frame").boundingBox();
-    assert.ok(Math.abs(imageBounds.width / imageBounds.height - 1280 / 800) < 0.01);
-    assert.ok(Math.abs(imageBounds.x - frameBounds.x) < 2, "the full desktop must align with its frame");
-    assert.ok(frameBounds.width >= (await page.locator(".prose").boundingBox()).width * 0.95);
-    assert.ok((await panelCapture.locator("a").first().getAttribute("href")).endsWith("assets/workflow-panel.png"));
+    for (const [kind, asset] of [["panel", "workflow-panel.png"], ["agent", "agent-plus-800.png"]]) {
+      const capture = page.locator(`.native-${kind}-shot`);
+      const image = capture.locator("img");
+      await image.scrollIntoViewIfNeeded();
+      await image.evaluate((node) => node.decode());
+      assert.deepEqual(await image.evaluate((node) => [node.naturalWidth, node.naturalHeight]), [1280, 800]);
+      const imageBounds = await image.boundingBox();
+      const frameBounds = await capture.locator(".native-desktop-frame").boundingBox();
+      assert.ok(Math.abs(imageBounds.width / imageBounds.height - 1280 / 800) < 0.01);
+      assert.ok(Math.abs(imageBounds.x - frameBounds.x) < 2, "the full desktop must align with its frame");
+      assert.ok(frameBounds.width >= (await page.locator(".prose").boundingBox()).width * 0.95);
+      assert.ok((await capture.locator("a").first().getAttribute("href")).endsWith(`assets/${asset}`));
+      checks += 5;
+    }
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-    checks += 12;
+    checks += 7;
   }
   const workflow = provenance.desktop_walkthrough;
   assert.equal(workflow.type, "native captured frames");

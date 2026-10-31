@@ -114,3 +114,14 @@ source and license are linked above. These are separate captures, not frames
 extracted from the new overview MP4. assets/arch-reference/desktop-800.png is
 an exact copy of the browser/terminal still, original capture MIT, Copyright
 2026 Bryan Bai. See provenance.json for separate timestamps and source pins.
+
+assets/agent-plus-800.png: original native 1280x800 staged-Arch capture,
+captured 2026-10-31 UTC, MIT, Copyright 2026 Bryan Bai. It shows the production
+Agent Plus presentation frame with documentation sample rows, rendered by
+Rofi using the installed Niri Plus desktop theme, over Chrome and Kitty.
+Agent Plus source: https://github.com/byebyebryan/rofi-agent-plus/tree/0230ce9288598842f5e8a6affc4593f332ba2d8a
+The sample hosts, environments and window titles are fictional; no provider
+discovery or agent/remote actions are performed. Independent applications and
+fonts retain their own licenses. The prior agent-plus.png and its attribution
+remain retained. See provenance.json and agent-plus-800-receipt.md for hashes,
+source pins and the capture/runtime boundary.

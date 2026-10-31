@@ -87,6 +87,7 @@ class BuildContracts(unittest.TestCase):
                 "docs/planning/black-workspace-receipt.md",
                 "docs/planning/resource-and-showcase-receipt.md",
                 "docs/planning/desktop-800-receipt.md",
+                "docs/planning/agent-plus-800-receipt.md",
                 "docs/planning/desktop-demonstration-receipt.md",
                 "docs/planning/rofi-controls-implementation-receipt.md",
             },

@@ -52,7 +52,7 @@ PAGES = {
     "reference/": ("docs/reference.md", "Search the keyboard reference, explore source versions, and download portable examples."),
 }
 SOURCES = {source: route for route, (source, _) in PAGES.items()}
-ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "workflow-browser.png", "workflow-terminal.png", "workflow-panel.png", "workflow-controls.png", "agent-plus.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png", "arch-reference/desktop-800.png"}
+ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "workflow-browser.png", "workflow-terminal.png", "workflow-panel.png", "workflow-controls.png", "agent-plus.png", "agent-plus-800.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png", "arch-reference/desktop-800.png"}
 DEMO_ASSETS = {
     f"assets/demo-{scene}.{suffix}"
     for scene in ("overview", "browser-files", "terminal", "information", "controls", "desktop-041", "desktop-800", "controls-800")
@@ -90,6 +90,7 @@ PUBLIC_LOCAL_DOCS = {
     "docs/planning/black-workspace-receipt.md",
     "docs/planning/resource-and-showcase-receipt.md",
     "docs/planning/desktop-800-receipt.md",
+    "docs/planning/agent-plus-800-receipt.md",
     "docs/planning/desktop-demonstration-receipt.md",
     "tools/vm/desktop/wlr-compat/README.md",
     "design/rofi-controls/index.html",
@@ -762,17 +763,35 @@ def panel():
     return f'''<figure class="panel-shot"><div class="media-label"><span>Native SwayNC fork</span><span>Actual rendering ↗</span></div><a class="panel-frame" href="{BASE}assets/panel.png" aria-label="Open the full isolated SwayNC screenshot" style="display:block"><img src="{BASE}assets/panel.png" alt="System, Network, and Bluetooth cards in the actual SwayNC fork" width="1280" height="800" loading="lazy"></a><figcaption>Actual fork in an isolated session, using its default theme. Sample wireless/GPU values; local CPU/RAM. Battery hides on this hardware. <a href="{BASE}assets/provenance.json">Media source</a>.</figcaption></figure>'''
 
 
-def desktop_panel():
-    image = f"{BASE}assets/workflow-panel.png"
-    return f'''<figure class="native-panel-shot">
-  <div class="media-label"><span>SwayNC in the desktop</span><span>1280×800 · scale 1</span></div>
-  <a class="native-panel-frame" href="{image}" aria-label="Open the full desktop capture with SwayNC">
-    <img src="{image}" width="1280" height="800" loading="lazy" alt="The complete Arch reference desktop: SwayNC showing actual guest CPU, RAM and Ethernet readings beside Chrome and Kitty.">
+def desktop_capture(kind, image, label, alt, caption, receipt):
+    image = f"{BASE}assets/{image}"
+    return f'''<figure class="native-{kind}-shot native-desktop-shot">
+  <div class="media-label"><span>{escape(label)}</span><span>1280×800 · scale 1</span></div>
+  <a class="native-{kind}-frame native-desktop-frame" href="{image}" aria-label="Open the full desktop capture">
+    <img src="{image}" width="1280" height="800" loading="lazy" alt="{escape(alt, quote=True)}">
   </a>
-  <figcaption>Native staged Arch reference · actual guest CPU, RAM and Ethernet readings.
-    <a href="{image}">Open full-size capture ↗</a> · <a href="{BASE}docs/planning/desktop-800-receipt.md">Capture details</a>.
+  <figcaption>{escape(caption)}
+    <a href="{image}">Open full-size capture ↗</a> · <a href="{BASE}docs/planning/{receipt}">Capture details</a>.
   </figcaption>
 </figure>'''
+
+
+def desktop_panel():
+    return desktop_capture(
+        "panel", "workflow-panel.png", "SwayNC in the desktop",
+        "The complete Arch reference desktop: SwayNC showing actual guest CPU, RAM and Ethernet readings beside Chrome and Kitty.",
+        "Native staged Arch reference · actual guest CPU, RAM and Ethernet readings.",
+        "desktop-800-receipt.md",
+    )
+
+
+def desktop_agent():
+    return desktop_capture(
+        "agent", "agent-plus-800.png", "Agent Plus · sample entries",
+        "The complete Arch reference desktop: Agent Plus rendered by Rofi with fictional sample hosts, environments and windows, over Chrome and Kitty.",
+        "Actual Rofi rendering with the installed desktop theme · sample hosts, environments and windows; no live agent sessions.",
+        "agent-plus-800-receipt.md",
+    )
 
 
 def snapshot():
@@ -792,7 +811,7 @@ def render_markdown(source):
 
     def slot(match):
         name, fallback = match.groups()
-        if name not in {"workbench", "architecture", "keys", "snapshot", "panel", "panel-desktop", "overview", "gallery", "palette", "typography", "contrast", *(f"demo-{clip}" for clip in DEMO_CLIPS)} or name in enhancements.values():
+        if name not in {"workbench", "architecture", "keys", "snapshot", "panel", "panel-desktop", "agent-desktop", "overview", "gallery", "palette", "typography", "contrast", *(f"demo-{clip}" for clip in DEMO_CLIPS)} or name in enhancements.values():
             raise ValueError(f"{source}: invalid enhancement {name}")
         if not fallback.strip():
             raise ValueError(f"{source}: empty Markdown fallback")
@@ -831,7 +850,7 @@ def render_markdown(source):
     if source == "docs/setup.md":
         body = body.replace(f'<a href="{BASE}setup/agent/">Set up with an agent</a>',
                             f'<a class="button" href="{BASE}setup/agent/">Set up with an agent</a>', 1)
-    replacements = {"workbench": partial("workbench.html"), "architecture": partial("architecture.html"), "snapshot": snapshot(), "panel": panel(), "panel-desktop": desktop_panel(), "overview": partial("identity-overview.html"), "gallery": identity_gallery(), "palette": identity_palette(), "typography": identity_typography(), "contrast": contrast_html()}
+    replacements = {"workbench": partial("workbench.html"), "architecture": partial("architecture.html"), "snapshot": snapshot(), "panel": panel(), "panel-desktop": desktop_panel(), "agent-desktop": desktop_agent(), "overview": partial("identity-overview.html"), "gallery": identity_gallery(), "palette": identity_palette(), "typography": identity_typography(), "contrast": contrast_html()}
     replacements.update({f"demo-{name}": demo(name) for name in DEMO_CLIPS})
     for key, name in enhancements.items():
         if name != "keys":

@@ -50,10 +50,11 @@ Kitty is the terminal. Native coding agents stay responsible for their own
 conversations and authentication. Agent Plus provides an entry point into
 dedicated TUI windows: open one, return to one, or request another window.
 
-![Actual Agent Plus Rofi rendering with fictional local and remote environments and sample window titles](../assets/agent-plus.png)
-
-*Actual Rofi rendering with sample environments and windows and a preview theme.
-No live sessions are shown. The installed Rofi theme controls its appearance.*
+<!-- niri-plus:agent-desktop -->
+[View the full 1280×800 Agent Plus capture](../assets/agent-plus-800.png),
+rendered by Rofi with the installed desktop theme. Hosts, environments and window
+titles are documentation samples; no live agent sessions are shown.
+<!-- /niri-plus:agent-desktop -->
 
 I like commands and configuration that I can inspect, repeat, and ask an agent
 to work with. That same preference connects coding, troubleshooting, and system
@@ -115,8 +116,10 @@ explains the independently useful projects and their prerequisites.
 
 The workflow explorer uses independent, unedited native 800p stills captured
 before the new recordings; its watch links open the related scenes.
-The identity gallery remains illustrative. The Agent Plus image is a real Rofi rendering with sample data, and the SwayNC image
-is an isolated native rendering with its fixture values labelled separately.
+The identity gallery remains illustrative. The Agent Plus image is a real Rofi
+rendering of its production presentation frame with sample entries and the
+installed desktop theme; it does not exercise agent sessions or remote hosts.
+The SwayNC capture shows actual guest readings in the full desktop.
 The recordings show actual software in staged Arch guests with public sample
 content. The current videos and stills use native 1280×800 capture at scale 1, keeping
 the full desktop visible. The [six earlier videos](tour-earlier.md) retain their

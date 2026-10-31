@@ -77,7 +77,7 @@ The earlier still trial is `low-resolution-trial-20261030T224118Z` in that lab.
 
 Validation passed: 89 unit tests (3 optional GI checks skipped in the local
 venv), 31 isolated desktop checks, 85 terminal checks, and unchanged component
-exports. Normal and portable builds each contain 24 pages, 166 files and 935
+exports. Normal and portable builds each contain 24 pages, 166 files and 937
 validated local links. Both owned browser runs passed 1,065 checks across 23
 routes at widths 375, 768, 1280 and 1600, including all eight clips, actual
 playback/seeking, uncropped gallery frames, sidebar keyboard interaction,

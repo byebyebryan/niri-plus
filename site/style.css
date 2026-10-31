@@ -179,6 +179,7 @@
   .prose pre { background: #1a2025; border: 1px solid #3a454d; padding: 21px; overflow-x: auto; margin-block: 25px; border-radius: 4px; }
   .prose pre code { padding: 0; background: none; font-size: 12px; overflow-wrap: normal; }
   .prose img:not(.workflow-capture) { border-radius: 4px; border: 1px solid #3c4850; width: 100%; }
+  .prose > p:has(> a > img) { max-width: none; }
   .prose > p > em { font-size: 11px; line-height: 1.8; color: #9da8af; font-style: normal; }
   .prose .workbench { margin-block: 30px 40px; }
   .prose .native-demo { margin-block: 28px 42px; }

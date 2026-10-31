@@ -49,9 +49,10 @@ or explore the earlier [browser/files](tour.md#browser-and-files),
 [terminal](tour.md#terminals-and-agents), and
 [information/clipboard](tour.md#information-when-i-want-it) recordings.
 
-![Current native staged Arch desktop with Chrome and Kitty over a pure-black workspace.](../assets/arch-reference/desktop-800.png)
+[![Current native staged Arch desktop with Chrome and Kitty over a pure-black workspace.](../assets/arch-reference/desktop-800.png)](../assets/arch-reference/desktop-800.png)
 
 *Native 1280×800 staged Arch guest · components 0.4.1 · public sample content.
+[Open full-size capture](../assets/arch-reference/desktop-800.png) ·
 [Capture details and review status](planning/desktop-800-receipt.md).*
 
 ## Surface gallery

@@ -184,6 +184,10 @@
   .prose .workbench { margin-block: 30px 40px; }
   .prose .native-demo { margin-block: 28px 42px; }
   .prose .panel-shot { width: min(100%, 448px); margin: 30px auto; }
+  .prose .native-panel-shot { margin: 30px 0; }
+  .native-panel-frame { display: block; overflow: hidden; border: 1px solid var(--line); border-radius: 4px; background: #000; }
+  .prose .native-panel-shot img { display: block; width: 100%; height: auto; border: 0; border-radius: 0; }
+  .native-panel-shot figcaption { margin-top: 16px; font: 10px/1.8 var(--mono); color: var(--muted); }
   .table-scroll { overflow-x: auto; margin-block: 25px; border: 1px solid var(--line); border-radius: 3px; }
   table { border-collapse: collapse; width: 100%; min-width: 420px; font-size: 12px; line-height: 1.8; }
   th { background: #20272d; font-weight: 500; text-align: left; color: #e1e5e8; }

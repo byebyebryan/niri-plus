@@ -71,11 +71,11 @@ There is no permanent bar. `Mod+N` opens SwayNC for notifications and system
 information. The custom panel brings CPU, RAM, active NVIDIA GPU information, network,
 connected Bluetooth devices, and battery information into one place.
 
-<!-- niri-plus:panel -->
-[View the native panel rendering](../assets/panel.png), captured in an isolated
-test session using the fork's default theme. Wireless and GPU values are sample
-data; CPU/RAM readings are local. There is no battery card on this hardware.
-<!-- /niri-plus:panel -->
+<!-- niri-plus:panel-desktop -->
+[View the full 1280×800 desktop capture](../assets/workflow-panel.png), showing
+SwayNC beside Chrome and Kitty in the staged Arch reference. CPU, RAM and
+Ethernet readings come from the guest.
+<!-- /niri-plus:panel-desktop -->
 
 The details matter: metrics refresh while the panel is open, missing hardware
 cards hide, and battery estimates follow the reported charge limit. Volume and

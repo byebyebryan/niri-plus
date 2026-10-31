@@ -762,6 +762,19 @@ def panel():
     return f'''<figure class="panel-shot"><div class="media-label"><span>Native SwayNC fork</span><span>Actual rendering ↗</span></div><a class="panel-frame" href="{BASE}assets/panel.png" aria-label="Open the full isolated SwayNC screenshot" style="display:block"><img src="{BASE}assets/panel.png" alt="System, Network, and Bluetooth cards in the actual SwayNC fork" width="1280" height="800" loading="lazy"></a><figcaption>Actual fork in an isolated session, using its default theme. Sample wireless/GPU values; local CPU/RAM. Battery hides on this hardware. <a href="{BASE}assets/provenance.json">Media source</a>.</figcaption></figure>'''
 
 
+def desktop_panel():
+    image = f"{BASE}assets/workflow-panel.png"
+    return f'''<figure class="native-panel-shot">
+  <div class="media-label"><span>SwayNC in the desktop</span><span>1280×800 · scale 1</span></div>
+  <a class="native-panel-frame" href="{image}" aria-label="Open the full desktop capture with SwayNC">
+    <img src="{image}" width="1280" height="800" loading="lazy" alt="The complete Arch reference desktop: SwayNC showing actual guest CPU, RAM and Ethernet readings beside Chrome and Kitty.">
+  </a>
+  <figcaption>Native staged Arch reference · actual guest CPU, RAM and Ethernet readings.
+    <a href="{image}">Open full-size capture ↗</a> · <a href="{BASE}docs/planning/desktop-800-receipt.md">Capture details</a>.
+  </figcaption>
+</figure>'''
+
+
 def snapshot():
     data = json.loads((ROOT / "data/setup.json").read_text())
     fork = data["swaync"]
@@ -779,7 +792,7 @@ def render_markdown(source):
 
     def slot(match):
         name, fallback = match.groups()
-        if name not in {"workbench", "architecture", "keys", "snapshot", "panel", "overview", "gallery", "palette", "typography", "contrast", *(f"demo-{clip}" for clip in DEMO_CLIPS)} or name in enhancements.values():
+        if name not in {"workbench", "architecture", "keys", "snapshot", "panel", "panel-desktop", "overview", "gallery", "palette", "typography", "contrast", *(f"demo-{clip}" for clip in DEMO_CLIPS)} or name in enhancements.values():
             raise ValueError(f"{source}: invalid enhancement {name}")
         if not fallback.strip():
             raise ValueError(f"{source}: empty Markdown fallback")
@@ -818,7 +831,7 @@ def render_markdown(source):
     if source == "docs/setup.md":
         body = body.replace(f'<a href="{BASE}setup/agent/">Set up with an agent</a>',
                             f'<a class="button" href="{BASE}setup/agent/">Set up with an agent</a>', 1)
-    replacements = {"workbench": partial("workbench.html"), "architecture": partial("architecture.html"), "snapshot": snapshot(), "panel": panel(), "overview": partial("identity-overview.html"), "gallery": identity_gallery(), "palette": identity_palette(), "typography": identity_typography(), "contrast": contrast_html()}
+    replacements = {"workbench": partial("workbench.html"), "architecture": partial("architecture.html"), "snapshot": snapshot(), "panel": panel(), "panel-desktop": desktop_panel(), "overview": partial("identity-overview.html"), "gallery": identity_gallery(), "palette": identity_palette(), "typography": identity_typography(), "contrast": contrast_html()}
     replacements.update({f"demo-{name}": demo(name) for name in DEMO_CLIPS})
     for key, name in enhancements.items():
         if name != "keys":

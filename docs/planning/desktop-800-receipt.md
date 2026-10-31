@@ -77,8 +77,8 @@ The earlier still trial is `low-resolution-trial-20261030T224118Z` in that lab.
 
 Validation passed: 89 unit tests (3 optional GI checks skipped in the local
 venv), 31 isolated desktop checks, 85 terminal checks, and unchanged component
-exports. Normal and portable builds each contain 24 pages, 166 files and 937
-validated local links. Both owned browser runs passed 1,065 checks across 23
+exports. Normal and portable builds each contain 24 pages, 166 files and 938
+validated local links. Both owned browser runs passed 1,085 checks across 23
 routes at widths 375, 768, 1280 and 1600, including all eight clips, actual
 playback/seeking, uncropped gallery frames, sidebar keyboard interaction,
 reduced motion and JavaScript-disabled behavior, with zero browser errors.
@@ -92,3 +92,14 @@ Raw capture SHA-256: `f79b831d4607bbf6bdf7eb645bb06f2affaa9aca451cc5e80cd6afb503
 
 controls-800 output SHA-256: `9345998c3497b8b246700cfd77813fedde796d60a38bea1af1ea1a1f15d39c0e`.
 Raw capture SHA-256: `ef996fd6228a1a7d1ef8e748423f206593a13365cb04daec3b95f8b0fc0d3fc2`.
+
+## Information section follow-up
+
+The Tour's “Information when I want it” section now uses the same complete
+native 1280×800 SwayNC desktop capture as the workflow gallery. It fills the
+content column and links to the original image. This replaces the older
+isolated panel rendering in that section, whose crop styling conflicted with
+the prose image width. The fixture image and its provenance remain retained.
+Browser checks at all four widths verify native aspect ratio, frame alignment,
+full content width and the full-size target. No new capture or VM operation was
+needed; the accepted 800p image bytes and provenance are unchanged.

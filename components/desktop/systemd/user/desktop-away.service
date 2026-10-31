@@ -1,0 +1,13 @@
+[Unit]
+Description=Manual away mode for the Niri display
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/desktop-away run
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=6
+UMask=0077
+NoNewPrivileges=true

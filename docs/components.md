@@ -75,14 +75,21 @@ Established projects keep their implementation and release authority:
 
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.
-The latest published release is 0.4.1. Its normal workspace is pure black and
+The latest optional release is 0.5.0, adding the manual display-away companion.
+The qualified desktop/reference baseline below remains 0.4.1. Its normal workspace is pure black and
 its overview surround remains charcoal for visible empty-workspace boundaries.
 Historical recordings keep their original
 component tuple and retained identity source in
 [media provenance](../assets/provenance.json), with their capture date and
 component version beside the player.
 
-The [current producer and consumer record](../data/components.json) pins
+The optional 0.5.0 [manual display-away companion](recipes/away-mode.md) adds a
+display-off latch for unattended agent work. It can observe input through
+Niri's input-only Wayland notifications without broader device permissions.
+Its consumer admission is independent of the established 0.4.1 desktop,
+shell and appearance qualification and the recorded Arch reference below.
+
+The [qualified baseline producer and consumer record](../data/components.json) pins
 the published bundle and independently selected identity:
 
 - Version: `0.4.1`, API version `1`, 44 payload files.

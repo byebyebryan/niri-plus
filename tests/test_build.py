@@ -77,7 +77,7 @@ class BuildContracts(unittest.TestCase):
 
     def test_complete_site_has_checked_links_and_only_allowlisted_planning_docs(self):
         result = builder.build(self.output)
-        self.assertEqual(result["pages"], 24)
+        self.assertEqual(result["pages"], 25)
         self.assertGreater(result["local_links"], 200)
         self.assertEqual(
             {path.relative_to(self.output).as_posix() for path in (self.output / "docs").rglob("*") if path.is_file()},

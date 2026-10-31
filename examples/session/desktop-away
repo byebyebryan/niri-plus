@@ -1,0 +1,493 @@
+#!/usr/bin/env python3
+"""Opt-in Niri display-off latch. Observes input without grabbing or recording it."""
+import argparse
+import ctypes
+import fcntl
+import json
+import os
+from pathlib import Path
+import selectors
+import signal
+import socket
+import struct
+import subprocess
+import sys
+import time
+
+EVENT = struct.Struct("llHHi")
+WORD_BITS = struct.calcsize("L") * 8
+EVIOCSCLOCKID = 0x400445A0
+MAX_MESSAGE = 4096
+
+
+def log(message):
+    print(message, flush=True)
+
+
+def bitmap(text):
+    return sum(int(word, 16) << (i * WORD_BITS)
+               for i, word in enumerate(reversed(text.split())))
+
+
+def qualifies(bus, key, rel, absolute, path):
+    # uinput can advertise a real bus ID, so reject its sysfs path as well.
+    # Bluetooth UHID lives under virtual/misc/uhid, which is a real HID transport.
+    if bus not in {0x03, 0x05, 0x11, 0x18} or "/virtual/input/" in str(path):
+        return False
+    keyboard = bool(key & (1 << 30))  # KEY_A, not power/audio/controller buttons.
+    mouse = bool(key & (1 << 272)) and rel & 3 == 3
+    touchpad = bool(key & (1 << 330)) and absolute & 3 == 3
+    return keyboard or mouse or touchpad
+
+
+def input_nodes(root=Path("/sys/class/input"), dev=Path("/dev/input")):
+    nodes = {}
+    for event in root.glob("event*"):
+        device = event / "device"
+        try:
+            bus = int((device / "id/bustype").read_text().strip(), 16)
+            caps = [bitmap((device / "capabilities" / kind).read_text())
+                    for kind in ("key", "rel", "abs")]
+            if qualifies(bus, *caps, device.resolve()):
+                nodes[dev / event.name] = (device / "name").read_text().strip()
+        except (OSError, ValueError):
+            continue
+    return nodes
+
+
+def is_activity(kind, code, value):
+    # New key/button presses and pointer movement only. In particular, the
+    # shortcut's key releases/repeats and display/audio jack events cannot wake.
+    return (kind == 1 and value == 1) or (kind == 2 and value != 0) or kind == 3
+
+
+def display_state(root=Path("/sys/class/drm")):
+    result = {}
+    for path in root.glob("card*-*"):
+        try:
+            if "Writeback" not in path.name and (path / "status").read_text().strip() == "connected":
+                result[path.name] = (path / "dpms").read_text().strip()
+        except OSError:
+            continue
+    return result
+
+
+def power(on):
+    subprocess.run(["niri", "msg", "action", "power-on-monitors" if on else "power-off-monitors"],
+                   check=True, capture_output=True, text=True, timeout=3)
+
+
+class Latch:
+    def __init__(self, command=None, clock=time.monotonic):
+        self.command, self.clock = command or power, clock
+        self.away = False
+        self.armed_at = 0.0
+        self.reblank_count = 0
+        self.last_correction = 0.0
+        self.transition = "started"
+
+    def enter(self):
+        # Arm before the synchronous command so input during it still wins.
+        self.armed_at = self.clock()
+        self.command(False)
+        self.away = True
+        self.transition = "manual away"
+        log("away entered; only physical keyboard/mouse input or explicit resume releases it")
+
+    def resume(self, reason):
+        self.command(True)
+        self.away = False
+        self.transition = reason
+        log("away released: " + reason)
+
+    def input(self, at, kind, code, value, name, origin="evdev"):
+        # The privacy-preserving Wayland API has no key codes. Give the manual
+        # shortcut's final release time to settle before accepting its activity.
+        if origin == "wayland" and self.clock() - self.armed_at < 0.5:
+            return
+        if self.away and at > self.armed_at and is_activity(kind, code, value):
+            self.resume("physical input: " + name)
+
+    def enforce(self, states):
+        if not self.away or self.clock() - self.last_correction < 0.5:
+            return
+        # An absent/unknown DRM state is not proof of off. Retry while armed.
+        if states and all(value == "Off" for value in states.values()):
+            return
+        self.command(False)
+        self.last_correction = self.clock()
+        self.reblank_count += 1
+        log("away corrected application/hotplug wake; corrections=" + str(self.reblank_count))
+
+
+class InputReader:
+    backend = "evdev"
+
+    def __init__(self, selector, callback):
+        self.selector, self.callback = selector, callback
+        self.devices = {}
+        self.failures = set()
+        self.libc = ctypes.CDLL(None, use_errno=True)
+        self.libc.inotify_init1.argtypes = [ctypes.c_int]
+        self.libc.inotify_add_watch.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_uint32]
+        self.watch = self.libc.inotify_init1(os.O_NONBLOCK | os.O_CLOEXEC)
+        if self.watch < 0:
+            raise OSError(ctypes.get_errno(), "inotify_init1 failed")
+        if self.libc.inotify_add_watch(self.watch, b"/dev/input", 0x00000104 | 0x00000080) < 0:
+            os.close(self.watch)
+            raise OSError(ctypes.get_errno(), "cannot watch /dev/input")
+        selector.register(self.watch, selectors.EVENT_READ, "hotplug")
+        self.scan()
+
+    def scan(self):
+        nodes = input_nodes()
+        for fd, device in list(self.devices.items()):
+            if device["path"] not in nodes:
+                self.remove(fd)
+        opened = {x["path"] for x in self.devices.values()}
+        for path, name in nodes.items():
+            if path in opened:
+                continue
+            fd = None
+            try:
+                fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK | os.O_CLOEXEC)
+                fcntl.ioctl(fd, EVIOCSCLOCKID, struct.pack("i", time.CLOCK_MONOTONIC))
+                self.selector.register(fd, selectors.EVENT_READ, "input")
+                self.devices[fd] = {"path": path, "name": name, "buffer": b"", "overrun": False}
+                self.failures.discard(path)
+                log("observing physical input: " + name)
+            except OSError as error:
+                if fd is not None:
+                    os.close(fd)
+                if path not in self.failures:
+                    log(f"input unavailable: {name}: {error}")
+                    self.failures.add(path)
+
+    def remove(self, fd):
+        self.selector.unregister(fd)
+        os.close(fd)
+        del self.devices[fd]
+
+    def ready(self, fd):
+        if fd == self.watch:
+            try:
+                os.read(fd, 65536)
+            except BlockingIOError:
+                pass
+            self.scan()
+            return
+        device = self.devices.get(fd)
+        if device is None:
+            return
+        try:
+            data = os.read(fd, EVENT.size * 256)
+        except BlockingIOError:
+            return
+        except OSError:
+            data = b""
+        if not data:
+            self.remove(fd)
+            return
+        data = device["buffer"] + data
+        length = len(data) - len(data) % EVENT.size
+        device["buffer"] = data[length:]
+        for offset in range(0, length, EVENT.size):
+            sec, usec, kind, code, value = EVENT.unpack_from(data, offset)
+            if kind == 0 and code == 3:  # SYN_DROPPED: don't treat a gap as input.
+                device["overrun"] = True
+            elif device["overrun"]:
+                if kind == 0 and code == 0:
+                    device["overrun"] = False
+            else:
+                self.callback(sec + usec / 1e6, kind, code, value, device["name"])
+
+    def close(self):
+        for fd in list(self.devices):
+            self.remove(fd)
+        self.selector.unregister(self.watch)
+        os.close(self.watch)
+
+    def poll(self):
+        pass
+
+
+class WlInterface(ctypes.Structure):
+    pass
+
+
+class WlMessage(ctypes.Structure):
+    _fields_ = [("name", ctypes.c_char_p), ("signature", ctypes.c_char_p),
+                ("types", ctypes.POINTER(ctypes.POINTER(WlInterface)))]
+
+
+WlInterface._fields_ = [("name", ctypes.c_char_p), ("version", ctypes.c_int),
+                       ("method_count", ctypes.c_int), ("methods", ctypes.POINTER(WlMessage)),
+                       ("event_count", ctypes.c_int), ("events", ctypes.POINTER(WlMessage))]
+
+
+class WaylandInputReader:
+    """ext-idle-notify v2: input-only notifications, with no raw-input access.
+
+    These are independent of application inhibitors. Unlike evdev, this API
+    cannot distinguish OS-level injected input from physical seat input.
+    Chrome's in-page CDP events do not enter the compositor's input seat.
+    """
+    backend = "wayland-input-only"
+
+    def __init__(self, selector, callback):
+        self.selector, self.callback = selector, callback
+        self.devices = {"seat": {"name": "Wayland seat (input-only)"}}
+        self.display = self.registry = self.seat = self.notifier = self.notification = None
+        self.active, self.last_activity = False, 0.0
+        self.wl = ctypes.CDLL("libwayland-client.so.0")
+        pointer = ctypes.c_void_p
+        self.wl.wl_display_connect.argtypes = [ctypes.c_char_p]
+        self.wl.wl_display_connect.restype = pointer
+        self.wl.wl_proxy_marshal_flags.argtypes = [pointer, ctypes.c_uint,
+                                                  ctypes.POINTER(WlInterface), ctypes.c_uint, ctypes.c_uint]
+        self.wl.wl_proxy_marshal_flags.restype = pointer
+        self.wl.wl_proxy_add_listener.argtypes = [pointer, ctypes.POINTER(pointer), pointer]
+        self.wl.wl_proxy_add_listener.restype = ctypes.c_int
+        self.wl.wl_proxy_destroy.argtypes = [pointer]
+        self.wl.wl_proxy_destroy.restype = None
+        self.wl.wl_display_disconnect.argtypes = [pointer]
+        self.wl.wl_display_disconnect.restype = None
+        for name in ("get_fd", "roundtrip", "dispatch", "dispatch_pending", "flush"):
+            function = getattr(self.wl, "wl_display_" + name)
+            function.argtypes = [pointer]
+            function.restype = ctypes.c_int
+        self.registry_type = WlInterface.in_dll(self.wl, "wl_registry_interface")
+        self.seat_type = WlInterface.in_dll(self.wl, "wl_seat_interface")
+        self.destroy_method = (WlMessage * 1)(WlMessage(b"destroy", b"", None))
+        self.notification_events = (WlMessage * 2)(WlMessage(b"idled", b"", None),
+                                                   WlMessage(b"resumed", b"", None))
+        self.notification_type = WlInterface(b"ext_idle_notification_v1", 2, 1,
+                                             self.destroy_method, 2, self.notification_events)
+        self.request_types = (ctypes.POINTER(WlInterface) * 3)(
+            ctypes.pointer(self.notification_type), None, ctypes.pointer(self.seat_type))
+        self.notifier_methods = (WlMessage * 3)(
+            WlMessage(b"destroy", b"", None), WlMessage(b"get_idle_notification", b"nuo", self.request_types),
+            WlMessage(b"get_input_idle_notification", b"2nuo", self.request_types))
+        self.notifier_type = WlInterface(b"ext_idle_notifier_v1", 2, 3, self.notifier_methods, 0, None)
+        global_cb = ctypes.CFUNCTYPE(None, pointer, pointer, ctypes.c_uint, ctypes.c_char_p, ctypes.c_uint)
+        remove_cb = ctypes.CFUNCTYPE(None, pointer, pointer, ctypes.c_uint)
+        event_cb = ctypes.CFUNCTYPE(None, pointer, pointer)
+        self.global_callback = global_cb(self.global_added)
+        self.remove_callback = remove_cb(lambda *_: None)
+        self.idled_callback = event_cb(lambda *_: setattr(self, "active", False))
+        self.resumed_callback = event_cb(self.resumed)
+        self.registry_listener = (pointer * 2)(ctypes.cast(self.global_callback, pointer),
+                                               ctypes.cast(self.remove_callback, pointer))
+        self.notification_listener = (pointer * 2)(ctypes.cast(self.idled_callback, pointer),
+                                                   ctypes.cast(self.resumed_callback, pointer))
+        try:
+            self.display = self.wl.wl_display_connect(None)
+            if not self.display:
+                raise RuntimeError("cannot connect to the session Wayland display")
+            self.registry = self.wl.wl_proxy_marshal_flags(self.display, 1,
+                             ctypes.byref(self.registry_type), 1, 0, pointer())
+            if self.wl.wl_proxy_add_listener(self.registry, self.registry_listener, None) != 0:
+                raise RuntimeError("cannot register Wayland registry listener")
+            if self.wl.wl_display_roundtrip(self.display) < 0 or not self.seat or not self.notifier:
+                raise RuntimeError("Wayland seat and ext-idle-notify v2 are required")
+            self.notification = self.wl.wl_proxy_marshal_flags(
+                self.notifier, 2, ctypes.byref(self.notification_type), 2, 0,
+                pointer(), ctypes.c_uint(250), pointer(self.seat))
+            if self.wl.wl_proxy_add_listener(self.notification, self.notification_listener, None) != 0:
+                raise RuntimeError("cannot register input-only notification")
+            self.wl.wl_display_flush(self.display)
+            self.fd = self.wl.wl_display_get_fd(self.display)
+            selector.register(self.fd, selectors.EVENT_READ, "wayland")
+            log("observing Wayland input-only seat; no raw input permissions required")
+        except Exception:
+            self.close()
+            raise
+
+    def global_added(self, data, registry, name, interface, version):
+        if interface == b"wl_seat" and not self.seat:
+            self.seat = self.wl.wl_proxy_marshal_flags(registry, 0, ctypes.byref(self.seat_type), 1, 0,
+                            ctypes.c_uint(name), self.seat_type.name, ctypes.c_uint(1), ctypes.c_void_p())
+        elif interface == b"ext_idle_notifier_v1" and version >= 2 and not self.notifier:
+            self.notifier = self.wl.wl_proxy_marshal_flags(registry, 0, ctypes.byref(self.notifier_type), 2, 0,
+                            ctypes.c_uint(name), self.notifier_type.name, ctypes.c_uint(2), ctypes.c_void_p())
+
+    def resumed(self, *_):
+        self.active, self.last_activity = True, time.monotonic()
+
+    def ready(self, fd):
+        if self.wl.wl_display_dispatch(self.display) < 0:
+            raise RuntimeError("Wayland input notification disconnected")
+
+    def scan(self):
+        if self.wl.wl_display_dispatch_pending(self.display) < 0:
+            raise RuntimeError("Wayland input notification failed")
+        self.wl.wl_display_flush(self.display)
+
+    def poll(self):
+        if self.active:
+            self.callback(self.last_activity, 1, 0, 1, "Wayland seat (input-only)", origin="wayland")
+
+    def close(self):
+        if hasattr(self, "fd"):
+            try:
+                self.selector.unregister(self.fd)
+            except KeyError:
+                pass
+        if self.display:
+            self.wl.wl_display_disconnect(self.display)
+            self.display = None
+
+
+def input_reader(selector, callback):
+    try:
+        reader = InputReader(selector, callback)
+    except OSError:
+        return WaylandInputReader(selector, callback)
+    if reader.devices and not reader.failures:
+        return reader
+    reader.close()
+    return WaylandInputReader(selector, callback)
+
+
+class Daemon:
+    def __init__(self, directory):
+        self.directory = directory
+        self.latch = Latch()
+        self.stopping = False
+        self.selector = selectors.DefaultSelector()
+
+    def status(self):
+        return {"away": self.latch.away, "transition": self.latch.transition,
+                "input_backend": self.inputs.backend,
+                "reblank_count": self.latch.reblank_count,
+                "input_devices": sorted({x["name"] for x in self.inputs.devices.values()}),
+                "displays": display_state()}
+
+    def handle(self, connection):
+        with connection:
+            connection.settimeout(1)
+            try:
+                raw = b""
+                while b"\n" not in raw and len(raw) <= MAX_MESSAGE:
+                    part = connection.recv(MAX_MESSAGE + 1 - len(raw))
+                    if not part:
+                        break
+                    raw += part
+                if len(raw) > MAX_MESSAGE:
+                    raise ValueError("request too large")
+                action = json.loads(raw)["action"]
+                if action == "away":
+                    self.inputs.scan()
+                    self.latch.enter()
+                elif action == "resume":
+                    self.latch.resume("explicit resume")
+                elif action != "status":
+                    raise ValueError("unknown action")
+                response = {"ok": True, **self.status()}
+            except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
+                response = {"ok": False, "error": str(error)}
+            try:
+                connection.sendall(json.dumps(response).encode() + b"\n")
+            except OSError:
+                pass
+
+    def run(self):
+        if not os.environ.get("NIRI_SOCKET"):
+            raise RuntimeError("NIRI_SOCKET is required; run inside the graphical session")
+        self.directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+        self.directory.chmod(0o700)
+        self.lock = (self.directory / "lock").open("a")
+        fcntl.flock(self.lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        path = self.directory / "control.sock"
+        path.unlink(missing_ok=True)
+        self.server = socket.socket(socket.AF_UNIX)
+        self.server.bind(str(path))
+        path.chmod(0o600)
+        self.server.listen(8)
+        self.server.setblocking(False)
+        self.selector.register(self.server, selectors.EVENT_READ, "control")
+        self.inputs = input_reader(self.selector, self.latch.input)
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            signal.signal(sig, lambda *_: setattr(self, "stopping", True))
+        last_scan = time.monotonic()
+        log("away controller ready; normal idle/inhibitor policy remains active until manual away")
+        try:
+            while not self.stopping:
+                ready = self.selector.select(0.25 if self.latch.away else 2)
+                # Read input before issuing a correction to a user-triggered wake.
+                for key, _ in ready:
+                    if key.data != "control":
+                        self.inputs.ready(key.fd)
+                for key, _ in ready:
+                    if key.data == "control":
+                        try:
+                            connection, _ = self.server.accept()
+                            self.handle(connection)
+                        except BlockingIOError:
+                            pass
+                if time.monotonic() - last_scan >= 2:
+                    self.inputs.scan()
+                    last_scan = time.monotonic()
+                self.inputs.poll()
+                try:
+                    if self.latch.away:
+                        self.latch.enforce(display_state())
+                except (OSError, subprocess.SubprocessError) as error:
+                    # Stop enforcing and restore the ordinary desktop on failure.
+                    raise RuntimeError("display control failed: " + str(error)) from error
+        finally:
+            if self.latch.away:
+                try:
+                    self.latch.resume("controller stopped; normal desktop restored")
+                except (OSError, subprocess.SubprocessError) as error:
+                    log("display restore failed: " + str(error))
+            self.inputs.close()
+            self.selector.close()
+            self.server.close()
+            path.unlink(missing_ok=True)
+            self.lock.close()
+
+
+def request(directory, action):
+    with socket.socket(socket.AF_UNIX) as connection:
+        connection.settimeout(5)
+        connection.connect(str(directory / "control.sock"))
+        connection.sendall(json.dumps({"action": action}).encode() + b"\n")
+        raw = b""
+        while b"\n" not in raw:
+            data = connection.recv(MAX_MESSAGE)
+            if not data:
+                raise RuntimeError("controller closed without a response")
+            raw += data
+            if len(raw) > 65536:
+                raise RuntimeError("controller response too large")
+    result = json.loads(raw)
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("ok") else 1
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", choices=("run", "away", "resume", "status"))
+    args = parser.parse_args()
+    root = Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")) / "desktop-away"
+    try:
+        if args.action == "run":
+            Daemon(root).run()
+            return 0
+        return request(root, args.action)
+    except (OSError, RuntimeError, ValueError) as error:
+        print("desktop-away: " + str(error), file=sys.stderr)
+        if args.action == "away":
+            # Keep the pre-existing manual-off action usable if the optional
+            # controller is down. This fallback cannot promise an enforced latch.
+            try:
+                power(False)
+                print("desktop-away: powered off without enforcement; controller unavailable", file=sys.stderr)
+            except (OSError, subprocess.SubprocessError) as fallback_error:
+                print("desktop-away: manual power-off failed: " + str(fallback_error), file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

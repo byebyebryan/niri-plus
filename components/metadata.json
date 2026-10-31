@@ -1,5 +1,5 @@
 {
-  "version": "0.4.1",
+  "version": "0.5.0",
   "modules": {
     "desktop": {
       "prerequisites": [
@@ -8,7 +8,8 @@
         "Python 3.11 or newer for the Python helpers",
         "Rofi 2.0 for direct Network, Audio and Bluetooth controls",
         "PyGObject with NetworkManager/libnm and libsecret introspection for Network; BlueZ D-Bus for Bluetooth",
-        "pactl and an existing PulseAudio-compatible server for Audio; existing native owners are not installed or started by a menu"
+        "pactl and an existing PulseAudio-compatible server for Audio; existing native owners are not installed or started by a menu",
+        "For opt-in away mode: libwayland-client and ext-idle-notify v2, or existing read access to physical evdev input"
       ]
     },
     "shell": {
@@ -202,6 +203,14 @@
     {
       "path": "components/desktop/bin/desktop-bluetooth-menu",
       "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/desktop-away",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/systemd/user/desktop-away.service",
+      "module": "desktop"
     }
   ],
   "exports": [
@@ -380,6 +389,16 @@
     {
       "path": "examples/desktop/desktop-bluetooth-menu",
       "component": "components/desktop/bin/desktop-bluetooth-menu"
+    },
+    {
+      "path": "examples/session/desktop-away",
+      "component": "components/desktop/bin/desktop-away",
+      "notes": "Optional manual display-away companion; existing idle policy remains independent."
+    },
+    {
+      "path": "examples/session/desktop-away.service",
+      "component": "components/desktop/systemd/user/desktop-away.service",
+      "notes": "Optional manual display-away companion; existing idle policy remains independent."
     }
   ],
   "appearance_exports": [

@@ -59,6 +59,10 @@ idle listener such as swayidle, in addition to the lock service.
 
 ## Idle policy is a choice
 
+For unattended SSH/browser-agent work, the optional
+[manual display-away companion](away-mode.md) can keep displays off until input
+returns, independently of the automatic idle policy described below.
+
 My current machines power off displays after ten minutes. Battery suspend is
 after thirty minutes, with no automatic suspend on external power. Automatic
 locking and lock-before-suspend are disabled in my personal policy.

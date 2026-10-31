@@ -1,8 +1,9 @@
 # Earlier desktop recordings
 
-These staged Arch recordings retain their original 1920×1080 resolution,
-source pins, capture dates and media bytes. The main Tour now uses native
-1280×800 capture. Return to the [current overview](tour.md#native-reference-demo).
+These staged Arch recordings retain their original resolutions, source pins,
+capture dates and media bytes. This archive includes the superseded Story-page
+800p captures and earlier 1080p recordings. Return to the
+[current Git documentation overview](tour.md#native-reference-demo).
 
 ## Previous black-workspace overview
 
@@ -20,6 +21,20 @@ The 0.4.1 Audio/Network capture retains its original native 1080p take.
 <!-- niri-plus:demo-controls -->
 Inspect and adjust virtual audio, restore its state, and inspect Ethernet.
 <!-- /niri-plus:demo-controls -->
+
+## Superseded 800p captures
+
+These two 1280×800 captures show the retired public Story page in Chrome. They
+are retained byte-for-byte with their original media records; the current Tour
+uses separately captured Git documentation stills and videos.
+
+<!-- niri-plus:demo-desktop-800 -->
+The overview follows the browser, file, terminal, panel and clipboard sequence.
+<!-- /niri-plus:demo-desktop-800 -->
+
+<!-- niri-plus:demo-controls-800 -->
+The controls recording shows virtual Audio and the connected Ethernet link.
+<!-- /niri-plus:demo-controls-800 -->
 
 The following four 0.3.1 recordings retain the earlier charcoal workspace.
 

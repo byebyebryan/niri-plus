@@ -125,3 +125,43 @@ discovery or agent/remote actions are performed. Independent applications and
 fonts retain their own licenses. The prior agent-plus.png and its attribution
 remain retained. See provenance.json and agent-plus-800-receipt.md for hashes,
 source pins and the capture/runtime boundary.
+
+assets/demo-desktop-git-800.mp4: original native 1280x800 staged-Arch overview
+recording, GPL-3.0-only, Copyright 2026 Bryan Bai. It includes the SwayNC fork
+interface, attributed to Erik Reider and contributors, with source and license
+links above. Other application interfaces and public Git documentation retain
+their own terms. The browser uses the official Git project's static
+documentation mirror; Kitty shows the public Hello-World sample project. See
+provenance.json and the current capture receipt for source versions,
+measurements, hashes, processing and review status.
+
+assets/demo-desktop-git-800.png is the separately captured browser/terminal
+opening still, also used as workflow-browser-git-800.png and
+arch-reference/desktop-git-800.png. It contains no SwayNC interface and is an
+original MIT capture, Copyright 2026 Bryan Bai.
+
+assets/demo-controls-git-800.mp4 and demo-controls-git-800.png, the four
+assets/workflow-*-git-800.png stills, assets/agent-plus-git-800.png and
+assets/arch-reference/desktop-git-800.png: original native 1280x800 staged-Arch
+capture media, MIT, Copyright 2026 Bryan Bai, except
+assets/workflow-panel-git-800.png, which includes the SwayNC interface and is
+attributed under GPL-3.0-only to Erik Reider and contributors. Source and
+license links are above. The Agent Plus still shows its source-pinned
+production presentation frame with fictional documentation rows; it does not
+show a live runtime or provider session. These MIT/GPL notices license the
+original capture media only and do not relicense upstream documentation,
+software, interfaces, or fonts.
+
+The browser scenes show the Git project's git-status(1) reference manual,
+served by its official static documentation mirror. The Git project and its
+contributors retain attribution for that manual. The Git website identifies
+the reference manual as imported from the Git project and available under its
+GPL terms. The Git project states GPL version 2 is its default unless a file
+explicitly says otherwise. Sources and license:
+https://github.com/git/git/blob/master/Documentation/git-status.adoc
+https://git-scm.com/site.html
+https://github.com/git/git/blob/master/COPYING
+This upstream manual attribution applies to the depicted documentation, not
+to the original capture media or independent application and font interfaces.
+See provenance.json and the current capture receipt for the exact fetched
+HTML hash and the capture/media boundary.

@@ -1,11 +1,16 @@
 # Native 800p showcase receipt
 
-The current Tour, home workflow gallery and Design still use native 1280×800
-capture at scale 1. Complete frames preserve the browser/terminal context;
-no crop or image enlargement is applied. Page contents remain in a collapsible
-left sidebar, with a bounded wider content column. Earlier qualification
-screenshots and all six earlier videos retain their original dimensions,
-provenance records and bytes in the recording archive.
+**Historical media record.** At this capture's acceptance, the Tour, home
+workflow gallery and Design still used its native 1280×800 frames at scale 1.
+The captures described below remain byte-for-byte with their provenance in the
+earlier-recordings archive. The current screens use the separate Git
+documentation captures in the [refresh receipt](capture-refresh-git-800-receipt.md).
+
+Complete frames preserve the browser/terminal context; no crop or image
+enlargement is applied. Page contents remain in a collapsible left sidebar,
+with a bounded wider content column. Earlier qualification screenshots and all
+six then-existing videos retain their original dimensions, provenance records
+and bytes in the recording archive.
 
 ## Capture and media checks
 

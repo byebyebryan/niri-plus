@@ -1,5 +1,10 @@
 # VM resource observation and current showcase receipt
 
+**Historical media record.** This dated receipt describes captures that remain
+unchanged in the earlier-recordings archive; the current Tour and gallery use
+the Git documentation captures in the
+[current refresh receipt](capture-refresh-git-800-receipt.md).
+
 Recorded 2026-10-30 UTC against the
 [approved resource/showcase plan](resource-and-showcase-pass.md). Sol owns the
 storyboard, design, copy, integration and acceptance. Luna Max handles the

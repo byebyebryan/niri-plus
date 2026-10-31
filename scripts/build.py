@@ -52,15 +52,16 @@ PAGES = {
 }
 REDIRECTS = {"story/": ""}
 SOURCES = {source: route for route, (source, _) in PAGES.items()}
-ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "workflow-browser.png", "workflow-terminal.png", "workflow-panel.png", "workflow-controls.png", "agent-plus.png", "agent-plus-800.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png", "arch-reference/desktop-800.png"}
+ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "workflow-browser.png", "workflow-terminal.png", "workflow-panel.png", "workflow-controls.png", "workflow-browser-git-800.png", "workflow-terminal-git-800.png", "workflow-panel-git-800.png", "workflow-controls-git-800.png", "agent-plus.png", "agent-plus-800.png", "agent-plus-git-800.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png", "arch-reference/desktop-800.png", "arch-reference/desktop-git-800.png"}
 DEMO_ASSETS = {
     f"assets/demo-{scene}.{suffix}"
-    for scene in ("overview", "browser-files", "terminal", "information", "controls", "desktop-041", "desktop-800", "controls-800")
+    for scene in ("overview", "browser-files", "terminal", "information", "controls", "desktop-041", "desktop-800", "controls-800", "desktop-git-800", "controls-git-800")
     for suffix in ("mp4", "png")
 }
 SWAYNC_DEMO_ASSETS = {
     "assets/demo-desktop-800.mp4",
     "assets/demo-desktop-800.png",
+    "assets/demo-desktop-git-800.mp4",
     "assets/demo-desktop-041.mp4",
     "assets/demo-desktop-041.png",
     "assets/demo-overview.mp4",
@@ -90,6 +91,7 @@ PUBLIC_LOCAL_DOCS = {
     "docs/planning/black-workspace-receipt.md",
     "docs/planning/resource-and-showcase-receipt.md",
     "docs/planning/desktop-800-receipt.md",
+    "docs/planning/capture-refresh-git-800-receipt.md",
     "docs/planning/agent-plus-800-receipt.md",
     "docs/planning/desktop-demonstration-receipt.md",
     "tools/vm/desktop/wlr-compat/README.md",
@@ -97,6 +99,42 @@ PUBLIC_LOCAL_DOCS = {
     "docs/planning/rofi-controls-implementation-receipt.md",
 }
 DEMO_CLIPS = {
+    "desktop-git-800": {
+        "video": "assets/demo-desktop-git-800.mp4",
+        "poster": "assets/demo-desktop-git-800.png",
+        "id": "demo-desktop-git-800",
+        "title": "Read the docs, work in the terminal",
+        "description": "Chrome shows the official Git status manual beside Kitty and a clean public sample project. Files, information, clipboard history and device controls stay available on demand.",
+        "steps": [
+            "Move between the Git status manual in Chrome and the public sample project in Kitty.",
+            "Download a public sample, open it in Dolphin, and select the same file in Chrome's GTK chooser.",
+            "Inspect the clean Hello-World sample in the native Zsh terminal.",
+            "Open SwayNC and clipboard history, check Audio, and return to the documentation and project.",
+        ],
+        "setup": [
+            ("Setup overview", "setup.md"),
+            ("Files and defaults", "recipes/files.md"),
+            ("Kitty and Zsh", "recipes/terminal.md"),
+        ],
+        "dimensions": (1280, 800),
+    },
+    "controls-git-800": {
+        "video": "assets/demo-controls-git-800.mp4",
+        "poster": "assets/demo-controls-git-800.png",
+        "id": "demo-controls-git-800",
+        "title": "Device controls beside the Git manual",
+        "description": "Audio and Network open beside the official Git status manual and Kitty in the current black-workspace desktop. Device state stays separate from named actions and keyboard selection.",
+        "steps": [
+            "Open Audio from Mod+D, inspect its default devices, and select Details with Tab and Enter.",
+            "Adjust the virtual output's volume and mute state, then restore the original settings.",
+            "Open Network and inspect the connected Ethernet link and its address.",
+        ],
+        "setup": [
+            ("Direct Rofi controls", "recipes/rofi-controls.md"),
+            ("Agent installation guide", "setup-agent.md#6-install-the-selected-notification-and-clipboard-paths"),
+        ],
+        "dimensions": (1280, 800),
+    },
     "desktop-800": {
         "video": "assets/demo-desktop-800.mp4",
         "poster": "assets/demo-desktop-800.png",
@@ -343,7 +381,7 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
             raise ValueError(f"desktop demo must record its video codec: {clip['id']}")
         if not isinstance(clip.get("pixel_format"), str) or not clip["pixel_format"].strip():
             raise ValueError(f"desktop demo must record its pixel format: {clip['id']}")
-        if clip["id"] in {"overview", "information", "desktop", "desktop-800"}:
+        if clip["id"] in {"overview", "information", "desktop", "desktop-800", "desktop-git-800"}:
             swaync_pin = clip.get("additional_source_versions", {}).get("swaync")
             if not isinstance(swaync_pin, dict) or any(swaync_pin.get(key) != value for key, value in SWAYNC_PIN.items()):
                 raise ValueError(f"SwayNC-containing clip must record the exact fork and recipe source tuple: {clip['id']}")
@@ -778,19 +816,19 @@ def desktop_capture(kind, image, label, alt, caption, receipt):
 
 def desktop_panel():
     return desktop_capture(
-        "panel", "workflow-panel.png", "SwayNC in the desktop",
-        "The complete Arch reference desktop: SwayNC showing actual guest CPU, RAM and Ethernet readings beside Chrome and Kitty.",
+        "panel", "workflow-panel-git-800.png", "SwayNC in the desktop",
+        "The complete Arch reference desktop: SwayNC showing actual guest CPU, RAM and Ethernet readings beside the Git status manual and Kitty.",
         "Native staged Arch reference · actual guest CPU, RAM and Ethernet readings.",
-        "desktop-800-receipt.md",
+        "capture-refresh-git-800-receipt.md",
     )
 
 
 def desktop_agent():
     return desktop_capture(
-        "agent", "agent-plus-800.png", "Agent Plus · sample entries",
-        "The complete Arch reference desktop: Agent Plus rendered by Rofi with fictional sample hosts, environments and windows, over Chrome and Kitty.",
+        "agent", "agent-plus-git-800.png", "Agent Plus · sample entries",
+        "The complete Arch reference desktop: Agent Plus rendered by Rofi with fictional sample hosts, environments and windows, over the Git status manual and Kitty.",
         "Actual Rofi rendering with the installed desktop theme · sample hosts, environments and windows; no live agent sessions.",
-        "agent-plus-800-receipt.md",
+        "capture-refresh-git-800-receipt.md",
     )
 
 

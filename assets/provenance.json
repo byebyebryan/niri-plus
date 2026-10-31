@@ -211,6 +211,107 @@
       "capture_receipt_path": "docs/planning/desktop-800-receipt.md"
     },
     {
+      "path": "assets/workflow-browser-git-800.png",
+      "sha256": "4fb077111842b32f49ba011c878fd8c42492d39641f782dc083071d0b0ca635d",
+      "source": "Unedited native grim PNG from Virtual-1 during the new continuous overview; not a decoded video frame.",
+      "license": "MIT",
+      "description": "Chrome shows the official Git project's git-status(1) manual, including its name and synopsis, beside Kitty on the complete desktop.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T01:41:40.483222+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md"
+    },
+    {
+      "path": "assets/workflow-terminal-git-800.png",
+      "sha256": "4d3edbad899ba88f6119fa0bbfff87d2b8945e319724df593cbe3a69e777463f",
+      "source": "Unedited native grim PNG from Virtual-1 during the new continuous overview; not a decoded video frame.",
+      "license": "MIT",
+      "description": "Kitty and Zsh show Git status and commit output from the clean public Hello-World sample beside the Git status manual in Chrome.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T01:42:19.011942+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md"
+    },
+    {
+      "path": "assets/workflow-panel-git-800.png",
+      "sha256": "69bea795aa5a4b981531c39e28d978ce6c277bafee76b7b342a32037491e3cfa",
+      "source": "Unedited native grim PNG from Virtual-1 during the new continuous overview; not a decoded video frame.",
+      "license": "GPL-3.0-only",
+      "description": "SwayNC System and Network cards show actual guest CPU, RAM and Ethernet readings beside the Git status manual and Kitty.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T01:42:23.404184+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md"
+    },
+    {
+      "path": "assets/workflow-controls-git-800.png",
+      "sha256": "bada27552776353fc3bdd17dbfed67c28b3d70e3cf089ba457abdc9a61ca6e67",
+      "source": "Unedited native grim PNG from Virtual-1 during the new continuous overview; not a decoded video frame.",
+      "license": "MIT",
+      "description": "Rofi Audio shows the virtual default output at 40 percent and input at 100 percent, both unmuted, beside the Git status manual and Kitty.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T01:42:32.873447+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md"
+    },
+    {
+      "path": "assets/arch-reference/desktop-git-800.png",
+      "sha256": "4fb077111842b32f49ba011c878fd8c42492d39641f782dc083071d0b0ca635d",
+      "source": "Exact-byte reuse of the fresh native browser/terminal capture at assets/workflow-browser-git-800.png.",
+      "license": "MIT",
+      "description": "Chrome shows the official Git project's git-status(1) manual beside Kitty on the complete staged Arch desktop.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T01:41:40.483222+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md"
+    },
+    {
+      "path": "assets/demo-desktop-git-800.png",
+      "sha256": "4fb077111842b32f49ba011c878fd8c42492d39641f782dc083071d0b0ca635d",
+      "source": "Separate unedited native grim PNG captured during the new continuous overview; it is also the browser and Design still, not a decoded frame.",
+      "license": "MIT",
+      "description": "Native overview poster showing Chrome on the official Git status manual beside Kitty on the complete desktop.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T01:41:40.483222+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md"
+    },
+    {
+      "path": "assets/demo-desktop-git-800.mp4",
+      "sha256": "57e87c761f5c65476caaf0c861d04caa574ece0b1d230864a57ec0bcec2b0982",
+      "source": "Native staged Arch reference capture, qualified H.264 faststart output; see the current capture receipt.",
+      "license": "GPL-3.0-only",
+      "description": "Continuous silent 1280x800 overview beside the official Git status manual and a clean public sample project; includes SwayNC with actual guest readings.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md",
+      "source_capture_sha256": "5118f162fa8514afbc31a073f402eca4db70041e166dad0693e450f1996d05ad",
+      "stream_sha256": "a1af888c7ebd473ad7c67f5bdddaab94e9d6c7daf6b86d453b04562bbe7c07a5",
+      "duration_seconds": 58.666667,
+      "frame_count": 1760,
+      "container_frame_count": 1761,
+      "average_frame_rate": "30/1",
+      "video_codec": "h264",
+      "video_profile": "High",
+      "pixel_format": "yuv420p",
+      "color_range": null,
+      "capture_utc": "2026-10-31T01:41:39.261202+00:00"
+    },
+    {
       "path": "assets/demo-desktop-800.mp4",
       "sha256": "6fc730cfd4badf7198c02829f2dbb60e6f1406acdbd868e229eb8821e378bf75",
       "license": "GPL-3.0-only",
@@ -284,6 +385,72 @@
       "processing": "Exact native PNG bytes, without crop, resize, overlays or retouching. Production presentation frame is sampled; full Agent Plus runtime is not installed or exercised in this guest.",
       "agent_review": "passed",
       "human_review": "pending"
+    },
+    {
+      "path": "assets/agent-plus-git-800.png",
+      "sha256": "6f47c09877edd40fa0952381ee54f2d871724b1c01a45136d2f73f0d5efb04f6",
+      "license": "MIT",
+      "source": "Fresh unedited native grim PNG from Virtual-1; the Agent Plus frame uses the pinned production presentation renderer with documentation sample rows.",
+      "description": "Agent Plus sample frame over Chrome and Kitty in the current Neutral Slate desktop. Fictional hosts, environments and window titles; no provider discovery, agent sessions or remote actions.",
+      "width": 1280,
+      "height": 800,
+      "capture_utc": "2026-10-31T01:44:20.840436+00:00",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md",
+      "agent_plus_source": {
+        "repository": "https://github.com/byebyebryan/rofi-agent-plus",
+        "commit": "0230ce9288598842f5e8a6affc4593f332ba2d8a",
+        "version": "0.15.0a17",
+        "frame_sha256": "3c5f2c4c5b1444ec716f7d77ebc27f1f1213449fbe07b80dddbfc521c84cce6c",
+        "frame_bytes": 2060,
+        "source_files": {
+          "scripts/render-preview": "9df19f4d3c53f0fe6279714fae3b89aa5e461cafe29f9617ffdedad9d8f5dc9a",
+          "rofi_agent_plus/rofi.py": "d592674c20509558132072940b1d4e9e59590134e5bdfcf2cdfe8961c17c5af8"
+        },
+        "method": "Production Agent Plus _render called by the producer documentation sample rows; no discovery, provider or desktop actions."
+      },
+      "components_version": "0.4.1",
+      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
+      "processing": "Exact native PNG bytes without crop, resize, overlays or retouching. The production presentation frame is sampled; the full Agent Plus runtime is not installed or exercised.",
+      "agent_review": "passed; primary visually reviewed the native still",
+      "human_review": "pending"
+    },
+    {
+      "path": "assets/demo-controls-git-800.png",
+      "sha256": "fe1239f62024bc5cd91c77eac562164378d740936b943807d7df12be703aa36a",
+      "source": "Separate unedited native grim PNG from Virtual-1, captured during the fresh controls take; not extracted from the MP4.",
+      "license": "MIT",
+      "description": "Rofi Audio and Network controls beside the official Git status manual and Kitty; native guest devices only.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T01:43:07.875731+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md"
+    },
+    {
+      "path": "assets/demo-controls-git-800.mp4",
+      "sha256": "8d672a09823a23241f689845a21d913a15f454bb66d0b4ae1a16107a17bba8d3",
+      "license": "MIT",
+      "source": "Continuous native wf-recorder output, remuxed with FFmpeg stream copy for faststart; compressed video stream preserved exactly.",
+      "description": "Silent native 1280x800 staged Arch recording beside the official Git status manual and the clean public Hello-World sample.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T01:43:03.838884+00:00",
+      "width": 1280,
+      "height": 800,
+      "duration_seconds": 36.0,
+      "frame_count": 1080,
+      "container_frame_count": 1081,
+      "average_frame_rate": "30/1",
+      "video_codec": "h264",
+      "video_profile": "High",
+      "pixel_format": "yuv420p",
+      "color_range": null,
+      "source_capture_sha256": "9eda57ee6d4b8fdd399aed9e607066850bcabb1cb7611af52da3553470024b86",
+      "stream_sha256": "b418f883fa350b1dad70dd031e5195553bdc3b5f6232c25d23c62eb8c7d136d6",
+      "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md"
     }
   ],
   "desktop_demos": {
@@ -950,6 +1117,290 @@
         },
         "capture_started_utc": "2026-10-30T23:59:31.059961+00:00",
         "capture_ended_utc": "2026-10-31T00:00:08.655673+00:00"
+      },
+      {
+        "id": "desktop-git-800",
+        "video": "assets/demo-desktop-git-800.mp4",
+        "poster": "assets/demo-desktop-git-800.png",
+        "width": 1280,
+        "height": 800,
+        "duration_seconds": 58.666667,
+        "frame_count": 1760,
+        "container_frame_count": 1761,
+        "average_frame_rate": "30/1",
+        "video_codec": "h264",
+        "video_profile": "High",
+        "pixel_format": "yuv420p",
+        "color_range": null,
+        "capture_date": "2026-10-31",
+        "source_capture_sha256": "5118f162fa8514afbc31a073f402eca4db70041e166dad0693e450f1996d05ad",
+        "source_captures": null,
+        "poster_source": {
+          "path": "assets/demo-desktop-git-800.png",
+          "sha256": "4fb077111842b32f49ba011c878fd8c42492d39641f782dc083071d0b0ca635d",
+          "capture_utc": "2026-10-31T01:41:40.483222+00:00",
+          "method": "Separate unedited native grim PNG captured during this take; not a decoded MP4 frame."
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Official Git project git-status(1) manual and clean public Hello-World sample; actual guest CPU/RAM/Ethernet and virtual audio; the loopback fixture verifies the public sample bytes in memory. Wi-Fi and Bluetooth hardware are absent.",
+        "processing_notes": [
+          "Continuous native wf-recorder take, no crop, no overlays, no time changes.",
+          "Raw capture SHA-256 5118f162fa8514afbc31a073f402eca4db70041e166dad0693e450f1996d05ad; output SHA-256 57e87c761f5c65476caaf0c861d04caa574ece0b1d230864a57ec0bcec2b0982; compressed stream SHA-256 a1af888c7ebd473ad7c67f5bdddaab94e9d6c7daf6b86d453b04562bbe7c07a5.",
+          "Silent H.264 High/yuv420p at native 1280x800 and 30/1; 58.666667 seconds and 1760 fully decoded frames. The container reports 1761 frames including its final discard packet.",
+          "passed; passed; d=0.20 pix_th=0.10 pic_th=0.999, no intervals.",
+          "ffmpeg-copy-faststart; compressed stream hash unchanged; no reencoding/color conversion; no re-encoding, crop, overlay, time change or color conversion.",
+          "Poster is an independent native PNG captured during the same take.",
+          "The signed-out browser uses a fresh temporary profile; no private profile, account or provider session is used."
+        ],
+        "agent_review": "passed; primary visually reviewed native stills and representative encoded frames",
+        "automated_review": "passed",
+        "human_review": "pending",
+        "capture_started_utc": "2026-10-31T01:41:39.261202+00:00",
+        "capture_ended_utc": "2026-10-31T01:42:39.106641+00:00",
+        "capture_unit": "niri-plus-refresh-desktop",
+        "capture_baseline_repo_commit": "0b461c35275ba203e401f3d4c86e2cc7c41b29ee",
+        "source_versions": {
+          "public_source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+          "components": {
+            "version": "0.4.1",
+            "api_version": 1,
+            "source_commit": "317658ee7913bb58536f6ec1b2575043a9494449",
+            "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
+            "archive_sha256": "0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11",
+            "manifest_sha256": "30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4"
+          },
+          "identity": {
+            "source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+            "path": "design/history/neutral-slate-black-workspace.json",
+            "sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+          },
+          "guest_software": {
+            "niri": "26.04-1",
+            "swaync": "0.12.6-15",
+            "swaync-bryan": "0.12.6-15",
+            "kanshi": "1.9.0-1",
+            "fcitx5": "5.1.23-1",
+            "cliphist": "1:0.7.0-2",
+            "swayidle": "1.9.1-1",
+            "pipewire": "1:1.6.10-1",
+            "wireplumber": "0.5.18-1",
+            "rofi": "2.0.0-1",
+            "kitty": "0.49.2-1",
+            "zsh": "5.9.2-1",
+            "google-chrome": "156.0.8078.47-1",
+            "xdg-desktop-portal": "1.22.1-2",
+            "xdg-desktop-portal-gtk": "1.15.3-2",
+            "xdg-desktop-portal-wlr": "0.8.2-1.3",
+            "polkit-kde-agent": "6.8.2-1",
+            "gtklock": "5.0.0-1",
+            "wf_recorder": "0.6.0-2",
+            "ffmpeg": "2:9.0.2-2"
+          },
+          "browser_content": {
+            "url": "https://git.github.io/htmldocs/git-status.html",
+            "title": "git-status(1)",
+            "source_html_sha256": "a21d07f7aca697cd0a2c185d945e0e2998dd714015e0a312a623c32d2d8dd5e9",
+            "source_html_bytes": 70499,
+            "account_state": "signed out; public documentation",
+            "name_anchor_present": true,
+            "description_anchor_present": true,
+            "source": "Git project reference manual imported by git-scm.com",
+            "source_url": "https://github.com/git/git/blob/master/Documentation/git-status.adoc",
+            "license": "GPL-2.0-only under the Git project's default for this reference manual, unless its source file states otherwise. This upstream term does not change the license of the original capture media, independent software, or fonts.",
+            "license_url": "https://github.com/git/git/blob/master/COPYING",
+            "verification": "Fresh public HTML source hash and byte count recorded at capture; title and NAME/DESCRIPTION anchors verified.",
+            "license_source_sha256": "5b2198d1645f767585e8a88ac0499b04472164c0d2da22e75ecf97ef443ab32e"
+          },
+          "git_sample": {
+            "remote": "https://github.com/octocat/Hello-World.git",
+            "repo_path": "/home/demo/code/public-sample",
+            "commit": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+            "branch": "public-sample",
+            "working_tree": "clean"
+          },
+          "local_fixture": {
+            "path": "tools/vm/desktop/sample_server.py",
+            "source_commit": "25539e7f1cb977a82551fde43c40658da1f14489",
+            "sha256": "757f1392d979e639b1878162e01d516c8ae5fb57b8b0b901ab0d87a7c71f44ee",
+            "url": "http://127.0.0.1:8765",
+            "sample_sha256": "c2440ff35a67921e891877abc7f210c9c869ff38f2c5c973fcd319147b5a2275",
+            "sample_size_bytes": 252,
+            "upload_storage": "in-memory comparison only"
+          }
+        },
+        "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md",
+        "container_remux": {
+          "method": "ffmpeg-copy-faststart",
+          "reencoded": false,
+          "input_sha256": "5118f162fa8514afbc31a073f402eca4db70041e166dad0693e450f1996d05ad",
+          "output_sha256": "57e87c761f5c65476caaf0c861d04caa574ece0b1d230864a57ec0bcec2b0982",
+          "input_stream_sha256": "a1af888c7ebd473ad7c67f5bdddaab94e9d6c7daf6b86d453b04562bbe7c07a5",
+          "output_stream_sha256": "a1af888c7ebd473ad7c67f5bdddaab94e9d6c7daf6b86d453b04562bbe7c07a5"
+        },
+        "full_decode": "passed",
+        "blackdetect": "passed; d=0.20 pix_th=0.10 pic_th=0.999, no intervals",
+        "watch_from_seconds": {
+          "browser": 0,
+          "terminal": 38,
+          "panel": 43,
+          "controls": 53
+        },
+        "additional_source_versions": {
+          "swaync": {
+            "package": "swaync-bryan",
+            "version": "0.12.6-15",
+            "recipe_revision": "cd1038d1c824f256ecb5a448d78df9f71b64850a",
+            "recipe_archive_sha256": "297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0",
+            "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
+            "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83"
+          }
+        },
+        "site_integration_review": "pending primary source/build/browser gate",
+        "primary_visual_review": {
+          "status": "passed",
+          "scope": "Native stills and representative encoded frames; retired page absent; full frame visible.",
+          "watch_points_seconds": {
+            "browser": 0,
+            "terminal": 38,
+            "panel": 43,
+            "controls": 53
+          }
+        }
+      },
+      {
+        "id": "controls-git-800",
+        "video": "assets/demo-controls-git-800.mp4",
+        "poster": "assets/demo-controls-git-800.png",
+        "width": 1280,
+        "height": 800,
+        "duration_seconds": 36.0,
+        "frame_count": 1080,
+        "container_frame_count": 1081,
+        "average_frame_rate": "30/1",
+        "video_codec": "h264",
+        "video_profile": "High",
+        "pixel_format": "yuv420p",
+        "color_range": null,
+        "capture_date": "2026-10-31",
+        "source_capture_sha256": "9eda57ee6d4b8fdd399aed9e607066850bcabb1cb7611af52da3553470024b86",
+        "source_captures": null,
+        "poster_source": {
+          "path": "assets/demo-controls-git-800.png",
+          "sha256": "fe1239f62024bc5cd91c77eac562164378d740936b943807d7df12be703aa36a",
+          "capture_utc": "2026-10-31T01:43:07.875731+00:00",
+          "method": "Separate unedited native grim PNG captured during this take; not a decoded MP4 frame."
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Official Git project git-status(1) manual and clean public Hello-World sample; actual guest Ethernet and virtual audio; the loopback file fixture is separate. Wi-Fi and Bluetooth hardware are absent.",
+        "processing_notes": [
+          "Continuous native wf-recorder take, no crop, no overlays, no time changes.",
+          "Raw capture SHA-256 9eda57ee6d4b8fdd399aed9e607066850bcabb1cb7611af52da3553470024b86; output SHA-256 8d672a09823a23241f689845a21d913a15f454bb66d0b4ae1a16107a17bba8d3; compressed stream SHA-256 b418f883fa350b1dad70dd031e5195553bdc3b5f6232c25d23c62eb8c7d136d6.",
+          "Silent H.264 High/yuv420p at native 1280x800 and 30/1; 36.0 seconds and 1080 fully decoded frames. The container reports 1081 frames including its final discard packet.",
+          "passed; passed; d=0.20 pix_th=0.10 pic_th=0.999, no intervals.",
+          "ffmpeg-copy-faststart; compressed stream hash unchanged; no reencoding/color conversion; no re-encoding, crop, overlay, time change or color conversion.",
+          "Poster is an independent native PNG captured during the same take.",
+          "The signed-out browser uses a fresh temporary profile; no private profile, account or provider session is used."
+        ],
+        "agent_review": "passed; primary visually reviewed native stills and representative encoded frames",
+        "automated_review": "passed",
+        "human_review": "pending",
+        "capture_started_utc": "2026-10-31T01:43:03.838884+00:00",
+        "capture_ended_utc": "2026-10-31T01:43:41.427284+00:00",
+        "capture_unit": "niri-plus-refresh-controls",
+        "capture_baseline_repo_commit": "0b461c35275ba203e401f3d4c86e2cc7c41b29ee",
+        "source_versions": {
+          "public_source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+          "components": {
+            "version": "0.4.1",
+            "api_version": 1,
+            "source_commit": "317658ee7913bb58536f6ec1b2575043a9494449",
+            "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
+            "archive_sha256": "0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11",
+            "manifest_sha256": "30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4"
+          },
+          "identity": {
+            "source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+            "path": "design/history/neutral-slate-black-workspace.json",
+            "sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+          },
+          "guest_software": {
+            "niri": "26.04-1",
+            "swaync": "0.12.6-15",
+            "swaync-bryan": "0.12.6-15",
+            "kanshi": "1.9.0-1",
+            "fcitx5": "5.1.23-1",
+            "cliphist": "1:0.7.0-2",
+            "swayidle": "1.9.1-1",
+            "pipewire": "1:1.6.10-1",
+            "wireplumber": "0.5.18-1",
+            "rofi": "2.0.0-1",
+            "kitty": "0.49.2-1",
+            "zsh": "5.9.2-1",
+            "google-chrome": "156.0.8078.47-1",
+            "xdg-desktop-portal": "1.22.1-2",
+            "xdg-desktop-portal-gtk": "1.15.3-2",
+            "xdg-desktop-portal-wlr": "0.8.2-1.3",
+            "polkit-kde-agent": "6.8.2-1",
+            "gtklock": "5.0.0-1",
+            "wf_recorder": "0.6.0-2",
+            "ffmpeg": "2:9.0.2-2"
+          },
+          "browser_content": {
+            "url": "https://git.github.io/htmldocs/git-status.html",
+            "title": "git-status(1)",
+            "source_html_sha256": "a21d07f7aca697cd0a2c185d945e0e2998dd714015e0a312a623c32d2d8dd5e9",
+            "source_html_bytes": 70499,
+            "account_state": "signed out; public documentation",
+            "name_anchor_present": true,
+            "description_anchor_present": true,
+            "source": "Git project reference manual imported by git-scm.com",
+            "source_url": "https://github.com/git/git/blob/master/Documentation/git-status.adoc",
+            "license": "GPL-2.0-only under the Git project's default for this reference manual, unless its source file states otherwise. This upstream term does not change the license of the original capture media, independent software, or fonts.",
+            "license_url": "https://github.com/git/git/blob/master/COPYING",
+            "verification": "Fresh public HTML source hash and byte count recorded at capture; title and NAME/DESCRIPTION anchors verified.",
+            "license_source_sha256": "5b2198d1645f767585e8a88ac0499b04472164c0d2da22e75ecf97ef443ab32e"
+          },
+          "git_sample": {
+            "remote": "https://github.com/octocat/Hello-World.git",
+            "repo_path": "/home/demo/code/public-sample",
+            "commit": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+            "branch": "public-sample",
+            "working_tree": "clean"
+          },
+          "local_fixture": {
+            "path": "tools/vm/desktop/sample_server.py",
+            "source_commit": "25539e7f1cb977a82551fde43c40658da1f14489",
+            "sha256": "757f1392d979e639b1878162e01d516c8ae5fb57b8b0b901ab0d87a7c71f44ee",
+            "url": "http://127.0.0.1:8765",
+            "sample_sha256": "c2440ff35a67921e891877abc7f210c9c869ff38f2c5c973fcd319147b5a2275",
+            "sample_size_bytes": 252,
+            "upload_storage": "in-memory comparison only"
+          }
+        },
+        "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md",
+        "container_remux": {
+          "method": "ffmpeg-copy-faststart",
+          "reencoded": false,
+          "input_sha256": "9eda57ee6d4b8fdd399aed9e607066850bcabb1cb7611af52da3553470024b86",
+          "output_sha256": "8d672a09823a23241f689845a21d913a15f454bb66d0b4ae1a16107a17bba8d3",
+          "input_stream_sha256": "b418f883fa350b1dad70dd031e5195553bdc3b5f6232c25d23c62eb8c7d136d6",
+          "output_stream_sha256": "b418f883fa350b1dad70dd031e5195553bdc3b5f6232c25d23c62eb8c7d136d6"
+        },
+        "full_decode": "passed",
+        "blackdetect": "passed; d=0.20 pix_th=0.10 pic_th=0.999, no intervals",
+        "watch_from_seconds": null,
+        "site_integration_review": "pending primary source/build/browser gate",
+        "primary_visual_review": {
+          "status": "passed",
+          "scope": "Native stills and representative encoded frames; retired page absent; full frame visible.",
+          "watch_points_seconds": [
+            16,
+            21,
+            31
+          ]
+        }
       }
     ],
     "capture_receipt_path": "docs/planning/desktop-demonstration-receipt.md"
@@ -1002,42 +1453,42 @@
   },
   "desktop_walkthrough": {
     "type": "native captured frames",
-    "description": "Independent unedited native 1280x800 stills from the accepted trial, reused byte-for-byte; related watch links open the new continuous 800p overview.",
-    "related_video": "assets/demo-desktop-800.mp4",
+    "description": "Fresh independent native 1280x800 stills captured during the Git documentation overview; scene links use reviewed encoded-PTS starts.",
+    "related_video": "assets/demo-desktop-git-800.mp4",
     "components_version": "0.4.1",
     "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
-    "capture_date": "2026-10-30",
+    "capture_date": "2026-10-31",
     "width": 1280,
     "height": 800,
     "scenes": [
       {
         "id": "browser",
-        "image": "assets/workflow-browser.png",
-        "capture_utc": "2026-10-30T22:44:46.868387+00:00",
+        "image": "assets/workflow-browser-git-800.png",
+        "capture_utc": "2026-10-31T01:41:40.483222+00:00",
         "watch_from_seconds": 0
       },
       {
         "id": "terminal",
-        "image": "assets/workflow-terminal.png",
-        "capture_utc": "2026-10-30T22:44:47.741823+00:00",
+        "image": "assets/workflow-terminal-git-800.png",
+        "capture_utc": "2026-10-31T01:42:19.011942+00:00",
         "watch_from_seconds": 38
       },
       {
         "id": "panel",
-        "image": "assets/workflow-panel.png",
-        "capture_utc": "2026-10-30T22:45:20.858920+00:00",
+        "image": "assets/workflow-panel-git-800.png",
+        "capture_utc": "2026-10-31T01:42:23.404184+00:00",
         "watch_from_seconds": 43
       },
       {
         "id": "controls",
-        "image": "assets/workflow-controls.png",
-        "capture_utc": "2026-10-30T22:45:25.001438+00:00",
+        "image": "assets/workflow-controls-git-800.png",
+        "capture_utc": "2026-10-31T01:42:32.873447+00:00",
         "watch_from_seconds": 53
       }
     ],
-    "processing": "Exact native grim PNG bytes; no crop, overlays, recoloring or retouching. Each frame shows the complete 1280x800 output at scale 1. The stills were captured independently before the new recordings.",
-    "agent_review": "passed",
-    "human_review": "accepted 800p presentation direction; final page review pending",
+    "processing": "Unedited native grim PNG bytes at the full 1280x800 output and scale 1; each image is an independent capture made during the continuous overview, not a decoded video frame.",
+    "agent_review": "passed; primary visually reviewed the native stills and representative watch-point frames",
+    "human_review": "pending",
     "presentation": {
       "default_view": "full desktop",
       "method": "Uncropped source image at its native aspect ratio; linked original at full resolution."

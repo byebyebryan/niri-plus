@@ -1,5 +1,10 @@
 # Black workspace and desktop consolidation receipt
 
+**Historical media record.** The 2026-10-30 screenshots and controls recording
+described below remain unchanged in the archive. The current Tour and Design
+use the Git documentation capture set in the
+[refresh receipt](capture-refresh-git-800-receipt.md).
+
 Recorded 2026-10-29; fresh-reference and media results added 2026-10-30 UTC.
 This implements the [consolidation plan](consolidation-and-black-workspace-pass.md).
 Components 0.4.1 and the selected identity are published, and the scoped update

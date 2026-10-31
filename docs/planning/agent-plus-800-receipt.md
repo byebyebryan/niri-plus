@@ -1,7 +1,10 @@
 # Agent Plus 800p capture receipt
 
-The Tour's “Terminals and agents” section now uses a native full-desktop
-1280×800 PNG, with the installed Neutral Slate Rofi theme over Chrome and Kitty.
+**Historical media record.** The Tour then used this native full-desktop
+1280×800 PNG with the installed Neutral Slate Rofi theme over Chrome and Kitty.
+Its bytes and provenance remain retained; the current Tour points to the
+separate Git documentation capture recorded in the
+[refresh receipt](capture-refresh-git-800-receipt.md).
 The previous 1120×421 standalone blue-theme preview remains retained under its
 original filename, hash, source and license; it is no longer the Tour image.
 

@@ -121,7 +121,7 @@ try {
   await nativeDemoLink.click();
   assert.match(page.url(), /tour\/#native-reference-demo$/);
   assert.equal(await page.locator("[data-native-demo]").count(), 2);
-  assert.equal(await page.locator("[data-native-demo]").first().getAttribute("data-native-demo"), "desktop-800");
+  assert.equal(await page.locator("[data-native-demo]").first().getAttribute("data-native-demo"), "desktop-git-800");
   const earlierLink = page.locator('main a[href$="tour/earlier/"], main a[href="earlier/"]').first();
   assert.equal(await earlierLink.count(), 1);
   const provenanceResponse = await page.request.get(origin + "assets/provenance.json");
@@ -129,6 +129,10 @@ try {
   const provenance = await provenanceResponse.json();
   const clipsById = Object.fromEntries(provenance.desktop_demos.clips.map((clip) => [clip.id, clip]));
   const inventoriedAssets = new Set(provenance.files.map((file) => file.path));
+  assert.deepEqual(Object.keys(clipsById).sort(), ["browser-files", "controls", "controls-800", "controls-git-800", "desktop", "desktop-800", "desktop-git-800", "information", "overview", "terminal"].sort());
+  for (const id of ["desktop-800", "controls-800", "desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
+    assert.ok(clipsById[id], `archived clip record is retained: ${id}`);
+  }
   checks += 3;
   const rangeResponse = await page.request.get(origin + "assets/demo-overview.mp4", { headers: { Range: "bytes=0-99" } });
   assert.equal(rangeResponse.status(), 206);
@@ -139,8 +143,9 @@ try {
   const invalidRange = await page.request.get(origin + "assets/demo-overview.mp4", { headers: { Range: "bytes=999999999999999-" } });
   assert.equal(invalidRange.status(), 416);
   checks += 5;
-  for (const name of ["desktop-800", "controls-800", "desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
-    await page.goto(origin + (["desktop-800", "controls-800"].includes(name) ? "tour/" : "tour/earlier/"));
+  const currentClipIds = new Set(["desktop-git-800", "controls-git-800"]);
+  for (const name of ["desktop-git-800", "controls-git-800", "desktop-800", "controls-800", "desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
+    await page.goto(origin + (currentClipIds.has(name) ? "tour/" : "tour/earlier/"));
     const selector = `[data-native-demo="${name}"] video`;
     const video = page.locator(selector);
     assert.equal(await video.count(), 1);
@@ -151,6 +156,13 @@ try {
     const clip = clipsById[name];
     assert.ok(clip, `missing provenance record: ${name}`);
     assert.equal(clip.human_review, "pending", "automated playback does not substitute for human review");
+    if (currentClipIds.has(name)) {
+      assert.equal(clip.source_versions.browser_content.url, "https://git.github.io/htmldocs/git-status.html");
+      assert.equal(clip.source_versions.browser_content.account_state, "signed out; public documentation");
+      assert.doesNotMatch(JSON.stringify({description: clip.description, fixture_label: clip.fixture_label, browser_content: clip.source_versions.browser_content}), /story/i);
+      assert.equal(clip.width, 1280);
+      assert.equal(clip.height, 800);
+    }
     const mediaPaths = await video.evaluate((element) => ({
       poster: new URL(element.getAttribute("poster"), document.baseURI).pathname.replace(/^\/niri-plus\//, ""),
       source: new URL(element.querySelector("source")?.getAttribute("src"), document.baseURI).pathname.replace(/^\/niri-plus\//, ""),
@@ -203,8 +215,21 @@ try {
     }, { selector, before: beforeSeek }, { timeout: 10000 });
     await page.keyboard.press("Space");
     await page.waitForFunction((selector) => document.querySelector(selector)?.paused, selector);
-    checks += 13;
+    checks += currentClipIds.has(name) ? 17 : 13;
   }
+  for (const route of ["", "tour/", "design/", "recipes/rofi-controls/"]) {
+    await page.goto(origin + route);
+    const mainText = await page.locator("main").innerText();
+    assert.doesNotMatch(mainText, /\bstory\b|\/niri-plus\/story\//i, `retired page reference in current route: ${route || "home"}`);
+    assert.doesNotMatch(await page.content(), /\/niri-plus\/story\//i, `retired page URL in current route metadata: ${route || "home"}`);
+  }
+  checks += 8;
+  await page.goto(origin + "recipes/rofi-controls/");
+  const recipeClip = page.locator('[data-native-demo="controls-git-800"] video');
+  assert.equal(await recipeClip.count(), 1);
+  assert.ok((await recipeClip.getAttribute("poster")).endsWith("assets/demo-controls-git-800.png"));
+  assert.ok((await recipeClip.locator("source").getAttribute("src")).endsWith("assets/demo-controls-git-800.mp4"));
+  checks += 3;
   await page.setViewportSize({ width: 375, height: 900 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
   for (const video of await page.locator(".native-demo-video").all()) {
@@ -216,6 +241,11 @@ try {
   checks += 7;
   await page.setViewportSize({ width: 1280, height: 1000 });
   await page.goto(origin + "design/");
+  const designCapture = page.locator('img[src$="assets/arch-reference/desktop-git-800.png"]');
+  await designCapture.evaluate((image) => image.decode());
+  assert.deepEqual(await designCapture.evaluate((image) => [image.naturalWidth, image.naturalHeight]), [1280, 800]);
+  assert.doesNotMatch(await designCapture.getAttribute("alt"), /story/i);
+  checks += 3;
   const identity = await (await page.request.get(origin + "data/identity.json")).json();
   assert.equal(identity.selected_candidate, "neutral-slate");
   assert.equal(identity.direction.id, "neutral-slate");
@@ -338,7 +368,7 @@ try {
       await contents.locator('a[href="#explore-the-workflow"]').click();
       assert.equal(await contents.evaluate((node) => node.open), false);
     }
-    for (const [kind, asset] of [["panel", "workflow-panel.png"], ["agent", "agent-plus-800.png"]]) {
+    for (const [kind, asset] of [["panel", "workflow-panel-git-800.png"], ["agent", "agent-plus-git-800.png"]]) {
       const capture = page.locator(`.native-${kind}-shot`);
       const image = capture.locator("img");
       await image.scrollIntoViewIfNeeded();
@@ -357,7 +387,13 @@ try {
   }
   const workflow = provenance.desktop_walkthrough;
   assert.equal(workflow.type, "native captured frames");
-  assert.equal(workflow.related_video, "assets/demo-desktop-800.mp4");
+  assert.equal(workflow.related_video, "assets/demo-desktop-git-800.mp4");
+  assert.deepEqual(workflow.scenes.map((scene) => scene.image).sort(), [
+    "assets/workflow-browser-git-800.png",
+    "assets/workflow-controls-git-800.png",
+    "assets/workflow-panel-git-800.png",
+    "assets/workflow-terminal-git-800.png",
+  ].sort());
   for (const route of ["", "tour/"]) {
     for (const width of [375, 1280]) {
       await page.setViewportSize({ width, height: 1000 });
@@ -377,12 +413,14 @@ try {
         await panel.locator(".workflow-frame").scrollIntoViewIfNeeded();
         await image.evaluate((element) => element.decode());
         assert.deepEqual(await image.evaluate((element) => [element.naturalWidth, element.naturalHeight]), [1280, 800]);
+        assert.doesNotMatch(await image.getAttribute("alt"), /story/i);
         assert.ok((await image.getAttribute("src")).endsWith(scene.image));
         const fullScale = await image.evaluate((element) => element.getBoundingClientRect().width / element.closest(".workflow-frame").clientWidth);
         assert.ok(Math.abs(fullScale - 1) < 0.01, `scene should retain the full desktop: ${scene.id}`);
         const watch = new URL(await panel.locator('.scene-links a[href*=".mp4"]').getAttribute("href"), page.url());
         assert.ok(watch.pathname.endsWith(workflow.related_video));
-        assert.equal(watch.hash, `#t=${scene.watch_from_seconds}`);
+        if (Number.isFinite(scene.watch_from_seconds)) assert.equal(watch.hash, `#t=${scene.watch_from_seconds}`);
+        else assert.equal(watch.hash, "", "unverified capture times must not become scene links");
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         if (process.env.NIRI_SCREENSHOTS) await workbench.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `workflow-${route ? "tour" : "home"}-${scene.id}-${width}.png`) });
         checks += 10;

@@ -27,13 +27,13 @@ Paired remain readable text states.
 ## Native controls in use
 
 The staged Arch reference shows actual Ethernet and virtual-audio devices
-beside the official Git status manual in Chrome and Kitty. Wi-Fi and Bluetooth
-hardware are absent in this guest.
+beside the Niri Plus homepage in Chrome and Kitty. Wi-Fi and Bluetooth hardware
+are absent in this guest.
 
-<!-- niri-plus:demo-controls-git-800 -->
+<!-- niri-plus:demo-controls-site-800 -->
 Open Audio, inspect Details, adjust and restore its volume/mute state, then
 inspect the connected Ethernet link in Network.
-<!-- /niri-plus:demo-controls-git-800 -->
+<!-- /niri-plus:demo-controls-site-800 -->
 
 ## Everyday use
 

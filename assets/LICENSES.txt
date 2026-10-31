@@ -126,13 +126,16 @@ fonts retain their own licenses. The prior agent-plus.png and its attribution
 remain retained. See provenance.json and agent-plus-800-receipt.md for hashes,
 source pins and the capture/runtime boundary.
 
+Superseded Git-documentation capture set (retained in the earlier-recordings
+archive):
+
 assets/demo-desktop-git-800.mp4: original native 1280x800 staged-Arch overview
 recording, GPL-3.0-only, Copyright 2026 Bryan Bai. It includes the SwayNC fork
 interface, attributed to Erik Reider and contributors, with source and license
 links above. Other application interfaces and public Git documentation retain
 their own terms. The browser uses the official Git project's static
 documentation mirror; Kitty shows the public Hello-World sample project. See
-provenance.json and the current capture receipt for source versions,
+provenance.json and docs/planning/capture-refresh-git-800-receipt.md for source versions,
 measurements, hashes, processing and review status.
 
 assets/demo-desktop-git-800.png is the separately captured browser/terminal
@@ -163,5 +166,32 @@ https://git-scm.com/site.html
 https://github.com/git/git/blob/master/COPYING
 This upstream manual attribution applies to the depicted documentation, not
 to the original capture media or independent application and font interfaces.
-See provenance.json and the current capture receipt for the exact fetched
-HTML hash and the capture/media boundary.
+See provenance.json and docs/planning/capture-refresh-git-800-receipt.md for the
+exact fetched HTML hash and the historical capture/media boundary.
+
+Current homepage captures:
+
+assets/demo-desktop-site-800.mp4 and workflow-panel-site-800.png: original
+native 1280x800 staged-Arch capture media from 2026-10-31. The overview video
+and panel still include the SwayNC fork interface and retain its
+GPL-3.0-only attribution to Erik Reider and contributors; source and license
+links are above. The video includes the Niri Plus homepage, Kitty, file work,
+panel, clipboard and Audio controls. Its browser shows the source snapshot
+identified in docs/planning/capture-refresh-site-800-receipt.md.
+
+assets/demo-desktop-site-800.png, demo-controls-site-800.mp4,
+demo-controls-site-800.png, the four assets/workflow-*-site-800.png stills,
+assets/arch-reference/desktop-site-800.png and assets/agent-plus-site-800.png:
+original capture media under the repository MIT license, Copyright 2026 Bryan
+Bai, except workflow-panel-site-800.png as described above. The browser shows
+the Niri Plus homepage; Kitty shows public sample-project metadata. These
+notices apply to the original capture media only. They do not relicense the
+Niri Plus site source, SwayNC source, independent application interfaces or
+fonts.
+
+The Agent Plus image uses the source-pinned production presentation renderer
+at https://github.com/byebyebryan/rofi-agent-plus/tree/0230ce9288598842f5e8a6affc4593f332ba2d8a
+with fictional documentation rows. No full Agent Plus runtime, provider
+discovery, authentication, live session or remote action is shown. See
+provenance.json and docs/planning/capture-refresh-site-800-receipt.md for the
+frame and capture hashes, source pins, processing, and review boundary.

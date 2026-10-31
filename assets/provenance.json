@@ -451,6 +451,169 @@
       "source_capture_sha256": "9eda57ee6d4b8fdd399aed9e607066850bcabb1cb7611af52da3553470024b86",
       "stream_sha256": "b418f883fa350b1dad70dd031e5195553bdc3b5f6232c25d23c62eb8c7d136d6",
       "capture_receipt_path": "docs/planning/capture-refresh-git-800-receipt.md"
+    },
+    {
+      "path": "assets/demo-desktop-site-800.mp4",
+      "sha256": "43f3fc41805ed910e833bec2cb24c3b5cc546b56343a253ceacde0584c19f634",
+      "source": "Native staged Arch overview recording; includes the SwayNC fork interface.",
+      "license": "GPL-3.0-only",
+      "description": "Continuous silent overview of the Niri Plus homepage, Kitty, file work, panel, clipboard and Audio controls.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md",
+      "source_capture_sha256": "14a35b37dc209880dc38bfe15e738d9703b76b54feca6f4836a0a73b5e325cd9",
+      "stream_sha256": "baca001f49fbcb10ec946cc50f18f21aad28befead4e0dcf66d8af58292251a3",
+      "duration_seconds": 54.033333,
+      "frame_count": 1621,
+      "container_frame_count": 1622,
+      "average_frame_rate": "30/1",
+      "video_codec": "h264",
+      "video_profile": "High",
+      "pixel_format": "yuv420p",
+      "color_range": null,
+      "capture_utc": "2026-10-31T02:52:02.601779+00:00"
+    },
+    {
+      "path": "assets/demo-desktop-site-800.png",
+      "sha256": "814752bc98611ffbb900577ad300b303e4125af52a9697068759b1aa10e783df",
+      "source": "Separate unedited native opening still from Virtual-1.",
+      "license": "MIT",
+      "description": "Opening poster: the current Niri Plus homepage beside Kitty on the full desktop; no SwayNC interface.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T02:52:03.819432+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md"
+    },
+    {
+      "path": "assets/demo-controls-site-800.mp4",
+      "sha256": "09765b3002f89c9893734f49e03e149585c14aa08135d79adf5a5845991e865b",
+      "source": "Native staged Arch Audio and Network controls recording.",
+      "license": "MIT",
+      "description": "Continuous silent controls take showing virtual audio adjustment/restoration and the connected Ethernet details.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md",
+      "source_capture_sha256": "c7b76fe1cd7ca9ee423f1dd6a22d537f05a8873ff5f20d0436f92c98d999b52b",
+      "stream_sha256": "d6f225329dea8444195be6d7e13121f76f4aeb71f0e47bb481a6986c1452fda4",
+      "duration_seconds": 35.0,
+      "frame_count": 1050,
+      "container_frame_count": 1051,
+      "average_frame_rate": "30/1",
+      "video_codec": "h264",
+      "video_profile": "High",
+      "pixel_format": "yuv420p",
+      "color_range": null,
+      "capture_utc": "2026-10-31T02:53:07.417348+00:00"
+    },
+    {
+      "path": "assets/demo-controls-site-800.png",
+      "sha256": "53bfe0c347170af20483a61dcbcb0a46634f4764be77d7546b72da3d76213034",
+      "source": "Separate unedited native controls still from Virtual-1 during the controls take.",
+      "license": "MIT",
+      "description": "Native poster showing the Rofi controls list beside the homepage and Kitty.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T02:53:11.418649+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md"
+    },
+    {
+      "path": "assets/workflow-browser-site-800.png",
+      "sha256": "814752bc98611ffbb900577ad300b303e4125af52a9697068759b1aa10e783df",
+      "source": "Independent unedited native grim PNG from Virtual-1 during the overview take.",
+      "license": "MIT",
+      "description": "Chrome shows the current Niri Plus homepage beside Kitty; captured at 125% browser zoom with no old embedded media visible.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T02:52:03.819432+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md"
+    },
+    {
+      "path": "assets/workflow-terminal-site-800.png",
+      "sha256": "7616c8949914db67cedda952d7d73f3d067647b2ce9457eeb210431c0616e651",
+      "source": "Independent unedited native grim PNG from Virtual-1 during the overview take.",
+      "license": "MIT",
+      "description": "Actual Git status and latest-commit output in Kitty beside Chrome.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T02:52:38.610579+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md"
+    },
+    {
+      "path": "assets/workflow-panel-site-800.png",
+      "sha256": "918679c615c680a808a96e2eb5d42cf80026d7f48bd5487ce02b418b77d101fe",
+      "source": "Independent unedited native grim PNG from Virtual-1 during the overview take; includes SwayNC.",
+      "license": "GPL-3.0-only",
+      "description": "SwayNC shows actual guest CPU, RAM and Ethernet readings beside the homepage and Kitty.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T02:52:42.989002+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md"
+    },
+    {
+      "path": "assets/workflow-controls-site-800.png",
+      "sha256": "ed42a6b38cdb1d6cfd3b8fa1512b597bed800d6704485702ffc96319e17d6152",
+      "source": "Independent unedited native grim PNG from Virtual-1 during the overview take.",
+      "license": "MIT",
+      "description": "Native Rofi Audio interface beside the homepage and Kitty; guest audio values restored after the controls take.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T02:52:53.653573+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md"
+    },
+    {
+      "path": "assets/arch-reference/desktop-site-800.png",
+      "sha256": "814752bc98611ffbb900577ad300b303e4125af52a9697068759b1aa10e783df",
+      "source": "Exact byte-for-byte copy of the separate native opening still.",
+      "license": "MIT",
+      "description": "Niri Plus homepage, Kitty and complete 1280x800 staged desktop at browser zoom 125% and compositor scale 1.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T02:52:03.819432+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md"
+    },
+    {
+      "path": "assets/agent-plus-site-800.png",
+      "sha256": "e58b7301749ca5d3f3fe033575005e041e51861afa9fca350482489fe0f43dbd",
+      "source": "Fresh unedited native grim PNG from Virtual-1 using the source-pinned production presentation-frame renderer.",
+      "license": "MIT",
+      "description": "Agent Plus presentation sample over the current Niri Plus homepage and Kitty; fictional hosts, environments and windows.",
+      "capture_date": "2026-10-31",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-10-31T02:54:03.439206+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md",
+      "agent_plus_source": {
+        "repository": "https://github.com/byebyebryan/rofi-agent-plus",
+        "commit": "0230ce9288598842f5e8a6affc4593f332ba2d8a",
+        "frame_sha256": "3c5f2c4c5b1444ec716f7d77ebc27f1f1213449fbe07b80dddbfc521c84cce6c",
+        "frame_bytes": 2060,
+        "source_files": {
+          "scripts/render-preview": "9df19f4d3c53f0fe6279714fae3b89aa5e461cafe29f9617ffdedad9d8f5dc9a",
+          "rofi_agent_plus/rofi.py": "d592674c20509558132072940b1d4e9e59590134e5bdfcf2cdfe8961c17c5af8"
+        },
+        "method": "Production Agent Plus _render called by the producer documentation sample rows; no discovery, provider or desktop actions.",
+        "version": "0.15.0a17"
+      },
+      "components_version": "0.4.1",
+      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
+      "processing": "Exact native PNG bytes without crop, resize, overlays or retouching. The production presentation frame is sampled; the full Agent Plus runtime is not installed or exercised.",
+      "agent_review": "passed; primary visually reviewed the native still",
+      "human_review": "pending"
     }
   ],
   "desktop_demos": {
@@ -1401,6 +1564,292 @@
             31
           ]
         }
+      },
+      {
+        "id": "desktop-site-800",
+        "video": "assets/demo-desktop-site-800.mp4",
+        "poster": "assets/demo-desktop-site-800.png",
+        "width": 1280,
+        "height": 800,
+        "duration_seconds": 54.033333,
+        "frame_count": 1621,
+        "container_frame_count": 1622,
+        "average_frame_rate": "30/1",
+        "video_codec": "h264",
+        "video_profile": "High",
+        "pixel_format": "yuv420p",
+        "color_range": null,
+        "capture_date": "2026-10-31",
+        "source_capture_sha256": "14a35b37dc209880dc38bfe15e738d9703b76b54feca6f4836a0a73b5e325cd9",
+        "source_capture_bytes": 2470204,
+        "source_captures": null,
+        "poster_source": {
+          "path": "assets/demo-desktop-site-800.png",
+          "sha256": "814752bc98611ffbb900577ad300b303e4125af52a9697068759b1aa10e783df",
+          "capture_utc": "2026-10-31T02:52:03.819432+00:00",
+          "method": "Separate unedited native grim PNG captured during this take; not a decoded MP4 frame."
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Current Niri Plus homepage, clean public octocat/Hello-World sample, actual guest CPU/RAM/Ethernet and virtual audio; a loopback fixture verifies public sample bytes in memory. Wi-Fi and Bluetooth hardware are absent.",
+        "processing_notes": [
+          "Continuous native wf-recorder take at native 1280x800, compositor scale 1; no crop, overlays, time changes or color conversion.",
+          "Raw capture SHA-256 14a35b37dc209880dc38bfe15e738d9703b76b54feca6f4836a0a73b5e325cd9; output SHA-256 43f3fc41805ed910e833bec2cb24c3b5cc546b56343a253ceacde0584c19f634; compressed stream SHA-256 baca001f49fbcb10ec946cc50f18f21aad28befead4e0dcf66d8af58292251a3.",
+          "Silent H.264 High/yuv420p at 30/1; 54.033333 seconds, 1621 decoded frames, and 1622 container frames (including the final discard packet).",
+          "Full decode passed. Black detection passed (d=0.20, pix_th=0.10, pic_th=0.999; no intervals).",
+          "FFmpeg copy-faststart remux; compressed stream hash unchanged and no re-encoding.",
+          "Poster is an independent native PNG captured during the same take.",
+          "Fresh temporary signed-out Chrome profile; the exact prebuilt source snapshot was served from loopback."
+        ],
+        "agent_review": "passed; primary visually reviewed the native stills and representative encoded frames",
+        "automated_review": "passed",
+        "human_review": "pending",
+        "capture_started_utc": "2026-10-31T02:52:02.601779+00:00",
+        "capture_ended_utc": "2026-10-31T02:52:59.106057+00:00",
+        "capture_unit": "niri-plus-site-qualified-20261031-desktop.service",
+        "capture_baseline_repo_commit": "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a",
+        "source_versions": {
+          "components": {
+            "version": "0.4.1",
+            "api_version": 1,
+            "source_commit": "317658ee7913bb58536f6ec1b2575043a9494449",
+            "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
+            "archive_sha256": "0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11",
+            "manifest_sha256": "30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4"
+          },
+          "identity": {
+            "source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+            "path": "design/history/neutral-slate-black-workspace.json",
+            "sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+          },
+          "guest_software": {
+            "niri": "26.04-1",
+            "swaync": "0.12.6-15",
+            "swaync-bryan": "0.12.6-15",
+            "kanshi": "1.9.0-1",
+            "fcitx5": "5.1.23-1",
+            "cliphist": "1:0.7.0-2",
+            "swayidle": "1.9.1-1",
+            "pipewire": "1:1.6.10-1",
+            "wireplumber": "0.5.18-1",
+            "rofi": "2.0.0-1",
+            "kitty": "0.49.2-1",
+            "zsh": "5.9.2-1",
+            "google-chrome": "156.0.8078.47-1",
+            "xdg-desktop-portal": "1.22.1-2",
+            "xdg-desktop-portal-gtk": "1.15.3-2",
+            "xdg-desktop-portal-wlr": "0.8.2-1.3",
+            "polkit-kde-agent": "6.8.2-1",
+            "gtklock": "5.0.0-1",
+            "wf_recorder": "0.6.0-2",
+            "ffmpeg": "2:9.0.2-2"
+          },
+          "git_sample": {
+            "remote": "https://github.com/octocat/Hello-World.git",
+            "repo_path": "/home/demo/code/public-sample",
+            "commit": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+            "branch": "public-sample",
+            "working_tree": "clean"
+          },
+          "local_fixture": {
+            "path": "tools/vm/desktop/sample_server.py",
+            "source_commit": "25539e7f1cb977a82551fde43c40658da1f14489",
+            "sha256": "757f1392d979e639b1878162e01d516c8ae5fb57b8b0b901ab0d87a7c71f44ee",
+            "url": "http://127.0.0.1:8765",
+            "sample_sha256": "c2440ff35a67921e891877abc7f210c9c869ff38f2c5c973fcd319147b5a2275",
+            "sample_size_bytes": 252,
+            "upload_storage": "in-memory comparison only"
+          },
+          "public_source_commit": "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a",
+          "browser_content": {
+            "url": "http://127.0.0.1:8766/",
+            "title": "A desktop for the way I work \u2014 Niri Plus",
+            "served_html_sha256": "70451ac6222c1ea46ac362021e661ad88f07cce7e92997b9cc62e54ed6a58743",
+            "served_html_bytes": 14368,
+            "account_state": "signed out; public local source snapshot",
+            "source_commit": "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a",
+            "source_snapshot": "/tmp/niri-plus-site-source-4e6bf08",
+            "source_file_count": 182,
+            "source_total_bytes": 29588249,
+            "served_snapshot_hashes_match": true,
+            "browser_zoom_percent": 125,
+            "compositor_scale": 1,
+            "verification": "The temporary loopback server served the exact prebuilt export; its source inventory and index HTML hash were verified before the fresh signed-out Chrome capture."
+          }
+        },
+        "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md",
+        "container_remux": {
+          "method": "ffmpeg-copy-faststart",
+          "reencoded": false,
+          "input_sha256": "14a35b37dc209880dc38bfe15e738d9703b76b54feca6f4836a0a73b5e325cd9",
+          "output_sha256": "43f3fc41805ed910e833bec2cb24c3b5cc546b56343a253ceacde0584c19f634",
+          "input_stream_sha256": "baca001f49fbcb10ec946cc50f18f21aad28befead4e0dcf66d8af58292251a3",
+          "output_stream_sha256": "baca001f49fbcb10ec946cc50f18f21aad28befead4e0dcf66d8af58292251a3"
+        },
+        "full_decode": "passed",
+        "blackdetect": "passed; d=0.20 pix_th=0.10 pic_th=0.999, no intervals",
+        "watch_from_seconds": {
+          "browser": 0,
+          "terminal": 35,
+          "panel": 40,
+          "controls": 50
+        },
+        "site_integration_review": "passed; primary source, normal/portable build and browser gates on 2026-10-31",
+        "additional_source_versions": {
+          "swaync": {
+            "package": "swaync-bryan",
+            "version": "0.12.6-15",
+            "recipe_revision": "cd1038d1c824f256ecb5a448d78df9f71b64850a",
+            "recipe_archive_sha256": "297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0",
+            "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
+            "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83"
+          }
+        },
+        "primary_visual_review": {
+          "status": "passed",
+          "scope": "Primary reviewed all fresh native stills and representative full-resolution encoded frames; the current homepage is visible and retired embedded media is below the fold.",
+          "watch_points_seconds": {
+            "browser": 0,
+            "terminal": 35,
+            "panel": 40,
+            "controls": 50
+          }
+        }
+      },
+      {
+        "id": "controls-site-800",
+        "video": "assets/demo-controls-site-800.mp4",
+        "poster": "assets/demo-controls-site-800.png",
+        "width": 1280,
+        "height": 800,
+        "duration_seconds": 35.0,
+        "frame_count": 1050,
+        "container_frame_count": 1051,
+        "average_frame_rate": "30/1",
+        "video_codec": "h264",
+        "video_profile": "High",
+        "pixel_format": "yuv420p",
+        "color_range": null,
+        "capture_date": "2026-10-31",
+        "source_capture_sha256": "c7b76fe1cd7ca9ee423f1dd6a22d537f05a8873ff5f20d0436f92c98d999b52b",
+        "source_capture_bytes": 806128,
+        "source_captures": null,
+        "poster_source": {
+          "path": "assets/demo-controls-site-800.png",
+          "sha256": "53bfe0c347170af20483a61dcbcb0a46634f4764be77d7546b72da3d76213034",
+          "capture_utc": "2026-10-31T02:53:11.418649+00:00",
+          "method": "Separate unedited native grim PNG captured during this take; not a decoded MP4 frame."
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Current Niri Plus homepage, actual guest virtual-audio and Ethernet state. The loopback file fixture is separate; Wi-Fi and Bluetooth hardware are absent.",
+        "processing_notes": [
+          "Continuous native wf-recorder take at native 1280x800, compositor scale 1; no crop, overlays, time changes or color conversion.",
+          "Raw capture SHA-256 c7b76fe1cd7ca9ee423f1dd6a22d537f05a8873ff5f20d0436f92c98d999b52b; output SHA-256 09765b3002f89c9893734f49e03e149585c14aa08135d79adf5a5845991e865b; compressed stream SHA-256 d6f225329dea8444195be6d7e13121f76f4aeb71f0e47bb481a6986c1452fda4.",
+          "Silent H.264 High/yuv420p at 30/1; 35.000000 seconds, 1050 decoded frames, and 1051 container frames (including the final discard packet).",
+          "Full decode passed. Black detection passed (d=0.20, pix_th=0.10, pic_th=0.999; no intervals).",
+          "FFmpeg copy-faststart remux; compressed stream hash unchanged and no re-encoding.",
+          "Poster is an independent native PNG captured during the same take.",
+          "Fresh temporary signed-out Chrome profile; the exact prebuilt source snapshot was served from loopback."
+        ],
+        "agent_review": "passed; primary visually reviewed the native stills and representative encoded frames",
+        "automated_review": "passed",
+        "human_review": "pending",
+        "capture_started_utc": "2026-10-31T02:53:07.417348+00:00",
+        "capture_ended_utc": "2026-10-31T02:53:43.466441+00:00",
+        "capture_unit": "niri-plus-site-qualified-20261031-controls.service",
+        "capture_baseline_repo_commit": "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a",
+        "source_versions": {
+          "components": {
+            "version": "0.4.1",
+            "api_version": 1,
+            "source_commit": "317658ee7913bb58536f6ec1b2575043a9494449",
+            "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
+            "archive_sha256": "0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11",
+            "manifest_sha256": "30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4"
+          },
+          "identity": {
+            "source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+            "path": "design/history/neutral-slate-black-workspace.json",
+            "sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+          },
+          "guest_software": {
+            "niri": "26.04-1",
+            "swaync": "0.12.6-15",
+            "swaync-bryan": "0.12.6-15",
+            "kanshi": "1.9.0-1",
+            "fcitx5": "5.1.23-1",
+            "cliphist": "1:0.7.0-2",
+            "swayidle": "1.9.1-1",
+            "pipewire": "1:1.6.10-1",
+            "wireplumber": "0.5.18-1",
+            "rofi": "2.0.0-1",
+            "kitty": "0.49.2-1",
+            "zsh": "5.9.2-1",
+            "google-chrome": "156.0.8078.47-1",
+            "xdg-desktop-portal": "1.22.1-2",
+            "xdg-desktop-portal-gtk": "1.15.3-2",
+            "xdg-desktop-portal-wlr": "0.8.2-1.3",
+            "polkit-kde-agent": "6.8.2-1",
+            "gtklock": "5.0.0-1",
+            "wf_recorder": "0.6.0-2",
+            "ffmpeg": "2:9.0.2-2"
+          },
+          "git_sample": {
+            "remote": "https://github.com/octocat/Hello-World.git",
+            "repo_path": "/home/demo/code/public-sample",
+            "commit": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+            "branch": "public-sample",
+            "working_tree": "clean"
+          },
+          "local_fixture": {
+            "path": "tools/vm/desktop/sample_server.py",
+            "source_commit": "25539e7f1cb977a82551fde43c40658da1f14489",
+            "sha256": "757f1392d979e639b1878162e01d516c8ae5fb57b8b0b901ab0d87a7c71f44ee",
+            "url": "http://127.0.0.1:8765",
+            "sample_sha256": "c2440ff35a67921e891877abc7f210c9c869ff38f2c5c973fcd319147b5a2275",
+            "sample_size_bytes": 252,
+            "upload_storage": "in-memory comparison only"
+          },
+          "public_source_commit": "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a",
+          "browser_content": {
+            "url": "http://127.0.0.1:8766/",
+            "title": "A desktop for the way I work \u2014 Niri Plus",
+            "served_html_sha256": "70451ac6222c1ea46ac362021e661ad88f07cce7e92997b9cc62e54ed6a58743",
+            "served_html_bytes": 14368,
+            "account_state": "signed out; public local source snapshot",
+            "source_commit": "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a",
+            "source_snapshot": "/tmp/niri-plus-site-source-4e6bf08",
+            "source_file_count": 182,
+            "source_total_bytes": 29588249,
+            "served_snapshot_hashes_match": true,
+            "browser_zoom_percent": 125,
+            "compositor_scale": 1,
+            "verification": "The temporary loopback server served the exact prebuilt export; its source inventory and index HTML hash were verified before the fresh signed-out Chrome capture."
+          }
+        },
+        "capture_receipt_path": "docs/planning/capture-refresh-site-800-receipt.md",
+        "container_remux": {
+          "method": "ffmpeg-copy-faststart",
+          "reencoded": false,
+          "input_sha256": "c7b76fe1cd7ca9ee423f1dd6a22d537f05a8873ff5f20d0436f92c98d999b52b",
+          "output_sha256": "09765b3002f89c9893734f49e03e149585c14aa08135d79adf5a5845991e865b",
+          "input_stream_sha256": "d6f225329dea8444195be6d7e13121f76f4aeb71f0e47bb481a6986c1452fda4",
+          "output_stream_sha256": "d6f225329dea8444195be6d7e13121f76f4aeb71f0e47bb481a6986c1452fda4"
+        },
+        "full_decode": "passed",
+        "blackdetect": "passed; d=0.20 pix_th=0.10 pic_th=0.999, no intervals",
+        "watch_from_seconds": null,
+        "site_integration_review": "passed; primary source, normal/portable build and browser gates on 2026-10-31",
+        "primary_visual_review": {
+          "status": "passed",
+          "scope": "Primary reviewed the native still and representative full-resolution encoded frames.",
+          "watch_points_seconds": [
+            16,
+            21,
+            31
+          ]
+        }
       }
     ],
     "capture_receipt_path": "docs/planning/desktop-demonstration-receipt.md"
@@ -1453,8 +1902,8 @@
   },
   "desktop_walkthrough": {
     "type": "native captured frames",
-    "description": "Fresh independent native 1280x800 stills captured during the Git documentation overview; scene links use reviewed encoded-PTS starts.",
-    "related_video": "assets/demo-desktop-git-800.mp4",
+    "description": "Fresh independent native 1280x800 stills captured during the current Niri Plus homepage overview; scene links use primary-reviewed encoded-PTS starts.",
+    "related_video": "assets/demo-desktop-site-800.mp4",
     "components_version": "0.4.1",
     "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
     "capture_date": "2026-10-31",
@@ -1463,31 +1912,31 @@
     "scenes": [
       {
         "id": "browser",
-        "image": "assets/workflow-browser-git-800.png",
-        "capture_utc": "2026-10-31T01:41:40.483222+00:00",
+        "image": "assets/workflow-browser-site-800.png",
+        "capture_utc": "2026-10-31T02:52:03.819432+00:00",
         "watch_from_seconds": 0
       },
       {
         "id": "terminal",
-        "image": "assets/workflow-terminal-git-800.png",
-        "capture_utc": "2026-10-31T01:42:19.011942+00:00",
-        "watch_from_seconds": 38
+        "image": "assets/workflow-terminal-site-800.png",
+        "capture_utc": "2026-10-31T02:52:38.610579+00:00",
+        "watch_from_seconds": 35
       },
       {
         "id": "panel",
-        "image": "assets/workflow-panel-git-800.png",
-        "capture_utc": "2026-10-31T01:42:23.404184+00:00",
-        "watch_from_seconds": 43
+        "image": "assets/workflow-panel-site-800.png",
+        "capture_utc": "2026-10-31T02:52:42.989002+00:00",
+        "watch_from_seconds": 40
       },
       {
         "id": "controls",
-        "image": "assets/workflow-controls-git-800.png",
-        "capture_utc": "2026-10-31T01:42:32.873447+00:00",
-        "watch_from_seconds": 53
+        "image": "assets/workflow-controls-site-800.png",
+        "capture_utc": "2026-10-31T02:52:53.653573+00:00",
+        "watch_from_seconds": 50
       }
     ],
-    "processing": "Unedited native grim PNG bytes at the full 1280x800 output and scale 1; each image is an independent capture made during the continuous overview, not a decoded video frame.",
-    "agent_review": "passed; primary visually reviewed the native stills and representative watch-point frames",
+    "processing": "Unedited native grim PNG bytes at the full 1280x800 output and compositor scale 1; Chrome page zoom is 125%. Each image is an independent capture made during the continuous overview, not a decoded video frame.",
+    "agent_review": "passed; primary reviewed the native stills and representative encoded watch-point frames",
     "human_review": "pending",
     "presentation": {
       "default_view": "full desktop",

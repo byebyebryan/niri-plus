@@ -121,7 +121,7 @@ try {
   await nativeDemoLink.click();
   assert.match(page.url(), /tour\/#native-reference-demo$/);
   assert.equal(await page.locator("[data-native-demo]").count(), 2);
-  assert.equal(await page.locator("[data-native-demo]").first().getAttribute("data-native-demo"), "desktop-git-800");
+  assert.equal(await page.locator("[data-native-demo]").first().getAttribute("data-native-demo"), "desktop-site-800");
   const earlierLink = page.locator('main a[href$="tour/earlier/"], main a[href="earlier/"]').first();
   assert.equal(await earlierLink.count(), 1);
   const provenanceResponse = await page.request.get(origin + "assets/provenance.json");
@@ -129,8 +129,8 @@ try {
   const provenance = await provenanceResponse.json();
   const clipsById = Object.fromEntries(provenance.desktop_demos.clips.map((clip) => [clip.id, clip]));
   const inventoriedAssets = new Set(provenance.files.map((file) => file.path));
-  assert.deepEqual(Object.keys(clipsById).sort(), ["browser-files", "controls", "controls-800", "controls-git-800", "desktop", "desktop-800", "desktop-git-800", "information", "overview", "terminal"].sort());
-  for (const id of ["desktop-800", "controls-800", "desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
+  assert.deepEqual(Object.keys(clipsById).sort(), ["browser-files", "controls", "controls-800", "controls-git-800", "controls-site-800", "desktop", "desktop-800", "desktop-git-800", "desktop-site-800", "information", "overview", "terminal"].sort());
+  for (const id of ["desktop-git-800", "controls-git-800", "desktop-800", "controls-800", "desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
     assert.ok(clipsById[id], `archived clip record is retained: ${id}`);
   }
   checks += 3;
@@ -143,8 +143,8 @@ try {
   const invalidRange = await page.request.get(origin + "assets/demo-overview.mp4", { headers: { Range: "bytes=999999999999999-" } });
   assert.equal(invalidRange.status(), 416);
   checks += 5;
-  const currentClipIds = new Set(["desktop-git-800", "controls-git-800"]);
-  for (const name of ["desktop-git-800", "controls-git-800", "desktop-800", "controls-800", "desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
+  const currentClipIds = new Set(["desktop-site-800", "controls-site-800"]);
+  for (const name of ["desktop-site-800", "controls-site-800", "desktop-git-800", "controls-git-800", "desktop-800", "controls-800", "desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
     await page.goto(origin + (currentClipIds.has(name) ? "tour/" : "tour/earlier/"));
     const selector = `[data-native-demo="${name}"] video`;
     const video = page.locator(selector);
@@ -157,9 +157,14 @@ try {
     assert.ok(clip, `missing provenance record: ${name}`);
     assert.equal(clip.human_review, "pending", "automated playback does not substitute for human review");
     if (currentClipIds.has(name)) {
-      assert.equal(clip.source_versions.browser_content.url, "https://git.github.io/htmldocs/git-status.html");
-      assert.equal(clip.source_versions.browser_content.account_state, "signed out; public documentation");
-      assert.doesNotMatch(JSON.stringify({description: clip.description, fixture_label: clip.fixture_label, browser_content: clip.source_versions.browser_content}), /story/i);
+      assert.equal(clip.source_versions.browser_content.url, "http://127.0.0.1:8766/");
+      assert.equal(clip.source_versions.browser_content.title, "A desktop for the way I work — Niri Plus");
+      assert.equal(clip.source_versions.browser_content.account_state, "signed out; public local source snapshot");
+      assert.equal(clip.source_versions.browser_content.source_commit, "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a");
+      assert.equal(clip.source_versions.browser_content.browser_zoom_percent, 125);
+      assert.equal(clip.source_versions.browser_content.compositor_scale, 1);
+      assert.equal(clip.source_versions.public_source_commit, "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a");
+      assert.doesNotMatch(JSON.stringify(clip), /\bstory\b|\/story\//i);
       assert.equal(clip.width, 1280);
       assert.equal(clip.height, 800);
     }
@@ -225,10 +230,10 @@ try {
   }
   checks += 8;
   await page.goto(origin + "recipes/rofi-controls/");
-  const recipeClip = page.locator('[data-native-demo="controls-git-800"] video');
+  const recipeClip = page.locator('[data-native-demo="controls-site-800"] video');
   assert.equal(await recipeClip.count(), 1);
-  assert.ok((await recipeClip.getAttribute("poster")).endsWith("assets/demo-controls-git-800.png"));
-  assert.ok((await recipeClip.locator("source").getAttribute("src")).endsWith("assets/demo-controls-git-800.mp4"));
+  assert.ok((await recipeClip.getAttribute("poster")).endsWith("assets/demo-controls-site-800.png"));
+  assert.ok((await recipeClip.locator("source").getAttribute("src")).endsWith("assets/demo-controls-site-800.mp4"));
   checks += 3;
   await page.setViewportSize({ width: 375, height: 900 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
@@ -241,7 +246,7 @@ try {
   checks += 7;
   await page.setViewportSize({ width: 1280, height: 1000 });
   await page.goto(origin + "design/");
-  const designCapture = page.locator('img[src$="assets/arch-reference/desktop-git-800.png"]');
+  const designCapture = page.locator('img[src$="assets/arch-reference/desktop-site-800.png"]');
   await designCapture.evaluate((image) => image.decode());
   assert.deepEqual(await designCapture.evaluate((image) => [image.naturalWidth, image.naturalHeight]), [1280, 800]);
   assert.doesNotMatch(await designCapture.getAttribute("alt"), /story/i);
@@ -368,7 +373,7 @@ try {
       await contents.locator('a[href="#explore-the-workflow"]').click();
       assert.equal(await contents.evaluate((node) => node.open), false);
     }
-    for (const [kind, asset] of [["panel", "workflow-panel-git-800.png"], ["agent", "agent-plus-git-800.png"]]) {
+    for (const [kind, asset] of [["panel", "workflow-panel-site-800.png"], ["agent", "agent-plus-site-800.png"]]) {
       const capture = page.locator(`.native-${kind}-shot`);
       const image = capture.locator("img");
       await image.scrollIntoViewIfNeeded();
@@ -387,12 +392,12 @@ try {
   }
   const workflow = provenance.desktop_walkthrough;
   assert.equal(workflow.type, "native captured frames");
-  assert.equal(workflow.related_video, "assets/demo-desktop-git-800.mp4");
+  assert.equal(workflow.related_video, "assets/demo-desktop-site-800.mp4");
   assert.deepEqual(workflow.scenes.map((scene) => scene.image).sort(), [
-    "assets/workflow-browser-git-800.png",
-    "assets/workflow-controls-git-800.png",
-    "assets/workflow-panel-git-800.png",
-    "assets/workflow-terminal-git-800.png",
+    "assets/workflow-browser-site-800.png",
+    "assets/workflow-controls-site-800.png",
+    "assets/workflow-panel-site-800.png",
+    "assets/workflow-terminal-site-800.png",
   ].sort());
   for (const route of ["", "tour/"]) {
     for (const width of [375, 1280]) {
@@ -496,7 +501,7 @@ try {
   const currentNoJsClipIds = [...currentClipIds];
   const archiveNoJsClipIds = Object.keys(clipsById).filter((id) => !currentClipIds.has(id));
   assert.equal(currentNoJsClipIds.length, 2);
-  assert.equal(archiveNoJsClipIds.length, 8);
+  assert.equal(archiveNoJsClipIds.length, 10);
   checks += 2;
   for (const [route, clipIds] of [
     ["tour/", currentNoJsClipIds],

@@ -1,9 +1,9 @@
 # Earlier desktop recordings
 
 These staged Arch recordings retain their original resolutions, source pins,
-capture dates and media bytes. This archive includes the superseded Story-page
-800p captures and earlier 1080p recordings. Return to the
-[current Git documentation overview](tour.md#native-reference-demo).
+capture dates and media bytes. The archive retains ten earlier videos,
+including superseded 800p takes and the earlier 1080p recordings. Return to the
+[current desktop overview](tour.md#native-reference-demo).
 
 ## Previous black-workspace overview
 
@@ -22,11 +22,26 @@ The 0.4.1 Audio/Network capture retains its original native 1080p take.
 Inspect and adjust virtual audio, restore its state, and inspect Ethernet.
 <!-- /niri-plus:demo-controls -->
 
-## Superseded 800p captures
+## Superseded Git documentation 800p captures
+
+These two earlier 1280×800 takes show the official Git documentation mirror in
+Chrome beside the public sample project. They remain with their original
+capture records and bytes; the current Tour uses the Niri Plus homepage.
+
+<!-- niri-plus:demo-desktop-git-800 -->
+Read the Git documentation beside the sample project, open a downloaded file,
+send the original through the file chooser, and use the panel and clipboard.
+<!-- /niri-plus:demo-desktop-git-800 -->
+
+<!-- niri-plus:demo-controls-git-800 -->
+Inspect Audio and Network controls beside the Git documentation and Kitty.
+<!-- /niri-plus:demo-controls-git-800 -->
+
+## Superseded Story-page 800p captures
 
 These two 1280×800 captures show the retired public Story page in Chrome. They
 are retained byte-for-byte with their original media records; the current Tour
-uses separately captured Git documentation stills and videos.
+uses the Niri Plus homepage captures.
 
 <!-- niri-plus:demo-desktop-800 -->
 The overview follows the browser, file, terminal, panel and clipboard sequence.

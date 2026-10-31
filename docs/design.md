@@ -16,10 +16,11 @@ other terminal options remain references.
 
 ## Capturing the desktop
 
-Current showcase videos and stills use **1280×800 at scale 1**. The smaller
-native desktop makes interface text readable while keeping both working halves
-and the surrounding desktop in view. Images preserve their complete frame and
-native aspect ratio. Use the full-size image or video controls for closer reading.
+Current showcase videos and stills use **1280×800 at compositor scale 1**;
+Chrome uses **125% browser zoom**. The smaller native desktop makes interface
+text readable while keeping both working halves and the surrounding desktop
+in view. Images preserve their complete frame and native aspect ratio. Use the
+full-size image or video controls for closer reading.
 Earlier capture and qualification records retain their original dimensions.
 
 ## Direct device controls
@@ -43,18 +44,18 @@ It is an illustration; no desktop action is performed.
 <!-- /niri-plus:overview -->
 
 The frame below shows the current desktop running in the staged Arch reference:
-Chrome on the official [Git status manual](https://git.github.io/htmldocs/git-status.html)
-beside Kitty/Zsh, with a black workspace and the selected native theme. The
-terminal uses a guest sample project. [Watch the desktop overview](tour.md#native-reference-demo)
+Chrome on the Niri Plus homepage beside Kitty/Zsh, with a black workspace and
+the selected native theme. The terminal uses a clean public sample project.
+[Watch the desktop overview](tour.md#native-reference-demo)
 or explore the earlier [browser/files](tour.md#browser-and-files),
 [terminal](tour.md#terminals-and-agents), and
 [information/clipboard](tour.md#information-when-i-want-it) recordings.
 
-[![Current native staged Arch desktop with the Git status manual in Chrome beside Kitty over a pure-black workspace.](../assets/arch-reference/desktop-git-800.png)](../assets/arch-reference/desktop-git-800.png)
+[![Current native staged Arch desktop with the Niri Plus homepage in Chrome beside Kitty over a pure-black workspace.](../assets/arch-reference/desktop-site-800.png)](../assets/arch-reference/desktop-site-800.png)
 
-*Native 1280×800 staged Arch guest · components 0.4.1 · public Git documentation and sample project.
-[Open full-size capture](../assets/arch-reference/desktop-git-800.png) ·
-[Capture details and review status](planning/capture-refresh-git-800-receipt.md).*
+*Native 1280×800 staged Arch guest · components 0.4.1 · Chrome 125% browser zoom · compositor scale 1.
+[Open full-size capture](../assets/arch-reference/desktop-site-800.png) ·
+[Capture details and review status](planning/capture-refresh-site-800-receipt.md).*
 
 ## Surface gallery
 

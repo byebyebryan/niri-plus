@@ -28,6 +28,7 @@ from components.appearance.render import render as render_appearance
 SITE = "https://dev.byebyebryan.com/niri-plus/"
 BASE = urlsplit(SITE).path
 PAGES = {
+    "recipes/away-mode/": ("docs/recipes/away-mode.md", "Keep Niri displays off during unattended browser-agent work with an optional manual away mode."),
     "design/": ("docs/design.md", "Neutral Slate: appearance, behavior, palette, typography, and setup for the Niri Plus desktop."),
     "design/contrast/": ("docs/design/contrast.md", "Compare a clearer warm desktop and a separate pure-black terminal palette with the current Neutral Slate design."),
     "story/": ("docs/story.md", "The personal story behind a desktop shaped around Chrome, terminals, and coding agents."),

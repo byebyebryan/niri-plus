@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 
 const output = path.resolve(process.argv[2] || "dist");
 const prefix = "/niri-plus/";
-const routes = ["", "story/", "tour/", "tour/earlier/", "design/", "design/contrast/", "architecture/", "components/", "setup/", "setup/agent/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/rofi-controls/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
+const routes = ["", "story/", "tour/", "tour/earlier/", "design/", "design/contrast/", "architecture/", "components/", "setup/", "setup/agent/", "recipes/notifications/", "recipes/clipboard/", "recipes/session/", "recipes/away-mode/", "recipes/terminal/", "recipes/desktop-utilities/", "recipes/rofi-controls/", "recipes/appearance/", "recipes/displays/", "recipes/login/", "recipes/hardware-feedback/", "recipes/input/", "recipes/files/", "reference/"];
 const mime = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".mp4": "video/mp4", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2" };
 
 function parseByteRange(header, size) {

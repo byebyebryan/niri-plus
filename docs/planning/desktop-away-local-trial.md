@@ -1,5 +1,9 @@
 # Manual display-away trial
 
+Historical receipt for the initial direct-evdev local trial, before components
+0.5.0. The published companion adds permissionless Wayland input-only
+notifications; see the [current recipe](../recipes/away-mode.md).
+
 This unpublished, opt-in companion lives in a separate Niri Plus worktree.
 It is not in the released 0.4.1 component bundle. Personal host admission and
 checksum-verified installation remain in chezmoi. No published pin is changed.

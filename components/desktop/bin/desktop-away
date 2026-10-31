@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Opt-in Niri display-off latch. Reads physical input; never grabs or records it."""
+"""Opt-in Niri display-off latch. Observes input without grabbing or recording it."""
 import argparse
 import ctypes
 import fcntl
@@ -100,7 +100,11 @@ class Latch:
         self.transition = reason
         log("away released: " + reason)
 
-    def input(self, at, kind, code, value, name):
+    def input(self, at, kind, code, value, name, origin="evdev"):
+        # The privacy-preserving Wayland API has no key codes. Give the manual
+        # shortcut's final release time to settle before accepting its activity.
+        if origin == "wayland" and self.clock() - self.armed_at < 0.5:
+            return
         if self.away and at > self.armed_at and is_activity(kind, code, value):
             self.resume("physical input: " + name)
 
@@ -117,6 +121,8 @@ class Latch:
 
 
 class InputReader:
+    backend = "evdev"
+
     def __init__(self, selector, callback):
         self.selector, self.callback = selector, callback
         self.devices = {}
@@ -201,6 +207,147 @@ class InputReader:
         self.selector.unregister(self.watch)
         os.close(self.watch)
 
+    def poll(self):
+        pass
+
+
+class WlInterface(ctypes.Structure):
+    pass
+
+
+class WlMessage(ctypes.Structure):
+    _fields_ = [("name", ctypes.c_char_p), ("signature", ctypes.c_char_p),
+                ("types", ctypes.POINTER(ctypes.POINTER(WlInterface)))]
+
+
+WlInterface._fields_ = [("name", ctypes.c_char_p), ("version", ctypes.c_int),
+                       ("method_count", ctypes.c_int), ("methods", ctypes.POINTER(WlMessage)),
+                       ("event_count", ctypes.c_int), ("events", ctypes.POINTER(WlMessage))]
+
+
+class WaylandInputReader:
+    """ext-idle-notify v2: input-only notifications, with no raw-input access.
+
+    These are independent of application inhibitors. Unlike evdev, this API
+    cannot distinguish OS-level injected input from physical seat input.
+    Chrome's in-page CDP events do not enter the compositor's input seat.
+    """
+    backend = "wayland-input-only"
+
+    def __init__(self, selector, callback):
+        self.selector, self.callback = selector, callback
+        self.devices = {"seat": {"name": "Wayland seat (input-only)"}}
+        self.display = self.registry = self.seat = self.notifier = self.notification = None
+        self.active, self.last_activity = False, 0.0
+        self.wl = ctypes.CDLL("libwayland-client.so.0")
+        pointer = ctypes.c_void_p
+        self.wl.wl_display_connect.argtypes = [ctypes.c_char_p]
+        self.wl.wl_display_connect.restype = pointer
+        self.wl.wl_proxy_marshal_flags.argtypes = [pointer, ctypes.c_uint,
+                                                  ctypes.POINTER(WlInterface), ctypes.c_uint, ctypes.c_uint]
+        self.wl.wl_proxy_marshal_flags.restype = pointer
+        self.wl.wl_proxy_add_listener.argtypes = [pointer, ctypes.POINTER(pointer), pointer]
+        self.wl.wl_proxy_add_listener.restype = ctypes.c_int
+        self.wl.wl_proxy_destroy.argtypes = [pointer]
+        self.wl.wl_proxy_destroy.restype = None
+        self.wl.wl_display_disconnect.argtypes = [pointer]
+        self.wl.wl_display_disconnect.restype = None
+        for name in ("get_fd", "roundtrip", "dispatch", "dispatch_pending", "flush"):
+            function = getattr(self.wl, "wl_display_" + name)
+            function.argtypes = [pointer]
+            function.restype = ctypes.c_int
+        self.registry_type = WlInterface.in_dll(self.wl, "wl_registry_interface")
+        self.seat_type = WlInterface.in_dll(self.wl, "wl_seat_interface")
+        self.destroy_method = (WlMessage * 1)(WlMessage(b"destroy", b"", None))
+        self.notification_events = (WlMessage * 2)(WlMessage(b"idled", b"", None),
+                                                   WlMessage(b"resumed", b"", None))
+        self.notification_type = WlInterface(b"ext_idle_notification_v1", 2, 1,
+                                             self.destroy_method, 2, self.notification_events)
+        self.request_types = (ctypes.POINTER(WlInterface) * 3)(
+            ctypes.pointer(self.notification_type), None, ctypes.pointer(self.seat_type))
+        self.notifier_methods = (WlMessage * 3)(
+            WlMessage(b"destroy", b"", None), WlMessage(b"get_idle_notification", b"nuo", self.request_types),
+            WlMessage(b"get_input_idle_notification", b"2nuo", self.request_types))
+        self.notifier_type = WlInterface(b"ext_idle_notifier_v1", 2, 3, self.notifier_methods, 0, None)
+        global_cb = ctypes.CFUNCTYPE(None, pointer, pointer, ctypes.c_uint, ctypes.c_char_p, ctypes.c_uint)
+        remove_cb = ctypes.CFUNCTYPE(None, pointer, pointer, ctypes.c_uint)
+        event_cb = ctypes.CFUNCTYPE(None, pointer, pointer)
+        self.global_callback = global_cb(self.global_added)
+        self.remove_callback = remove_cb(lambda *_: None)
+        self.idled_callback = event_cb(lambda *_: setattr(self, "active", False))
+        self.resumed_callback = event_cb(self.resumed)
+        self.registry_listener = (pointer * 2)(ctypes.cast(self.global_callback, pointer),
+                                               ctypes.cast(self.remove_callback, pointer))
+        self.notification_listener = (pointer * 2)(ctypes.cast(self.idled_callback, pointer),
+                                                   ctypes.cast(self.resumed_callback, pointer))
+        try:
+            self.display = self.wl.wl_display_connect(None)
+            if not self.display:
+                raise RuntimeError("cannot connect to the session Wayland display")
+            self.registry = self.wl.wl_proxy_marshal_flags(self.display, 1,
+                             ctypes.byref(self.registry_type), 1, 0, pointer())
+            if self.wl.wl_proxy_add_listener(self.registry, self.registry_listener, None) != 0:
+                raise RuntimeError("cannot register Wayland registry listener")
+            if self.wl.wl_display_roundtrip(self.display) < 0 or not self.seat or not self.notifier:
+                raise RuntimeError("Wayland seat and ext-idle-notify v2 are required")
+            self.notification = self.wl.wl_proxy_marshal_flags(
+                self.notifier, 2, ctypes.byref(self.notification_type), 2, 0,
+                pointer(), ctypes.c_uint(250), pointer(self.seat))
+            if self.wl.wl_proxy_add_listener(self.notification, self.notification_listener, None) != 0:
+                raise RuntimeError("cannot register input-only notification")
+            self.wl.wl_display_flush(self.display)
+            self.fd = self.wl.wl_display_get_fd(self.display)
+            selector.register(self.fd, selectors.EVENT_READ, "wayland")
+            log("observing Wayland input-only seat; no raw input permissions required")
+        except Exception:
+            self.close()
+            raise
+
+    def global_added(self, data, registry, name, interface, version):
+        if interface == b"wl_seat" and not self.seat:
+            self.seat = self.wl.wl_proxy_marshal_flags(registry, 0, ctypes.byref(self.seat_type), 1, 0,
+                            ctypes.c_uint(name), self.seat_type.name, ctypes.c_uint(1), ctypes.c_void_p())
+        elif interface == b"ext_idle_notifier_v1" and version >= 2 and not self.notifier:
+            self.notifier = self.wl.wl_proxy_marshal_flags(registry, 0, ctypes.byref(self.notifier_type), 2, 0,
+                            ctypes.c_uint(name), self.notifier_type.name, ctypes.c_uint(2), ctypes.c_void_p())
+
+    def resumed(self, *_):
+        self.active, self.last_activity = True, time.monotonic()
+
+    def ready(self, fd):
+        if self.wl.wl_display_dispatch(self.display) < 0:
+            raise RuntimeError("Wayland input notification disconnected")
+
+    def scan(self):
+        if self.wl.wl_display_dispatch_pending(self.display) < 0:
+            raise RuntimeError("Wayland input notification failed")
+        self.wl.wl_display_flush(self.display)
+
+    def poll(self):
+        if self.active:
+            self.callback(self.last_activity, 1, 0, 1, "Wayland seat (input-only)", origin="wayland")
+
+    def close(self):
+        if hasattr(self, "fd"):
+            try:
+                self.selector.unregister(self.fd)
+            except KeyError:
+                pass
+        if self.display:
+            self.wl.wl_display_disconnect(self.display)
+            self.display = None
+
+
+def input_reader(selector, callback):
+    try:
+        reader = InputReader(selector, callback)
+    except OSError:
+        return WaylandInputReader(selector, callback)
+    if reader.devices and not reader.failures:
+        return reader
+    reader.close()
+    return WaylandInputReader(selector, callback)
+
 
 class Daemon:
     def __init__(self, directory):
@@ -211,6 +358,7 @@ class Daemon:
 
     def status(self):
         return {"away": self.latch.away, "transition": self.latch.transition,
+                "input_backend": self.inputs.backend,
                 "reblank_count": self.latch.reblank_count,
                 "input_devices": sorted({x["name"] for x in self.inputs.devices.values()}),
                 "displays": display_state()}
@@ -258,7 +406,7 @@ class Daemon:
         self.server.listen(8)
         self.server.setblocking(False)
         self.selector.register(self.server, selectors.EVENT_READ, "control")
-        self.inputs = InputReader(self.selector, self.latch.input)
+        self.inputs = input_reader(self.selector, self.latch.input)
         for sig in (signal.SIGINT, signal.SIGTERM):
             signal.signal(sig, lambda *_: setattr(self, "stopping", True))
         last_scan = time.monotonic()
@@ -280,6 +428,7 @@ class Daemon:
                 if time.monotonic() - last_scan >= 2:
                     self.inputs.scan()
                     last_scan = time.monotonic()
+                self.inputs.poll()
                 try:
                     if self.latch.away:
                         self.latch.enforce(display_state())

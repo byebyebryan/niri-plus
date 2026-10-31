@@ -90,8 +90,37 @@ class LatchTests(unittest.TestCase):
             self.latch.enforce({"DP-1": "On"})
         self.assertEqual(self.calls, [False, False])
 
+    def test_wayland_shortcut_grace_then_real_activity(self):
+        self.latch.enter()
+        self.now = 100.1
+        self.latch.input(100.1, 1, 0, 1, "seat", origin="wayland")
+        self.assertTrue(self.latch.away)
+        self.now = 100.6
+        self.latch.input(100.1, 1, 0, 1, "seat", origin="wayland")
+        self.assertFalse(self.latch.away)
+
+    def test_wayland_preexisting_activity_never_releases_new_latch(self):
+        self.latch.enter()
+        self.now = 101
+        self.latch.input(99, 1, 0, 1, "seat", origin="wayland")
+        self.assertTrue(self.latch.away)
+
 
 class InputTests(unittest.TestCase):
+    def test_unreadable_evdev_falls_back_without_granting_permissions(self):
+        selector, callback = mock.Mock(), mock.Mock()
+        raw = types.SimpleNamespace(devices={}, failures={"keyboard"}, close=mock.Mock())
+        with mock.patch.object(away, "InputReader", return_value=raw), \
+             mock.patch.object(away, "WaylandInputReader", return_value="wayland") as factory:
+            self.assertEqual(away.input_reader(selector, callback), "wayland")
+            raw.close.assert_called_once()
+            factory.assert_called_once_with(selector, callback)
+
+    def test_missing_input_directory_uses_wayland(self):
+        with mock.patch.object(away, "InputReader", side_effect=FileNotFoundError()), \
+             mock.patch.object(away, "WaylandInputReader", return_value="wayland"):
+            self.assertEqual(away.input_reader(mock.Mock(), mock.Mock()), "wayland")
+
     def test_unpadded_machine_words(self):
         self.assertEqual(away.bitmap("1 2"), (1 << away.WORD_BITS) | 2)
         self.assertEqual(away.bitmap(""), 0)
@@ -128,7 +157,7 @@ class InputTests(unittest.TestCase):
 class ControlTests(unittest.TestCase):
     def test_bad_request_does_not_change_state(self):
         daemon = away.Daemon(Path("/unused"))
-        daemon.inputs = types.SimpleNamespace(devices={})
+        daemon.inputs = types.SimpleNamespace(devices={}, backend="test")
         server, client = socket.socketpair()
         with mock.patch.object(away, "display_state", return_value={}):
             worker = threading.Thread(target=daemon.handle, args=(server,))
@@ -152,6 +181,8 @@ loader=importlib.machinery.SourceFileLoader("test_away",sys.argv[1])
 spec=importlib.util.spec_from_loader(loader.name,loader)
 m=importlib.util.module_from_spec(spec);loader.exec_module(m)
 state=Path(sys.argv[2]);m.input_nodes=lambda: {}
+import types
+m.input_reader=lambda selector,callback: types.SimpleNamespace(devices={},backend="test",scan=lambda:None,poll=lambda:None,close=lambda:None)
 m.display_state=lambda: {"fake-DP":state.read_text()}
 m.power=lambda on: state.write_text("On" if on else "Off")
 m.sys.exit(m.main())

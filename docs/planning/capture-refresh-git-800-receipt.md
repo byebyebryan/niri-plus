@@ -98,9 +98,22 @@ component and identity pins, source/output hashes, and per-file terms.
 
 Primary visual review of the native and representative encoded frames passed.
 Capture, source-hash, full-decode, black-detection, and stream-preservation
-checks passed. Repository build/browser integration checks are pending the
-primary's combined final gate. Human playback and aesthetic acceptance remain
-pending.
+checks passed. The combined repository gate passed on 2026-10-31:
+
+- 111 unit tests, with three optional GI tests skipped in the virtual environment;
+- component-export parity, 31 isolated desktop checks and 85 terminal checks;
+- normal and portable builds, each with 25 pages, 182 files and 939 local links;
+- 1,293 owned Chromium checks per build across 23 routes at 375, 768, 1280 and
+  1600 pixels, including native video playback/seeking, current-image paths,
+  responsive frames, Story redirects and JavaScript-disabled presentation;
+- exact retention of the eight old clip records and 29 old asset records/bytes.
+
+Luna handled site/media integration and regression checks; the primary handled
+native capture, preservation, scene review and final integration acceptance.
+Additive parallel away-mode source work is preserved in the repository; the
+captured guest remains on its unchanged 0.4.1 tuple. No away-mode deployment or
+runtime action was part of this refresh. Human playback and aesthetic
+acceptance remain pending.
 
 The VM postflight preservation audit passed after normal shutdown. All 21
 protected file hashes and sizes match; inactive domain XML hash

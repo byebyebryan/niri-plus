@@ -1256,7 +1256,7 @@
             "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83"
           }
         },
-        "site_integration_review": "pending primary source/build/browser gate",
+        "site_integration_review": "passed; primary source, normal/portable build and browser gates on 2026-10-31",
         "primary_visual_review": {
           "status": "passed",
           "scope": "Native stills and representative encoded frames; retired page absent; full frame visible.",
@@ -1391,7 +1391,7 @@
         "full_decode": "passed",
         "blackdetect": "passed; d=0.20 pix_th=0.10 pic_th=0.999, no intervals",
         "watch_from_seconds": null,
-        "site_integration_review": "pending primary source/build/browser gate",
+        "site_integration_review": "passed; primary source, normal/portable build and browser gates on 2026-10-31",
         "primary_visual_review": {
           "status": "passed",
           "scope": "Native stills and representative encoded frames; retired page absent; full frame visible.",

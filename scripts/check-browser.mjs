@@ -493,16 +493,29 @@ try {
   await staticPage.waitForURL(origin);
   assert.match(await staticPage.locator("h1").innerText(), /Two halves/);
   checks += 2;
-  await staticPage.goto(origin + "tour/");
-  assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 2);
-  assert.equal(await staticPage.locator("[data-native-demo] video[autoplay]").count(), 0);
-  assert.ok((await staticPage.locator("[data-native-demo]").allInnerTexts()).join(" ").includes("Mod+Y"));
-  assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 7);
-  await staticPage.goto(origin + "tour/earlier/");
-  assert.equal(await staticPage.locator("[data-native-demo] video[controls]").count(), 6);
-  assert.equal(await staticPage.locator("[data-native-demo] video[autoplay]").count(), 0);
-  assert.equal(await staticPage.locator("[data-native-demo] .native-demo-steps li").count(), 19);
-  checks += 4;
+  const currentNoJsClipIds = [...currentClipIds];
+  const archiveNoJsClipIds = Object.keys(clipsById).filter((id) => !currentClipIds.has(id));
+  assert.equal(currentNoJsClipIds.length, 2);
+  assert.equal(archiveNoJsClipIds.length, 8);
+  checks += 2;
+  for (const [route, clipIds] of [
+    ["tour/", currentNoJsClipIds],
+    ["tour/earlier/", archiveNoJsClipIds],
+  ]) {
+    await staticPage.goto(origin + route);
+    assert.equal(await staticPage.locator("[data-native-demo]").count(), clipIds.length);
+    for (const id of clipIds) {
+      const demo = staticPage.locator(`[data-native-demo="${id}"]`);
+      const video = demo.locator("video");
+      assert.equal(await video.count(), 1, `no-JS video is present: ${id}`);
+      assert.equal(await video.evaluate((element) => element.controls), true, `native controls are present: ${id}`);
+      assert.equal(await demo.locator("video[autoplay]").count(), 0, `video does not autoplay: ${id}`);
+      const steps = demo.locator(".native-demo-steps");
+      assert.equal(await steps.isVisible(), true, `static steps are visible: ${id}`);
+      assert.ok(await steps.locator("li").count() >= 3, `static steps remain useful: ${id}`);
+    }
+    checks += 1 + clipIds.length * 5;
+  }
   await staticPage.goto(origin + "design/");
   assert.equal(await staticPage.locator("[data-surface-panel]:visible").count(), 4);
   assert.equal(await staticPage.locator("[data-surface-button]:visible").count(), 0);

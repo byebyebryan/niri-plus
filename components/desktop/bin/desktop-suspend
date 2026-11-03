@@ -200,32 +200,47 @@ class Countdown:
         return self.seconds if self.started is None else max(0, math.ceil(self.seconds - (now - self.started)))
 
 
+def focused_monitor_index(geometries, output):
+    """Match Niri's focused output to GDK's logical coordinates, including scale."""
+    logical = output.get("logical") if isinstance(output, dict) else None
+    if not isinstance(logical, dict):
+        raise RuntimeError("the focused output has no logical geometry")
+    keys = ("x", "y", "width", "height")
+    if any(type(logical.get(key)) is not int for key in keys):
+        raise RuntimeError("the focused output geometry is invalid")
+    target = tuple(logical[key] for key in keys)
+    matches = [index for index, geometry in enumerate(geometries) if tuple(geometry) == target]
+    if len(matches) != 1:
+        raise RuntimeError("the focused output cannot be matched to one monitor")
+    return matches[0]
+
+
 def show_countdown(session, seconds, label):
     # Keep cancellation/away commands usable without importing any UI library.
     import gi
     gi.require_version("Gtk", "3.0")
     gi.require_version("Gdk", "3.0")
+    gi.require_version("GtkLayerShell", "0.1")
     from gi.repository import GLib
     GLib.set_prgname(APP_ID)
-    from gi.repository import Gdk, Gtk
+    from gi.repository import Gdk, Gtk, GtkLayerShell
     ready, _ = Gtk.init_check(None)
     display = Gdk.Display.get_default()
     if not ready or display is None or display.__gtype__.name != "GdkWaylandDisplay":
         raise RuntimeError("a live Wayland display is required for the countdown")
-    window = Gtk.Window(title="Suspend " + label)
-    window.set_resizable(False)
-    window.set_decorated(False)
-    window.set_default_size(460, -1)
-    window.set_modal(True)
-    box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-    box.set_border_width(24)
-    title = Gtk.Label(label="")
-    title.get_style_context().add_class("title")
-    hint = Gtk.Label(label="Esc to cancel")
-    button = Gtk.Button.new_with_label("Cancel")
-    for widget in (title, hint, button):
-        box.pack_start(widget, False, False, 0)
-    window.add(box)
+    if not GtkLayerShell.is_supported():
+        raise RuntimeError("the countdown requires Wayland layer-shell support")
+    monitors = [display.get_monitor(index) for index in range(display.get_n_monitors())]
+    if not monitors:
+        raise RuntimeError("no monitor is available for the countdown")
+    focused_index = 0
+    if len(monitors) > 1:
+        result = subprocess.run(["niri", "msg", "--json", "focused-output"], check=True,
+                                capture_output=True, text=True, timeout=2)
+        geometries = [(rect.x, rect.y, rect.width, rect.height)
+                      for rect in (monitor.get_geometry() for monitor in monitors)]
+        focused_index = focused_monitor_index(geometries, json.loads(result.stdout))
+    windows, counters = [], []
     timer = Countdown(seconds)
     finished = False
     previous = None
@@ -235,17 +250,28 @@ def show_countdown(session, seconds, label):
         if finished:
             return
         finished = True
-        window.destroy()
-        Gtk.main_quit()
+        for window in windows:
+            window.destroy()
+        if Gtk.main_level():
+            Gtk.main_quit()
 
     def cancel(*_):
         timer.cancel()
         finish()
         return True
 
-    def active(*_):
-        if timer.started is not None and not finished and not window.is_active():
+    def visible_and_focused():
+        return (all(window.get_mapped() for window in windows)
+                and any(window.is_active() for window in windows))
+
+    def check_focus():
+        # Defer until a transfer between our own monitor surfaces has settled.
+        if timer.started is not None and not finished and not visible_and_focused():
             cancel()
+        return False
+
+    def active(*_):
+        GLib.idle_add(check_focus)
 
     def key(_window, event):
         if event.keyval == Gdk.KEY_Escape or (event.keyval == Gdk.KEY_g and event.state & Gdk.ModifierType.CONTROL_MASK):
@@ -256,37 +282,119 @@ def show_countdown(session, seconds, label):
     def tick():
         nonlocal previous
         try:
-            remaining = timer.tick(window.get_mapped() and window.is_active(), session.cancelled())
+            remaining = timer.tick(visible_and_focused(), session.cancelled())
         except (OSError, ValueError, TypeError):
-            return cancel() and False
+            cancel()
+            return False
         if timer.outcome is not None:
             finish()
             return False
         if remaining != previous:
-            title.set_text(f"{label} will suspend in {remaining} seconds")
+            for counter in counters:
+                counter.set_text(str(remaining))
             log("countdown: " + str(remaining))
             previous = remaining
         return True
 
-    window.connect("delete-event", cancel)
-    window.connect("key-press-event", key)
-    window.connect("notify::is-active", active)
-    button.connect("clicked", cancel)
-    Gdk.Display.get_default().connect("closed", cancel)
-    sources = [GLib.timeout_add(100, tick)]
-    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
-        sources.append(GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, sig, cancel))
+    sources, handlers = [], []
     try:
-        title.set_text(f"{label} will suspend in {seconds} seconds")
-        window.show_all()
-        window.present()
+        for index, monitor in enumerate(monitors):
+            window = Gtk.Window(title="Suspend " + label)
+            windows.append(window)
+            window.set_name("suspend-overlay-" + str(index))
+            window.set_decorated(False)
+            visual = window.get_screen().get_rgba_visual()
+            if visual is None:
+                raise RuntimeError("the countdown requires an alpha-capable visual")
+            window.set_visual(visual)
+            GtkLayerShell.init_for_window(window)
+            GtkLayerShell.set_namespace(window, APP_ID)
+            GtkLayerShell.set_layer(window, GtkLayerShell.Layer.OVERLAY)
+            GtkLayerShell.set_monitor(window, monitor)
+            # On-demand focus preserves normal compositor shortcuts and permits
+            # other windows to take focus, which cancels instead of suspending.
+            mode = (GtkLayerShell.KeyboardMode.ON_DEMAND if index == focused_index
+                    else GtkLayerShell.KeyboardMode.NONE)
+            GtkLayerShell.set_keyboard_mode(window, mode)
+            GtkLayerShell.set_exclusive_zone(window, -1)
+            if hasattr(GtkLayerShell, "set_respect_close"):
+                GtkLayerShell.set_respect_close(window, True)
+            for edge in (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.BOTTOM,
+                         GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.RIGHT):
+                GtkLayerShell.set_anchor(window, edge, True)
+
+            geometry = monitor.get_geometry()
+            size = max(24, min(44, geometry.width // 24))
+            css = Gtk.CssProvider()
+            css.load_from_data(("""
+                #suspend-overlay { background-color: rgba(0, 0, 0, 0.55); }
+                #suspend-overlay, #suspend-overlay * {
+                    background-image: none; box-shadow: none;
+                    transition: none; animation: none;
+                }
+                #suspend-overlay label {
+                    background-color: transparent; color: #ffffff;
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+                }
+                #suspend-overlay .host { font-size: SIZEpx; font-weight: 600; }
+                #suspend-overlay .counter { font-size: NUMBERpx; font-weight: 700; color: #f4c97a; }
+                #suspend-overlay .hint { font-size: HINTpx; }
+                #suspend-overlay button {
+                    background-color: rgba(20, 24, 30, 0.9); color: #ffffff;
+                    border: 1px solid #a0a8b4; border-radius: 8px;
+                    padding: 10px 32px; font-size: HINTpx;
+                }
+                #suspend-overlay button:focus { border-color: #ffffff; }
+            """.replace("SIZE", str(size)).replace("NUMBER", str(size * 3))
+                .replace("HINT", str(max(20, size // 2)))
+                .replace("#suspend-overlay", "#suspend-overlay-" + str(index))).encode())
+            Gtk.StyleContext.add_provider_for_screen(window.get_screen(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+            box.set_halign(Gtk.Align.CENTER)
+            box.set_valign(Gtk.Align.CENTER)
+            box.set_border_width(32)
+            title = Gtk.Label(label=label + " will suspend in")
+            title.set_line_wrap(True)
+            title.set_max_width_chars(48)
+            title.set_justify(Gtk.Justification.CENTER)
+            title.get_style_context().add_class("host")
+            counter = Gtk.Label(label=str(seconds))
+            counter.get_style_context().add_class("counter")
+            counters.append(counter)
+            unit = Gtk.Label(label="seconds")
+            unit.get_style_context().add_class("hint")
+            hint = Gtk.Label(label="Esc to cancel")
+            hint.get_style_context().add_class("hint")
+            hint.set_margin_top(16)
+            button = Gtk.Button.new_with_label("Cancel")
+            button.set_halign(Gtk.Align.CENTER)
+            button.set_margin_top(12)
+            for widget in (title, counter, unit, hint, button):
+                box.pack_start(widget, False, False, 0)
+            window.add(box)
+            window.connect("delete-event", cancel)
+            window.connect("key-press-event", key)
+            window.connect("notify::is-active", active)
+            window.connect("unmap", lambda *_: cancel() if not finished else None)
+            button.connect("clicked", cancel)
+        for name in ("closed", "monitor-added", "monitor-removed"):
+            handlers.append(display.connect(name, cancel))
+        sources.append(GLib.timeout_add(100, tick))
+        for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+            sources.append(GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, sig, cancel))
+        for window in windows:
+            window.show_all()
         Gtk.main()
         return timer.outcome == "elapsed"
     finally:
         for source in sources:
             if GLib.MainContext.default().find_source_by_id(source):
                 GLib.source_remove(source)
-        window.destroy()
+        for handler in handlers:
+            display.disconnect(handler)
+        finished = True
+        for window in windows:
+            window.destroy()
 
 
 def away(session, lock=False, *, run=subprocess.run):

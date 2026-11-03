@@ -71,6 +71,24 @@ class CountdownTests(unittest.TestCase):
         self.assertEqual(self.timer.outcome, "cancelled")
 
 
+class MonitorTests(unittest.TestCase):
+    def test_focus_uses_logical_geometry_across_scaled_and_negative_outputs(self):
+        geometries = [(-1920, 0, 1920, 1080), (0, 0, 2560, 1440), (2560, 120, 1280, 800)]
+        for index, geometry in enumerate(geometries):
+            output = {"logical": dict(zip(("x", "y", "width", "height"), geometry))}
+            self.assertEqual(suspend.focused_monitor_index(geometries, output), index)
+
+    def test_unknown_or_ambiguous_focus_fails_closed(self):
+        geometry = (0, 0, 1920, 1080)
+        output = {"logical": dict(zip(("x", "y", "width", "height"), geometry))}
+        for geometries in ([], [(0, 0, 1280, 800)], [geometry, geometry]):
+            with self.assertRaises(RuntimeError):
+                suspend.focused_monitor_index(geometries, output)
+        for output in (None, {}, {"logical": None}, {"logical": {"x": "0"}}):
+            with self.assertRaises(RuntimeError):
+                suspend.focused_monitor_index([geometry], output)
+
+
 class SessionTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="suspend-check-")

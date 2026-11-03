@@ -60,33 +60,35 @@ idle listener such as swayidle, in addition to the lock service.
 ## Optional suspend countdown
 
 The [desktop-suspend helper](../../examples/session/desktop-suspend) provides a
-five-second manual suspend countdown. It shows the host name and remaining
-seconds in a temporary GTK 3 window. Escape, Cancel, closing the window, or
-moving focus elsewhere cancels. Repeated launches keep the existing timer.
-The timer starts only after the window is visible and focused; failed startup,
-an unresponsive window, or another sleep/resume transition cancels it.
+five-second manual suspend countdown. A full-screen layer-shell surface covers
+each connected monitor with a 55% opaque dark tint; the existing desktop,
+including full-screen applications, remains visible beneath it. The host name,
+large countdown, and Escape hint stay fully opaque. Only the digits change;
+there is no decorative animation or blur.
 
-This optional helper requires Python 3.11+, PyGObject with GTK 3 introspection,
-the readiness helper above, and a working `desktop-session/power.toml` containing
-the boolean `lock_before_suspend`. It checks that policy again before issuing
-`systemctl suspend`. It creates no persistent service and does not change
-automatic idle, lid, or physical power-button handling.
+Escape, Cancel, closing a surface, or moving focus elsewhere cancels. Repeated
+launches keep the existing timer. The timer starts only after every surface is
+mapped and the focused monitor's surface has keyboard focus. Failed startup,
+an unresponsive UI, output hotplug, or another sleep/resume transition cancels it.
+On multiple monitors, Niri's focused output is matched to GDK logical coordinates;
+other monitors show the same countdown without taking keyboard focus.
 
-After reviewing the helper, install it alongside the readiness helper and merge
-this floating-window rule into your Niri configuration:
+This optional helper requires Python 3.11+, PyGObject with GTK 3 and
+GtkLayerShell introspection (`python-gobject` and `gtk-layer-shell` on Arch),
+Niri IPC, the readiness helper above, and a working
+`desktop-session/power.toml` containing the boolean `lock_before_suspend`.
+It checks that policy again before issuing `systemctl suspend`. It creates no
+persistent service and does not change automatic idle, lid, or physical
+power-button handling.
+
+After reviewing the helper, install it alongside the readiness helper:
 
 ```sh
 install -m 755 examples/session/desktop-suspend ~/.local/bin/desktop-suspend
 ```
 
-```kdl
-window-rule {
-    match app-id="^org[.]niri-plus[.]suspend$"
-    open-floating true
-    open-focused true
-    default-column-width { fixed 480; }
-}
-```
+No Niri window rule is required for the layer-shell surface. Remove the old
+`org.niri-plus.suspend` floating-window rule when upgrading from 0.6.0.
 
 Replace existing bindings for these keys when adopting the countdown:
 
@@ -102,8 +104,8 @@ action. A cancellation received before the suspend transition is committed
 prevents it; once the five visible seconds have finished and suspend is
 committed, the helper cannot recall the operating system's request.
 
-The [native check](https://github.com/byebyebryan/niri-plus/blob/components-v0.6.0/scripts/check-suspend-countdown-native) runs the real
-window in private Xvfb and nested Niri, with unreachable private D-Bus sockets
+The [native check](https://github.com/byebyebryan/niri-plus/blob/main/scripts/check-suspend-countdown-native) runs the real
+overlay in private Xvfb and nested Niri, with unreachable private D-Bus sockets
 and inert substitutes for power/lock/display commands. Its screenshots are
 test-session evidence, not recordings of a deployed desktop.
 

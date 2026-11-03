@@ -12,6 +12,8 @@ import subprocess
 import tempfile
 import time
 
+from PIL import Image
+
 ROOT = Path(__file__).resolve().parents[1]
 loader = importlib.machinery.SourceFileLoader("suspend_native_proof", str(ROOT / "scripts/check-controls-wayland-native"))
 spec = importlib.util.spec_from_loader(loader.name, loader)
@@ -39,10 +41,6 @@ def main():
             niri, wayland, ipc, _ = proof.start_niri(env, temp)
             owned.append(niri)
             config = temp / "niri-private.kdl"
-            config.write_text(config.read_text() + '\nwindow-rule {\n    match app-id="^org[.]niri-plus[.]suspend$"\n'
-                              '    open-floating true\n    open-focused true\n    default-column-width { fixed 480; }\n}\n')
-            subprocess.run([str(proof.NIRI), "validate", "-c", str(config)], env=env,
-                           check=True, capture_output=True)
             env.update(WAYLAND_DISPLAY=wayland.name, NIRI_SOCKET=str(ipc), GDK_BACKEND="wayland")
             env.pop("DISPLAY", None)
             bin_dir = temp / "bin"
@@ -75,6 +73,11 @@ def main():
                                         check=True, capture_output=True, text=True, timeout=3)
                 return json.loads(result.stdout)
 
+            def layers():
+                result = subprocess.run([str(proof.NIRI), "msg", "--json", "layers"], env=env,
+                                        check=True, capture_output=True, text=True, timeout=3)
+                return json.loads(result.stdout)
+
             def focused():
                 return next((item for item in windows() if item["is_focused"]), None)
 
@@ -94,36 +97,54 @@ def main():
 
             def ready(process, path):
                 try:
-                    item = proof.wait_for(lambda: next((item for item in windows()
-                                                        if item.get("app_id") == APP_ID and item["is_focused"]), None),
-                                          timeout=5, message="focused countdown", proc=process)
-                    assert item["is_floating"], item
                     proof.wait_for(lambda: "countdown: 5" in path.read_text(), timeout=3,
                                    message="visible countdown", proc=process)
+                    surfaces = layers()
+                    assert len([item for item in surfaces if item.get("namespace") == APP_ID]) == 1, surfaces
+                    assert not any(item.get("app_id") == APP_ID for item in windows()), windows()
                 except Exception as error:
                     raise RuntimeError(str(error) + "\n" + path.read_text() + "\nwindows=" + repr(windows())) from error
 
             # A real prior window verifies that Escape returns focus naturally.
-            dummy = 'import gi;gi.require_version("Gtk","3.0");from gi.repository import GLib,Gtk;GLib.set_prgname("countdown-baseline");w=Gtk.Window(title="Previous window");w.add(Gtk.Label(label="Owned test window"));w.show_all();Gtk.main()'
+            dummy = ('import gi;gi.require_version("Gtk","3.0");from gi.repository import GLib,Gtk;'
+                     'GLib.set_prgname("countdown-baseline");w=Gtk.Window(title="Previous window");'
+                     'a=Gtk.DrawingArea();a.connect("draw",lambda a,c:(c.set_source_rgb(0.4,0.6,0.8),c.paint(),False)[-1]);'
+                     'w.add(a);w.show_all();Gtk.main()')
             process = subprocess.Popen(["/usr/bin/python3", "-c", dummy], env=env,
                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
             owned.append(process)
             previous = proof.wait_for(lambda: focused(), timeout=5, message="previous window", proc=process)["id"]
 
+            subprocess.run([str(proof.NIRI), "msg", "action", "fullscreen-window"], env=env,
+                           check=True, capture_output=True, timeout=3)
+            time.sleep(0.4)
+            proof.capture(env, output, "desktop-before")
             pending, log = helper("countdown", "--label", "Test Starship")
             ready(pending, log)
             proof.capture(env, output, "countdown-five")
+            before = Image.open(output / "desktop-before.png").convert("RGB")
+            overlay = Image.open(output / "countdown-five.png").convert("RGB")
+            assert before.size == overlay.size
+            for point in ((40, 40), (before.width - 40, 40),
+                          (40, before.height - 40), (before.width - 40, before.height - 40)):
+                original, tinted = before.getpixel(point), overlay.getpixel(point)
+                assert min(original) > 70, (point, original)
+                assert all(abs(new - old * 0.45) < 4 for old, new in zip(original, tinted)), (point, original, tinted)
+            assert overlay.crop((0, overlay.height // 5, overlay.width, overlay.height // 2)).convert("L").getextrema()[1] > 245
+            counts.append("full-screen app remains visible under a 55 percent tint; text stays opaque")
             proof.wtype(env, "-k", "Escape")
             assert pending.wait(timeout=4) == 0, log.read_text()
             assert not actions(), actions()
             proof.wait_for(lambda: focused() and focused()["id"] == previous, timeout=4, message="restored focus")
             counts.append("Escape cancels and restores previous focus")
+            subprocess.run([str(proof.NIRI), "msg", "action", "fullscreen-window"], env=env,
+                           check=True, capture_output=True, timeout=3)
 
             pending, log = helper("countdown", "--label", "Test Starship")
             ready(pending, log)
             duplicate = helper("countdown", wait=True)
             assert duplicate.returncode == 0 and "already pending" in duplicate.stdout, duplicate
-            assert len([item for item in windows() if item.get("app_id") == APP_ID]) == 1
+            assert len([item for item in layers() if item.get("namespace") == APP_ID]) == 1
             proof.wtype(env, "-k", "Escape")
             assert pending.wait(timeout=4) == 0 and not actions()
             counts.append("repeated presses neither stack windows nor restart the timer")
@@ -191,14 +212,14 @@ def main():
             xtest.tap("p")
             xtest.key("Shift_L", False)
             xtest.key("Super_L", False)
-            proof.wait_for(lambda: next((item for item in windows() if item.get("app_id") == APP_ID
-                                        and item["is_focused"]), None), timeout=5, message="shortcut countdown")
+            proof.wait_for(lambda: any(item.get("namespace") == APP_ID for item in layers()),
+                           timeout=5, message="shortcut countdown")
             xtest.key("Control_L", True)
             xtest.key("Alt_L", True)
             xtest.tap("Delete")
             xtest.key("Alt_L", False)
             xtest.key("Control_L", False)
-            proof.wait_for(lambda: not any(item.get("app_id") == APP_ID for item in windows()),
+            proof.wait_for(lambda: not any(item.get("namespace") == APP_ID for item in layers()),
                            timeout=5, message="shortcut away cancellation")
             time.sleep(5.2)
             assert [(item["command"], item["args"]) for item in actions()[-2:]] == [

@@ -1,5 +1,5 @@
 {
-  "version": "0.6.0",
+  "version": "0.7.0",
   "modules": {
     "desktop": {
       "prerequisites": [
@@ -10,7 +10,7 @@
         "PyGObject with NetworkManager/libnm and libsecret introspection for Network; BlueZ D-Bus for Bluetooth",
         "pactl and an existing PulseAudio-compatible server for Audio; existing native owners are not installed or started by a menu",
         "For opt-in away mode: libwayland-client and ext-idle-notify v2, or existing read access to physical evdev input",
-        "For opt-in suspend countdown: PyGObject with GTK 3 introspection and the supplied Niri floating-window rule"
+        "For opt-in suspend countdown: PyGObject with GTK 3 and GtkLayerShell introspection; Niri IPC for focused output selection on multiple monitors"
       ]
     },
     "shell": {

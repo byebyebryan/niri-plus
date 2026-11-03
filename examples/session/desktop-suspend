@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Optional, focused manual-suspend countdown; never changes idle or button policy."""
+"""Cancellable manual session actions; never changes idle or button policy."""
 import argparse
 from contextlib import contextmanager
 import fcntl
@@ -19,6 +19,31 @@ import tomllib
 import uuid
 
 APP_ID = "org.niri-plus.suspend"
+OPERATIONS = {"suspend": "suspend", "lock": "lock", "away": "turn off displays",
+              "restart": "restart", "shutdown": "shut down"}
+
+
+def request(operation="suspend", seconds=5, label="This computer", lock=False):
+    if (not isinstance(operation, str) or operation not in OPERATIONS or type(seconds) is not int or not 1 <= seconds <= 60
+            or not isinstance(label, str) or not label or len(label) > 64
+            or not all(character.isprintable() for character in label) or type(lock) is not bool):
+        raise ValueError("invalid confirmation request")
+    return {"id": uuid.uuid4().hex, "operation": operation, "seconds": seconds, "label": label,
+            "lock": lock if operation == "away" else False}
+
+
+def validate_request(value):
+    if not isinstance(value, dict) or set(value) != {"id", "operation", "seconds", "label", "lock"}:
+        raise ValueError("invalid pending confirmation")
+    checked = request(value["operation"], value["seconds"], value["label"], value["lock"])
+    if not isinstance(value["id"], str) or len(value["id"]) != 32 or checked["lock"] != value["lock"]:
+        raise ValueError("invalid pending confirmation identity")
+    return value
+
+
+def description(intent):
+    action = "lock and turn off displays" if intent["operation"] == "away" and intent["lock"] else OPERATIONS[intent["operation"]]
+    return intent["label"] + " will " + action + " in"
 
 
 def log(message):
@@ -78,6 +103,7 @@ class Session:
         self.owner = None
         self.pending = directory / "pending.json"
         self.cancellation = directory / "cancel.json"
+        self.disposition = None
 
     def open_lock(self, name):
         fd = os.open(self.directory / name, os.O_RDWR | os.O_CREAT | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600)
@@ -96,17 +122,36 @@ class Session:
         finally:
             os.close(fd)
 
-    def begin(self):
+    def begin(self, intent=None):
+        intent = validate_request(intent or request())
         with self.gate():
             fd = self.open_lock("owner.lock")
             try:
                 fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
                 os.close(fd)
+                pending = read_json(self.pending)
+                if not isinstance(pending, dict) or not isinstance(pending.get("token"), str):
+                    raise RuntimeError("active countdown state is invalid")
+                if pending.get("phase") != "pending" or read_json(self.cancellation) == {"token": pending["token"]}:
+                    self.disposition = "cancelling or already committed"
+                elif "request" not in pending:
+                    # An in-flight pre-0.8 helper cannot render a replacement.
+                    atomic_json(self.cancellation, {"token": pending["token"]})
+                    self.disposition = "old countdown cancelled; press again for the new action"
+                else:
+                    current = validate_request(pending["request"])
+                    if (current["operation"], current["lock"]) == (intent["operation"], intent["lock"]):
+                        self.disposition = "a countdown is already pending"
+                    else:
+                        pending["request"] = intent
+                        atomic_json(self.pending, pending)
+                        self.disposition = "pending action replaced with " + intent["operation"]
                 return False
             self.owner = fd
             self.cancellation.unlink(missing_ok=True)
-            atomic_json(self.pending, {"token": self.token, "phase": "pending"})
+            atomic_json(self.pending, {"token": self.token, "phase": "pending", "request": intent})
+            self.disposition = "started"
         return True
 
     def cancel(self):
@@ -134,20 +179,37 @@ class Session:
         return (not isinstance(pending, dict) or pending.get("token") != self.token
                 or cancellation == {"token": self.token})
 
-    def commit(self, *, run=subprocess.run, config_home=None):
+    def current_request(self):
+        pending = read_json(self.pending)
+        if not isinstance(pending, dict) or pending.get("token") != self.token:
+            raise RuntimeError("confirmation ownership was lost")
+        return validate_request(pending.get("request"))
+
+    def commit(self, request_id=None, *, run=subprocess.run, config_home=None):
         with self.gate():
             if self.cancelled():
                 return False
-            # The independent native policy remains authoritative for locking.
-            policy = Path(config_home or os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-            data = tomllib.loads((policy / "desktop-session/power.toml").read_text())
-            lock = data["lock_before_suspend"]
-            if not isinstance(lock, bool):
-                raise ValueError("lock_before_suspend must be a TOML boolean")
+            intent = self.current_request()
+            if request_id is not None and request_id != intent["id"]:
+                # A replacement at the deadline must never commit the old action.
+                return False
+            operation = intent["operation"]
+            lock = intent["lock"] or operation == "lock"
+            if operation == "suspend":
+                # The independent native policy remains authoritative for sleep.
+                policy = Path(config_home or os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+                data = tomllib.loads((policy / "desktop-session/power.toml").read_text())
+                lock = data["lock_before_suspend"]
+                if not isinstance(lock, bool):
+                    raise ValueError("lock_before_suspend must be a TOML boolean")
             atomic_json(self.pending, {"token": self.token, "phase": "committing"})
             if lock:
                 run(["systemctl", "--user", "start", "desktop-lock.service"], check=True, timeout=15)
-            run(["systemctl", "suspend"], check=True, timeout=30)
+            if operation == "away":
+                run(["desktop-away", "away"], check=True, timeout=10)
+            elif operation != "lock":
+                native = {"suspend": "suspend", "restart": "reboot", "shutdown": "poweroff"}[operation]
+                run(["systemctl", native], check=True, timeout=30)
             return True
 
     def close(self):
@@ -215,7 +277,9 @@ def focused_monitor_index(geometries, output):
     return matches[0]
 
 
-def show_countdown(session, seconds, label):
+def show_countdown(session):
+    intent = session.current_request()
+    seconds, label = intent["seconds"], intent["label"]
     # Keep cancellation/away commands usable without importing any UI library.
     import gi
     gi.require_version("Gtk", "3.0")
@@ -240,7 +304,7 @@ def show_countdown(session, seconds, label):
         geometries = [(rect.x, rect.y, rect.width, rect.height)
                       for rect in (monitor.get_geometry() for monitor in monitors)]
         focused_index = focused_monitor_index(geometries, json.loads(result.stdout))
-    windows, counters = [], []
+    windows, counters, titles = [], [], []
     timer = Countdown(seconds)
     finished = False
     previous = None
@@ -280,8 +344,15 @@ def show_countdown(session, seconds, label):
         return False
 
     def tick():
-        nonlocal previous
+        nonlocal previous, timer, intent
         try:
+            latest = session.current_request()
+            if latest["id"] != intent["id"]:
+                intent = latest
+                timer = Countdown(intent["seconds"])
+                previous = None
+                for title in titles:
+                    title.set_text(description(intent))
             remaining = timer.tick(visible_and_focused(), session.cancelled())
         except (OSError, ValueError, TypeError):
             cancel()
@@ -292,6 +363,8 @@ def show_countdown(session, seconds, label):
         if remaining != previous:
             for counter in counters:
                 counter.set_text(str(remaining))
+            if previous is None:
+                log("showing: " + intent["operation"])
             log("countdown: " + str(remaining))
             previous = remaining
         return True
@@ -353,7 +426,8 @@ def show_countdown(session, seconds, label):
             box.set_halign(Gtk.Align.CENTER)
             box.set_valign(Gtk.Align.CENTER)
             box.set_border_width(32)
-            title = Gtk.Label(label=label + " will suspend in")
+            title = Gtk.Label(label=description(intent))
+            titles.append(title)
             title.set_line_wrap(True)
             title.set_max_width_chars(48)
             title.set_justify(Gtk.Justification.CENTER)
@@ -384,8 +458,9 @@ def show_countdown(session, seconds, label):
             sources.append(GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, sig, cancel))
         for window in windows:
             window.show_all()
-        Gtk.main()
-        return timer.outcome == "elapsed"
+        if not finished:
+            Gtk.main()
+        return intent if timer.outcome == "elapsed" else None
     finally:
         for source in sources:
             if GLib.MainContext.default().find_source_by_id(source):
@@ -407,6 +482,7 @@ def away(session, lock=False, *, run=subprocess.run):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("countdown", "cancel", "away"))
+    parser.add_argument("--operation", choices=tuple(OPERATIONS), default="suspend")
     parser.add_argument("--seconds", type=int, default=5)
     parser.add_argument("--label", default=socket.gethostname())
     parser.add_argument("--lock", action="store_true", help="Lock before the away action")
@@ -424,16 +500,17 @@ def main(argv=None):
         else:
             ready = Path(__file__).resolve().with_name("desktop-session-ready")
             subprocess.run([str(ready)], check=True, timeout=3)
-            if not session.begin():
-                log("a countdown is already pending")
+            if not session.begin(request(args.operation, args.seconds, label or "This computer", args.lock)):
+                log(session.disposition)
                 return 0
-            if show_countdown(session, args.seconds, label or "This computer") and session.commit():
-                log("suspend requested")
+            confirmed = show_countdown(session)
+            if confirmed and session.commit(confirmed["id"]):
+                log(confirmed["operation"] + " requested")
             else:
-                log("suspend cancelled")
+                log("action cancelled")
         return 0
     except (OSError, RuntimeError, ValueError, KeyError, ImportError, subprocess.SubprocessError) as error:
-        print("desktop-suspend: suspend cancelled: " + str(error), file=sys.stderr)
+        print("desktop-suspend: action cancelled: " + str(error), file=sys.stderr)
         return 1
     finally:
         if session is not None:

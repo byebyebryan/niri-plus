@@ -63,7 +63,7 @@ def main():
                               + '    Super+Shift+P repeat=false { spawn ' + json.dumps(str(args.helper.resolve()))
                               + ' "countdown" "--label" "Native Test"; }\n'
                               + '    Ctrl+Alt+Delete repeat=false { spawn ' + json.dumps(str(args.helper.resolve()))
-                              + ' "away" "--lock"; }\n}\n')
+                              + ' "countdown" "--operation" "away" "--lock" "--label" "Native Test"; }\n}\n')
             subprocess.run([str(proof.NIRI), "validate", "-c", str(config)], env=env,
                            check=True, capture_output=True)
             time.sleep(0.35)
@@ -214,18 +214,70 @@ def main():
             xtest.key("Super_L", False)
             proof.wait_for(lambda: any(item.get("namespace") == APP_ID for item in layers()),
                            timeout=5, message="shortcut countdown")
+            switched_at = time.monotonic()
             xtest.key("Control_L", True)
             xtest.key("Alt_L", True)
             xtest.tap("Delete")
             xtest.key("Alt_L", False)
             xtest.key("Control_L", False)
+            assert len([item for item in layers() if item.get("namespace") == APP_ID]) == 1
             proof.wait_for(lambda: not any(item.get("namespace") == APP_ID for item in layers()),
-                           timeout=5, message="shortcut away cancellation")
-            time.sleep(5.2)
+                           timeout=8, message="shortcut away countdown expiry")
+            time.sleep(0.2)
             assert [(item["command"], item["args"]) for item in actions()[-2:]] == [
                 ("systemctl", ["--user", "start", "desktop-lock.service"]), ("desktop-away", ["away"])]
             assert len(actions()) == 5
-            counts.append("real Niri Super+Shift+P and Ctrl+Alt+Delete routes guard and cancel")
+            assert actions()[-2]["at"] - switched_at >= 4.7
+            counts.append("real Ctrl+Alt+Delete replaces pending suspend with a fresh five-second away countdown")
+
+            pending, log = helper("countdown", "--operation", "restart", "--label", "Test Starship")
+            ready(pending, log)
+            assert "showing: restart" in log.read_text()
+            proof.capture(env, output, "restart-five")
+            proof.wtype(env, "-k", "Escape")
+            assert pending.wait(timeout=4) == 0 and len(actions()) == 5
+            counts.append("Escape cancels a visible restart without issuing any power command")
+
+            # The real menu dispatches to the exact shared helper. Only its
+            # first Rofi selection is stubbed; every confirmation remains GTK.
+            chooser_trace = output / "menu-choices.log"
+            chooser = bin_dir / "rofi"
+            chooser.write_text('#!/usr/bin/python3\nimport os\n'
+                               'with open(os.environ["CHOOSER_TRACE"],"a") as f:f.write("selection\\n")\n'
+                               'print(os.environ["MENU_CHOICE"])\n')
+            chooser.chmod(0o755)
+            confirmation = policy.with_name("confirmation.toml")
+            menu_path = args.helper.resolve().with_name("desktop-session-menu")
+            scenarios = [
+                ("Lock", False, [("systemctl", ["--user", "start", "desktop-lock.service"])], "lock"),
+                ("Turn off displays", False, [("desktop-away", ["away"])], "away"),
+                ("Lock and turn off displays", True,
+                 [("systemctl", ["--user", "start", "desktop-lock.service"]), ("desktop-away", ["away"])], "away"),
+                ("Suspend", False, [("systemctl", ["suspend"])], "suspend"),
+                ("Restart", False, [("systemctl", ["reboot"])], "restart"),
+                ("Shut down", False, [("systemctl", ["poweroff"])], "shutdown"),
+            ]
+            for choice, lock, expected, operation in scenarios:
+                confirmation.write_text('seconds = 5\nlabel = "Test Starship"\nlock_on_away = ' + str(lock).lower() + '\n')
+                path = output / ("menu-" + operation + "-" + str(lock) + ".log")
+                before_actions = len(actions())
+                with path.open("w") as stream:
+                    process = subprocess.Popen(["/usr/bin/python3", str(menu_path)],
+                                               env=dict(env, MENU_CHOICE=choice, CHOOSER_TRACE=str(chooser_trace)),
+                                               stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
+                owned.append(process)
+                ready(process, path)
+                assert "showing: " + operation in path.read_text(), path.read_text()
+                begin = time.monotonic()
+                if operation == "shutdown":
+                    proof.capture(env, output, "shutdown-five")
+                assert process.wait(timeout=9) == 0, path.read_text()
+                observed = [(item["command"], item["args"]) for item in actions()[before_actions:]]
+                assert observed == expected, (choice, observed, expected)
+                assert time.monotonic() - begin >= 4.6
+                counts.append("Session menu " + choice + " waits five visible seconds for exactly its native action")
+            assert chooser_trace.read_text().splitlines() == ["selection"] * len(scenarios)
+            counts.append("Session actions use one menu selection and one overlay, with no second Rofi confirmation")
         finally:
             if xtest is not None:
                 xtest.close()
@@ -239,7 +291,8 @@ def main():
     receipt = {"status": "passed", "checks": counts,
                "scope": "owned private Xvfb and nested Niri; unreachable private D-Bus; fake systemctl and desktop-away",
                "host_native_pids_unchanged": True, "real_power_actions": False,
-               "helper_sha256": proof.sha256(args.helper), "cleanup": "owned process groups stopped"}
+               "helper_sha256": proof.sha256(args.helper),
+               "session_menu_sha256": proof.sha256(args.helper.resolve().with_name("desktop-session-menu")), "cleanup": "owned process groups stopped"}
     (output / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print(json.dumps(receipt, indent=2))
 

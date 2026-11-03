@@ -262,6 +262,12 @@ lock_before_suspend = false
 
 ## Session behavior
 
+The table below describes the retained native behavior without optional
+confirmation adoption. [Full-screen manual confirmation](session.md#optional-suspend-countdown)
+can route Lock, display-off, Suspend, Restart and Shut down through one shared
+five-second, Escape-cancellable overlay. Its host policy is independent of the
+automatic idle policy; Log out retains Niri's own confirmation.
+
 | Choice | Dispatch |
 | --- | --- |
 | Lock | Starts the independent `desktop-lock.service`, so policy reloads do not stop a manual lock. |

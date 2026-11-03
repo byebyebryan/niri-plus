@@ -17,7 +17,16 @@ def choose(options, prompt, *, run=subprocess.run):
     return value if value in options else None
 
 
-def dispatch(action, *, run=subprocess.run, picker=choose, lock_before_suspend=False):
+def dispatch(action, *, run=subprocess.run, picker=choose, lock_before_suspend=False, confirmation=None):
+    if confirmation is not None and action in {"Lock", "Suspend", "Restart", "Shut down",
+                                               "Turn off displays", "Lock and turn off displays"}:
+        operation = {"Lock": "lock", "Suspend": "suspend", "Restart": "restart", "Shut down": "shutdown"}.get(action, "away")
+        command = [str(Path(__file__).resolve().with_name("desktop-suspend")), "countdown", "--operation", operation,
+                   "--seconds", str(confirmation["seconds"]), "--label", confirmation["label"]]
+        if operation == "away" and confirmation["lock_on_away"]:
+            command.append("--lock")
+        run(command, check=True)
+        return True
     if action == "Lock":
         command = ["systemctl", "--user", "start", "desktop-lock.service"]
     elif action == "Log out":
@@ -53,16 +62,38 @@ def read_lock_before_suspend(config_home=None):
     return value
 
 
+def read_confirmation_policy(config_home=None):
+    config_home = Path(config_home or os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    policy = config_home / "desktop-session/confirmation.toml"
+    try:
+        data = tomllib.loads(policy.read_text())
+    except FileNotFoundError:
+        return None  # Optional adoption; retained native confirmation stays in place.
+    except (OSError, tomllib.TOMLDecodeError) as error:
+        raise SystemExit(f"Session action canceled: cannot read {policy}") from error
+    if (type(data.get("seconds")) is not int or not 1 <= data["seconds"] <= 60
+            or not isinstance(data.get("label"), str) or not 1 <= len(data["label"]) <= 64
+            or not all(character.isprintable() for character in data["label"])
+            or not data["label"].strip() or type(data.get("lock_on_away")) is not bool):
+        raise SystemExit(f"Session action canceled: invalid confirmation policy in {policy}")
+    return data
+
+
 def main():
     ready = Path(__file__).resolve().with_name("desktop-session-ready")
     if subprocess.run([str(ready)]).returncode != 0:
         raise SystemExit("Session actions require the captured Niri graphical session")
-    action = choose(ACTIONS, "Session")
+    confirmation = read_confirmation_policy()
+    actions = ACTIONS
+    if confirmation is not None:
+        away = "Lock and turn off displays" if confirmation["lock_on_away"] else "Turn off displays"
+        actions = (ACTIONS[0], away, *ACTIONS[1:])
+    action = choose(actions, "Session")
     lock_before_suspend = False
-    if action == "Suspend":
+    if action == "Suspend" and confirmation is None:
         config_home = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
         lock_before_suspend = read_lock_before_suspend(config_home)
-    dispatch(action, lock_before_suspend=lock_before_suspend)
+    dispatch(action, lock_before_suspend=lock_before_suspend, confirmation=confirmation)
 
 
 if __name__ == "__main__":

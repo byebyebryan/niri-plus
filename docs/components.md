@@ -75,7 +75,7 @@ Established projects keep their implementation and release authority:
 
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.
-The latest optional release is 0.7.0, adding a translucent full-screen presentation to the cancellable
+The latest optional release is 0.8.0, extending the translucent full-screen confirmation to manual lock, display-off, restart and shutdown as well as the
 [manual suspend countdown](recipes/session.md#optional-suspend-countdown).
 The qualified desktop/reference baseline below remains 0.4.1. Its normal workspace is pure black and
 its overview surround remains charcoal for visible empty-workspace boundaries.
@@ -95,10 +95,10 @@ The [standalone stager](../scripts/stage-desktop-away.py) verifies the complete
 admission is independent of the 0.4.1 desktop, shell and appearance
 qualification and the recorded Arch reference below.
 
-The optional 0.7.0 helper is selected independently in the same way. It changes
-only `desktop-suspend` among the 47 payload files from 0.6.0. Its temporary
-GTK 3/GtkLayerShell overlay guards only an explicitly adopted manual
-shortcut; idle, physical power-button, and lid policies retain their native
+The optional 0.8.0 confirmation is selected independently in the same way. It
+changes only `desktop-suspend` and `desktop-session-menu` among the 47 payload
+files from 0.7.0. Its temporary GTK 3/GtkLayerShell overlay guards explicitly
+adopted manual shortcuts and Session menu actions; idle, physical power-button, and lid policies retain their native
 owners. Keep the 0.4.1 core and 0.5.0 Away selections when adopting only this
 helper. Publication does not establish a machine's physical sleep acceptance.
 

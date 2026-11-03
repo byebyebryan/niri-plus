@@ -60,54 +60,78 @@ idle listener such as swayidle, in addition to the lock service.
 ## Optional suspend countdown
 
 The [desktop-suspend helper](../../examples/session/desktop-suspend) provides a
-five-second manual suspend countdown. A full-screen layer-shell surface covers
-each connected monitor with a 55% opaque dark tint; the existing desktop,
-including full-screen applications, remains visible beneath it. The host name,
-large countdown, and Escape hint stay fully opaque. Only the digits change;
-there is no decorative animation or blur.
+five-second manual session-action countdown. It supports suspend, lock,
+display-off (with optional locking), restart and shutdown. A full-screen
+layer-shell surface covers each connected monitor with a 55% opaque dark tint;
+the existing desktop, including full-screen applications, remains visible
+beneath fully opaque host/action text, large countdown, and Escape hint. Only
+the digits change; there is no decorative animation or blur.
 
-Escape, Cancel, closing a surface, or moving focus elsewhere cancels. Repeated
-launches keep the existing timer. The timer starts only after every surface is
-mapped and the focused monitor's surface has keyboard focus. Failed startup,
-an unresponsive UI, output hotplug, or another sleep/resume transition cancels it.
-On multiple monitors, Niri's focused output is matched to GDK logical coordinates;
-other monitors show the same countdown without taking keyboard focus.
+Escape, Cancel, closing a surface, or moving focus elsewhere cancels. Repeating
+the same action keeps its timer. A different action replaces the pending action
+in the same overlay and starts a fresh five seconds. This lets the display-off
+shortcut replace a pending suspend, restart or shutdown. The request identity is
+checked again at commit, so a replaced action cannot execute at its old deadline.
+A replacement arriving just as the old UI closes fails closed.
+
+The timer starts only after every surface is mapped and the focused monitor's
+surface has keyboard focus. Failed startup, an unresponsive UI, output hotplug,
+or another sleep/resume transition cancels it. Other monitors show the same
+countdown without taking keyboard focus.
 
 This optional helper requires Python 3.11+, PyGObject with GTK 3 and
 GtkLayerShell introspection (`python-gobject` and `gtk-layer-shell` on Arch),
-Niri IPC, the readiness helper above, and a working
-`desktop-session/power.toml` containing the boolean `lock_before_suspend`.
-It checks that policy again before issuing `systemctl suspend`. It creates no
-persistent service and does not change automatic idle, lid, or physical
-power-button handling.
+Niri IPC, and the readiness helper above. Suspend also requires a working
+`desktop-session/power.toml` containing the boolean `lock_before_suspend`;
+that native policy is re-read at commit. No persistent service is created.
+Automatic idle, loginctl locks, lid and physical power-button handling retain
+their existing owners and timing.
 
-After reviewing the helper, install it alongside the readiness helper:
+After reviewing the helpers, install them alongside the readiness helper:
 
 ```sh
 install -m 755 examples/session/desktop-suspend ~/.local/bin/desktop-suspend
+install -m 755 examples/desktop/desktop-session-menu ~/.local/bin/desktop-session-menu
 ```
 
-No Niri window rule is required for the layer-shell surface. Remove the old
-`org.niri-plus.suspend` floating-window rule when upgrading from 0.6.0.
-
-Replace existing bindings for these keys when adopting the countdown:
+No Niri window rule is required. Remove the old `org.niri-plus.suspend`
+floating-window rule when upgrading from 0.6.0. Replace existing bindings for
+these keys when adopting the countdown (choose the label for this machine):
 
 ```kdl
-Mod+Shift+P repeat=false { spawn "desktop-suspend" "countdown" "--seconds" "5"; }
-Ctrl+Alt+Delete repeat=false allow-when-locked=true { spawn "desktop-suspend" "away" "--lock"; }
+Mod+Shift+P repeat=false { spawn "desktop-suspend" "countdown" "--seconds" "5" "--label" "My laptop"; }
+Ctrl+Alt+Delete repeat=false allow-when-locked=true { spawn "desktop-suspend" "countdown" "--operation" "away" "--seconds" "5" "--label" "My laptop" "--lock"; }
 ```
 
-The second action cancels any pending countdown before starting the configured
-lock service and the optional [display-away helper](away-mode.md). Omit `--lock`
-for display-off only, or use `desktop-suspend cancel` to cancel without another
-action. A cancellation received before the suspend transition is committed
-prevents it; once the five visible seconds have finished and suspend is
-committed, the helper cannot recall the operating system's request.
+Omit `--lock` for display-off without locking. To adopt the same overlay for the
+Session menu, create `~/.config/desktop-session/confirmation.toml`:
 
-The [native check](https://github.com/byebyebryan/niri-plus/blob/main/scripts/check-suspend-countdown-native) runs the real
-overlay in private Xvfb and nested Niri, with unreachable private D-Bus sockets
-and inert substitutes for power/lock/display commands. Its screenshots are
-test-session evidence, not recordings of a deployed desktop.
+```toml
+seconds = 5
+label = "My laptop"
+lock_on_away = true
+```
+
+The menu retains explicit **Lock**, adds **Lock and turn off displays** (or
+**Turn off displays** when `lock_on_away = false`), and routes Suspend, Restart
+and Shut down through the same overlay. There is one initial menu selection
+and one countdown; restart/shutdown do not add a second Rofi prompt. Log out
+retains Niri's own quit confirmation. Without this optional file, the menu
+retains its existing native actions and Cancel-first restart/shutdown prompt.
+An invalid file cancels instead of silently bypassing the overlay.
+
+`desktop-suspend cancel` cancels without another action. The legacy
+`desktop-suspend away [--lock]` command still cancels and enters Away immediately
+for older callers; new bindings should use `countdown --operation away`.
+Other explicit operations are `lock`, `restart`, and `shutdown`. Once a native
+transition has committed, the helper cannot recall the operating system's request.
+
+The [native check](https://github.com/byebyebryan/niri-plus/blob/main/scripts/check-suspend-countdown-native)
+runs the real overlay and Session menu dispatch in private Xvfb/nested Niri,
+with unreachable private D-Bus sockets and inert power/lock/display commands.
+It covers all five operations, replacements, duplicate presses, cancellation,
+focus loss, menu routing, tint/opaque text and real compositor shortcuts.
+Its screenshots are test-session evidence, not recordings of a deployed desktop.
 
 ## Idle policy is a choice
 

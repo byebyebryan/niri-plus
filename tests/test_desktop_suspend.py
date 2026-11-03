@@ -110,6 +110,76 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(self.session.pending.read_bytes(), pending)
         self.assertFalse(self.session.cancelled())
 
+    def test_different_action_replaces_request_without_a_second_owner(self):
+        self.session.begin(suspend.request("shutdown", 5, "Example"))
+        original = self.session.current_request()
+        other = suspend.Session(self.session.directory)
+        self.assertFalse(other.begin(suspend.request("away", 5, "Example", True)))
+        replacement = self.session.current_request()
+        self.assertEqual(replacement["operation"], "away")
+        self.assertTrue(replacement["lock"])
+        self.assertNotEqual(original["id"], replacement["id"])
+        self.assertIsNone(other.owner)
+        run = mock.Mock()
+        self.assertFalse(self.session.commit(original["id"], run=run))
+        run.assert_not_called()
+        self.assertTrue(self.session.commit(replacement["id"], run=run))
+        self.assertEqual([call.args[0] for call in run.call_args_list],
+                         [["systemctl", "--user", "start", "desktop-lock.service"], ["desktop-away", "away"]])
+
+    def test_same_action_does_not_change_delay_or_identity(self):
+        self.session.begin(suspend.request("restart", 5, "Example"))
+        original = self.session.current_request()
+        self.assertFalse(suspend.Session(self.session.directory).begin(suspend.request("restart", 1, "Other label")))
+        self.assertEqual(self.session.current_request(), original)
+
+    def test_cancellation_is_not_resurrected_by_an_action_switch(self):
+        self.session.begin(suspend.request("restart"))
+        self.session.cancel()
+        other = suspend.Session(self.session.directory)
+        self.assertFalse(other.begin(suspend.request("away")))
+        self.assertEqual(self.session.current_request()["operation"], "restart")
+        run = mock.Mock()
+        self.assertFalse(self.session.commit(run=run))
+        run.assert_not_called()
+
+    def test_legacy_inflight_helper_is_cancelled_instead_of_silently_replaced(self):
+        self.session.begin()
+        suspend.atomic_json(self.session.pending, {"token": self.session.token, "phase": "pending"})
+        other = suspend.Session(self.session.directory)
+        self.assertFalse(other.begin(suspend.request("away")))
+        self.assertTrue(self.session.cancelled())
+
+    def test_all_actions_are_cancelled_before_any_native_command(self):
+        for operation in suspend.OPERATIONS:
+            with self.subTest(operation=operation):
+                self.session.begin(suspend.request(operation))
+                self.session.cancel()
+                run = mock.Mock()
+                self.assertFalse(self.session.commit(run=run))
+                run.assert_not_called()
+                self.session.close()
+
+    def test_each_action_uses_only_its_native_owner(self):
+        expected = {"lock": [["systemctl", "--user", "start", "desktop-lock.service"]],
+                    "away": [["desktop-away", "away"]], "restart": [["systemctl", "reboot"]],
+                    "shutdown": [["systemctl", "poweroff"]]}
+        self.policy.unlink()  # Non-sleep actions do not depend on idle policy.
+        for operation, commands in expected.items():
+            with self.subTest(operation=operation):
+                self.session.begin(suspend.request(operation))
+                run = mock.Mock()
+                self.assertTrue(self.session.commit(run=run, config_home=self.config))
+                self.assertEqual([call.args[0] for call in run.call_args_list], commands)
+                self.session.close()
+
+    def test_failed_away_lock_never_blanks_or_runs_a_power_action(self):
+        self.session.begin(suspend.request("away", lock=True))
+        run = mock.Mock(side_effect=subprocess.CalledProcessError(1, "systemctl"))
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.session.commit(run=run)
+        self.assertEqual(run.call_count, 1)
+
     def test_cancel_during_startup_prevents_commit(self):
         self.session.begin()
         self.assertTrue(suspend.Session(self.session.directory).cancel())

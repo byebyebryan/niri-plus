@@ -57,6 +57,56 @@ Ctrl+Alt+Delete { spawn "systemctl" "--user" "start" "desktop-lock.service"; }
 The example is a manual lock path. Handling `loginctl lock-session` requires an
 idle listener such as swayidle, in addition to the lock service.
 
+## Optional suspend countdown
+
+The [desktop-suspend helper](../../examples/session/desktop-suspend) provides a
+five-second manual suspend countdown. It shows the host name and remaining
+seconds in a temporary GTK 3 window. Escape, Cancel, closing the window, or
+moving focus elsewhere cancels. Repeated launches keep the existing timer.
+The timer starts only after the window is visible and focused; failed startup,
+an unresponsive window, or another sleep/resume transition cancels it.
+
+This optional helper requires Python 3.11+, PyGObject with GTK 3 introspection,
+the readiness helper above, and a working `desktop-session/power.toml` containing
+the boolean `lock_before_suspend`. It checks that policy again before issuing
+`systemctl suspend`. It creates no persistent service and does not change
+automatic idle, lid, or physical power-button handling.
+
+After reviewing the helper, install it alongside the readiness helper and merge
+this floating-window rule into your Niri configuration:
+
+```sh
+install -m 755 examples/session/desktop-suspend ~/.local/bin/desktop-suspend
+```
+
+```kdl
+window-rule {
+    match app-id="^org[.]niri-plus[.]suspend$"
+    open-floating true
+    open-focused true
+    default-column-width { fixed 480; }
+}
+```
+
+Replace existing bindings for these keys when adopting the countdown:
+
+```kdl
+Mod+Shift+P repeat=false { spawn "desktop-suspend" "countdown" "--seconds" "5"; }
+Ctrl+Alt+Delete repeat=false allow-when-locked=true { spawn "desktop-suspend" "away" "--lock"; }
+```
+
+The second action cancels any pending countdown before starting the configured
+lock service and the optional [display-away helper](away-mode.md). Omit `--lock`
+for display-off only, or use `desktop-suspend cancel` to cancel without another
+action. A cancellation received before the suspend transition is committed
+prevents it; once the five visible seconds have finished and suspend is
+committed, the helper cannot recall the operating system's request.
+
+The [native check](https://github.com/byebyebryan/niri-plus/blob/components-v0.6.0/scripts/check-suspend-countdown-native) runs the real
+window in private Xvfb and nested Niri, with unreachable private D-Bus sockets
+and inert substitutes for power/lock/display commands. Its screenshots are
+test-session evidence, not recordings of a deployed desktop.
+
 ## Idle policy is a choice
 
 For unattended SSH/browser-agent work, the optional

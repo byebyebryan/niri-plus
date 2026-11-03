@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+"""Exercise countdown UI in private Xvfb/nested Niri with inert power commands."""
+import argparse
+import ctypes
+import importlib.machinery
+import importlib.util
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import tempfile
+import time
+
+ROOT = Path(__file__).resolve().parents[1]
+loader = importlib.machinery.SourceFileLoader("suspend_native_proof", str(ROOT / "scripts/check-controls-wayland-native"))
+spec = importlib.util.spec_from_loader(loader.name, loader)
+proof = importlib.util.module_from_spec(spec)
+loader.exec_module(proof)
+APP_ID = "org.niri-plus.suspend"
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--helper", type=Path, default=ROOT / "components/desktop/bin/desktop-suspend")
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    output = proof.safe_output_dir(args.output)
+    baseline = proof.protected_host_pids()
+    owned = []
+    counts = []
+    xtest = None
+    with tempfile.TemporaryDirectory(prefix="nps-", dir="/tmp") as temporary:
+        temp = Path(temporary)
+        env = proof.private_env(temp)
+        try:
+            owned.append(proof.start_xvfb(env, temp))
+            xdisplay = env["DISPLAY"]
+            niri, wayland, ipc, _ = proof.start_niri(env, temp)
+            owned.append(niri)
+            config = temp / "niri-private.kdl"
+            config.write_text(config.read_text() + '\nwindow-rule {\n    match app-id="^org[.]niri-plus[.]suspend$"\n'
+                              '    open-floating true\n    open-focused true\n    default-column-width { fixed 480; }\n}\n')
+            subprocess.run([str(proof.NIRI), "validate", "-c", str(config)], env=env,
+                           check=True, capture_output=True)
+            env.update(WAYLAND_DISPLAY=wayland.name, NIRI_SOCKET=str(ipc), GDK_BACKEND="wayland")
+            env.pop("DISPLAY", None)
+            bin_dir = temp / "bin"
+            bin_dir.mkdir()
+            trace = output / "actions.jsonl"
+            env.update(PATH=str(bin_dir) + ":/usr/bin:/bin", ACTION_TRACE=str(trace))
+            for name in ("systemctl", "desktop-away"):
+                stub = bin_dir / name
+                stub.write_text('#!/usr/bin/python3\nimport os,json,sys,time\n'
+                                'with open(os.environ["ACTION_TRACE"],"a") as stream:\n'
+                                ' stream.write(json.dumps({"command":' + repr(name) + ',"args":sys.argv[1:],"at":time.monotonic()})+"\\n")\n')
+                stub.chmod(0o755)
+            policy = Path(env["XDG_CONFIG_HOME"]) / "desktop-session/power.toml"
+            policy.parent.mkdir()
+            policy.write_text("lock_before_suspend = false\n")
+            config.write_text(config.read_text() + '\nenvironment {\n'
+                              + ''.join('    ' + key + ' ' + json.dumps(env[key]) + '\n'
+                                        for key in ('PATH', 'GDK_BACKEND', 'ACTION_TRACE'))
+                              + '}\nbinds {\n'
+                              + '    Super+Shift+P repeat=false { spawn ' + json.dumps(str(args.helper.resolve()))
+                              + ' "countdown" "--label" "Native Test"; }\n'
+                              + '    Ctrl+Alt+Delete repeat=false { spawn ' + json.dumps(str(args.helper.resolve()))
+                              + ' "away" "--lock"; }\n}\n')
+            subprocess.run([str(proof.NIRI), "validate", "-c", str(config)], env=env,
+                           check=True, capture_output=True)
+            time.sleep(0.35)
+
+            def windows():
+                result = subprocess.run([str(proof.NIRI), "msg", "--json", "windows"], env=env,
+                                        check=True, capture_output=True, text=True, timeout=3)
+                return json.loads(result.stdout)
+
+            def focused():
+                return next((item for item in windows() if item["is_focused"]), None)
+
+            def actions():
+                return [json.loads(line) for line in trace.read_text().splitlines()] if trace.exists() else []
+
+            def helper(*arguments, wait=False):
+                command = ["/usr/bin/python3", str(args.helper.resolve()), *arguments]
+                if wait:
+                    return subprocess.run(command, env=env, text=True, capture_output=True, timeout=5)
+                path = output / ("helper-" + str(len(owned)) + ".log")
+                with path.open("w") as stream:
+                    process = subprocess.Popen(command, env=env, stdout=stream, stderr=subprocess.STDOUT,
+                                               start_new_session=True)
+                owned.append(process)
+                return process, path
+
+            def ready(process, path):
+                try:
+                    item = proof.wait_for(lambda: next((item for item in windows()
+                                                        if item.get("app_id") == APP_ID and item["is_focused"]), None),
+                                          timeout=5, message="focused countdown", proc=process)
+                    assert item["is_floating"], item
+                    proof.wait_for(lambda: "countdown: 5" in path.read_text(), timeout=3,
+                                   message="visible countdown", proc=process)
+                except Exception as error:
+                    raise RuntimeError(str(error) + "\n" + path.read_text() + "\nwindows=" + repr(windows())) from error
+
+            # A real prior window verifies that Escape returns focus naturally.
+            dummy = 'import gi;gi.require_version("Gtk","3.0");from gi.repository import GLib,Gtk;GLib.set_prgname("countdown-baseline");w=Gtk.Window(title="Previous window");w.add(Gtk.Label(label="Owned test window"));w.show_all();Gtk.main()'
+            process = subprocess.Popen(["/usr/bin/python3", "-c", dummy], env=env,
+                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+            owned.append(process)
+            previous = proof.wait_for(lambda: focused(), timeout=5, message="previous window", proc=process)["id"]
+
+            pending, log = helper("countdown", "--label", "Test Starship")
+            ready(pending, log)
+            proof.capture(env, output, "countdown-five")
+            proof.wtype(env, "-k", "Escape")
+            assert pending.wait(timeout=4) == 0, log.read_text()
+            assert not actions(), actions()
+            proof.wait_for(lambda: focused() and focused()["id"] == previous, timeout=4, message="restored focus")
+            counts.append("Escape cancels and restores previous focus")
+
+            pending, log = helper("countdown", "--label", "Test Starship")
+            ready(pending, log)
+            duplicate = helper("countdown", wait=True)
+            assert duplicate.returncode == 0 and "already pending" in duplicate.stdout, duplicate
+            assert len([item for item in windows() if item.get("app_id") == APP_ID]) == 1
+            proof.wtype(env, "-k", "Escape")
+            assert pending.wait(timeout=4) == 0 and not actions()
+            counts.append("repeated presses neither stack windows nor restart the timer")
+
+            pending, log = helper("countdown", "--label", "Test Starship")
+            ready(pending, log)
+            result = helper("away", "--lock", wait=True)
+            assert result.returncode == 0, result.stderr
+            assert pending.wait(timeout=4) == 0, log.read_text()
+            assert [(item["command"], item["args"]) for item in actions()] == [
+                ("systemctl", ["--user", "start", "desktop-lock.service"]), ("desktop-away", ["away"])]
+            time.sleep(5.2)
+            assert len(actions()) == 2
+            counts.append("away cancels before lock/blank; no delayed suspend remains")
+
+            pending, log = helper("countdown", "--label", "Test Starship")
+            ready(pending, log)
+            second = subprocess.Popen(["/usr/bin/python3", "-c", dummy], env=env,
+                                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+            owned.append(second)
+            assert pending.wait(timeout=4) == 0, log.read_text()
+            assert len(actions()) == 2
+            proof.stop_process(second)
+            counts.append("focus loss cancels")
+
+            pending, log = helper("countdown", "--label", "Test Starship")
+            ready(pending, log)
+            begin = time.monotonic()
+            assert pending.wait(timeout=9) == 0, log.read_text()
+            assert time.monotonic() - begin >= 4.7
+            assert actions()[-1]["command"] == "systemctl" and actions()[-1]["args"] == ["suspend"]
+            assert len(actions()) == 3
+            for remaining in (5, 4, 3, 2, 1):
+                assert "countdown: " + str(remaining) in log.read_text(), log.read_text()
+            counts.append("five visible seconds expire to exactly one inert suspend request")
+
+            # Exercise the real compositor key route as well as direct launch.
+            xloader = importlib.machinery.SourceFileLoader("suspend_private_xinput", str(ROOT / "scripts/check-rofi-controls-native"))
+            xspec = importlib.util.spec_from_loader(xloader.name, xloader)
+            xproof = importlib.util.module_from_spec(xspec)
+            xloader.exec_module(xproof)
+            xtest = xproof.XTest(xdisplay)
+            # Xvfb has no window manager to assign X focus to the winit window.
+            root = xtest.x11.XDefaultRootWindow(xtest.display)
+            root_result, parent_result = ctypes.c_ulong(), ctypes.c_ulong()
+            children, size = ctypes.POINTER(ctypes.c_ulong)(), ctypes.c_uint()
+            xtest.x11.XQueryTree(xtest.display, root, ctypes.byref(root_result), ctypes.byref(parent_result),
+                                ctypes.byref(children), ctypes.byref(size))
+            try:
+                mapped = []
+                for index in range(size.value):
+                    attrs = xproof._XWindowAttributes()
+                    if xtest.x11.XGetWindowAttributes(xtest.display, children[index], ctypes.byref(attrs)) and attrs.map_state == 2:
+                        mapped.append((attrs.width * attrs.height, int(children[index])))
+                target = max(mapped)[1]
+            finally:
+                xtest.x11.XFree(children)
+            xtest.x11.XSetInputFocus.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_int, ctypes.c_ulong]
+            xtest.x11.XSetInputFocus(xtest.display, target, 2, 0)
+            xtest.x11.XFlush(xtest.display)
+            xtest.move(100, 100)
+            xtest.click_primary()
+            xtest.key("Super_L", True)
+            xtest.key("Shift_L", True)
+            xtest.tap("p")
+            xtest.key("Shift_L", False)
+            xtest.key("Super_L", False)
+            proof.wait_for(lambda: next((item for item in windows() if item.get("app_id") == APP_ID
+                                        and item["is_focused"]), None), timeout=5, message="shortcut countdown")
+            xtest.key("Control_L", True)
+            xtest.key("Alt_L", True)
+            xtest.tap("Delete")
+            xtest.key("Alt_L", False)
+            xtest.key("Control_L", False)
+            proof.wait_for(lambda: not any(item.get("app_id") == APP_ID for item in windows()),
+                           timeout=5, message="shortcut away cancellation")
+            time.sleep(5.2)
+            assert [(item["command"], item["args"]) for item in actions()[-2:]] == [
+                ("systemctl", ["--user", "start", "desktop-lock.service"]), ("desktop-away", ["away"])]
+            assert len(actions()) == 5
+            counts.append("real Niri Super+Shift+P and Ctrl+Alt+Delete routes guard and cancel")
+        finally:
+            if xtest is not None:
+                xtest.close()
+            for process in reversed(owned):
+                proof.stop_process(process)
+            if (temp / "niri.log").exists():
+                (output / "niri.log").write_bytes((temp / "niri.log").read_bytes())
+            if (temp / "niri-private.kdl").exists():
+                (output / "niri-private.kdl").write_bytes((temp / "niri-private.kdl").read_bytes())
+            proof.verify_host_pids(baseline)
+    receipt = {"status": "passed", "checks": counts,
+               "scope": "owned private Xvfb and nested Niri; unreachable private D-Bus; fake systemctl and desktop-away",
+               "host_native_pids_unchanged": True, "real_power_actions": False,
+               "helper_sha256": proof.sha256(args.helper), "cleanup": "owned process groups stopped"}
+    (output / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
+    print(json.dumps(receipt, indent=2))
+
+
+if __name__ == "__main__":
+    main()

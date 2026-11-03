@@ -39,7 +39,8 @@
       "source_commit": "95cc19281992eba335392f90a2039f12839138c7",
       "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.6.0/niri-plus-components-0.6.0.tar.gz",
       "archive_sha256": "b9bcff926e0e38f226d7c2afdf11501348eeab4a93bcb914a794aca8d9e01bef",
-      "manifest_sha256": "e37495d57984c2274233b545cb2a762e4b73eea13f49ff809b3140dfc02f9c44"
+      "manifest_sha256": "e37495d57984c2274233b545cb2a762e4b73eea13f49ff809b3140dfc02f9c44",
+      "identity_corrected_source_commit": "7e52012c51d752a851150fbfb3b0135828eb35c4"
     },
     {
       "version": "0.7.0",
@@ -47,7 +48,8 @@
       "source_commit": "c204fa58c81351eb5b74a949cf2e2b26cad216e4",
       "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.7.0/niri-plus-components-0.7.0.tar.gz",
       "archive_sha256": "f8647616f2eeb0ac13985e7d1b7f7950828e4abfc9acc3ace54623f8da94588c",
-      "manifest_sha256": "3f4f73e9297664f7d14b65b2ca32f4db51d700a50ea66aa30028ecc799489421"
+      "manifest_sha256": "3f4f73e9297664f7d14b65b2ca32f4db51d700a50ea66aa30028ecc799489421",
+      "identity_corrected_source_commit": "3b58314c827ed833205f74136f5d94d4e169cd8e"
     },
     {
       "version": "0.8.0",
@@ -55,7 +57,8 @@
       "source_commit": "5ca28d5ccd53271af0b432802f5bd081a6e0f9fb",
       "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.8.0/niri-plus-components-0.8.0.tar.gz",
       "archive_sha256": "04c3a563058ee86e59c3e2e3bf20f7b4aaa89d02a5c1e7206fc520f2493b4ca8",
-      "manifest_sha256": "12611aa6cf60336ff81d2d4074b1535d1abcdd349fcc80386a4ec11d850fe371"
+      "manifest_sha256": "12611aa6cf60336ff81d2d4074b1535d1abcdd349fcc80386a4ec11d850fe371",
+      "identity_corrected_source_commit": "784f4c823b728f6ca641eb8a48deb8f0884785b3"
     }
   ]
 }

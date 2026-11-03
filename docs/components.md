@@ -75,7 +75,8 @@ Established projects keep their implementation and release authority:
 
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.
-The latest optional release is 0.5.0, adding the manual display-away companion.
+The latest optional release is 0.6.0, adding the focused, cancellable
+[manual suspend countdown](recipes/session.md#optional-suspend-countdown).
 The qualified desktop/reference baseline below remains 0.4.1. Its normal workspace is pure black and
 its overview surround remains charcoal for visible empty-workspace boundaries.
 Historical recordings keep their original
@@ -93,6 +94,13 @@ The [standalone stager](../scripts/stage-desktop-away.py) verifies the complete
 0.4.1 core selection; do not replace it with the full 0.5.0 bundle. Consumer
 admission is independent of the 0.4.1 desktop, shell and appearance
 qualification and the recorded Arch reference below.
+
+The optional 0.6.0 helper is selected independently in the same way. It adds
+`desktop-suspend` with no changes to the 46 existing payload files. Its temporary
+GTK 3 window and supplied Niri rule guard only an explicitly adopted manual
+shortcut; idle, physical power-button, and lid policies retain their native
+owners. Keep the 0.4.1 core and 0.5.0 Away selections when adopting only this
+helper. Publication does not establish a machine's physical sleep acceptance.
 
 The [qualified baseline producer and consumer record](../data/components.json) pins
 the published bundle and independently selected identity:

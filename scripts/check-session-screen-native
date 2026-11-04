@@ -859,16 +859,23 @@ def run_checks(args: argparse.Namespace) -> dict:
                                True, client_env, delay=2.4)
             checks.append({"check": "Escape cancels direct countdown and after Tab; no stale dispatch"})
 
-            # A fresh activation of the initially focused Cancel returns to the
-            # chooser; selection itself needs no additional activation.
+            # Cancel closes the screen just like Escape, with no error or
+            # result view and no request left to run at the old deadline.
+            cancel_starts_before = len(actions(action_trace))
             cancel_proc, cancel_log = start_direct_menu(
                 client_env, output, owned, "focused-cancel", seconds=2, select="away")
             wait_for_trace(cancel_log, "screen: countdown: away 2", cancel_proc)
             input_device.tap("Return")
-            wait_for_trace(cancel_log, "screen: picker", cancel_proc)
-            cancel_with_escape(input_device, cancel_proc, cancel_log, action_trace,
-                               True, client_env, delay=2.2)
-            checks.append({"check": "fresh activation of focused Cancel returns to idle grid; no late dispatch"})
+            if wait_proc(cancel_proc, timeout=4, message="focused Cancel close") != 0:
+                raise RuntimeError("Cancel returned an error instead of closing normally")
+            time.sleep(2.2)
+            if len(actions(action_trace)) != cancel_starts_before or screen_layers(client_env):
+                raise RuntimeError("Cancel left a visible screen or a delayed request")
+            cancelled_trace = trace_snapshot(cancel_log)
+            if "screen: cancelled" not in cancelled_trace or any(
+                    marker in cancelled_trace for marker in ("screen: refusal:", "screen: partial:", "screen: picker")):
+                raise RuntimeError(f"Cancel did not return directly to desktop: {cancelled_trace}")
+            checks.append({"check": "focused Cancel closes directly to desktop without result view or late dispatch"})
 
             # Hold Return and Space across the chooser-to-countdown
             # transition. Repeats from the original key-down must not activate

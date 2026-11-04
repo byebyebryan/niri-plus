@@ -1043,14 +1043,8 @@ def show_session_screen(session):
         return True
 
     def cancel_countdown(*_):
-        nonlocal timer, previous_count
         if current["stage"] == "countdown":
-            if transition("choose"):
-                if timer is not None:
-                    timer.cancel()
-                timer = None
-                previous_count = None
-                log("screen: cancelled countdown")
+            return stop_and_close()
         return True
 
     def invalidate(reason):

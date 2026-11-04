@@ -80,9 +80,10 @@ The countdown is the confirmation: selecting an action starts it, and the
 request runs automatically at expiry unless cancelled. Opening the grid starts
 no timer. Cancel is focused during the countdown; held Enter or Space cannot
 skip it or accidentally activate Cancel. Arrows navigate the grid and
-Tab/Shift+Tab remain within the active screen. Escape cancels from every control.
-Repeating the entry raises the same
-screen without resetting a pending timer. Cancellation cannot recall a native
+Tab/Shift+Tab remain within the active screen. Cancel or Escape during the
+countdown closes the screen and returns directly to the desktop, without a
+result or error view. Repeating the entry raises the same screen without
+resetting a pending timer. Cancellation cannot recall a native
 request once dispatch has committed.
 
 Lock and Display off have these meanings on every host. The screen does not
@@ -130,7 +131,8 @@ Suspend's countdown immediately. `--select` also accepts `lock`, `away`,
 The screen's `--seconds` option accepts 1–60, defaulting to five. Existing `countdown`,
 `cancel` and immediate `away` calls keep their compatibility behavior below.
 
-Refused requests have visible feedback. Choosing Retry starts a fresh request
+If the system refuses a request after the countdown expires, the screen shows
+the error. This is separate from cancelling a countdown. Choosing Retry starts a fresh request
 and full countdown; it never retries automatically.
 Partial completion must be reported accurately: Away can turn displays off
 once without enforcing a latch, and a successful lock can precede failed

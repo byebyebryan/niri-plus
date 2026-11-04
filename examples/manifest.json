@@ -544,7 +544,7 @@
     },
     {
       "path": "examples/session/desktop-suspend",
-      "sha256": "b82704c5c74c78e616dda7e517b96b798868e98ceb1c999fa9cd6e7e10c4e66f",
+      "sha256": "33a04833621208a34a102b762c92fd8004746e855b3904d6ccc706ec8f7c234a",
       "kind": "generated first-party component export",
       "module": "desktop",
       "generated": true,

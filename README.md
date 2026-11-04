@@ -84,7 +84,9 @@ Build a component bundle from a reviewed full commit with
 `scripts/build-components.py`. Its archive is independent from the website
 build, uses only declared inputs, and carries file hashes and modes in a root
 manifest. Publish a new immutable version, record its archive and manifest
-hashes in `data/components.json`, then update the consumer's exact code pin.
+hashes in `data/component-releases.json`, then update the consumer's exact code
+pin. Keep `data/components.json` pinned to the independently qualified baseline
+until a new whole-reference qualification is recorded.
 The [source map](docs/components.md) describes staging, separate identity and
 utility selection, and scoped application. Shell startup does not install
 components or fetch dependencies.

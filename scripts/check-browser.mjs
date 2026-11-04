@@ -465,12 +465,12 @@ try {
   await input.fill("");
   assert.equal(await page.locator("[data-key-table] tbody tr:visible").count(), 19);
   checks += 5;
-  await input.fill("manual display-away");
-  const awayRow = page.locator("[data-key-table] tbody tr:visible");
-  assert.equal(await awayRow.count(), 1);
-  const awayText = await awayRow.innerText();
-  assert.match(awayText, /optional/i);
-  assert.match(awayText, /Mod\+Shift\+P/);
+  await input.fill("turn off displays");
+  const displayOffRow = page.locator("[data-key-table] tbody tr:visible");
+  assert.equal(await displayOffRow.count(), 1);
+  const displayOffText = await displayOffRow.innerText();
+  assert.match(displayOffText, /Niri default/i);
+  assert.match(displayOffText, /Mod\+Shift\+P/);
   checks += 3;
   await page.goto(origin);
   await page.keyboard.press("Tab");

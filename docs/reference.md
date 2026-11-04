@@ -31,7 +31,7 @@ of that screen.
 | Notification panel | Mod+N |
 | Clipboard history | Mod+Y |
 | Manual lock | Ctrl+Alt+Delete |
-| Manual display-away (optional companion) | Mod+Shift+P |
+| Turn off displays (Niri default) | Mod+Shift+P |
 | Niri overview | Mod+O |
 | Native key overlay | Mod+Shift+/ |
 | Focus a column | Mod+H/L or Mod+Left/Right |
@@ -42,10 +42,10 @@ of that screen.
 | Screenshot | Print |
 <!-- /niri-plus:keys -->
 
-`Mod+Shift+P` is available when the separately pinned `desktop-away` companion
-is selected and its optional binding is included. The [away-mode
-recipe](recipes/away-mode.md) explains its manual latch and how to add the
-binding without replacing the rest of your Niri config.
+`Mod+Shift+P` uses Niri's immediate `power-off-monitors` action; fresh input wakes
+the displays. The [away-mode recipe](recipes/away-mode.md) offers a separate
+manual latch and an optional replacement binding. Select that profile
+explicitly if you want the latch on this key.
 
 For the optional screen, Ctrl+Alt+Delete instead launches
 `desktop-session-menu --screen`. Lock, Display off and Suspend form the first

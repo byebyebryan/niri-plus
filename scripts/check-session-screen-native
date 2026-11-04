@@ -429,6 +429,43 @@ def screenshot_ocr(path: Path) -> str:
     return " ".join((raw + " " + contrasted + " " + focused).casefold().split())
 
 
+def countdown_digit_ocr(path: Path) -> str:
+    """Read the rendered numeral, independently of the timer's trace/state."""
+    options = ["--tessdata-dir", str(OCR_DATA_DIR)] if OCR_DATA_DIR else []
+    with tempfile.TemporaryDirectory(prefix="session-countdown-digit-") as temporary:
+        analysis = Path(temporary) / "digit.png"
+        with Image.open(path) as screenshot:
+            width, height = screenshot.size
+            center = screenshot.crop((width // 4, height * 2 // 5, width * 3 // 4, height * 3 // 5))
+            ink = ImageOps.grayscale(center).point(lambda value: 255 if value >= 190 else 0)
+            bounds = ink.getbbox()
+            if bounds is None:
+                return ""
+            ImageOps.expand(ImageOps.invert(ink.crop(bounds)), border=24, fill=255).save(analysis)
+        for segmentation in ("6", "8"):
+            result = subprocess.run(
+                [proof.need("tesseract"), str(analysis), "stdout", *options, "--psm", segmentation,
+                 "-l", OCR_LANGUAGE, "-c", "tessedit_char_whitelist=0123456789"],
+                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=3, check=True,
+            )
+            digit = result.stdout.strip()
+            if len(digit) == 1 and digit in "0123456789":
+                return digit
+    return ""
+
+
+def capture_countdown_digit(env: dict[str, str], output: Path, remaining: int) -> Path:
+    deadline = time.monotonic() + 0.75
+    observed = ""
+    while time.monotonic() < deadline:
+        frame = capture(env, output, f"default-five-countdown-{remaining}")
+        observed = countdown_digit_ocr(frame)
+        if observed == str(remaining):
+            return frame
+        time.sleep(0.02)
+    raise RuntimeError(f"rendered countdown expected {remaining}, observed {observed!r}; original frame: {frame}")
+
+
 def normalized(text: str) -> str:
     return "".join(character for character in text.casefold() if character.isalnum())
 
@@ -963,21 +1000,23 @@ def run_checks(args: argparse.Namespace) -> dict:
                     raise RuntimeError(f"{operation} exact action sequence differed: {pairs}")
                 checks[-1]["new_action_count"] = len(new_starts)
 
-            # Required default-five-second confirmation has a real GTK capture
-            # during the countdown and elapsed-time proof from the stub.
+            # Verify changing pixels as well as elapsed time. Display off is
+            # the reported regression: a working deadline with a frozen '5'.
             default_proc, default_log = start_wrapper_menu(
                 client_env, output, owned, "default-five", label="Default Five Proof")
             wait_for_trace(default_log, "screen: picker", default_proc)
-            for key in ("Right", "Right"):
-                input_device.tap(key)
+            input_device.tap("Right")
             default_start = time.monotonic()
-            input_device.tap("Return")
-            wait_for_trace(default_log, "screen: countdown: suspend 5", default_proc)
-            default_capture = capture(client_env, output, "default-five-countdown")
-            default_ocr = assert_ocr_labels(default_capture, ["Suspend"], "default five-second countdown")
             old_count = len(actions(action_trace))
+            input_device.tap("Return")
+            progress_frames = []
+            for remaining in (5, 4, 3, 2, 1):
+                wait_for_trace(default_log, f"screen: countdown: away {remaining}", default_proc)
+                progress_frames.append(capture_countdown_digit(client_env, output, remaining))
+                if len(actions(action_trace)) != old_count:
+                    raise RuntimeError("Display off dispatched before its visible countdown finished")
             proof.wait_for(lambda: len(actions(action_trace)) > old_count or None, timeout=9,
-                           message="default five-second inert suspend", proc=default_proc)
+                           message="default five-second inert Display off", proc=default_proc)
             default_action = actions(action_trace)[old_count:]
             first_default = min(item["at"] for item in default_action)
             default_elapsed = first_default - default_start
@@ -987,10 +1026,13 @@ def run_checks(args: argparse.Namespace) -> dict:
                                            *expected_dispatch("lock"), *expected_dispatch("away"),
                                            *expected_dispatch("suspend"), *expected_dispatch("logout"),
                                            *expected_dispatch("restart"), *expected_dispatch("shutdown"),
-                                           ("systemctl", ["suspend"])])
+                                           *expected_dispatch("away")])
             wait_proc(default_proc, timeout=5, message="default five-second screen close")
-            checks.append({"check": "default 5s timer visible for a full interval",
-                           "screenshot": default_capture.name, "ocr": default_ocr,
+            default_ocr = assert_ocr_labels(progress_frames[-1], ["Display off", "Starting in"],
+                                            "default countdown visible labels")
+            checks.append({"check": "Display off visibly counts 5,4,3,2,1 before full-delay dispatch",
+                           "screenshots": [frame.name for frame in progress_frames],
+                           "rendered_digits": [5, 4, 3, 2, 1], "ocr": default_ocr,
                            "dispatch_after_activation_seconds": round(default_elapsed, 3)})
 
             # Duplicate invocations while armed must leave the original timer

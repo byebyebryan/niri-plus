@@ -942,7 +942,7 @@ def show_session_screen(session):
         panel.pack_start(row, False, False, 0)
 
     def render(screen_state):
-        nonlocal focus_target, timer, last_action
+        nonlocal focus_target, timer, last_action, remaining_label, remaining_display
         current_stage = screen_state["stage"]
         intent = screen_state["request"]
         clear_content()

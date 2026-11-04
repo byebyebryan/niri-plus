@@ -1,6 +1,8 @@
 """Native session-screen ownership, countdown and action mapping, all inert."""
 import importlib.machinery
 import importlib.util
+import json
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -35,6 +37,77 @@ class FakeRunner:
         else:
             code, stdout, stderr = outcome, "", ""
         return subprocess.CompletedProcess(command, code, stdout, stderr)
+
+
+class SessionScreenSelectionTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix="session-selection-")
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.env = {"HOME": str(self.root / "home"), "XDG_STATE_HOME": str(self.root / "state")}
+        self.path = suspend.screen_selection_file(self.env)
+
+    def test_each_action_survives_a_new_reader_without_storing_a_request(self):
+        self.assertEqual(suspend.read_screen_selection(self.env), "lock")
+        self.assertFalse(self.path.exists())
+        for operation in suspend.SCREEN_OPERATIONS:
+            with self.subTest(operation=operation):
+                self.assertTrue(suspend.remember_screen_selection(operation, self.env))
+                self.assertEqual(suspend.read_screen_selection(dict(self.env)), operation)
+                self.assertEqual(json.loads(self.path.read_text()), {"schema_version": 1, "operation": operation})
+        self.assertEqual(self.path.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(self.path.parent.stat().st_mode & 0o777, 0o700)
+
+    def test_default_home_and_relative_xdg_state_use_the_standard_fallback(self):
+        env = {"HOME": self.env["HOME"]}
+        expected = self.root / "home/.local/state/desktop-session/last-selection.json"
+        self.assertEqual(suspend.screen_selection_file(env), expected)
+        self.assertEqual(suspend.screen_selection_file(dict(env, XDG_STATE_HOME="relative")), expected)
+        self.assertTrue(suspend.remember_screen_selection("away", env))
+        self.assertEqual(suspend.read_screen_selection(env), "away")
+        self.assertEqual(suspend.read_screen_selection(self.env), "lock")
+
+    def test_malformed_unknown_and_runtime_state_fall_back_without_arming(self):
+        self.path.parent.mkdir(parents=True, mode=0o700)
+        for value in ("not JSON", '"away"', '{"schema_version":true,"operation":"away"}',
+                      '{"schema_version":2,"operation":"away"}',
+                      '{"schema_version":1,"operation":"unknown"}',
+                      '{"schema_version":1,"operation":[]}',
+                      '{"schema_version":1,"operation":"shutdown","seconds":1}',
+                      '{"phase":"committing","operation":"shutdown"}', "x" * 5000):
+            with self.subTest(value=value[:80]):
+                self.path.write_text(value)
+                self.assertEqual(suspend.read_screen_selection(self.env), "lock")
+        self.assertFalse(suspend.remember_screen_selection("unknown", self.env))
+
+    def test_unavailable_storage_does_not_block_selection(self):
+        self.assertTrue(suspend.remember_screen_selection("restart", self.env))
+        original = self.path.read_bytes()
+        with mock.patch.object(suspend, "atomic_json", side_effect=PermissionError("read only")):
+            self.assertFalse(suspend.remember_screen_selection("shutdown", self.env))
+        self.assertEqual(self.path.read_bytes(), original)
+        self.assertEqual(suspend.read_screen_selection(self.env), "restart")
+        self.path.parent.chmod(0o755)
+        self.assertEqual(suspend.read_screen_selection(self.env), "lock")
+        self.assertFalse(suspend.remember_screen_selection("away", self.env))
+
+    def test_symlinks_and_nonregular_state_are_ignored(self):
+        self.path.parent.mkdir(parents=True, mode=0o700)
+        outside = self.root / "other.json"
+        outside.write_text('{"schema_version":1,"operation":"shutdown"}')
+        self.path.symlink_to(outside)
+        self.assertEqual(suspend.read_screen_selection(self.env), "lock")
+        self.assertTrue(suspend.remember_screen_selection("away", self.env))
+        self.assertFalse(self.path.is_symlink())
+        self.assertEqual(json.loads(outside.read_text())["operation"], "shutdown")
+        self.path.unlink()
+        os.mkfifo(self.path)
+        self.assertEqual(suspend.read_screen_selection(self.env), "lock")
+        self.path.unlink()
+        self.path.parent.rmdir()
+        self.path.parent.symlink_to(self.root)
+        self.assertEqual(suspend.read_screen_selection(self.env), "lock")
+        self.assertFalse(suspend.remember_screen_selection("away", self.env))
 
 
 class SessionScreenStateTests(unittest.TestCase):

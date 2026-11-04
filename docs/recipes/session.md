@@ -87,6 +87,15 @@ result or error view. Repeating the entry raises the same screen without
 resetting a pending timer. Cancellation cannot recall a native
 request once dispatch has committed.
 
+Components 0.9.1 remember the last action chosen on each machine, including
+when its countdown is cancelled. Reopening focuses that action without starting
+a timer; a fresh selection is always required. This optional preference lives
+in `$XDG_STATE_HOME/desktop-session/last-selection.json` (normally
+`~/.local/state/desktop-session/last-selection.json`). Missing, invalid or
+unreadable preferences fall back to Lock; unavailable storage never blocks the
+menu. No pending action or timer is restored, and the preference is separate
+from managed configuration.
+
 Lock and Display off have these meanings on every host. The screen does not
 read the legacy `confirmation.toml` `lock_on_away` preference. Automatic idle,
 lid and physical power-button policy keep their existing owners. This is an

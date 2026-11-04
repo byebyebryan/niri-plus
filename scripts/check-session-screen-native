@@ -476,23 +476,27 @@ def set_responses(path: Path, responses: list[dict]) -> None:
 
 def start_direct_menu(env: dict[str, str], output: Path, owned: list[subprocess.Popen],
                       name: str, *, seconds: int, select: str | None = None,
-                      label: str = "Private native proof") -> tuple[subprocess.Popen, Path]:
+                      label: str = "Private native proof",
+                      selection_home: Path | None = None) -> tuple[subprocess.Popen, Path]:
     command = [str(SUSPEND), "menu", "--seconds", str(seconds), "--label", label]
     if select:
         command.extend(["--select", select])
     selected_at = time.monotonic()
-    proc, log = launch(command, env, output, name, owned)
+    client_env = dict(env, XDG_STATE_HOME=str(selection_home or output / ".selection-state" / name))
+    proc, log = launch(command, client_env, output, name, owned)
     proc.proof_selected_at = selected_at
     return proc, log
 
 
 def start_wrapper_menu(env: dict[str, str], output: Path, owned: list[subprocess.Popen],
                        name: str, *, seconds: int | None = None,
-                       label: str = "Private native proof") -> tuple[subprocess.Popen, Path]:
+                       label: str = "Private native proof",
+                       selection_home: Path | None = None) -> tuple[subprocess.Popen, Path]:
     command = [str(SESSION_MENU), "--screen", "--label", label]
     if seconds is not None:
         command.extend(["--seconds", str(seconds)])
-    return launch(command, env, output, name, owned)
+    client_env = dict(env, XDG_STATE_HOME=str(selection_home or output / ".selection-state" / name))
+    return launch(command, client_env, output, name, owned)
 
 
 def trace_snapshot(path: Path) -> str:
@@ -775,6 +779,33 @@ def run_checks(args: argparse.Namespace) -> dict:
                            "selected_action": "restart"})
             cancel_with_escape(input_device, wrapper_proc, wrapper_log, action_trace,
                                True, client_env)
+
+            # Reopening the same host-local preference restores focus only.
+            # A new Enter is still required to start the selected action's timer.
+            selection_home = output / ".selection-state/wrapper-grid"
+            remembered = json.loads((selection_home / "desktop-session/last-selection.json").read_text())
+            if remembered != {"schema_version": 1, "operation": "restart"}:
+                raise RuntimeError(f"selection preference includes unexpected state: {remembered}")
+            remembered_proc, remembered_log = start_wrapper_menu(
+                client_env, output, owned, "remembered-grid", seconds=3,
+                selection_home=selection_home)
+            wait_for_trace(remembered_log, "screen: picker", remembered_proc)
+            remembered_grid = capture(client_env, output, "remembered-restart-grid")
+            time.sleep(0.35)
+            if actions(action_trace) or "screen: countdown:" in trace_snapshot(remembered_log):
+                raise RuntimeError("reopening a remembered selection automatically armed or dispatched it")
+            input_device.tap("Return")
+            wait_for_trace(remembered_log, "screen: countdown: restart 3", remembered_proc)
+            remembered_timer = capture(client_env, output, "remembered-restart-countdown")
+            input_device.tap("Return")  # Fresh activation of Cancel, after selecting-key release.
+            if wait_proc(remembered_proc, timeout=4, message="remembered selection Cancel") != 0:
+                raise RuntimeError("cancelling remembered selection did not close normally")
+            time.sleep(0.2)
+            if actions(action_trace) or screen_layers(client_env):
+                raise RuntimeError("remembered selection cancellation left a request or visible screen")
+            checks.append({"check": "reopen restores last chosen action focus, stays idle, and requires fresh activation",
+                           "operation": "restart", "preference": remembered,
+                           "screenshots": [remembered_grid.name, remembered_timer.name]})
             if args.smoke:
                 if screen_process_info() != source_at_start:
                     raise RuntimeError("source changed during native smoke; rerun on a frozen candidate")

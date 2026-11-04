@@ -175,6 +175,50 @@ def read_json(path):
         return None
 
 
+def screen_selection_file(environment=None):
+    env = os.environ if environment is None else environment
+    state_home = Path(env.get("XDG_STATE_HOME", ""))
+    if not state_home.is_absolute():
+        state_home = Path(env.get("HOME", str(Path.home()))) / ".local/state"
+    return state_home / "desktop-session/last-selection.json"
+
+
+def read_screen_selection(environment=None):
+    """Restore only a preferred action, never a request or countdown."""
+    try:
+        path = screen_selection_file(environment)
+        directory = path.parent.lstat()
+        if (not stat.S_ISDIR(directory.st_mode) or directory.st_uid != os.getuid()
+                or directory.st_mode & 0o077):
+            return "lock"
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(fd, encoding="utf-8") as stream:
+            info = os.fstat(stream.fileno())
+            if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid():
+                return "lock"
+            data = json.loads(stream.read(4097))
+        if (isinstance(data, dict) and set(data) == {"schema_version", "operation"}
+                and type(data["schema_version"]) is int and data["schema_version"] == 1
+                and data["operation"] in SCREEN_OPERATIONS):
+            return data["operation"]
+    except (OSError, ValueError, UnicodeError):
+        pass
+    return "lock"
+
+
+def remember_screen_selection(operation, environment=None):
+    """Preference persistence is optional and cannot prevent a manual action."""
+    if operation not in SCREEN_OPERATIONS:
+        return False
+    try:
+        path = screen_selection_file(environment)
+        private_directory(path.parent)
+        atomic_json(path, {"schema_version": 1, "operation": operation})
+        return True
+    except (OSError, RuntimeError, ValueError):
+        return False
+
+
 class Session:
     """An instance owner plus a short transition lock serialize cancel and commit.
 
@@ -779,7 +823,7 @@ def show_session_screen(session):
     remaining_display = None
     finished = False
     dispatching = False
-    last_action = snapshot["request"]["operation"] if snapshot["request"] else "lock"
+    last_action = snapshot["request"]["operation"] if snapshot["request"] else read_screen_selection()
     previous_count = None
     raised = snapshot["raised"]
     exit_status = 0
@@ -904,6 +948,8 @@ def show_session_screen(session):
         clear_content()
         if intent is not None:
             last_action = intent["operation"]
+            if current_stage == "countdown":
+                remember_screen_selection(last_action)
 
         if current_stage == "choose":
             header("Session actions")

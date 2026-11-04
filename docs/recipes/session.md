@@ -60,7 +60,7 @@ idle listener such as swayidle, in addition to the lock service.
 
 ## Optional unified session screen
 
-Published [components 0.9.0](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.9.0)
+Published [components 0.9.1](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.9.1)
 add a native session screen. Selection is independent of the qualified 0.4.1
 reference and the 0.5.0 Away companion.
 `desktop-session-menu --screen` opens a two-row action grid on the focused
@@ -116,11 +116,11 @@ Use a separate tagged checkout here, independently of the numbered reference's
 frozen `$SOURCE` tree:
 
 ```sh
-git clone --depth 1 --branch components-v0.9.0 \
+git clone --depth 1 --branch components-v0.9.1 \
   https://github.com/byebyebryan/niri-plus.git niri-plus-session-screen
 export SESSION_SCREEN_SOURCE="$PWD/niri-plus-session-screen"
 test "$(git -C "$SESSION_SCREEN_SOURCE" rev-parse HEAD)" = \
-  00d891d380b9309b2e0d5625a4bafb1548706426
+  6ffbdb51ea5dac644c6a434288aedf884d3ac98e
 install -Dm755 "$SESSION_SCREEN_SOURCE/examples/session/desktop-suspend" \
   "$HOME/.local/bin/desktop-suspend"
 install -Dm755 "$SESSION_SCREEN_SOURCE/examples/desktop/desktop-session-menu" \

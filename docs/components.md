@@ -75,7 +75,7 @@ Established projects keep their implementation and release authority:
 
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.
-The latest optional release is 0.9.0, adding the
+The latest optional release is 0.9.1, which remembers the last chosen action in the
 [unified session screen](recipes/session.md#optional-unified-session-screen).
 All six actions execute after their cancellable countdown; Cancel or Escape
 returns directly to the desktop. The retained
@@ -86,6 +86,11 @@ Historical recordings keep their original
 component tuple and retained identity source in
 [media provenance](../assets/provenance.json), with their capture date and
 component version beside the player.
+
+The 0.9.1 update changes only `desktop-suspend` among the 48 payloads from
+0.9.0. Reopening restores the chosen action's focus without starting its timer;
+no pending request is persisted. The other 47 payload bytes and modes remain
+unchanged.
 
 The optional 0.5.0 [manual display-away companion](recipes/away-mode.md) adds a
 display-off latch for unattended agent work. It can observe input through

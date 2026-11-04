@@ -8,8 +8,9 @@ the tested Arch reference and dated adoption evidence. Components 0.4.1, direct
 device controls and the black workspace identity are installed on Carbon,
 Starship and Snap. Earlier delivery records retain their historical context.
 
-The local 0.9.0 candidate's [optional unified session screen](recipes/session.md#optional-unified-session-screen)
-replaces Ctrl+Alt+Delete with the action grid only when its profile is selected.
+Published components 0.9.0 include the
+[optional unified session screen](recipes/session.md#optional-unified-session-screen).
+It replaces Ctrl+Alt+Delete with the action grid only when its profile is selected.
 The baseline bindings below and dated fleet evidence do not establish adoption
 of that screen.
 

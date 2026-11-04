@@ -75,8 +75,11 @@ Established projects keep their implementation and release authority:
 
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.
-The latest optional release is 0.8.1, extending the translucent full-screen confirmation to manual lock, display-off, restart and shutdown as well as the
-[manual suspend countdown](recipes/session.md#optional-suspend-countdown).
+The latest optional release is 0.9.0, adding the
+[unified session screen](recipes/session.md#optional-unified-session-screen).
+All six actions execute after their cancellable countdown; Cancel or Escape
+returns directly to the desktop. The retained
+[manual suspend countdown](recipes/session.md#optional-suspend-countdown) remains available.
 The qualified desktop/reference baseline below remains 0.4.1. Its normal workspace is pure black and
 its overview surround remains charcoal for visible empty-workspace boundaries.
 Historical recordings keep their original
@@ -102,13 +105,14 @@ adopted manual shortcuts and Session menu actions; idle, physical power-button, 
 owners. Keep the 0.4.1 core and 0.5.0 Away selections when adopting only this
 helper. Publication does not establish a machine's physical sleep acceptance.
 
-The local **0.9.0 candidate** adds the opt-in
+Published **0.9.0** adds the opt-in
 [unified session screen](recipes/session.md#optional-unified-session-screen)
 and a generated portable Niri binding. It reuses the shared guarded action
 path, adds Logout to that screen, separates Display off from Lock, and keeps
-legacy invocation available. This candidate is not a published release or a
-new full-reference qualification. Its bundle metadata is independent of the
-unchanged release catalog, 0.4.1 reference and selected 0.5.0 Away companion.
+legacy invocation available. Its [immutable release](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.9.0)
+is recorded in the catalog. It does not establish a new full-reference
+qualification: the 0.4.1 reference and selected 0.5.0 Away companion remain
+independent.
 
 Release 0.8.1 preserves every 0.8.0 payload byte and mode while binding its
 manifest to the corrected Git author/committer history. The 0.6.0–0.8.0 tags

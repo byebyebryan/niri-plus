@@ -720,16 +720,16 @@ preserved 0.4.1 VM and media receipts.
 
 ## Optional post-reference branch: unified session screen
 
-The local 0.9.0 candidate offers the
+Published components 0.9.0 offer the
 [native session screen](recipes/session.md#optional-unified-session-screen)
 through `desktop-session-menu --screen`. Treat it as an independently reviewed
-extension after the reference. Use the candidate checkout's generated helpers
+extension after the reference. Use the `components-v0.9.0` checkout's generated helpers
 and `examples/session/profiles/minimal-niri/session-screen.kdl`, preserving
 existing target and binding preimages. Do not take these files from the frozen
-0.4.1 `$SOURCE`, silently select the full candidate bundle, or add the screen to
+0.4.1 `$SOURCE`, silently select the full new bundle, or add the screen to
 the numbered reference's completion claim.
 
-Record the exact candidate revision and helper/profile selection; GTK and
+Record the exact release revision and helper/profile selection; GTK and
 GtkLayerShell prerequisites; the existing locker, Away and suspend-policy
 owners; the installed Ctrl+Alt+Delete override; cancellation/refusal results;
 and rollback paths. Lock must establish the lock then request display-off;

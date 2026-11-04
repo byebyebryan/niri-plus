@@ -60,8 +60,9 @@ idle listener such as swayidle, in addition to the lock service.
 
 ## Optional unified session screen
 
-The local components 0.9.0 candidate adds a native session screen without
-changing the published 0.8.1 selection or the qualified 0.4.1 reference.
+Published [components 0.9.0](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.9.0)
+add a native session screen. Selection is independent of the qualified 0.4.1
+reference and the 0.5.0 Away companion.
 `desktop-session-menu --screen` opens a two-row action grid on the focused
 monitor; other monitors receive only a dim backdrop. The panel uses Neutral
 Slate, Noto Sans and monochrome action icons, with no blur or decorative motion.
@@ -97,17 +98,20 @@ a working `desktop-lock.service`, and the independently selected
 `desktop-session/power.toml`. The screen does not enable or install these
 providers. A missing or refused provider must be handled as an explicit error.
 
-For a new unmanaged adoption, review this candidate checkout and preserve the
+For a new unmanaged adoption, review the tagged release and preserve the
 preimages of the three helper targets and the existing Niri binding first.
 Finish or cancel any pending manual action with the installed helper before
-replacing its files. The candidate scopes its runtime state to the captured
+replacing its files. The helper scopes its runtime state to the captured
 compositor instance; an in-flight older helper is not migrated during upgrade.
-Use the reviewed current checkout here, not the numbered reference's frozen
-`$SOURCE` tree:
+Use a separate tagged checkout here, independently of the numbered reference's
+frozen `$SOURCE` tree:
 
 ```sh
-export SESSION_SCREEN_SOURCE="$PWD"
-git -C "$SESSION_SCREEN_SOURCE" rev-parse HEAD
+git clone --depth 1 --branch components-v0.9.0 \
+  https://github.com/byebyebryan/niri-plus.git niri-plus-session-screen
+export SESSION_SCREEN_SOURCE="$PWD/niri-plus-session-screen"
+test "$(git -C "$SESSION_SCREEN_SOURCE" rev-parse HEAD)" = \
+  00d891d380b9309b2e0d5625a4bafb1548706426
 install -Dm755 "$SESSION_SCREEN_SOURCE/examples/session/desktop-suspend" \
   "$HOME/.local/bin/desktop-suspend"
 install -Dm755 "$SESSION_SCREEN_SOURCE/examples/desktop/desktop-session-menu" \

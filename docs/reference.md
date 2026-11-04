@@ -48,8 +48,9 @@ binding without replacing the rest of your Niri config.
 
 For the optional screen, Ctrl+Alt+Delete instead launches
 `desktop-session-menu --screen`. Lock, Display off and Suspend form the first
-row; Log out, Restart and Shut down form the second. Every action has an
-explicit confirmation and a cancellable countdown. Display off does not add a
+row; Log out, Restart and Shut down form the second. Every action has a
+five-second cancellable countdown as its confirmation, with automatic execution
+at expiry. Display off does not add a
 lock; Lock always locks then turns displays off. Its profile replaces the
 baseline lock binding and is unavailable while locked.
 

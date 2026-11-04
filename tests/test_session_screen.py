@@ -48,7 +48,7 @@ class SessionScreenStateTests(unittest.TestCase):
         (self.config / "desktop-session").mkdir(parents=True)
         (self.config / "desktop-session/power.toml").write_text("lock_before_suspend = false\n")
 
-    def test_opening_has_no_request_and_dispatch_requires_confirm_and_full_timer(self):
+    def test_opening_has_no_request_and_action_selection_requires_full_timer(self):
         self.assertTrue(self.session.begin_screen(5, "Example"))
         state = self.session.screen_snapshot()
         self.assertEqual(state["stage"], "choose")
@@ -57,10 +57,8 @@ class SessionScreenStateTests(unittest.TestCase):
         self.assertIsNone(self.session.claim_screen("0" * 32))
 
         intent = suspend.request("shutdown", 5, "Example")
-        self.assertTrue(self.session.update_screen(state["revision"], "confirm", intent))
-        state = self.session.screen_snapshot()
-        self.assertEqual(state["stage"], "confirm")
-        self.assertIsNone(self.session.claim_screen(intent["id"]))
+        with self.assertRaises(ValueError):
+            self.session.update_screen(state["revision"], "confirm", intent)
         self.assertTrue(self.session.update_screen(state["revision"], "countdown", intent))
         state = self.session.screen_snapshot()
         self.assertIsNone(self.session.claim_screen(intent["id"]))
@@ -93,8 +91,7 @@ class SessionScreenStateTests(unittest.TestCase):
         self.session.begin_screen(5, "Example", "restart")
         state = self.session.screen_snapshot()
         intent = state["request"]
-        self.assertTrue(self.session.update_screen(state["revision"], "countdown", intent))
-        state = self.session.screen_snapshot()
+        self.assertEqual(state["stage"], "countdown")
         clock = {"now": 20.0, "boot": 20.0}
         countdown = suspend.Countdown(5, clock=lambda: clock["now"], boot_clock=lambda: clock["boot"])
         countdown.tick(True)
@@ -109,12 +106,12 @@ class SessionScreenStateTests(unittest.TestCase):
         with mock.patch.object(suspend.time, "monotonic", return_value=25.0):
             self.assertIsNone(self.session.claim_screen(intent["id"]))
 
-    def test_raise_preserves_timer_and_replacement_requires_new_confirmation(self):
+    def test_raise_preserves_timer_and_replacement_requires_fresh_countdown(self):
         self.session.begin_screen(5, "Original", "shutdown")
         first = self.session.screen_snapshot()
         intent = first["request"]
-        self.assertTrue(self.session.update_screen(first["revision"], "countdown", intent))
-        state = self.session.screen_snapshot()
+        self.assertEqual(first["stage"], "countdown")
+        state = first
         self.assertTrue(self.session.start_screen_timer(intent["id"], state["revision"], time.monotonic()))
         started = self.session.screen_snapshot()["timer_started_at"]
 
@@ -130,12 +127,18 @@ class SessionScreenStateTests(unittest.TestCase):
         replacement = suspend.Session(self.session.directory)
         self.assertFalse(replacement.begin_screen(7, "Replacement", "restart"))
         changed = self.session.screen_snapshot()
-        self.assertEqual(changed["stage"], "confirm")
+        self.assertEqual(changed["stage"], "countdown")
         self.assertEqual(changed["settings"], {"seconds": 7, "label": "Replacement"})
         self.assertNotEqual(changed["request"]["id"], intent["id"])
         self.assertIsNone(changed["timer_started_at"])
         self.assertIsNone(self.session.claim_screen(intent["id"]))
         self.assertIsNone(self.session.claim_screen(changed["request"]["id"]))
+        self.assertTrue(self.session.start_screen_timer(changed["request"]["id"], changed["revision"], 100.0))
+        with mock.patch.object(suspend.time, "monotonic", return_value=106.9):
+            self.assertIsNone(self.session.claim_screen(changed["request"]["id"]))
+        with mock.patch.object(suspend.time, "monotonic", return_value=107.0):
+            self.assertEqual(self.session.claim_screen(changed["request"]["id"]), changed["request"])
+        replacement.close()
 
     def test_legacy_pending_owner_is_cancelled_then_grid_acquires_same_invocation(self):
         legacy = suspend.Session(self.session.directory)
@@ -172,6 +175,11 @@ class SessionScreenStateTests(unittest.TestCase):
     def test_malformed_screen_state_fails_closed(self):
         self.session.begin_screen(5, "Example")
         pending = suspend.read_json(self.session.pending)
+        pending["stage"] = "confirm"
+        suspend.atomic_json(self.session.pending, pending)
+        with self.assertRaises(RuntimeError):
+            self.session.screen_snapshot()
+
         pending["stage"] = "countdown"
         suspend.atomic_json(self.session.pending, pending)
         with self.assertRaises(RuntimeError):
@@ -179,12 +187,11 @@ class SessionScreenStateTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.session.claim_screen("0" * 32)
 
-    def test_partial_result_retry_gets_a_fresh_confirmation_and_timer(self):
+    def test_partial_result_retry_immediately_arms_a_fresh_timer(self):
         self.session.begin_screen(1, "Example", "away")
         state = self.session.screen_snapshot()
         intent = state["request"]
-        self.assertTrue(self.session.update_screen(state["revision"], "countdown", intent))
-        state = self.session.screen_snapshot()
+        self.assertEqual(state["stage"], "countdown")
         self.assertTrue(self.session.start_screen_timer(intent["id"], state["revision"], 100.0))
         with mock.patch.object(suspend.time, "monotonic", return_value=101.0):
             claimed = self.session.claim_screen(intent["id"])
@@ -197,13 +204,21 @@ class SessionScreenStateTests(unittest.TestCase):
         self.assertEqual(failed["stage"], "result")
         self.assertEqual(failed["result"]["status"], "partial")
 
+        with self.assertRaises(ValueError):
+            self.session.update_screen(failed["revision"], "countdown", intent)
         retry = suspend.request("away", 1, "Example")
-        self.assertTrue(self.session.update_screen(failed["revision"], "confirm", retry))
+        self.assertTrue(self.session.update_screen(failed["revision"], "countdown", retry))
         fresh = self.session.screen_snapshot()
-        self.assertEqual(fresh["stage"], "confirm")
+        self.assertEqual(fresh["stage"], "countdown")
         self.assertNotEqual(fresh["request"]["id"], intent["id"])
         self.assertIsNone(fresh["timer_started_at"])
         self.assertIsNone(self.session.claim_screen(intent["id"]))
+        self.assertIsNone(self.session.claim_screen(fresh["request"]["id"]))
+        self.assertTrue(self.session.start_screen_timer(fresh["request"]["id"], fresh["revision"], 200.0))
+        with mock.patch.object(suspend.time, "monotonic", return_value=200.9):
+            self.assertIsNone(self.session.claim_screen(fresh["request"]["id"]))
+        with mock.patch.object(suspend.time, "monotonic", return_value=201.0):
+            self.assertEqual(self.session.claim_screen(fresh["request"]["id"]), retry)
 
     def test_owner_death_releases_pending_request_without_dispatch(self):
         self.session.begin_screen(5, "Example", "restart")
@@ -224,8 +239,6 @@ class SessionScreenStateTests(unittest.TestCase):
         owner = suspend.Session(old_directory, socket_path=socket_path, require_socket=True)
         self.addCleanup(owner.close)
         owner.begin_screen(5, "Example", "restart")
-        state = owner.screen_snapshot()
-        owner.update_screen(state["revision"], "countdown", state["request"])
         state = owner.screen_snapshot()
         owner.start_screen_timer(state["request"]["id"], state["revision"], time.monotonic())
 

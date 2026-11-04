@@ -24,7 +24,7 @@ SCREEN_APP_ID = "org.niri-plus.session"
 OPERATIONS = {"suspend": "suspend", "lock": "lock", "away": "turn off displays",
               "logout": "log out", "restart": "restart", "shutdown": "shut down"}
 SCREEN_OPERATIONS = ("lock", "away", "suspend", "logout", "restart", "shutdown")
-SCREEN_STAGES = {"choose", "confirm", "countdown", "result", "committing"}
+SCREEN_STAGES = {"choose", "countdown", "result", "committing"}
 
 
 def operation_name(operation):
@@ -82,7 +82,7 @@ def validate_screen_state(value, token=None):
     intent = None if value.get("request") is None else validate_request(value["request"])
     if stage == "choose" and intent is not None:
         raise ValueError("unexpected action in session chooser")
-    if stage in {"confirm", "countdown", "result", "committing"} and (intent is None or intent["operation"] not in SCREEN_OPERATIONS):
+    if stage in {"countdown", "result", "committing"} and (intent is None or intent["operation"] not in SCREEN_OPERATIONS):
         raise ValueError("session action is missing")
     if intent is not None and (intent["seconds"] != settings["seconds"] or intent["label"] != settings["label"]):
         raise ValueError("session action does not match screen settings")
@@ -275,7 +275,7 @@ class Session:
             with self.gate():
                 fd = self.acquire()
                 if fd is not None:
-                    stage = "confirm" if selected else "choose"
+                    stage = "countdown" if selected else "choose"
                     self.initialize(selected, "screen", stage, {"seconds": seconds, "label": label})
                     self.disposition = "started"
                     return True
@@ -303,11 +303,11 @@ class Session:
                         revision = pending.get("revision")
                         if type(revision) is not int or pending.get("stage") not in SCREEN_STAGES:
                             raise RuntimeError("invalid active session screen state")
-                        pending.update({"stage": "confirm", "request": selected, "revision": revision + 1,
+                        pending.update({"stage": "countdown", "request": selected, "revision": revision + 1,
                                         "result": None, "settings": {"seconds": seconds, "label": label},
                                         "timer_started_at": None})
                         atomic_json(self.pending, pending)
-                        self.disposition = "screen action replaced; fresh confirmation required"
+                        self.disposition = "screen action replaced; fresh countdown required"
                         return False
                 elif pending.get("mode") in (None, "legacy"):
                     atomic_json(self.cancellation, {"token": pending["token"]})
@@ -381,8 +381,15 @@ class Session:
             if (state["phase"] != "pending" or state["revision"] != expected_revision
                     or read_json(self.cancellation) == {"token": self.token}):
                 return False
-            if stage == "choose" and intent is not None or stage in {"confirm", "countdown", "result"} and intent is None:
-                raise ValueError("invalid session screen action for stage")
+            current_stage = state["stage"]
+            allowed = ((current_stage == "choose" and stage == "countdown" and intent is not None)
+                       or (current_stage == "countdown" and stage == "choose" and intent is None)
+                       or (current_stage == "result" and stage == "choose" and intent is None)
+                       or (current_stage == "result" and stage == "countdown" and intent is not None))
+            if not allowed:
+                raise ValueError("invalid session screen transition")
+            if current_stage == "result" and stage == "countdown" and intent["id"] == state["request"]["id"]:
+                raise ValueError("retry requires a fresh session action request")
             if intent is not None:
                 settings = pending.get("settings")
                 if (not isinstance(settings, dict) or intent["seconds"] != settings.get("seconds")
@@ -724,7 +731,7 @@ def focused_monitor_index(geometries, output):
 
 
 def show_session_screen(session):
-    """Render the chooser, confirmation, countdown and result in one native owner."""
+    """Render the chooser, cancellable countdown and result in one native owner."""
     snapshot = session.screen_snapshot()
     settings = snapshot["settings"]
     if not session.session_unchanged():
@@ -924,24 +931,6 @@ def show_session_screen(session):
             footer([close])
             focus_target = controls.get(last_action, controls["lock"])
             log("screen: picker")
-        elif current_stage == "confirm":
-            operation = intent["operation"]
-            header("Confirm " + operation_name(operation))
-            statement = Gtk.Label(label=operation_name(operation) + " " + settings["label"] + "?", xalign=0.5)
-            statement.set_line_wrap(True)
-            statement.get_style_context().add_class("confirm-title")
-            statement.set_justify(Gtk.Justification.CENTER)
-            effect = Gtk.Label(label=operation_effect(operation, settings["label"]), xalign=0.5)
-            effect.set_line_wrap(True)
-            effect.set_justify(Gtk.Justification.CENTER)
-            effect.get_style_context().add_class("stage-copy")
-            panel.pack_start(statement, True, True, 0)
-            panel.pack_start(effect, False, False, 20)
-            back = button("back", "Back", back_to_choices)
-            confirm = button("confirm", "Confirm " + operation_name(operation), begin_countdown, "primary-button")
-            footer([back, confirm])
-            focus_target = back
-            log("screen: confirm: " + operation)
         elif current_stage == "countdown":
             operation = intent["operation"]
             header(operation_name(operation))
@@ -1035,14 +1024,11 @@ def show_session_screen(session):
             return
         last_action = operation
         intent = request(operation, settings["seconds"], settings["label"])
-        transition("confirm", intent)
+        transition("countdown", intent)
 
     def back_to_choices(*_):
         nonlocal timer
-        if current["stage"] == "confirm":
-            timer = None
-            transition("choose")
-        elif current["stage"] == "result" and current["result"]["status"] in {"refused", "partial"}:
+        if current["stage"] == "result" and current["result"]["status"] in {"refused", "partial"}:
             timer = None
             transition("choose")
         return True
@@ -1053,16 +1039,7 @@ def show_session_screen(session):
             return True
         timer = None
         intent = request(current["request"]["operation"], settings["seconds"], settings["label"])
-        transition("confirm", intent)
-        return True
-
-    def begin_countdown(*_):
-        nonlocal timer, previous_count
-        if current["stage"] != "confirm" or current["request"] is None:
-            return True
-        if transition("countdown", current["request"]):
-            timer = Countdown(settings["seconds"])
-            previous_count = None
+        transition("countdown", intent)
         return True
 
     def cancel_countdown(*_):
@@ -1183,11 +1160,6 @@ def show_session_screen(session):
             return
         if current["stage"] == "choose" and name in SCREEN_OPERATIONS:
             choose_action(name)
-        elif current["stage"] == "confirm":
-            if name == "confirm":
-                begin_countdown()
-            elif name == "back":
-                back_to_choices()
         elif current["stage"] == "countdown":
             if name == "countdown-cancel":
                 cancel_countdown()
@@ -1298,7 +1270,6 @@ def show_session_screen(session):
             #session-panel-{index} .panel-subtitle {{ font-size: 13px; color: #aaaeac; }}
             #session-panel-{index} .picker-intro {{ font-size: {13 if compact_screen else 14}px; color: #c9cbc8; padding: {2 if compact_screen else 8}px {4 if compact_screen else 12}px; }}
             #session-panel-{index} .stage-copy {{ font-size: {13 if compact_screen else 14}px; color: #c9cbc8; padding: {4 if compact_screen else 8}px {8 if compact_screen else 12}px; }}
-            #session-panel-{index} .confirm-title {{ font-size: {20 if compact_screen else 24}px; font-weight: 500; padding: {10 if compact_screen else 16}px; }}
             #session-panel-{index} .countdown-remaining {{ color: #aaaeac; font-size: 13px; }}
             #session-panel-{index} .countdown-number {{ font-size: {64 if compact_screen else 72}px; font-weight: 400; color: #efefec; }}
             #session-panel-{index} .diagnostic-copy {{ background-color: #303336; border-left: 3px solid #e9b55f; padding: 10px 12px; font-size: 12px; color: #c9cbc8; }}
@@ -1636,7 +1607,7 @@ def main(argv=None):
     parser.add_argument("--label", default=socket.gethostname())
     parser.add_argument("--lock", action="store_true", help="Lock before the away action")
     parser.add_argument("--select", choices=SCREEN_OPERATIONS,
-                        help="Open the native session screen at this action's confirmation")
+                        help="Start this action's cancellable screen countdown")
     args = parser.parse_args(argv)
     if not 1 <= args.seconds <= 60:
         parser.error("--seconds must be between 1 and 60")

@@ -104,7 +104,7 @@ def main(argv=None):
     parser.add_argument("--seconds", type=int, help="Session screen countdown in seconds")
     parser.add_argument("--label", help="Session screen computer label")
     parser.add_argument("--select", choices=SCREEN_OPERATIONS,
-                        help="Open the screen at this action's confirmation")
+                        help="Start this action's cancellable screen countdown")
     args = parser.parse_args(argv)
     if args.screen:
         command = screen_command(args.seconds if args.seconds is not None else 5, args.label, args.select)

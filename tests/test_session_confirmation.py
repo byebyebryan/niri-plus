@@ -1,4 +1,4 @@
-"""Session-menu opt-in routing never bypasses the shared confirmation guard."""
+"""Session-menu screen routing starts actions through the shared countdown guard."""
 import importlib.machinery
 import importlib.util
 from pathlib import Path
@@ -14,7 +14,7 @@ loader.exec_module(menu)
 
 
 class SessionConfirmationTests(unittest.TestCase):
-    def test_screen_route_is_opt_in_and_can_start_at_confirmation(self):
+    def test_screen_route_is_opt_in_and_select_starts_the_countdown(self):
         command = menu.screen_command(7, "Example", "shutdown")
         self.assertEqual(Path(command[0]).name, "desktop-suspend")
         self.assertEqual(command[1:], ["menu", "--seconds", "7", "--label", "Example",

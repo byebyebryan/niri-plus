@@ -361,7 +361,7 @@ def wait_for_trace(path: Path, needle: str, proc: subprocess.Popen, timeout: flo
         text = path.read_text(errors="replace") if path.exists() else ""
         return text if needle in text else None
     text = proof.wait_for(found, timeout=timeout, message=f"trace {needle!r}", proc=proc)
-    if needle == "screen: picker" or needle.startswith("screen: confirm:"):
+    if needle == "screen: picker" or needle.startswith("screen: countdown:"):
         proof.wait_for(lambda: "screen: ready" in path.read_text(errors="replace") or None,
                        timeout=timeout, message="mapped and focused native screen", proc=proc)
     return text
@@ -480,7 +480,10 @@ def start_direct_menu(env: dict[str, str], output: Path, owned: list[subprocess.
     command = [str(SUSPEND), "menu", "--seconds", str(seconds), "--label", label]
     if select:
         command.extend(["--select", select])
-    return launch(command, env, output, name, owned)
+    selected_at = time.monotonic()
+    proc, log = launch(command, env, output, name, owned)
+    proc.proof_selected_at = selected_at
+    return proc, log
 
 
 def start_wrapper_menu(env: dict[str, str], output: Path, owned: list[subprocess.Popen],
@@ -546,33 +549,13 @@ def expected_starts(action_trace: Path, expected: list[tuple[str, list[str]]]) -
 def wait_for_operation(proc: subprocess.Popen, trace_path: Path, action_trace: Path,
                        operation: str, seconds: int, output: Path, env: dict[str, str],
                        input_device: PrivateXTest, report: list[dict], *,
-                       capture_prefix: str | None = None, held_key: str | None = None,
+                       capture_prefix: str | None = None,
                        action_start_count: int = 0, completion_count: int = 0) -> None:
-    wait_for_trace(trace_path, f"screen: confirm: {operation}", proc)
+    started = proc.proof_selected_at
+    wait_for_trace(trace_path, f"screen: countdown: {operation} {seconds}", proc)
     wait_for_screen(env, proc, present=True)
     if len(actions(action_trace)) != action_start_count:
-        raise RuntimeError(f"{operation} was dispatched before confirmation: {actions(action_trace)[action_start_count:]}")
-    if capture_prefix:
-        confirm = capture(env, output, f"{capture_prefix}-confirm")
-        report.append({"check": f"{operation} explicit confirmation visible", "screenshot": confirm.name,
-                       "ocr": screenshot_ocr(confirm)})
-    time.sleep(0.18)
-    if len(actions(action_trace)) != action_start_count:
-        raise RuntimeError(f"{operation} dispatched while its confirmation was idle: {actions(action_trace)[action_start_count:]}")
-
-    # Back is the initial confirmation focus; Tab gives a fresh activation of Confirm.
-    input_device.tap("Tab")
-    started = time.monotonic()
-    input_device.key("Return", True)
-    if held_key:
-        time.sleep(1.15)
-        if actions(action_trace):
-            raise RuntimeError(f"held {held_key} skipped the {seconds}s timer for {operation}")
-        input_device.key("Return", False)
-    else:
-        input_device.key("Return", False)
-
-    wait_for_trace(trace_path, f"screen: countdown: {operation} {seconds}", proc)
+        raise RuntimeError(f"{operation} was dispatched before its countdown: {actions(action_trace)[action_start_count:]}")
     countdown_at = time.monotonic()
     if capture_prefix:
         countdown = capture(env, output, f"{capture_prefix}-countdown")
@@ -600,7 +583,7 @@ def wait_for_operation(proc: subprocess.Popen, trace_path: Path, action_trace: P
         raise RuntimeError(f"{operation} screen returned {returncode}: {trace_snapshot(trace_path)}")
     if screen_layers(env):
         raise RuntimeError(f"{operation} screen remained visible after successful inert dispatch")
-    report.append({"check": f"{operation} fresh Confirm then full timer and exact inert dispatch",
+    report.append({"check": f"{operation} selection starts full timer and exact automatic inert dispatch without further input",
                    "countdown_observed_at": countdown_at, "dispatch_after_activation_seconds": round(elapsed, 3),
                    "dispatch": expected})
 
@@ -762,9 +745,9 @@ def run_checks(args: argparse.Namespace) -> dict:
             # Real wrapper launch, visible grid, idle no-op, and actual native
             # keyboard navigation from Lock -> Display off -> Suspend ->
             # Shut down -> Restart.  This route must land on Restart's own
-            # confirmation without triggering a native request.
+            # countdown without triggering an early native request.
             wrapper_proc, wrapper_log = start_wrapper_menu(
-                client_env, output, owned, "wrapper-grid", seconds=1)
+                client_env, output, owned, "wrapper-grid", seconds=3)
             wait_for_trace(wrapper_log, "screen: picker", wrapper_proc)
             wait_for_screen(client_env, wrapper_proc, present=True)
             picker, picker_ocr = capture_visible(
@@ -778,18 +761,18 @@ def run_checks(args: argparse.Namespace) -> dict:
             for key in ("Right", "Right", "Down", "Left"):
                 input_device.tap(key)
             input_device.tap("Return")
-            wait_for_trace(wrapper_log, "screen: confirm: restart", wrapper_proc)
+            wait_for_trace(wrapper_log, "screen: countdown: restart 3", wrapper_proc)
             wait_for_screen(client_env, wrapper_proc, present=True)
             if actions(action_trace):
-                raise RuntimeError("grid keyboard selection dispatched before confirmation")
-            restart_confirm, restart_ocr = capture_visible(
-                client_env, output, "grid-restart-confirm", ["Restart"],
-                "keyboard-selected Restart confirmation",
+                raise RuntimeError("grid keyboard selection dispatched before the countdown")
+            restart_countdown, restart_ocr = capture_visible(
+                client_env, output, "grid-restart-countdown", ["Restart", "Cancel"],
+                "keyboard-selected Restart countdown",
             )
             checks.append({"check": "native six-action grid visible; idle is inert; keyboard route selects Restart",
-                           "screenshots": [picker.name, restart_confirm.name],
-                           "grid_ocr": picker_ocr, "restart_confirmation_ocr": restart_ocr,
-                           "selected_confirmation": "restart"})
+                           "screenshots": [picker.name, restart_countdown.name],
+                           "grid_ocr": picker_ocr, "restart_countdown_ocr": restart_ocr,
+                           "selected_action": "restart"})
             cancel_with_escape(input_device, wrapper_proc, wrapper_log, action_trace,
                                True, client_env)
             if args.smoke:
@@ -818,7 +801,7 @@ def run_checks(args: argparse.Namespace) -> dict:
             try:
                 scale2_outputs = reload_private_output_scale(client_env, private_config, "2")
                 scale_proc, scale_log = start_wrapper_menu(
-                    client_env, output, owned, "scale-two-grid", seconds=2)
+                    client_env, output, owned, "scale-two-grid", seconds=3)
                 wait_for_trace(scale_log, "screen: picker", scale_proc)
                 scale_capture, scale_ocr = capture_visible(
                     client_env, output, "scale-two-grid", ["Lock", "Display off", "Suspend", "Log out", "Restart", "Shut down", "Close"],
@@ -827,20 +810,14 @@ def run_checks(args: argparse.Namespace) -> dict:
                 for key in ("Right", "Right"):
                     input_device.tap(key)
                 input_device.tap("Return")
-                wait_for_trace(scale_log, "screen: confirm: suspend", scale_proc)
-                scale_confirm, scale_confirm_ocr = capture_visible(client_env, output, "scale-two-confirm", ["Suspend", "Back", "Confirm"],
-                                                       "scale-two confirmation controls")
-                input_device.tap("Tab")
-                input_device.tap("Return")
-                wait_for_trace(scale_log, "screen: countdown: suspend 2", scale_proc)
+                wait_for_trace(scale_log, "screen: countdown: suspend 3", scale_proc)
                 scale_countdown, scale_countdown_ocr = capture_visible(client_env, output, "scale-two-countdown", ["Suspend", "Cancel"],
                                                          "scale-two countdown Cancel control")
                 cancel_with_escape(input_device, scale_proc, scale_log, action_trace,
                                    True, client_env)
                 scale2_result = {"status": "passed", "outputs": scale2_outputs,
-                                 "screenshots": [scale_capture.name, scale_confirm.name,
-                                                 scale_countdown.name],
-                                 "grid_ocr": scale_ocr, "confirm_ocr": scale_confirm_ocr,
+                                 "screenshots": [scale_capture.name, scale_countdown.name],
+                                 "grid_ocr": scale_ocr,
                                  "countdown_ocr": scale_countdown_ocr}
             finally:
                 restored_outputs = reload_private_output_scale(client_env, private_config, "1.25")
@@ -848,7 +825,7 @@ def run_checks(args: argparse.Namespace) -> dict:
                 "status": "unavailable", "restored_outputs": restored_outputs,
             }
             private_identity["niri_outputs"] = restored_outputs
-            checks.append({"check": "constrained 640x400 logical scale-two grid and confirmation",
+            checks.append({"check": "constrained 640x400 logical scale-two grid and countdown",
                            "result": private_identity["scale_two_acceptance"]})
 
             # Escape after Tab and Shift+Tab traversal must cancel from the
@@ -865,35 +842,44 @@ def run_checks(args: argparse.Namespace) -> dict:
                                True, client_env)
             checks.append({"check": "Tab and Shift+Tab remain in chooser; Escape cancels after traversal"})
 
-            # Escape at confirmation and during an armed timer is global and
+            # Escape during a directly selected countdown is global and
             # must not leave a delayed request behind.
-            confirm_proc, confirm_log = start_direct_menu(
-                client_env, output, owned, "escape-confirm", seconds=2, select="lock")
-            wait_for_trace(confirm_log, "screen: confirm: lock", confirm_proc)
-            wait_for_screen(client_env, confirm_proc, present=True)
-            cancel_with_escape(input_device, confirm_proc, confirm_log, action_trace,
+            direct_proc, direct_log = start_direct_menu(
+                client_env, output, owned, "escape-direct-countdown", seconds=2, select="lock")
+            wait_for_trace(direct_log, "screen: countdown: lock 2", direct_proc)
+            wait_for_screen(client_env, direct_proc, present=True)
+            cancel_with_escape(input_device, direct_proc, direct_log, action_trace,
                                True, client_env)
             timer_proc, timer_log = start_direct_menu(
                 client_env, output, owned, "escape-countdown", seconds=2, select="suspend")
-            wait_for_trace(timer_log, "screen: confirm: suspend", timer_proc)
-            input_device.tap("Tab")
-            input_device.tap("Return")
             wait_for_trace(timer_log, "screen: countdown: suspend 2", timer_proc)
             capture(client_env, output, "escape-countdown-visible")
             input_device.tap("Tab")
             cancel_with_escape(input_device, timer_proc, timer_log, action_trace,
                                True, client_env, delay=2.4)
-            checks.append({"check": "Escape cancels at confirmation and countdown after Tab; no stale dispatch"})
+            checks.append({"check": "Escape cancels direct countdown and after Tab; no stale dispatch"})
 
-            # Hold Return and Space across the confirmation-to-countdown
+            # A fresh activation of the initially focused Cancel returns to the
+            # chooser; selection itself needs no additional activation.
+            cancel_proc, cancel_log = start_direct_menu(
+                client_env, output, owned, "focused-cancel", seconds=2, select="away")
+            wait_for_trace(cancel_log, "screen: countdown: away 2", cancel_proc)
+            input_device.tap("Return")
+            wait_for_trace(cancel_log, "screen: picker", cancel_proc)
+            cancel_with_escape(input_device, cancel_proc, cancel_log, action_trace,
+                               True, client_env, delay=2.2)
+            checks.append({"check": "fresh activation of focused Cancel returns to idle grid; no late dispatch"})
+
+            # Hold Return and Space across the chooser-to-countdown
             # transition. Repeats from the original key-down must not activate
             # the newly focused Cancel control or skip the timer.
             for operation, keysym in (("restart", "Return"), ("away", "space")):
                 held_count = len(actions(action_trace))
-                held_proc, held_log = start_direct_menu(
-                    client_env, output, owned, f"held-{keysym}", seconds=2, select=operation)
-                wait_for_trace(held_log, f"screen: confirm: {operation}", held_proc)
-                input_device.tap("Tab")
+                held_proc, held_log = start_wrapper_menu(
+                    client_env, output, owned, f"held-{keysym}", seconds=2)
+                wait_for_trace(held_log, "screen: picker", held_proc)
+                for key in (("Down", "Right") if operation == "restart" else ("Right",)):
+                    input_device.tap(key)
                 held_started = time.monotonic()
                 input_device.key(keysym, True)
                 wait_for_trace(held_log, f"screen: countdown: {operation} 2", held_proc)
@@ -912,7 +898,7 @@ def run_checks(args: argparse.Namespace) -> dict:
                 )
                 held_elapsed = min(item["at"] for item in held_starts) - held_started
                 if held_elapsed < 1.9:
-                    raise RuntimeError(f"held {keysym} shortened the full confirmation timer ({held_elapsed:.3f}s)")
+                    raise RuntimeError(f"held {keysym} shortened the full countdown timer ({held_elapsed:.3f}s)")
                 observed = [(item.get("kind"), item.get("args")) for item in held_starts]
                 if observed != expected_dispatch(operation):
                     raise RuntimeError(f"held {keysym} dispatch mismatch: {observed}")
@@ -920,16 +906,16 @@ def run_checks(args: argparse.Namespace) -> dict:
                 checks.append({"check": f"held {keysym} cannot advance or cancel the next stage",
                                "operation": operation, "dispatch_after_activation_seconds": round(held_elapsed, 3)})
 
-            # Every action is started through a fresh Confirm key-down after
-            # Back's initial focus.  Calls are private trace stubs only.
+            # Every explicitly selected action starts its countdown directly,
+            # with no subsequent input. Calls are private trace stubs only.
             for operation in ("lock", "away", "suspend", "logout", "restart", "shutdown"):
                 before = len(actions(action_trace))
                 completed_before = len(actions(action_trace, "complete"))
                 proc, log = start_direct_menu(
-                    client_env, output, owned, f"action-{operation}", seconds=1,
+                    client_env, output, owned, f"action-{operation}", seconds=2,
                     select=operation,
                 )
-                wait_for_operation(proc, log, action_trace, operation, 1, output,
+                wait_for_operation(proc, log, action_trace, operation, 2, output,
                                    client_env, input_device, checks,
                                    capture_prefix=f"action-{operation}",
                                    action_start_count=before, completion_count=completed_before)
@@ -946,9 +932,6 @@ def run_checks(args: argparse.Namespace) -> dict:
             wait_for_trace(default_log, "screen: picker", default_proc)
             for key in ("Right", "Right"):
                 input_device.tap(key)
-            input_device.tap("Return")
-            wait_for_trace(default_log, "screen: confirm: suspend", default_proc)
-            input_device.tap("Tab")
             default_start = time.monotonic()
             input_device.tap("Return")
             wait_for_trace(default_log, "screen: countdown: suspend 5", default_proc)
@@ -976,10 +959,7 @@ def run_checks(args: argparse.Namespace) -> dict:
             # deadline intact.  Use a three-second timer to observe this safely.
             duplicate_proc, duplicate_log = start_direct_menu(
                 client_env, output, owned, "duplicate-original", seconds=3, select="shutdown")
-            wait_for_trace(duplicate_log, "screen: confirm: shutdown", duplicate_proc)
-            input_device.tap("Tab")
-            duplicate_start = time.monotonic()
-            input_device.tap("Return")
+            duplicate_start = duplicate_proc.proof_selected_at
             wait_for_trace(duplicate_log, "screen: countdown: shutdown 3", duplicate_proc)
             time.sleep(0.9)
             duplicate_count = len(actions(action_trace))
@@ -1003,11 +983,8 @@ def run_checks(args: argparse.Namespace) -> dict:
             # Near-expiry Escape must win without leaving a delayed callback.
             near_proc, near_log = start_direct_menu(
                 client_env, output, owned, "near-expiry-cancel", seconds=1, select="suspend")
-            wait_for_trace(near_log, "screen: confirm: suspend", near_proc)
             near_count = len(actions(action_trace))
-            input_device.tap("Tab")
-            near_start = time.monotonic()
-            input_device.tap("Return")
+            near_start = near_proc.proof_selected_at
             wait_for_trace(near_log, "screen: countdown: suspend 1", near_proc)
             time.sleep(0.70)
             input_device.tap("Escape")
@@ -1023,10 +1000,7 @@ def run_checks(args: argparse.Namespace) -> dict:
             # UI SIGTERM must stop the pending operation without dispatch.
             term_proc, term_log = start_direct_menu(
                 client_env, output, owned, "sigterm-cancel", seconds=2, select="restart")
-            wait_for_trace(term_log, "screen: confirm: restart", term_proc)
             term_count = len(actions(action_trace))
-            input_device.tap("Tab")
-            input_device.tap("Return")
             wait_for_trace(term_log, "screen: countdown: restart 2", term_proc)
             os.killpg(term_proc.pid, signal.SIGTERM)
             wait_proc(term_proc, timeout=5, message="SIGTERM session screen")
@@ -1040,10 +1014,7 @@ def run_checks(args: argparse.Namespace) -> dict:
             # timer share the owned process group.
             freeze_proc, freeze_log = start_direct_menu(
                 client_env, output, owned, "freeze-cancel", seconds=1, select="restart")
-            wait_for_trace(freeze_log, "screen: confirm: restart", freeze_proc)
             freeze_count = len(actions(action_trace))
-            input_device.tap("Tab")
-            input_device.tap("Return")
             wait_for_trace(freeze_log, "screen: countdown: restart 1", freeze_proc)
             freeze_started = time.monotonic()
             os.killpg(freeze_proc.pid, signal.SIGSTOP)
@@ -1113,12 +1084,9 @@ def run_checks(args: argparse.Namespace) -> dict:
             }])
             slow_proc, slow_log = start_direct_menu(
                 client_env, output, owned, "slow-refusal", seconds=1, select="suspend")
-            wait_for_trace(slow_log, "screen: confirm: suspend", slow_proc)
             slow_count = len(actions(action_trace))
-            input_device.tap("Tab")
-            input_device.tap("Return")
             wait_for_trace(slow_log, "screen: countdown: suspend 1", slow_proc)
-            slow_start = time.monotonic()
+            slow_start = slow_proc.proof_selected_at
             proof.wait_for(lambda: [item for item in actions(action_trace)[slow_count:]
                                     if item.get("kind") == "systemctl" and item.get("args") == ["suspend"]]
                             or None, timeout=5, message="slow suspend stub started", proc=slow_proc)
@@ -1150,22 +1118,17 @@ def run_checks(args: argparse.Namespace) -> dict:
                                min(item["at"] for item in actions(action_trace)[slow_count:]
                                    if item.get("kind") == "systemctl" and item.get("args") == ["suspend"])
                                - slow_start, 3)})
-            # Retry opens a new CONFIRM stage; a further fresh activation is
-            # required before the full timer can begin.
+            # Explicit Retry starts a new full countdown immediately; no
+            # additional confirmation activation is required.
             before_retry = len([item for item in actions(action_trace)
                                 if item.get("kind") == "systemctl" and item.get("args") == ["suspend"]])
             time.sleep(0.2)
             if len([item for item in actions(action_trace)
                     if item.get("kind") == "systemctl" and item.get("args") == ["suspend"]]) != before_retry:
                 raise RuntimeError("refusal retried without a fresh user activation")
-            confirm_retries = trace_snapshot(slow_log).count("screen: confirm: suspend")
-            input_device.tap("Tab")
-            input_device.tap("Return")
-            proof.wait_for(lambda: trace_snapshot(slow_log).count("screen: confirm: suspend") > confirm_retries
-                            or None, timeout=4, message="retry confirmation stage", proc=slow_proc)
-            retry_start = time.monotonic()
             countdown_retries = trace_snapshot(slow_log).count("screen: countdown: suspend 1")
             input_device.tap("Tab")
+            retry_start = time.monotonic()
             input_device.tap("Return")
             proof.wait_for(lambda: trace_snapshot(slow_log).count("screen: countdown: suspend 1") > countdown_retries
                             or None, timeout=4, message="fresh retry countdown", proc=slow_proc)
@@ -1193,10 +1156,7 @@ def run_checks(args: argparse.Namespace) -> dict:
             }])
             partial_proc, partial_log = start_direct_menu(
                 client_env, output, owned, "away-partial", seconds=1, select="away")
-            wait_for_trace(partial_log, "screen: confirm: away", partial_proc)
             partial_starts_before = len(actions(action_trace))
-            input_device.tap("Tab")
-            input_device.tap("Return")
             wait_for_trace(partial_log, "screen: countdown: away 1", partial_proc)
             partials = proof.wait_for(lambda: "screen: partial: away:" in trace_snapshot(partial_log) or None,
                                       timeout=5, message="partial Away status", proc=partial_proc)
@@ -1282,7 +1242,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path,
                         default=Path.home() / ".local/state/niri-plus-lab/session-screen-check/native-screen-check")
     parser.add_argument("--smoke", action="store_true",
-                        help="run only private compositor startup, real GTK grid, keyboard confirmation, and Escape")
+                        help="run only private compositor startup, real GTK grid, keyboard countdown selection, and Escape")
     parser.add_argument("--ocr-language", default="eng", help="installed Tesseract language used for visible-text checks")
     parser.add_argument("--tessdata-dir", type=Path, help="optional private Tesseract model directory")
     args = parser.parse_args()

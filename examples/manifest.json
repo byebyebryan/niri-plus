@@ -90,7 +90,7 @@
     },
     {
       "path": "examples/desktop/desktop-session-menu",
-      "sha256": "67e6176ea9a638a4d84d877540b44810c0c3c7f7dc561b13654ae4b384dcd933",
+      "sha256": "738f938da1c30e0d3c3beea5074c1178ff69bd81362ef3d05b74c574638773e5",
       "kind": "generated first-party component export",
       "module": "desktop",
       "generated": true,
@@ -544,7 +544,7 @@
     },
     {
       "path": "examples/session/desktop-suspend",
-      "sha256": "2d60192338a9b2c196ce8bbfd594329878e076ed781b560e6a308448ddf50755",
+      "sha256": "b82704c5c74c78e616dda7e517b96b798868e98ceb1c999fa9cd6e7e10c4e66f",
       "kind": "generated first-party component export",
       "module": "desktop",
       "generated": true,

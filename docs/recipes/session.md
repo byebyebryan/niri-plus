@@ -75,11 +75,13 @@ Slate, Noto Sans and monochrome action icons, with no blur or decorative motion.
 | Restart | Request native restart with its normal authorization and inhibitors. |
 | Shut down | Request native power-off with its normal authorization and inhibitors. |
 
-All six actions use **Choose → explicit confirmation → five-second cancellable
-countdown → request**. Opening the grid starts no timer. Back is focused on
-confirmation and Cancel during the countdown; held Enter or Space cannot skip
-steps. Arrows navigate the grid and Tab/Shift+Tab remain within the active
-screen. Escape cancels from every control. Repeating the entry raises the same
+All six actions use **Choose → five-second cancellable countdown → request**.
+The countdown is the confirmation: selecting an action starts it, and the
+request runs automatically at expiry unless cancelled. Opening the grid starts
+no timer. Cancel is focused during the countdown; held Enter or Space cannot
+skip it or accidentally activate Cancel. Arrows navigate the grid and
+Tab/Shift+Tab remain within the active screen. Escape cancels from every control.
+Repeating the entry raises the same
 screen without resetting a pending timer. Cancellation cannot recall a native
 request once dispatch has committed.
 
@@ -122,13 +124,14 @@ Validate the complete Niri configuration before using it. Do not add
 `allow-when-locked`: Gtklock retains authentication and the menu must not appear
 above it. Managed consumers make this choice in their configuration owner.
 
-For direct manual shortcuts, `desktop-suspend menu --select suspend` enters
-Suspend's explicit confirmation. `--select` also accepts `lock`, `away`,
-`logout`, `restart` and `shutdown`; it never skips confirmation. The screen's
-`--seconds` option accepts 1–60, defaulting to five. Existing `countdown`,
+For direct manual shortcuts, `desktop-suspend menu --select suspend` starts
+Suspend's countdown immediately. `--select` also accepts `lock`, `away`,
+`logout`, `restart` and `shutdown`; every route retains the full countdown.
+The screen's `--seconds` option accepts 1–60, defaulting to five. Existing `countdown`,
 `cancel` and immediate `away` calls keep their compatibility behavior below.
 
-Refused requests need visible feedback and a fresh confirmation before retry.
+Refused requests have visible feedback. Choosing Retry starts a fresh request
+and full countdown; it never retries automatically.
 Partial completion must be reported accurately: Away can turn displays off
 once without enforcing a latch, and a successful lock can precede failed
 blanking. After actual lock ownership transfers, the screen yields to the real

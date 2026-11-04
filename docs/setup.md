@@ -40,9 +40,10 @@ complete.
 
 The [unified session screen](recipes/session.md#optional-unified-session-screen)
 is another opt-in extension in the local 0.9.0 candidate: Ctrl+Alt+Delete opens
-Lock, Display off, Suspend, Log out, Restart and Shut down with explicit
-confirmation and a cancellable countdown. It is separate from the published
-component selections and the reference's acceptance evidence.
+Lock, Display off, Suspend, Log out, Restart and Shut down. Selecting one starts
+a cancellable countdown that confirms the action automatically at expiry.
+It is separate from the published component selections and the reference's
+acceptance evidence.
 
 ## Starting point
 

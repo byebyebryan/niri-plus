@@ -734,7 +734,8 @@ GtkLayerShell prerequisites; the existing locker, Away and suspend-policy
 owners; the installed Ctrl+Alt+Delete override; cancellation/refusal results;
 and rollback paths. Lock must establish the lock then request display-off;
 Display off must add no lock, on every machine. All six choices retain the
-explicit confirmation and countdown. Keep automatic policy and ordinary
+countdown as their confirmation: selection starts the timer and expiry sends the
+request without another activation. Keep automatic policy and ordinary
 inhibitors unchanged. Do not permit the screen above the real locker.
 
 Source tests and private native GUI checks are distinct from actual lock

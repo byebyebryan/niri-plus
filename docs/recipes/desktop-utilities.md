@@ -45,8 +45,9 @@ own exit request and will fail safely if Niri is not reachable. Ensure
 
 The opt-in [native session screen](session.md#optional-unified-session-screen)
 uses `desktop-session-menu --screen` and the adjacent `desktop-suspend` helper.
-It provides a six-action grid, explicit confirmation and a cancellable
-countdown. The default launcher invocation above keeps the reference's legacy
+It provides a six-action grid. Selecting an action starts its cancellable
+countdown, which is the confirmation before automatic execution. The default
+launcher invocation above keeps the reference's legacy
 menu; select the screen's portable Ctrl+Alt+Delete profile intentionally.
 The Niri starter binds `Mod+D` to `rofi -show drun`, which lists these entries;
 the entries themselves do not need separate key bindings.
@@ -283,7 +284,7 @@ automatic idle policy; Log out retains Niri's own confirmation.
 | Shut down | Shows the same confirmation pattern; Shut down dispatches `systemctl poweroff`. |
 | Cancel / Escape | Returns without dispatching an action. |
 
-The helper does not use `--skip-confirmation`, directly start a locker, restart
+The retained Rofi route does not use `--skip-confirmation`, directly start a locker, restart
 Niri, or change the existing idle/lid policy. The `desktop-lock.service` keeps
 manual locking independent from idle behavior. On battery and desktop systems,
 configure suspend, lock-before-suspend, and lid behavior together in the

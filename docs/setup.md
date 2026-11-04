@@ -39,7 +39,7 @@ policy; see the [away-mode recipe](recipes/away-mode.md) after the reference is
 complete.
 
 The [unified session screen](recipes/session.md#optional-unified-session-screen)
-is another opt-in extension in published components 0.9.1: Ctrl+Alt+Delete opens
+is another opt-in extension in published components 0.9.2: Ctrl+Alt+Delete opens
 Lock, Display off, Suspend, Log out, Restart and Shut down. Selecting one starts
 a cancellable countdown that confirms the action automatically at expiry.
 It is separate from the published component selections and the reference's

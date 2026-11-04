@@ -75,7 +75,7 @@ Established projects keep their implementation and release authority:
 
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.
-The latest optional release is 0.9.1, which remembers the last chosen action in the
+The latest optional release is 0.9.2, fixing the visible countdown in the
 [unified session screen](recipes/session.md#optional-unified-session-screen).
 All six actions execute after their cancellable countdown; Cancel or Escape
 returns directly to the desktop. The retained
@@ -86,6 +86,10 @@ Historical recordings keep their original
 component tuple and retained identity source in
 [media provenance](../assets/provenance.json), with their capture date and
 component version beside the player.
+
+The 0.9.2 update fixes the rendered countdown without changing its timing.
+It changes only `desktop-suspend` among the 48 payloads from 0.9.1; the other
+47 payload bytes and modes remain unchanged.
 
 The 0.9.1 update changes only `desktop-suspend` among the 48 payloads from
 0.9.0. Reopening restores the chosen action's focus without starting its timer;

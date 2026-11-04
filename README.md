@@ -32,7 +32,7 @@ Choose a new empty output directory for each site build. To preview the public
 project path locally, build into `/tmp/niri-plus-preview/niri-plus`, serve its
 parent, then open `http://127.0.0.1:8000/niri-plus/`.
 
-Published components 0.9.1 include an opt-in
+Published components 0.9.2 include an opt-in
 [unified session screen](docs/recipes/session.md#optional-unified-session-screen).
 Ctrl+Alt+Delete opens the action grid only when its portable profile is selected;
 the published release catalog and qualified 0.4.1 reference remain separate.

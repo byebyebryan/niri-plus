@@ -720,10 +720,10 @@ preserved 0.4.1 VM and media receipts.
 
 ## Optional post-reference branch: unified session screen
 
-Published components 0.9.1 offer the
+Published components 0.9.2 offer the
 [native session screen](recipes/session.md#optional-unified-session-screen)
 through `desktop-session-menu --screen`. Treat it as an independently reviewed
-extension after the reference. Use the `components-v0.9.1` checkout's generated helpers
+extension after the reference. Use the `components-v0.9.2` checkout's generated helpers
 and `examples/session/profiles/minimal-niri/session-screen.kdl`, preserving
 existing target and binding preimages. Do not take these files from the frozen
 0.4.1 `$SOURCE`, silently select the full new bundle, or add the screen to

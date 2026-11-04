@@ -1,0 +1,1308 @@
+#!/usr/bin/env python3
+"""Qualify the native session screen inside an owned Xvfb/nested Niri session.
+
+All session effects are replaced with private tracing stubs.  The script does
+not connect to the user's compositor, session/system D-Bus, lock screen, or
+power services.  Captures in the output directory are screenshots from the
+private nested Wayland compositor and are GUI proof only.
+"""
+
+from __future__ import annotations
+
+import argparse
+import ctypes
+from contextlib import nullcontext
+import datetime as dt
+import hashlib
+import importlib.machinery
+import importlib.util
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+import traceback
+from PIL import Image, ImageOps
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SUSPEND = ROOT / "components/desktop/bin/desktop-suspend"
+SESSION_MENU = ROOT / "components/desktop/bin/desktop-session-menu"
+NIRI = Path("/usr/bin/niri")
+APP_ID = "org.niri-plus.session"
+APP_TITLE = "Niri Plus Session"
+OCR_LANGUAGE = "eng"
+OCR_DATA_DIR = None
+OUTPUT_PARENT = Path.home() / ".local/state/niri-plus-lab/session-screen-implementation-6ydn7rso"
+WIDTH = 1280
+HEIGHT = 900
+
+
+def load_local(name: str, path: Path):
+    loader = importlib.machinery.SourceFileLoader(name, str(path))
+    spec = importlib.util.spec_from_loader(loader.name, loader)
+    if spec is None:
+        raise RuntimeError(f"could not load native proof helper: {path}")
+    module = importlib.util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module
+
+
+proof = load_local("session_screen_wayland_proof", ROOT / "scripts/check-controls-wayland-native")
+xproof = load_local("session_screen_xproof", ROOT / "scripts/check-rofi-controls-native")
+
+
+def safe_output_dir(path: Path) -> Path:
+    return proof.safe_output_dir(path)
+
+
+def read_jsonl(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    records = []
+    for line in path.read_text(errors="replace").splitlines():
+        try:
+            value = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, dict):
+            records.append(value)
+    return records
+
+
+def append_jsonl(path: Path, value: dict) -> None:
+    with path.open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(value, sort_keys=True) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def process_group(pid: int) -> int | None:
+    try:
+        text = Path(f"/proc/{pid}/stat").read_text()
+        fields = text[text.rfind(")") + 2 :].split()
+        return int(fields[2])
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def process_group_members(group: int) -> list[int]:
+    members = []
+    try:
+        entries = Path("/proc").iterdir()
+        for entry in entries:
+            if entry.name.isdigit() and process_group(int(entry.name)) == group:
+                members.append(int(entry.name))
+    except OSError:
+        return []
+    return members
+
+
+def stop_owned_process(proc: subprocess.Popen | None) -> None:
+    if proc is None:
+        return
+    group = proc.pid
+    current_group = process_group(proc.pid)
+    if current_group is not None and current_group != group:
+        raise RuntimeError(f"owned process {proc.pid} is not leader of its private process group")
+    # Every launch uses start_new_session=True.  A surviving member keeps the
+    # private PGID alive after its leader exits, so signaling this exact group
+    # also cleans owned children without walking from a potentially reaped PID.
+    if not process_group_members(group):
+        try:
+            proc.wait(timeout=0)
+        except subprocess.TimeoutExpired:
+            pass
+        return
+    try:
+        os.killpg(group, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    deadline = time.monotonic() + 3
+    while time.monotonic() < deadline:
+        if not process_group_members(group):
+            break
+        time.sleep(0.05)
+    remaining = process_group_members(group)
+    if remaining:
+        try:
+            os.killpg(group, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    try:
+        proc.wait(timeout=2)
+    except subprocess.TimeoutExpired:
+        try:
+            os.kill(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.wait(timeout=2)
+    if process_group_members(group):
+        raise RuntimeError(f"owned process group {group} did not stop")
+
+
+def source_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def write_stubs(bin_dir: Path, action_trace: Path, preflight_trace: Path,
+                behavior_file: Path, runtime: Path) -> None:
+    bin_dir.mkdir(mode=0o700)
+    common = r'''#!/usr/bin/python3
+import json, os, pathlib, sys, time
+
+kind = pathlib.Path(sys.argv[0]).name
+args = sys.argv[1:]
+is_locker_status = kind == "systemctl" and args == ["--user", "is-active", "desktop-lock.service"]
+trace = pathlib.Path(os.environ["PREFLIGHT_TRACE"] if is_locker_status else os.environ["ACTION_TRACE"])
+behavior_path = pathlib.Path(os.environ["ACTION_BEHAVIOR"])
+behavior = json.loads(behavior_path.read_text()) if behavior_path.exists() else {"responses": []}
+response = {"returncode": 3 if is_locker_status else 0,
+            "stdout": "inactive\n" if is_locker_status else "", "stderr": "", "delay": 0}
+for index, item in enumerate(behavior.get("responses", [])):
+    if item.get("kind") == kind and item.get("args") == args:
+        response = item
+        del behavior["responses"][index]
+        temporary = behavior_path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(behavior))
+        temporary.replace(behavior_path)
+        break
+identifier = str(time.monotonic_ns())
+record = {"event": "start", "id": identifier, "kind": kind, "args": args,
+          "at": time.monotonic(), "returncode": int(response.get("returncode", 0)),
+          "stdout": str(response.get("stdout", "")), "stderr": str(response.get("stderr", ""))}
+with trace.open("a", encoding="utf-8") as stream:
+    stream.write(json.dumps(record, sort_keys=True) + "\n")
+    stream.flush()
+    os.fsync(stream.fileno())
+time.sleep(float(response.get("delay", 0)))
+if record["stdout"]:
+    sys.stdout.write(record["stdout"])
+    sys.stdout.flush()
+if record["stderr"]:
+    sys.stderr.write(record["stderr"])
+    sys.stderr.flush()
+record["event"] = "complete"
+record["at"] = time.monotonic()
+with trace.open("a", encoding="utf-8") as stream:
+    stream.write(json.dumps(record, sort_keys=True) + "\n")
+    stream.flush()
+    os.fsync(stream.fileno())
+sys.exit(record["returncode"])
+'''
+    for command in ("systemctl", "desktop-away"):
+        stub = bin_dir / command
+        stub.write_text(common, encoding="utf-8")
+        stub.chmod(0o700)
+
+    niri_stub = r'''#!/usr/bin/python3
+import json, os, pathlib, sys, time
+
+args = sys.argv[1:]
+runtime = pathlib.Path(os.environ["XDG_RUNTIME_DIR"]).resolve()
+socket = pathlib.Path(os.environ.get("NIRI_SOCKET", "/missing")).resolve()
+trace = pathlib.Path(os.environ["ACTION_TRACE"])
+if len(args) >= 3 and args[:3] == ["msg", "action", "quit"]:
+    record = {"event": "start", "id": str(time.monotonic_ns()), "kind": "niri-quit",
+              "args": args, "at": time.monotonic(), "returncode": 0,
+              "stdout": "", "stderr": ""}
+    with trace.open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(record, sort_keys=True) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    record["event"] = "complete"
+    record["at"] = time.monotonic()
+    with trace.open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(record, sort_keys=True) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    raise SystemExit(0)
+try:
+    socket.relative_to(runtime)
+except ValueError:
+    raise SystemExit("refusing to forward Niri IPC outside the private runtime")
+if not socket.is_socket():
+    raise SystemExit("refusing to forward Niri IPC without the private socket")
+os.execv("/usr/bin/niri", ["/usr/bin/niri", *args])
+'''
+    stub = bin_dir / "niri"
+    stub.write_text(niri_stub, encoding="utf-8")
+    stub.chmod(0o700)
+
+    quit_stub = r'''#!/usr/bin/python3
+import json, os, pathlib, sys, time
+args = sys.argv[1:]
+trace = pathlib.Path(os.environ["ACTION_TRACE"])
+record = {"event": "start", "id": str(time.monotonic_ns()), "kind": "niri-quit",
+          "args": args, "at": time.monotonic(), "returncode": 0, "stdout": "", "stderr": ""}
+with trace.open("a", encoding="utf-8") as stream:
+    stream.write(json.dumps(record, sort_keys=True) + "\n")
+    stream.flush()
+    os.fsync(stream.fileno())
+record["event"] = "complete"
+record["at"] = time.monotonic()
+with trace.open("a", encoding="utf-8") as stream:
+    stream.write(json.dumps(record, sort_keys=True) + "\n")
+    stream.flush()
+    os.fsync(stream.fileno())
+'''
+    stub = bin_dir / "niri-quit"
+    stub.write_text(quit_stub, encoding="utf-8")
+    stub.chmod(0o700)
+
+    behavior_file.write_text(json.dumps({"responses": []}), encoding="utf-8")
+    for path in bin_dir.iterdir():
+        if path.is_symlink() or not path.is_file():
+            raise RuntimeError(f"invalid private command stub: {path}")
+
+
+class PrivateXTest:
+    """XTEST input guarded by the exact Xvfb allocated with -displayfd."""
+
+    def __init__(self, xvfb: subprocess.Popen, display_name: str):
+        self.xvfb = xvfb
+        self.display_name = display_name
+        self.input = xproof.XTest(display_name)
+        self.proofs = 0
+        self.assert_private_server()
+        self.focus_nested_compositor()
+
+    def focus_nested_compositor(self) -> None:
+        """Focus the only mapped compositor window on our isolated X server."""
+        self.assert_private_server()
+        x11, display = self.input.x11, self.input.display
+        root = x11.XDefaultRootWindow(display)
+        returned_root, parent = ctypes.c_ulong(), ctypes.c_ulong()
+        children = ctypes.POINTER(ctypes.c_ulong)()
+        count = ctypes.c_uint()
+        if not x11.XQueryTree(display, root, ctypes.byref(returned_root), ctypes.byref(parent),
+                              ctypes.byref(children), ctypes.byref(count)):
+            raise RuntimeError("cannot inspect the owned nested compositor window")
+        candidates = []
+        try:
+            for index in range(count.value):
+                attributes = xproof._XWindowAttributes()
+                if (x11.XGetWindowAttributes(display, children[index], ctypes.byref(attributes))
+                        and attributes.map_state == 2 and attributes.width > 100 and attributes.height > 100):
+                    candidates.append((attributes.width * attributes.height, children[index]))
+        finally:
+            if children:
+                x11.XFree(children)
+        if len(candidates) != 1:
+            raise RuntimeError("private Xvfb must contain exactly one mapped compositor window")
+        x11.XSetInputFocus.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_int, ctypes.c_ulong]
+        x11.XSetInputFocus(display, candidates[0][1], 2, 0)
+        x11.XSync(display, False)
+
+    def assert_private_server(self) -> None:
+        if self.xvfb.poll() is not None:
+            raise RuntimeError("private Xvfb exited before XTEST input")
+        info = proof.process_info(self.xvfb.pid)
+        if info is None:
+            raise RuntimeError("private Xvfb process identity disappeared before XTEST input")
+        args = [part for part in info[1].split(b"\0") if part]
+        if not args or Path(os.fsdecode(args[0])).resolve() != Path("/usr/bin/Xvfb"):
+            raise RuntimeError("XTEST target process is not the owned Xvfb")
+        if b"-displayfd" not in args or os.getpgid(self.xvfb.pid) != self.xvfb.pid:
+            raise RuntimeError("XTEST target is not the allocated private Xvfb process group")
+        if not self.display_name.startswith(":") or not self.display_name[1:].isdigit():
+            raise RuntimeError("XTEST target display was not allocated by Xvfb -displayfd")
+        self.proofs += 1
+
+    def key(self, name: str, down: bool = True) -> None:
+        self.assert_private_server()
+        self.input.key(name, down)
+
+    def tap(self, name: str) -> None:
+        self.key(name, True)
+        time.sleep(0.035)
+        self.key(name, False)
+        time.sleep(0.06)
+
+    def shift_tab(self) -> None:
+        self.key("Shift_L", True)
+        self.tap("Tab")
+        self.key("Shift_L", False)
+
+    def close(self) -> None:
+        self.input.close()
+
+
+def run_niri(env: dict[str, str], *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [str(NIRI), *args], env=env, stdin=subprocess.DEVNULL,
+        capture_output=True, text=True, timeout=5, check=True,
+    )
+
+
+def niri_json(env: dict[str, str], subcommand: str) -> list | dict:
+    result = run_niri(env, "msg", "--json", subcommand)
+    return json.loads(result.stdout)
+
+
+def layer_surfaces(env: dict[str, str]) -> list[dict]:
+    value = niri_json(env, "layers")
+    return value if isinstance(value, list) else []
+
+
+def screen_layers(env: dict[str, str]) -> list[dict]:
+    return [item for item in layer_surfaces(env) if item.get("namespace") == APP_ID]
+
+
+def wait_for_trace(path: Path, needle: str, proc: subprocess.Popen, timeout: float = 8) -> str:
+    def found():
+        text = path.read_text(errors="replace") if path.exists() else ""
+        return text if needle in text else None
+    text = proof.wait_for(found, timeout=timeout, message=f"trace {needle!r}", proc=proc)
+    if needle == "screen: picker" or needle.startswith("screen: confirm:"):
+        proof.wait_for(lambda: "screen: ready" in path.read_text(errors="replace") or None,
+                       timeout=timeout, message="mapped and focused native screen", proc=proc)
+    return text
+
+
+def wait_for_screen(env: dict[str, str], proc: subprocess.Popen, *, present: bool, timeout: float = 8):
+    def predicate():
+        matches = screen_layers(env)
+        if bool(matches) == present:
+            return matches if present else True
+        return None
+    return proof.wait_for(predicate, timeout=timeout,
+                          message="session layer visible" if present else "session layer removed",
+                          proc=proc)
+
+
+def launch(command: list[str], env: dict[str, str], output: Path, name: str,
+           owned: list[subprocess.Popen]) -> tuple[subprocess.Popen, Path]:
+    log_path = output / f"{name}.log"
+    with log_path.open("wb") as stream:
+        proc = subprocess.Popen(
+            command, env=env, stdin=subprocess.DEVNULL,
+            stdout=stream, stderr=subprocess.STDOUT, start_new_session=True,
+        )
+    owned.append(proc)
+    return proc, log_path
+
+
+def capture(env: dict[str, str], output: Path, name: str) -> Path:
+    if env.get("DISPLAY"):
+        raise RuntimeError("Wayland capture client inherited DISPLAY")
+    path = proof.capture(env, output, name)
+    if path.stat().st_size < 1_000:
+        raise RuntimeError(f"empty session screen capture: {name}")
+    return path
+
+
+def screenshot_ocr(path: Path) -> str:
+    options = ["--tessdata-dir", str(OCR_DATA_DIR)] if OCR_DATA_DIR else []
+    def recognize(source):
+        return subprocess.run(
+            [proof.need("tesseract"), str(source), "stdout", *options, "--psm", "6", "-l", OCR_LANGUAGE],
+            stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=20, check=True,
+        ).stdout
+    raw = recognize(path)
+    # Tesseract can omit light labels inside blue focus buttons. Analyze a
+    # high-contrast derivative too; retain the original capture unmodified.
+    with tempfile.TemporaryDirectory(prefix="session-screen-ocr-") as temporary:
+        analysis = Path(temporary) / "text.png"
+        with Image.open(path) as screenshot:
+            ImageOps.grayscale(screenshot).point(lambda value: 0 if value >= 190 else 255).save(analysis)
+            rgb = screenshot.convert("RGB")
+            pixels = rgb.get_flattened_data() if hasattr(rgb, "get_flattened_data") else rgb.getdata()
+            focus = Image.new("L", rgb.size)
+            focus.putdata([255 if abs(r - 41) < 4 and abs(g - 78) < 4 and abs(b - 117) < 4 else 0
+                           for r, g, b in pixels])
+            bounds = focus.getbbox()
+            controls = Path(temporary) / "focused-controls.png"
+            if bounds:
+                ImageOps.grayscale(rgb.crop(bounds)).point(lambda value: 0 if value >= 190 else 255).save(controls)
+        contrasted = recognize(analysis)
+        # Sparse button rows can be ignored by whole-screen layout analysis.
+        # Read their authored Clear Blue region separately from the same frame.
+        focused = recognize(controls) if bounds else ""
+    return " ".join((raw + " " + contrasted + " " + focused).casefold().split())
+
+
+def normalized(text: str) -> str:
+    return "".join(character for character in text.casefold() if character.isalnum())
+
+
+def assert_ocr_labels(path: Path, labels: list[str], description: str) -> str:
+    text = screenshot_ocr(path)
+    compact = normalized(text)
+    missing = [label for label in labels if normalized(label) not in compact]
+    if missing:
+        raise RuntimeError(f"{description} capture OCR omitted visible text {missing}: {text!r}")
+    return text
+
+
+def capture_visible(env: dict[str, str], output: Path, name: str, labels: list[str],
+                    description: str, *, timeout: float = 5) -> tuple[Path, str]:
+    """Wait for a rendered GTK frame instead of mistaking a mapped layer for paint."""
+    deadline = time.monotonic() + timeout
+    last_text = ""
+    path = output / f"{name}.png"
+    while time.monotonic() < deadline:
+        capture(env, output, name)
+        try:
+            last_text = screenshot_ocr(path)
+        except (OSError, subprocess.SubprocessError) as error:
+            last_text = f"OCR error: {error}"
+        compact = normalized(last_text)
+        if all(normalized(label) in compact for label in labels):
+            return path, last_text
+        time.sleep(0.12)
+    missing = [label for label in labels if normalized(label) not in normalized(last_text)]
+    raise RuntimeError(f"{description} did not render visible text {missing} within {timeout:.1f}s; OCR={last_text!r}")
+
+
+def actions(action_trace: Path, event: str = "start") -> list[dict]:
+    return [item for item in read_jsonl(action_trace) if item.get("event") == event]
+
+
+def preflights(trace: Path, event: str = "start") -> list[dict]:
+    return [item for item in read_jsonl(trace) if item.get("event") == event]
+
+
+def set_responses(path: Path, responses: list[dict]) -> None:
+    path.write_text(json.dumps({"responses": responses}), encoding="utf-8")
+
+
+def start_direct_menu(env: dict[str, str], output: Path, owned: list[subprocess.Popen],
+                      name: str, *, seconds: int, select: str | None = None,
+                      label: str = "Private native proof") -> tuple[subprocess.Popen, Path]:
+    command = [str(SUSPEND), "menu", "--seconds", str(seconds), "--label", label]
+    if select:
+        command.extend(["--select", select])
+    return launch(command, env, output, name, owned)
+
+
+def start_wrapper_menu(env: dict[str, str], output: Path, owned: list[subprocess.Popen],
+                       name: str, *, seconds: int | None = None,
+                       label: str = "Private native proof") -> tuple[subprocess.Popen, Path]:
+    command = [str(SESSION_MENU), "--screen", "--label", label]
+    if seconds is not None:
+        command.extend(["--seconds", str(seconds)])
+    return launch(command, env, output, name, owned)
+
+
+def trace_snapshot(path: Path) -> str:
+    return path.read_text(errors="replace") if path.exists() else ""
+
+
+def wait_proc(proc: subprocess.Popen, *, timeout: float = 8, message: str = "native screen exit") -> int:
+    try:
+        proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        raise RuntimeError(f"{message}: did not exit in {timeout:.1f}s") from error
+    return proc.returncode
+
+
+def cancel_with_escape(input_device: PrivateXTest, proc: subprocess.Popen,
+                       trace_path: Path, action_trace: Path, expected_layer: bool,
+                       env: dict[str, str], *, delay: float = 0.15) -> None:
+    starts_before = len(actions(action_trace))
+    input_device.tap("Escape")
+    returncode = wait_proc(proc, timeout=5, message="Escape cancellation")
+    if returncode != 0:
+        raise RuntimeError(f"Escape cancellation returned {returncode}: {trace_snapshot(trace_path)}")
+    time.sleep(delay)
+    starts_after = actions(action_trace)
+    if len(starts_after) != starts_before:
+        raise RuntimeError(f"Escape cancellation dispatched a command: {starts_after[starts_before:]}")
+    if expected_layer and screen_layers(env):
+        raise RuntimeError("session layer remained visible after Escape cancellation")
+    if "screen: cancelled" not in trace_snapshot(trace_path):
+        raise RuntimeError(f"Escape cancellation receipt missing: {trace_snapshot(trace_path)}")
+
+
+def expected_dispatch(operation: str) -> list[tuple[str, list[str]]]:
+    return {
+        "lock": [
+            ("systemctl", ["--user", "start", "desktop-lock.service"]),
+            ("desktop-away", ["away"]),
+        ],
+        "away": [("desktop-away", ["away"])],
+        "suspend": [("systemctl", ["suspend"])],
+        "logout": [("niri-quit", ["msg", "action", "quit", "--skip-confirmation"])],
+        "restart": [("systemctl", ["reboot"])],
+        "shutdown": [("systemctl", ["poweroff"])],
+    }[operation]
+
+
+def expected_starts(action_trace: Path, expected: list[tuple[str, list[str]]]) -> list[dict]:
+    observed = [(item.get("kind"), item.get("args")) for item in actions(action_trace)]
+    if observed != expected:
+        raise RuntimeError(f"inert action dispatch mismatch: expected {expected}, observed {observed}")
+    return actions(action_trace)
+
+
+def wait_for_operation(proc: subprocess.Popen, trace_path: Path, action_trace: Path,
+                       operation: str, seconds: int, output: Path, env: dict[str, str],
+                       input_device: PrivateXTest, report: list[dict], *,
+                       capture_prefix: str | None = None, held_key: str | None = None,
+                       action_start_count: int = 0, completion_count: int = 0) -> None:
+    wait_for_trace(trace_path, f"screen: confirm: {operation}", proc)
+    wait_for_screen(env, proc, present=True)
+    if len(actions(action_trace)) != action_start_count:
+        raise RuntimeError(f"{operation} was dispatched before confirmation: {actions(action_trace)[action_start_count:]}")
+    if capture_prefix:
+        confirm = capture(env, output, f"{capture_prefix}-confirm")
+        report.append({"check": f"{operation} explicit confirmation visible", "screenshot": confirm.name,
+                       "ocr": screenshot_ocr(confirm)})
+    time.sleep(0.18)
+    if len(actions(action_trace)) != action_start_count:
+        raise RuntimeError(f"{operation} dispatched while its confirmation was idle: {actions(action_trace)[action_start_count:]}")
+
+    # Back is the initial confirmation focus; Tab gives a fresh activation of Confirm.
+    input_device.tap("Tab")
+    started = time.monotonic()
+    input_device.key("Return", True)
+    if held_key:
+        time.sleep(1.15)
+        if actions(action_trace):
+            raise RuntimeError(f"held {held_key} skipped the {seconds}s timer for {operation}")
+        input_device.key("Return", False)
+    else:
+        input_device.key("Return", False)
+
+    wait_for_trace(trace_path, f"screen: countdown: {operation} {seconds}", proc)
+    countdown_at = time.monotonic()
+    if capture_prefix:
+        countdown = capture(env, output, f"{capture_prefix}-countdown")
+        report.append({"check": f"{operation} cancellable countdown visible", "screenshot": countdown.name,
+                       "ocr": screenshot_ocr(countdown)})
+    expected = expected_dispatch(operation)
+    starts = proof.wait_for(lambda: (actions(action_trace)[action_start_count:]
+                                     if len(actions(action_trace)) >= action_start_count + len(expected) else None), timeout=seconds + 5,
+                            message=f"{operation} inert dispatch", proc=proc)
+    first_at = min(item["at"] for item in starts)
+    elapsed = first_at - started
+    if elapsed < seconds - 0.12:
+        raise RuntimeError(f"{operation} dispatched before its full {seconds}s timer ({elapsed:.3f}s)")
+    observed_pairs = [(item.get("kind"), item.get("args")) for item in starts]
+    if observed_pairs != expected:
+        raise RuntimeError(f"{operation} inert dispatch mismatch: expected {expected}, observed {observed_pairs}")
+    completions = proof.wait_for(lambda: (actions(action_trace, "complete")[completion_count:]
+                                          if len(actions(action_trace, "complete")) >= completion_count + len(expected) else None),
+                                timeout=5, message=f"{operation} inert dispatch completion", proc=proc)
+    complete_pairs = [(item.get("kind"), item.get("args")) for item in completions]
+    if complete_pairs != expected:
+        raise RuntimeError(f"{operation} completion sequence mismatch: {complete_pairs}")
+    returncode = wait_proc(proc, timeout=5, message=f"{operation} post-dispatch close")
+    if returncode != 0:
+        raise RuntimeError(f"{operation} screen returned {returncode}: {trace_snapshot(trace_path)}")
+    if screen_layers(env):
+        raise RuntimeError(f"{operation} screen remained visible after successful inert dispatch")
+    report.append({"check": f"{operation} fresh Confirm then full timer and exact inert dispatch",
+                   "countdown_observed_at": countdown_at, "dispatch_after_activation_seconds": round(elapsed, 3),
+                   "dispatch": expected})
+
+
+def screen_process_info() -> dict:
+    return {
+        "wrapper": str(SESSION_MENU),
+        "wrapper_sha256": source_sha256(SESSION_MENU),
+        "suspend_helper": str(SUSPEND),
+        "suspend_helper_sha256": source_sha256(SUSPEND),
+        "check_script_sha256": source_sha256(Path(__file__).resolve()),
+    }
+
+
+def output_scale(value: object, wanted: float) -> bool:
+    if isinstance(value, dict):
+        logical = value.get("logical")
+        scale = value.get("scale")
+        if isinstance(logical, dict) and scale is None:
+            scale = logical.get("scale")
+        if (value.get("name") == "winit" or "winit" in value) and scale == wanted:
+            return True
+        return any(output_scale(item, wanted) for item in value.values())
+    if isinstance(value, list):
+        return any(output_scale(item, wanted) for item in value)
+    return False
+
+
+def reload_private_output_scale(env: dict[str, str], config: Path, scale: str) -> list | dict:
+    config.write_text(
+        'hotkey-overlay {\n    skip-at-startup\n}\n'
+        'output "winit" {\n    scale ' + scale + '\n}\n',
+        encoding="utf-8",
+    )
+    run_niri(env, "msg", "action", "load-config-file")
+    return proof.wait_for(
+        lambda: (value if output_scale((value := niri_json(env, "outputs")), float(scale)) else None),
+        timeout=8, message=f"private Niri output scale {scale}",
+    )
+
+
+def run_checks(args: argparse.Namespace) -> dict:
+    output = safe_output_dir(args.output)
+    source_at_start = screen_process_info()
+    host_baseline = proof.protected_host_pids()
+    owned: list[subprocess.Popen] = []
+    checks: list[dict] = []
+    action_trace = output / "actions.jsonl"
+    preflight_trace = output / "preflights.jsonl"
+    behavior_file = output / "stub-behavior.json"
+    private_identity: dict = {}
+    private_temp: tempfile.TemporaryDirectory | None = None
+    input_device: PrivateXTest | None = None
+    failure: str | None = None
+    try:
+        private_temp = tempfile.TemporaryDirectory(prefix="niri-session-screen-")
+        with nullcontext(private_temp.name) as private_dir_text:
+            private_dir = Path(private_dir_text)
+            private_dir.chmod(0o700)
+            env = proof.private_env(private_dir)
+            # The checker creates these known-private paths.  No user D-Bus
+            # address or session is inherited by clients or the compositor.
+            for key in ("DBUS_SESSION_BUS_ADDRESS", "DBUS_SYSTEM_BUS_ADDRESS"):
+                address = env[key]
+                if not address.startswith("unix:path=") or Path(address.removeprefix("unix:path=")).exists():
+                    raise RuntimeError(f"{key} must point to an absent private socket")
+            xvfb = proof.start_xvfb(env, private_dir)
+            owned.append(xvfb)
+            private_display = env["DISPLAY"]
+            niri, wayland_socket, ipc_socket, initial_outputs = proof.start_niri(env, private_dir)
+            owned.append(niri)
+            if b"--session" in proof.process_info(niri.pid)[1].split(b"\0"):
+                raise RuntimeError("nested Niri must not use --session")
+            if proof.descendants(niri.pid):
+                raise RuntimeError("nested Niri spawned an unexpected child process")
+
+            client_env = dict(env)
+            client_env.update(
+                WAYLAND_DISPLAY=(str(wayland_socket) if wayland_socket.parent != Path(env["XDG_RUNTIME_DIR"])
+                                 else wayland_socket.name),
+                NIRI_SOCKET=str(ipc_socket),
+                GDK_BACKEND="wayland",
+                PATH="/usr/bin:/bin",
+                PYTHONUNBUFFERED="1",
+            )
+            client_env.pop("DISPLAY", None)
+            if client_env.get("DISPLAY"):
+                raise RuntimeError("native Wayland clients inherited DISPLAY")
+            runtime = Path(client_env["XDG_RUNTIME_DIR"])
+            bin_dir = private_dir / "bin"
+            client_env["ACTION_TRACE"] = str(action_trace)
+            client_env["PREFLIGHT_TRACE"] = str(preflight_trace)
+            client_env["ACTION_BEHAVIOR"] = str(behavior_file)
+            write_stubs(bin_dir, action_trace, preflight_trace, behavior_file, runtime)
+            client_env["PATH"] = str(bin_dir) + ":/usr/bin:/bin"
+            config_dir = Path(client_env["XDG_CONFIG_HOME"]) / "desktop-session"
+            config_dir.mkdir(mode=0o700)
+            (config_dir / "power.toml").write_text("lock_before_suspend = false\n", encoding="utf-8")
+            (config_dir / "confirmation.toml").write_text(
+                'seconds = 5\nlabel = "Private native proof"\nlock_on_away = false\n', encoding="utf-8")
+
+            input_device = PrivateXTest(xvfb, private_display)
+            output_snapshot = niri_json(client_env, "outputs")
+            private_config = private_dir / "niri-private.kdl"
+            private_identity = {
+                "xvfb_pid": xvfb.pid,
+                "display_allocated_by_displayfd": private_display,
+                "wayland_socket": str(wayland_socket),
+                "niri_ipc_socket": str(ipc_socket),
+                "niri_pid": niri.pid,
+                "niri_command_line": [part.decode(errors="replace") for part in proof.process_info(niri.pid)[1].split(b"\0") if part],
+                "niri_outputs": output_snapshot,
+                "explicit_dbus_sockets": {
+                    key: env[key] for key in ("DBUS_SESSION_BUS_ADDRESS", "DBUS_SYSTEM_BUS_ADDRESS")
+                },
+                "client_display_absent": "DISPLAY" not in client_env,
+                "niri_started_without_session": True,
+                "locker_status_default": "inactive (systemctl is-active stub returns 3)",
+            }
+            if len(output_snapshot) == 1:
+                private_identity["multiple_output_acceptance"] = "not exercised: nested winit compositor exposed one output"
+
+            # An inert, generated GTK drawing gives the screenshots a private
+            # background; it does not read or display the user's wallpaper.
+            background_source = private_dir / "private-background.py"
+            background_source.write_text(
+                '''import gi\n'''
+                '''gi.require_version("Gtk", "3.0")\n'''
+                '''from gi.repository import Gtk, Gdk, GLib\n'''
+                '''Gtk.init(None)\n'''
+                '''window = Gtk.Window(title="Private inert proof background")\n'''
+                '''window.set_decorated(False)\n'''
+                '''window.fullscreen()\n'''
+                '''area = Gtk.DrawingArea()\n'''
+                '''def draw(widget, cr):\n'''
+                '''    width, height = widget.get_allocated_width(), widget.get_allocated_height()\n'''
+                '''    gradient = __import__("cairo").LinearGradient(0, 0, width, height)\n'''
+                '''    gradient.add_color_stop_rgb(0, 0.10, 0.19, 0.28)\n'''
+                '''    gradient.add_color_stop_rgb(1, 0.21, 0.33, 0.38)\n'''
+                '''    cr.set_source(gradient); cr.paint()\n'''
+                '''    cr.set_source_rgba(0.82, 0.90, 0.87, 0.45)\n'''
+                '''    cr.arc(width * 0.77, height * 0.28, min(width, height) * 0.12, 0, 6.283); cr.fill()\n'''
+                '''    return False\n'''
+                '''area.connect("draw", draw); window.add(area); window.show_all(); Gtk.main()\n''',
+                encoding="utf-8",
+            )
+            background, _background_log = launch(
+                ["/usr/bin/python3", str(background_source)], client_env, output,
+                "private-background", owned,
+            )
+            proof.wait_for(lambda: any("Private inert proof background" in str(item.get("title", ""))
+                                     for item in niri_json(client_env, "windows")),
+                           timeout=8, message="private inert GTK background", proc=background)
+            background_capture = capture(client_env, output, "private-background")
+            if not screen_layers(client_env):
+                checks.append({"check": "private inert GTK background shown in nested compositor",
+                               "screenshot": background_capture.name})
+
+            # Real wrapper launch, visible grid, idle no-op, and actual native
+            # keyboard navigation from Lock -> Display off -> Suspend ->
+            # Shut down -> Restart.  This route must land on Restart's own
+            # confirmation without triggering a native request.
+            wrapper_proc, wrapper_log = start_wrapper_menu(
+                client_env, output, owned, "wrapper-grid", seconds=1)
+            wait_for_trace(wrapper_log, "screen: picker", wrapper_proc)
+            wait_for_screen(client_env, wrapper_proc, present=True)
+            picker, picker_ocr = capture_visible(
+                client_env, output, "session-grid",
+                ["Lock", "Display off", "Suspend", "Log out", "Restart", "Shut down", "Close"],
+                "session action grid",
+            )
+            time.sleep(0.35)
+            if actions(action_trace):
+                raise RuntimeError(f"idle native grid dispatched an action: {actions(action_trace)}")
+            for key in ("Right", "Right", "Down", "Left"):
+                input_device.tap(key)
+            input_device.tap("Return")
+            wait_for_trace(wrapper_log, "screen: confirm: restart", wrapper_proc)
+            wait_for_screen(client_env, wrapper_proc, present=True)
+            if actions(action_trace):
+                raise RuntimeError("grid keyboard selection dispatched before confirmation")
+            restart_confirm, restart_ocr = capture_visible(
+                client_env, output, "grid-restart-confirm", ["Restart"],
+                "keyboard-selected Restart confirmation",
+            )
+            checks.append({"check": "native six-action grid visible; idle is inert; keyboard route selects Restart",
+                           "screenshots": [picker.name, restart_confirm.name],
+                           "grid_ocr": picker_ocr, "restart_confirmation_ocr": restart_ocr,
+                           "selected_confirmation": "restart"})
+            cancel_with_escape(input_device, wrapper_proc, wrapper_log, action_trace,
+                               True, client_env)
+            if args.smoke:
+                if screen_process_info() != source_at_start:
+                    raise RuntimeError("source changed during native smoke; rerun on a frozen candidate")
+                proof.verify_host_pids(host_baseline)
+                return {
+                    "status": "passed",
+                    "scope": "private nested Xvfb/Niri GTK smoke proof only; no physical acceptance claim",
+                    "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+                    "output_dir": str(output),
+                    "source": source_at_start,
+                    "private_runtime": private_identity,
+                    "checks": checks,
+                    "action_starts": actions(action_trace),
+                    "action_completions": actions(action_trace, "complete"),
+                    "read_only_preflights": preflights(preflight_trace),
+                    "screenshots": sorted(path.name for path in output.glob("*.png")),
+                    "cleanup": "owned private process groups stopped; protected host PID baseline unchanged",
+                }
+
+            # Scale 2 compresses the single nested output to 640x400 logical
+            # pixels and exposes clipping or hidden controls.  Reload only the
+            # private nested Niri config, then restore its original scale.
+            scale2_result = None
+            try:
+                scale2_outputs = reload_private_output_scale(client_env, private_config, "2")
+                scale_proc, scale_log = start_wrapper_menu(
+                    client_env, output, owned, "scale-two-grid", seconds=2)
+                wait_for_trace(scale_log, "screen: picker", scale_proc)
+                scale_capture, scale_ocr = capture_visible(
+                    client_env, output, "scale-two-grid", ["Lock", "Display off", "Suspend", "Log out", "Restart", "Shut down", "Close"],
+                    "scale-two session action grid",
+                )
+                for key in ("Right", "Right"):
+                    input_device.tap(key)
+                input_device.tap("Return")
+                wait_for_trace(scale_log, "screen: confirm: suspend", scale_proc)
+                scale_confirm, scale_confirm_ocr = capture_visible(client_env, output, "scale-two-confirm", ["Suspend", "Back", "Confirm"],
+                                                       "scale-two confirmation controls")
+                input_device.tap("Tab")
+                input_device.tap("Return")
+                wait_for_trace(scale_log, "screen: countdown: suspend 2", scale_proc)
+                scale_countdown, scale_countdown_ocr = capture_visible(client_env, output, "scale-two-countdown", ["Suspend", "Cancel"],
+                                                         "scale-two countdown Cancel control")
+                cancel_with_escape(input_device, scale_proc, scale_log, action_trace,
+                                   True, client_env)
+                scale2_result = {"status": "passed", "outputs": scale2_outputs,
+                                 "screenshots": [scale_capture.name, scale_confirm.name,
+                                                 scale_countdown.name],
+                                 "grid_ocr": scale_ocr, "confirm_ocr": scale_confirm_ocr,
+                                 "countdown_ocr": scale_countdown_ocr}
+            finally:
+                restored_outputs = reload_private_output_scale(client_env, private_config, "1.25")
+            private_identity["scale_two_acceptance"] = scale2_result or {
+                "status": "unavailable", "restored_outputs": restored_outputs,
+            }
+            private_identity["niri_outputs"] = restored_outputs
+            checks.append({"check": "constrained 640x400 logical scale-two grid and confirmation",
+                           "result": private_identity["scale_two_acceptance"]})
+
+            # Escape after Tab and Shift+Tab traversal must cancel from the
+            # chooser, even when focus has moved through all grid controls.
+            tabbed_proc, tabbed_log = start_wrapper_menu(
+                client_env, output, owned, "tab-traversal", seconds=2)
+            wait_for_trace(tabbed_log, "screen: picker", tabbed_proc)
+            wait_for_screen(client_env, tabbed_proc, present=True)
+            for _ in range(7):
+                input_device.tap("Tab")
+            input_device.shift_tab()
+            capture(client_env, output, "tab-traversal-picker")
+            cancel_with_escape(input_device, tabbed_proc, tabbed_log, action_trace,
+                               True, client_env)
+            checks.append({"check": "Tab and Shift+Tab remain in chooser; Escape cancels after traversal"})
+
+            # Escape at confirmation and during an armed timer is global and
+            # must not leave a delayed request behind.
+            confirm_proc, confirm_log = start_direct_menu(
+                client_env, output, owned, "escape-confirm", seconds=2, select="lock")
+            wait_for_trace(confirm_log, "screen: confirm: lock", confirm_proc)
+            wait_for_screen(client_env, confirm_proc, present=True)
+            cancel_with_escape(input_device, confirm_proc, confirm_log, action_trace,
+                               True, client_env)
+            timer_proc, timer_log = start_direct_menu(
+                client_env, output, owned, "escape-countdown", seconds=2, select="suspend")
+            wait_for_trace(timer_log, "screen: confirm: suspend", timer_proc)
+            input_device.tap("Tab")
+            input_device.tap("Return")
+            wait_for_trace(timer_log, "screen: countdown: suspend 2", timer_proc)
+            capture(client_env, output, "escape-countdown-visible")
+            input_device.tap("Tab")
+            cancel_with_escape(input_device, timer_proc, timer_log, action_trace,
+                               True, client_env, delay=2.4)
+            checks.append({"check": "Escape cancels at confirmation and countdown after Tab; no stale dispatch"})
+
+            # Hold Return and Space across the confirmation-to-countdown
+            # transition. Repeats from the original key-down must not activate
+            # the newly focused Cancel control or skip the timer.
+            for operation, keysym in (("restart", "Return"), ("away", "space")):
+                held_count = len(actions(action_trace))
+                held_proc, held_log = start_direct_menu(
+                    client_env, output, owned, f"held-{keysym}", seconds=2, select=operation)
+                wait_for_trace(held_log, f"screen: confirm: {operation}", held_proc)
+                input_device.tap("Tab")
+                held_started = time.monotonic()
+                input_device.key(keysym, True)
+                wait_for_trace(held_log, f"screen: countdown: {operation} 2", held_proc)
+                time.sleep(1.15)
+                if len(actions(action_trace)) != held_count:
+                    raise RuntimeError(f"held {keysym} dispatched {operation} before its timer")
+                if "screen: cancelled" in trace_snapshot(held_log):
+                    raise RuntimeError(f"held {keysym} repeated onto the newly focused Cancel control")
+                if not screen_layers(client_env):
+                    raise RuntimeError(f"held {keysym} closed the {operation} countdown")
+                input_device.key(keysym, False)
+                held_starts = proof.wait_for(
+                    lambda: (actions(action_trace)[held_count:]
+                             if len(actions(action_trace)) > held_count else None),
+                    timeout=4, message=f"held {keysym} full timer request", proc=held_proc,
+                )
+                held_elapsed = min(item["at"] for item in held_starts) - held_started
+                if held_elapsed < 1.9:
+                    raise RuntimeError(f"held {keysym} shortened the full confirmation timer ({held_elapsed:.3f}s)")
+                observed = [(item.get("kind"), item.get("args")) for item in held_starts]
+                if observed != expected_dispatch(operation):
+                    raise RuntimeError(f"held {keysym} dispatch mismatch: {observed}")
+                wait_proc(held_proc, timeout=5, message=f"held {keysym} completion")
+                checks.append({"check": f"held {keysym} cannot advance or cancel the next stage",
+                               "operation": operation, "dispatch_after_activation_seconds": round(held_elapsed, 3)})
+
+            # Every action is started through a fresh Confirm key-down after
+            # Back's initial focus.  Calls are private trace stubs only.
+            for operation in ("lock", "away", "suspend", "logout", "restart", "shutdown"):
+                before = len(actions(action_trace))
+                completed_before = len(actions(action_trace, "complete"))
+                proc, log = start_direct_menu(
+                    client_env, output, owned, f"action-{operation}", seconds=1,
+                    select=operation,
+                )
+                wait_for_operation(proc, log, action_trace, operation, 1, output,
+                                   client_env, input_device, checks,
+                                   capture_prefix=f"action-{operation}",
+                                   action_start_count=before, completion_count=completed_before)
+                new_starts = actions(action_trace)[before:]
+                pairs = [(item.get("kind"), item.get("args")) for item in new_starts]
+                if pairs != expected_dispatch(operation):
+                    raise RuntimeError(f"{operation} exact action sequence differed: {pairs}")
+                checks[-1]["new_action_count"] = len(new_starts)
+
+            # Required default-five-second confirmation has a real GTK capture
+            # during the countdown and elapsed-time proof from the stub.
+            default_proc, default_log = start_wrapper_menu(
+                client_env, output, owned, "default-five", label="Default Five Proof")
+            wait_for_trace(default_log, "screen: picker", default_proc)
+            for key in ("Right", "Right"):
+                input_device.tap(key)
+            input_device.tap("Return")
+            wait_for_trace(default_log, "screen: confirm: suspend", default_proc)
+            input_device.tap("Tab")
+            default_start = time.monotonic()
+            input_device.tap("Return")
+            wait_for_trace(default_log, "screen: countdown: suspend 5", default_proc)
+            default_capture = capture(client_env, output, "default-five-countdown")
+            default_ocr = assert_ocr_labels(default_capture, ["Suspend"], "default five-second countdown")
+            old_count = len(actions(action_trace))
+            proof.wait_for(lambda: len(actions(action_trace)) > old_count or None, timeout=9,
+                           message="default five-second inert suspend", proc=default_proc)
+            default_action = actions(action_trace)[old_count:]
+            first_default = min(item["at"] for item in default_action)
+            default_elapsed = first_default - default_start
+            if default_elapsed < 4.7:
+                raise RuntimeError(f"default five-second timer expired early ({default_elapsed:.3f}s)")
+            expected_starts(action_trace, [*expected_dispatch("restart"), *expected_dispatch("away"),
+                                           *expected_dispatch("lock"), *expected_dispatch("away"),
+                                           *expected_dispatch("suspend"), *expected_dispatch("logout"),
+                                           *expected_dispatch("restart"), *expected_dispatch("shutdown"),
+                                           ("systemctl", ["suspend"])])
+            wait_proc(default_proc, timeout=5, message="default five-second screen close")
+            checks.append({"check": "default 5s timer visible for a full interval",
+                           "screenshot": default_capture.name, "ocr": default_ocr,
+                           "dispatch_after_activation_seconds": round(default_elapsed, 3)})
+
+            # Duplicate invocations while armed must leave the original timer
+            # deadline intact.  Use a three-second timer to observe this safely.
+            duplicate_proc, duplicate_log = start_direct_menu(
+                client_env, output, owned, "duplicate-original", seconds=3, select="shutdown")
+            wait_for_trace(duplicate_log, "screen: confirm: shutdown", duplicate_proc)
+            input_device.tap("Tab")
+            duplicate_start = time.monotonic()
+            input_device.tap("Return")
+            wait_for_trace(duplicate_log, "screen: countdown: shutdown 3", duplicate_proc)
+            time.sleep(0.9)
+            duplicate_count = len(actions(action_trace))
+            duplicate, duplicate_log2 = start_wrapper_menu(
+                client_env, output, owned, "duplicate-wrapper", seconds=3)
+            duplicate.wait(timeout=5)
+            wait_for_trace(duplicate_log, "screen: countdown: shutdown 2", duplicate_proc, timeout=3)
+            proof.wait_for(lambda: len(actions(action_trace)) > duplicate_count or None, timeout=5,
+                           message="duplicate invocation original deadline", proc=duplicate_proc)
+            duplicate_action = actions(action_trace)[-1]
+            duplicate_elapsed = duplicate_action["at"] - duplicate_start
+            if duplicate_action.get("kind") != "systemctl" or duplicate_action.get("args") != ["poweroff"]:
+                raise RuntimeError(f"duplicate invocation changed the selected action: {duplicate_action}")
+            if duplicate_elapsed >= 3.8:
+                raise RuntimeError(f"duplicate invocation restarted the timer ({duplicate_elapsed:.3f}s)")
+            wait_proc(duplicate_proc, timeout=5, message="duplicate original screen close")
+            checks.append({"check": "repeated invocation raises existing screen without resetting timer",
+                           "duplicate_launcher_returncode": duplicate.returncode,
+                           "original_dispatch_after_activation_seconds": round(duplicate_elapsed, 3)})
+
+            # Near-expiry Escape must win without leaving a delayed callback.
+            near_proc, near_log = start_direct_menu(
+                client_env, output, owned, "near-expiry-cancel", seconds=1, select="suspend")
+            wait_for_trace(near_log, "screen: confirm: suspend", near_proc)
+            near_count = len(actions(action_trace))
+            input_device.tap("Tab")
+            near_start = time.monotonic()
+            input_device.tap("Return")
+            wait_for_trace(near_log, "screen: countdown: suspend 1", near_proc)
+            time.sleep(0.70)
+            input_device.tap("Escape")
+            wait_proc(near_proc, timeout=4, message="near-expiry cancellation")
+            time.sleep(0.7)
+            if len(actions(action_trace)) != near_count:
+                raise RuntimeError(f"near-expiry Escape left a stale request: {actions(action_trace)[near_count:]}")
+            if "screen: cancelled" not in trace_snapshot(near_log):
+                raise RuntimeError(f"near-expiry cancellation was not recorded: {trace_snapshot(near_log)}")
+            checks.append({"check": "rapid near-expiry Escape cancels without stale dispatch",
+                           "cancel_after_seconds": round(time.monotonic() - near_start, 3)})
+
+            # UI SIGTERM must stop the pending operation without dispatch.
+            term_proc, term_log = start_direct_menu(
+                client_env, output, owned, "sigterm-cancel", seconds=2, select="restart")
+            wait_for_trace(term_log, "screen: confirm: restart", term_proc)
+            term_count = len(actions(action_trace))
+            input_device.tap("Tab")
+            input_device.tap("Return")
+            wait_for_trace(term_log, "screen: countdown: restart 2", term_proc)
+            os.killpg(term_proc.pid, signal.SIGTERM)
+            wait_proc(term_proc, timeout=5, message="SIGTERM session screen")
+            time.sleep(2.2)
+            if len(actions(action_trace)) != term_count:
+                raise RuntimeError(f"SIGTERM left a delayed request: {actions(action_trace)[term_count:]}")
+            checks.append({"check": "SIGTERM tears down pending timer without dispatch"})
+
+            # A frozen GUI must never fire while stopped or dispatch an overdue
+            # request when resumed.  The screen process and any in-process
+            # timer share the owned process group.
+            freeze_proc, freeze_log = start_direct_menu(
+                client_env, output, owned, "freeze-cancel", seconds=1, select="restart")
+            wait_for_trace(freeze_log, "screen: confirm: restart", freeze_proc)
+            freeze_count = len(actions(action_trace))
+            input_device.tap("Tab")
+            input_device.tap("Return")
+            wait_for_trace(freeze_log, "screen: countdown: restart 1", freeze_proc)
+            freeze_started = time.monotonic()
+            os.killpg(freeze_proc.pid, signal.SIGSTOP)
+            # Exceed the documented two-second UI heartbeat watchdog.
+            time.sleep(2.6)
+            if len(actions(action_trace)) != freeze_count:
+                raise RuntimeError("session screen dispatched while its process group was frozen")
+            os.killpg(freeze_proc.pid, signal.SIGCONT)
+            try:
+                freeze_proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                # A safe frozen-timer design may keep the screen open and
+                # re-arm; it still must not dispatch the stale deadline.
+                time.sleep(0.4)
+            if len(actions(action_trace)) != freeze_count:
+                raise RuntimeError("resuming a frozen screen dispatched an overdue request")
+            if freeze_proc.poll() is None:
+                input_device.tap("Escape")
+                wait_proc(freeze_proc, timeout=4, message="cancel after frozen timer resume")
+            checks.append({"check": "frozen UI never dispatches while stopped or overdue on resume",
+                           "frozen_seconds": round(time.monotonic() - freeze_started, 3),
+                           "post_resume_trace": trace_snapshot(freeze_log)})
+
+            # Focus loss is attempted by focusing the inert background window
+            # through private Niri IPC.  The receipt reports whether the
+            # compositor can transfer keyboard focus away from the layer.
+            focus_proc, focus_log = start_wrapper_menu(
+                client_env, output, owned, "focus-loss", seconds=2)
+            wait_for_trace(focus_log, "screen: picker", focus_proc)
+            focus_count = len(actions(action_trace))
+            focus_window = None
+            for item in niri_json(client_env, "windows"):
+                if "Private inert proof background" in str(item.get("title", "")):
+                    focus_window = item
+                    break
+            focus_loss_result = "unavailable: no focusable background window in nested Niri"
+            if focus_window and "id" in focus_window:
+                run_niri(client_env, "msg", "action", "focus-window", "--id", str(focus_window["id"]))
+                time.sleep(0.25)
+                observed_windows = niri_json(client_env, "windows")
+                background_focused = any(item.get("id") == focus_window["id"] and item.get("is_focused")
+                                         for item in observed_windows)
+                if background_focused:
+                    focus_loss_result = "transferred to private inert background window"
+                    try:
+                        focus_proc.wait(timeout=2)
+                    except subprocess.TimeoutExpired as error:
+                        raise RuntimeError("session screen did not cancel after keyboard focus loss") from error
+                    if "screen: cancelled" not in trace_snapshot(focus_log):
+                        raise RuntimeError(f"focus-loss cancellation receipt missing: {trace_snapshot(focus_log)}")
+                    if len(actions(action_trace)) != focus_count:
+                        raise RuntimeError(f"focus loss dispatched an action: {actions(action_trace)[focus_count:]}")
+                else:
+                    focus_loss_result = "not transferable: session layer retained keyboard focus"
+                    cancel_with_escape(input_device, focus_proc, focus_log, action_trace,
+                                       True, client_env)
+            checks.append({"check": "focus-loss boundary attempted in private nested compositor",
+                           "result": focus_loss_result})
+
+            # A slow stderr-only refusal exercises the asynchronous dispatch
+            # boundary. Escape after commit cannot report that the OS request
+            # was cancelled; the completed refusal must be visible and retry
+            # must arm a fresh full timer.
+            set_responses(behavior_file, [{
+                "kind": "systemctl", "args": ["suspend"], "returncode": 1,
+                "stdout": "", "stderr": "simulated private power refusal\n", "delay": 3.0,
+            }])
+            slow_proc, slow_log = start_direct_menu(
+                client_env, output, owned, "slow-refusal", seconds=1, select="suspend")
+            wait_for_trace(slow_log, "screen: confirm: suspend", slow_proc)
+            slow_count = len(actions(action_trace))
+            input_device.tap("Tab")
+            input_device.tap("Return")
+            wait_for_trace(slow_log, "screen: countdown: suspend 1", slow_proc)
+            slow_start = time.monotonic()
+            proof.wait_for(lambda: [item for item in actions(action_trace)[slow_count:]
+                                    if item.get("kind") == "systemctl" and item.get("args") == ["suspend"]]
+                            or None, timeout=5, message="slow suspend stub started", proc=slow_proc)
+            in_flight, in_flight_ocr = capture_visible(client_env, output, "slow-request-in-flight",
+                                                     ["Sending Suspend request"], "responsive dispatch screen", timeout=1.2)
+            if any(item.get("kind") == "systemctl" and item.get("args") == ["suspend"]
+                   for item in actions(action_trace, "complete")[slow_count:]):
+                raise RuntimeError("dispatch completed before UI responsiveness could be observed")
+            input_device.tap("Escape")
+            time.sleep(0.25)
+            if slow_proc.poll() is not None:
+                raise RuntimeError("session UI exited during a slow native request instead of remaining responsive")
+            if "screen: cancelled" in trace_snapshot(slow_log):
+                raise RuntimeError("Escape after dispatch commit falsely reported the OS request cancelled")
+            if not screen_layers(client_env):
+                raise RuntimeError("session UI layer disappeared during a slow native request")
+            wait_for_trace(slow_log, "screen: refusal: suspend:", slow_proc, timeout=5)
+            refusal_capture, refusal_ocr = capture_visible(client_env, output, "slow-refusal-visible",
+                                                         ["Retry", "simulated private power refusal"], "visible native refusal")
+            if "retry" not in normalized(refusal_ocr):
+                raise RuntimeError(f"refusal screenshot did not show a Retry control: {refusal_ocr!r}")
+            refusal_compact = normalized(refusal_ocr)
+            if "simulatedprivatepowerrefusal" not in refusal_compact:
+                raise RuntimeError(f"stderr refusal diagnostic is not visible in the GTK UI: {refusal_ocr!r}")
+            checks.append({"check": "slow stderr-only refusal kept UI live, reported request result, and exposed retry",
+                           "screenshots": [in_flight.name, refusal_capture.name],
+                           "refusal_ocr": refusal_ocr, "in_flight_ocr": in_flight_ocr,
+                           "dispatch_start_after_activation_seconds": round(
+                               min(item["at"] for item in actions(action_trace)[slow_count:]
+                                   if item.get("kind") == "systemctl" and item.get("args") == ["suspend"])
+                               - slow_start, 3)})
+            # Retry opens a new CONFIRM stage; a further fresh activation is
+            # required before the full timer can begin.
+            before_retry = len([item for item in actions(action_trace)
+                                if item.get("kind") == "systemctl" and item.get("args") == ["suspend"]])
+            time.sleep(0.2)
+            if len([item for item in actions(action_trace)
+                    if item.get("kind") == "systemctl" and item.get("args") == ["suspend"]]) != before_retry:
+                raise RuntimeError("refusal retried without a fresh user activation")
+            confirm_retries = trace_snapshot(slow_log).count("screen: confirm: suspend")
+            input_device.tap("Tab")
+            input_device.tap("Return")
+            proof.wait_for(lambda: trace_snapshot(slow_log).count("screen: confirm: suspend") > confirm_retries
+                            or None, timeout=4, message="retry confirmation stage", proc=slow_proc)
+            retry_start = time.monotonic()
+            countdown_retries = trace_snapshot(slow_log).count("screen: countdown: suspend 1")
+            input_device.tap("Tab")
+            input_device.tap("Return")
+            proof.wait_for(lambda: trace_snapshot(slow_log).count("screen: countdown: suspend 1") > countdown_retries
+                            or None, timeout=4, message="fresh retry countdown", proc=slow_proc)
+            proof.wait_for(lambda: len([item for item in actions(action_trace)
+                                        if item.get("kind") == "systemctl" and item.get("args") == ["suspend"]])
+                            > before_retry or None, timeout=5, message="fresh-timer retry dispatch", proc=slow_proc)
+            retries = [item for item in actions(action_trace)
+                       if item.get("kind") == "systemctl" and item.get("args") == ["suspend"]]
+            if len(retries) != before_retry + 1:
+                raise RuntimeError(f"retry did not issue exactly one second request: {retries}")
+            retry_elapsed = retries[-1]["at"] - retry_start
+            if retry_elapsed < 0.9:
+                raise RuntimeError("retry did not wait its fresh full one-second timer")
+            wait_proc(slow_proc, timeout=5, message="refusal retry close")
+            set_responses(behavior_file, [])
+            checks.append({"check": "refusal retry required fresh activation and full timer",
+                           "retry_elapsed_seconds": round(retry_elapsed, 3)})
+
+            # Away partial output is represented by an explicit degraded status;
+            # no lock service call may be invented for the Display off choice.
+            set_responses(behavior_file, [{
+                "kind": "desktop-away", "args": ["away"], "returncode": 1,
+                "stdout": "",
+                "stderr": "desktop-away: powered off without enforcement; controller unavailable\n", "delay": 0,
+            }])
+            partial_proc, partial_log = start_direct_menu(
+                client_env, output, owned, "away-partial", seconds=1, select="away")
+            wait_for_trace(partial_log, "screen: confirm: away", partial_proc)
+            partial_starts_before = len(actions(action_trace))
+            input_device.tap("Tab")
+            input_device.tap("Return")
+            wait_for_trace(partial_log, "screen: countdown: away 1", partial_proc)
+            partials = proof.wait_for(lambda: "screen: partial: away:" in trace_snapshot(partial_log) or None,
+                                      timeout=5, message="partial Away status", proc=partial_proc)
+            partial_capture, partial_ocr = capture_visible(client_env, output, "away-partial-visible",
+                                                         ["Partial result", "Retry", "without enforcement"], "visible partial Away result")
+            partial_action = actions(action_trace)[partial_starts_before:]
+            if [(item.get("kind"), item.get("args")) for item in partial_action] != [("desktop-away", ["away"])]:
+                raise RuntimeError(f"Display off partial flow included unexpected dispatch: {partial_action}")
+            if "partial" not in normalized(partial_ocr) and "partial" not in normalized(trace_snapshot(partial_log)):
+                raise RuntimeError("partial Away result was not accurately represented")
+            if partial_proc.poll() is None:
+                input_device.tap("Escape")
+                wait_proc(partial_proc, timeout=4, message="partial away status close")
+            if "screen: result dismissed: partial" not in trace_snapshot(partial_log):
+                raise RuntimeError("partial-result dismissal was not distinguished from cancelling an uncommitted action")
+            set_responses(behavior_file, [])
+            checks.append({"check": "Display off partial result reported without lock dispatch",
+                           "screenshot": partial_capture.name, "ocr": partial_ocr,
+                           "app_trace": trace_snapshot(partial_log)})
+
+            # Final host-process boundary; all external commands above were
+            # private stubs and Niri quit was intercepted before the binary.
+            if screen_process_info() != source_at_start:
+                raise RuntimeError("source changed during native checks; rerun on a frozen candidate")
+            proof.verify_host_pids(host_baseline)
+            return {
+                "status": "passed",
+                "scope": "private nested Xvfb/Niri GTK GUI proof; no physical desktop, lock, or power acceptance",
+                "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+                "output_dir": str(output),
+                "source": source_at_start,
+                "private_runtime": private_identity,
+                "checks": checks,
+                "action_starts": actions(action_trace),
+                "action_completions": actions(action_trace, "complete"),
+                "read_only_preflights": preflights(preflight_trace),
+                "screenshots": sorted(path.name for path in output.glob("*.png")),
+                "cleanup": "owned private process groups stopped; protected host PID baseline unchanged",
+            }
+    except Exception as error:
+        failure = f"{type(error).__name__}: {error}"
+        raise
+    finally:
+        if input_device is not None:
+            input_device.close()
+        cleanup_errors = []
+        for proc in reversed(owned):
+            try:
+                stop_owned_process(proc)
+            except Exception as error:
+                cleanup_errors.append(f"pid {proc.pid}: {error}")
+        try:
+            proof.verify_host_pids(host_baseline)
+        except Exception as error:
+            cleanup_errors.append(f"host PID baseline: {error}")
+        if private_temp is not None:
+            try:
+                private_temp.cleanup()
+            except Exception as error:
+                cleanup_errors.append(f"private temporary runtime: {error}")
+        receipt = {
+            "status": "failed" if failure or cleanup_errors else "incomplete",
+            "failure": failure,
+            "cleanup_errors": cleanup_errors,
+            "scope": "private nested Xvfb/Niri GUI proof only; no physical acceptance claim",
+            "source": source_at_start,
+            "source_after": screen_process_info(),
+            "private_runtime": private_identity,
+            "checks_completed": checks,
+            "action_starts": actions(action_trace),
+            "action_completions": actions(action_trace, "complete"),
+            "read_only_preflights": preflights(preflight_trace),
+            "screenshots": sorted(path.name for path in output.glob("*.png")),
+        }
+        (output / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+        if cleanup_errors:
+            raise RuntimeError("private native checker cleanup failed: " + "; ".join(cleanup_errors))
+
+
+def main() -> int:
+    global OCR_LANGUAGE, OCR_DATA_DIR
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path,
+                        default=Path.home() / ".local/state/niri-plus-lab/session-screen-check/native-screen-check")
+    parser.add_argument("--smoke", action="store_true",
+                        help="run only private compositor startup, real GTK grid, keyboard confirmation, and Escape")
+    parser.add_argument("--ocr-language", default="eng", help="installed Tesseract language used for visible-text checks")
+    parser.add_argument("--tessdata-dir", type=Path, help="optional private Tesseract model directory")
+    args = parser.parse_args()
+    OCR_LANGUAGE, OCR_DATA_DIR = args.ocr_language, args.tessdata_dir
+    options = ["--tessdata-dir", str(OCR_DATA_DIR)] if OCR_DATA_DIR else []
+    languages = subprocess.run([proof.need("tesseract"), "--list-langs", *options],
+                               check=True, capture_output=True, text=True, timeout=10).stdout.splitlines()
+    if OCR_LANGUAGE not in languages:
+        parser.error("Tesseract language is missing; install it or select --tessdata-dir/--ocr-language before native startup")
+    receipt = run_checks(args)
+    output = Path(receipt["output_dir"])
+    (output / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"status": receipt["status"], "output_dir": str(output),
+                      "checks": len(receipt["checks"]), "screenshots": receipt["screenshots"]}, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except Exception:
+        traceback.print_exc()
+        raise SystemExit(1)

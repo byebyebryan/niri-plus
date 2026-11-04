@@ -718,6 +718,30 @@ The [integration record](planning/desktop-away-integration.md) summarizes the
 current release split and dated host evidence. It does not extend or replace the
 preserved 0.4.1 VM and media receipts.
 
+## Optional post-reference branch: unified session screen
+
+The local 0.9.0 candidate offers the
+[native session screen](recipes/session.md#optional-unified-session-screen)
+through `desktop-session-menu --screen`. Treat it as an independently reviewed
+extension after the reference. Use the candidate checkout's generated helpers
+and `examples/session/profiles/minimal-niri/session-screen.kdl`, preserving
+existing target and binding preimages. Do not take these files from the frozen
+0.4.1 `$SOURCE`, silently select the full candidate bundle, or add the screen to
+the numbered reference's completion claim.
+
+Record the exact candidate revision and helper/profile selection; GTK and
+GtkLayerShell prerequisites; the existing locker, Away and suspend-policy
+owners; the installed Ctrl+Alt+Delete override; cancellation/refusal results;
+and rollback paths. Lock must establish the lock then request display-off;
+Display off must add no lock, on every machine. All six choices retain the
+explicit confirmation and countdown. Keep automatic policy and ordinary
+inhibitors unchanged. Do not permit the screen above the real locker.
+
+Source tests and private native GUI checks are distinct from actual lock
+readiness, installed-consumer and physical panel/wake acceptance. A consumer's
+managed source owns final machine admission and deployment; do not run a broad
+apply to adopt the screen.
+
 ## Focused recipes
 
 - [SDDM login and greeter](recipes/login.md)
@@ -726,6 +750,7 @@ preserved 0.4.1 VM and media receipts.
 - [Notifications and dashboard](recipes/notifications.md)
 - [Clipboard history](recipes/clipboard.md)
 - [Locking and session services](recipes/session.md)
+- [Optional unified session screen](recipes/session.md#optional-unified-session-screen)
 - [Optional manual display-away](recipes/away-mode.md)
 - [Display profiles](recipes/displays.md)
 - [Fcitx5 input](recipes/input.md)

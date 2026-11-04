@@ -102,6 +102,14 @@ adopted manual shortcuts and Session menu actions; idle, physical power-button, 
 owners. Keep the 0.4.1 core and 0.5.0 Away selections when adopting only this
 helper. Publication does not establish a machine's physical sleep acceptance.
 
+The local **0.9.0 candidate** adds the opt-in
+[unified session screen](recipes/session.md#optional-unified-session-screen)
+and a generated portable Niri binding. It reuses the shared guarded action
+path, adds Logout to that screen, separates Display off from Lock, and keeps
+legacy invocation available. This candidate is not a published release or a
+new full-reference qualification. Its bundle metadata is independent of the
+unchanged release catalog, 0.4.1 reference and selected 0.5.0 Away companion.
+
 Release 0.8.1 preserves every 0.8.0 payload byte and mode while binding its
 manifest to the corrected Git author/committer history. The 0.6.0–0.8.0 tags
 also point to identity-corrected commits. Their existing archives and digests

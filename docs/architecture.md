@@ -56,6 +56,15 @@ opt-in latch. Normal video and presentation inhibitors remain with the existing
 session policy; once explicitly latched away, the companion deliberately
 ignores application inhibitors while correcting display wakeups.
 
+The opt-in [unified session screen](recipes/session.md#optional-unified-session-screen)
+adds a native action grid ahead of the existing guarded manual action path.
+One request owner carries selection, explicit confirmation and countdown;
+reopening raises that owner. Lock means lock then display-off, while Display
+off adds no lock. Gtklock, Away, systemd/logind and Niri retain the actual
+operations. The screen owns neither authentication nor automatic idle, lid,
+sleep or application inhibition policy. Legacy launcher/CLI routes remain
+available, and adopting the screen does not replace the qualified core bundle.
+
 The [Arch walkthrough](setup.md) connects each owner to its installation
 and recovery guide, including display profiles, login, power services, input
 methods and default applications.

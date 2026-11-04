@@ -38,6 +38,12 @@ does not change the numbered reference's 0.4.1 selection or automatic power
 policy; see the [away-mode recipe](recipes/away-mode.md) after the reference is
 complete.
 
+The [unified session screen](recipes/session.md#optional-unified-session-screen)
+is another opt-in extension in the local 0.9.0 candidate: Ctrl+Alt+Delete opens
+Lock, Display off, Suspend, Log out, Restart and Shut down with explicit
+confirmation and a cancellable countdown. It is separate from the published
+component selections and the reference's acceptance evidence.
+
 ## Starting point
 
 Start with **installed Arch Linux x86-64**, a regular sudo account, working

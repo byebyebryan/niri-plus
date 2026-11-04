@@ -1,5 +1,5 @@
 {
-  "version": "0.8.1",
+  "version": "0.9.0",
   "modules": {
     "desktop": {
       "prerequisites": [
@@ -10,7 +10,8 @@
         "PyGObject with NetworkManager/libnm and libsecret introspection for Network; BlueZ D-Bus for Bluetooth",
         "pactl and an existing PulseAudio-compatible server for Audio; existing native owners are not installed or started by a menu",
         "For opt-in away mode: libwayland-client and ext-idle-notify v2, or existing read access to physical evdev input",
-        "For opt-in manual session confirmation: PyGObject with GTK 3 and GtkLayerShell introspection; Niri IPC for focused output selection on multiple monitors; optional desktop-session/confirmation.toml for Session menu admission"
+        "For opt-in manual session confirmation: PyGObject with GTK 3 and GtkLayerShell introspection; Niri IPC for focused output selection on multiple monitors; optional desktop-session/confirmation.toml for Session menu admission",
+        "For the opt-in native session screen: GTK 3/PyGObject and GtkLayerShell, Niri IPC, an existing lock service and independently selected desktop-away controller; desktop-session/power.toml for Suspend; Noto Sans and a symbolic icon theme for the selected appearance"
       ]
     },
     "shell": {
@@ -216,6 +217,10 @@
     {
       "path": "components/desktop/bin/desktop-suspend",
       "module": "desktop"
+    },
+    {
+      "path": "components/desktop/config/niri/session-screen.kdl",
+      "module": "desktop"
     }
   ],
   "exports": [
@@ -409,6 +414,12 @@
       "path": "examples/session/desktop-suspend",
       "component": "components/desktop/bin/desktop-suspend",
       "notes": "Optional focused, cancellable manual suspend countdown; idle and hardware-button policy remain independent."
+    },
+    {
+      "path": "examples/session/profiles/minimal-niri/session-screen.kdl",
+      "component": "components/desktop/config/niri/session-screen.kdl",
+      "profile": "minimal-niri",
+      "notes": "Opt-in native session screen binding; unavailable while the real locker owns input. Replaces the existing Ctrl+Alt+Delete binding only when selected."
     }
   ],
   "appearance_exports": [

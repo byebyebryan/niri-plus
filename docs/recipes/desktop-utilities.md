@@ -42,6 +42,12 @@ owns it. Launch Session from Niri; `niri msg action quit` is the compositor's
 own exit request and will fail safely if Niri is not reachable. Ensure
 `~/.local/bin` is in the graphical session's `PATH` so Rofi can find
 `desktop-session-menu` and its adjacent `desktop-session-ready` helper.
+
+The opt-in [native session screen](session.md#optional-unified-session-screen)
+uses `desktop-session-menu --screen` and the adjacent `desktop-suspend` helper.
+It provides a six-action grid, explicit confirmation and a cancellable
+countdown. The default launcher invocation above keeps the reference's legacy
+menu; select the screen's portable Ctrl+Alt+Delete profile intentionally.
 The Niri starter binds `Mod+D` to `rofi -show drun`, which lists these entries;
 the entries themselves do not need separate key bindings.
 

@@ -45,8 +45,8 @@ systemd-analyze --user verify ~/.config/systemd/user/desktop-lock.service
 systemctl --user daemon-reload
 ```
 
-The helper checks the captured Wayland socket before starting the locker. Add
-this Niri binding once the service is configured. Replace an existing
+The helper checks the captured Wayland socket before starting the locker. The
+qualified reference uses this lock-only binding. Replace an existing
 `Ctrl+Alt+Delete` binding if present; Niri's default configuration uses that key
 to quit the session:
 
@@ -54,8 +54,93 @@ to quit the session:
 Ctrl+Alt+Delete { spawn "systemctl" "--user" "start" "desktop-lock.service"; }
 ```
 
-The example is a manual lock path. Handling `loginctl lock-session` requires an
+For the optional unified screen below, replace this binding with its profile;
+keep only one Ctrl+Alt+Delete entry. The example is a manual lock path. Handling `loginctl lock-session` requires an
 idle listener such as swayidle, in addition to the lock service.
+
+## Optional unified session screen
+
+The local components 0.9.0 candidate adds a native session screen without
+changing the published 0.8.1 selection or the qualified 0.4.1 reference.
+`desktop-session-menu --screen` opens a two-row action grid on the focused
+monitor; other monitors receive only a dim backdrop. The panel uses Neutral
+Slate, Noto Sans and monochrome action icons, with no blur or decorative motion.
+
+| Action | Meaning in the unified screen |
+| --- | --- |
+| Lock | Establish the real lock, then turn off all displays. Input wakes the locked session; authentication is still required. |
+| Display off | Turn off displays without adding a lock. Input returns the displays; normal automatic policy continues. |
+| Suspend | Pause the open session, retaining the existing lock-before-suspend policy. |
+| Log out | End the session after the shared confirmation, without another Niri quit prompt. |
+| Restart | Request native restart with its normal authorization and inhibitors. |
+| Shut down | Request native power-off with its normal authorization and inhibitors. |
+
+All six actions use **Choose → explicit confirmation → five-second cancellable
+countdown → request**. Opening the grid starts no timer. Back is focused on
+confirmation and Cancel during the countdown; held Enter or Space cannot skip
+steps. Arrows navigate the grid and Tab/Shift+Tab remain within the active
+screen. Escape cancels from every control. Repeating the entry raises the same
+screen without resetting a pending timer. Cancellation cannot recall a native
+request once dispatch has committed.
+
+Lock and Display off have these meanings on every host. The screen does not
+read the legacy `confirmation.toml` `lock_on_away` preference. Automatic idle,
+lid and physical power-button policy keep their existing owners. This is an
+on-demand UI, not a new startup daemon or locker.
+
+Use Python 3.11+, GTK 3/PyGObject, GtkLayerShell, Niri IPC, the readiness helper,
+a working `desktop-lock.service`, and the independently selected
+[Away controller](away-mode.md). Suspend also needs the existing
+`desktop-session/power.toml`. The screen does not enable or install these
+providers. A missing or refused provider must be handled as an explicit error.
+
+For a new unmanaged adoption, review this candidate checkout and preserve the
+preimages of the three helper targets and the existing Niri binding first.
+Finish or cancel any pending manual action with the installed helper before
+replacing its files. The candidate scopes its runtime state to the captured
+compositor instance; an in-flight older helper is not migrated during upgrade.
+Use the reviewed current checkout here, not the numbered reference's frozen
+`$SOURCE` tree:
+
+```sh
+export SESSION_SCREEN_SOURCE="$PWD"
+git -C "$SESSION_SCREEN_SOURCE" rev-parse HEAD
+install -Dm755 "$SESSION_SCREEN_SOURCE/examples/session/desktop-suspend" \
+  "$HOME/.local/bin/desktop-suspend"
+install -Dm755 "$SESSION_SCREEN_SOURCE/examples/desktop/desktop-session-menu" \
+  "$HOME/.local/bin/desktop-session-menu"
+install -Dm755 "$SESSION_SCREEN_SOURCE/examples/session/desktop-session-ready" \
+  "$HOME/.local/bin/desktop-session-ready"
+```
+
+The generated [minimal Niri fragment](../../examples/session/profiles/minimal-niri/session-screen.kdl)
+contains only the opt-in Ctrl+Alt+Delete binding. Inspect existing bindings and
+includes, then either merge its single entry or install it as
+`~/.config/niri/local/session-screen.kdl` and add
+`include "local/session-screen.kdl"` on Niri versions supporting includes.
+Validate the complete Niri configuration before using it. Do not add
+`allow-when-locked`: Gtklock retains authentication and the menu must not appear
+above it. Managed consumers make this choice in their configuration owner.
+
+For direct manual shortcuts, `desktop-suspend menu --select suspend` enters
+Suspend's explicit confirmation. `--select` also accepts `lock`, `away`,
+`logout`, `restart` and `shutdown`; it never skips confirmation. The screen's
+`--seconds` option accepts 1–60, defaulting to five. Existing `countdown`,
+`cancel` and immediate `away` calls keep their compatibility behavior below.
+
+Refused requests need visible feedback and a fresh confirmation before retry.
+Partial completion must be reported accurately: Away can turn displays off
+once without enforcing a latch, and a successful lock can precede failed
+blanking. After actual lock ownership transfers, the screen yields to the real
+locker and retains diagnostics rather than displaying a menu above it.
+Display wake is separate from unlocking.
+
+The [owned screen check](https://github.com/byebyebryan/niri-plus/blob/main/scripts/check-session-screen-native)
+uses private Xvfb/nested Niri and inert lock/power/logout endpoints. Its GUI
+evidence is separate from installed-consumer, genuine locker readiness and
+physical panel/wake acceptance. To roll back an adoption, restore only the
+reviewed helper and binding preimages; keep automatic policy and an active
+locker intact.
 
 ## Optional suspend countdown
 

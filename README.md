@@ -32,6 +32,11 @@ Choose a new empty output directory for each site build. To preview the public
 project path locally, build into `/tmp/niri-plus-preview/niri-plus`, serve its
 parent, then open `http://127.0.0.1:8000/niri-plus/`.
 
+The local 0.9.0 candidate includes an opt-in
+[unified session screen](docs/recipes/session.md#optional-unified-session-screen).
+Ctrl+Alt+Delete opens the action grid only when its portable profile is selected;
+the published release catalog and qualified 0.4.1 reference remain separate.
+
 The build and module checks work offline after dependencies are installed. They
 use declared repository inputs; they do not inspect or operate a desktop.
 

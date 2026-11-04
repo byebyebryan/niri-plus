@@ -14,13 +14,33 @@ import stat
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import tomllib
 import uuid
 
 APP_ID = "org.niri-plus.suspend"
+SCREEN_APP_ID = "org.niri-plus.session"
 OPERATIONS = {"suspend": "suspend", "lock": "lock", "away": "turn off displays",
-              "restart": "restart", "shutdown": "shut down"}
+              "logout": "log out", "restart": "restart", "shutdown": "shut down"}
+SCREEN_OPERATIONS = ("lock", "away", "suspend", "logout", "restart", "shutdown")
+SCREEN_STAGES = {"choose", "confirm", "countdown", "result", "committing"}
+
+
+def operation_name(operation):
+    return {"lock": "Lock", "away": "Display off", "suspend": "Suspend", "logout": "Log out",
+            "restart": "Restart", "shutdown": "Shut down"}[operation]
+
+
+def operation_effect(operation, label):
+    return {
+        "lock": "Lock " + label + ", then turn off its displays. Input will return to the locked session.",
+        "away": "Turn off the displays without locking " + label + ". Input returns to this session.",
+        "suspend": "Your applications stay open while the computer sleeps.",
+        "logout": "End this Niri session. Save open work first.",
+        "restart": "Close applications and restart " + label + ". Save open work first.",
+        "shutdown": "Close applications and power off " + label + ". Save open work first.",
+    }[operation]
 
 
 def request(operation="suspend", seconds=5, label="This computer", lock=False):
@@ -41,6 +61,54 @@ def validate_request(value):
     return value
 
 
+def validate_screen_state(value, token=None):
+    expected = {"token", "phase", "request", "mode", "stage", "revision", "raised", "result", "settings",
+                "timer_started_at"}
+    if (not isinstance(value, dict) or set(value) != expected or value.get("mode") != "screen"
+            or not isinstance(value.get("token"), str) or len(value["token"]) != 32
+            or (token is not None and value["token"] != token)):
+        raise ValueError("invalid session screen state")
+    phase, stage = value.get("phase"), value.get("stage")
+    if phase not in {"pending", "committing"} or stage not in SCREEN_STAGES or ((phase == "committing") != (stage == "committing")):
+        raise ValueError("invalid session screen phase")
+    if type(value.get("revision")) is not int or value["revision"] < 0 or type(value.get("raised")) is not int or value["raised"] < 0:
+        raise ValueError("invalid session screen generation")
+    settings = value.get("settings")
+    if (not isinstance(settings, dict) or set(settings) != {"seconds", "label"}
+            or type(settings.get("seconds")) is not int or not 1 <= settings["seconds"] <= 60
+            or not isinstance(settings.get("label"), str) or not settings["label"].strip()
+            or len(settings["label"]) > 64 or not all(character.isprintable() for character in settings["label"])):
+        raise ValueError("invalid session screen settings")
+    intent = None if value.get("request") is None else validate_request(value["request"])
+    if stage == "choose" and intent is not None:
+        raise ValueError("unexpected action in session chooser")
+    if stage in {"confirm", "countdown", "result", "committing"} and (intent is None or intent["operation"] not in SCREEN_OPERATIONS):
+        raise ValueError("session action is missing")
+    if intent is not None and (intent["seconds"] != settings["seconds"] or intent["label"] != settings["label"]):
+        raise ValueError("session action does not match screen settings")
+    timer_started_at = value.get("timer_started_at")
+    if (timer_started_at is not None
+            and (type(timer_started_at) not in (int, float) or not math.isfinite(timer_started_at)
+                 or timer_started_at < 0 or stage not in {"countdown", "committing"})):
+        raise ValueError("invalid session countdown start")
+    if stage not in {"countdown", "committing"} and timer_started_at is not None:
+        raise ValueError("unexpected session countdown start")
+    result = value.get("result")
+    if stage == "result":
+        if (not isinstance(result, dict) or set(result) != {"operation", "status", "yield_to_locker", "diagnostic", "summary"}
+                or result.get("operation") != intent["operation"]
+                or result.get("status") not in {"accepted", "refused", "partial"}
+                or type(result.get("yield_to_locker")) is not bool
+                or not isinstance(result.get("summary"), str)
+                or not isinstance(result.get("diagnostic"), str)):
+            raise ValueError("invalid session screen result")
+    elif result is not None:
+        raise ValueError("unexpected session screen result")
+    return {"stage": stage, "phase": phase, "request": intent, "revision": value["revision"],
+            "raised": value["raised"], "result": result, "settings": settings,
+            "timer_started_at": timer_started_at}
+
+
 def description(intent):
     action = "lock and turn off displays" if intent["operation"] == "away" and intent["lock"] else OPERATIONS[intent["operation"]]
     return intent["label"] + " will " + action + " in"
@@ -58,6 +126,22 @@ def private_directory(path):
     return path
 
 
+def socket_marker(path, *, required=False):
+    if not path:
+        if required:
+            raise RuntimeError("the captured Niri socket is required")
+        return None
+    try:
+        info = Path(path).lstat()
+    except OSError as error:
+        if required:
+            raise RuntimeError("the captured Niri socket is unavailable") from error
+        return {"path": str(path), "dev": None, "ino": None, "ctime_ns": None}
+    if not stat.S_ISSOCK(info.st_mode):
+        raise RuntimeError("the captured Niri path is not a socket")
+    return {"path": str(path), "dev": info.st_dev, "ino": info.st_ino, "ctime_ns": info.st_ctime_ns}
+
+
 def state_directory(environment=None):
     env = os.environ if environment is None else environment
     runtime = Path(env.get("XDG_RUNTIME_DIR", ""))
@@ -66,7 +150,8 @@ def state_directory(environment=None):
         raise RuntimeError("the captured Niri session and XDG_RUNTIME_DIR are required")
     private_directory(runtime)
     parent = private_directory(runtime / "niri-plus-suspend")
-    identity = hashlib.sha256(session.encode()).hexdigest()[:16]
+    marker = socket_marker(session)
+    identity = hashlib.sha256(json.dumps(marker, sort_keys=True).encode()).hexdigest()[:16]
     return private_directory(parent / identity)
 
 
@@ -97,13 +182,20 @@ class Session:
     importing. The token is checked again under the transition lock immediately
     before any power action; no process IDs or arbitrary signals are needed.
     """
-    def __init__(self, directory):
+    def __init__(self, directory, *, socket_path=None, require_socket=False):
         self.directory = private_directory(directory)
         self.token = uuid.uuid4().hex
         self.owner = None
         self.pending = directory / "pending.json"
         self.cancellation = directory / "cancel.json"
         self.disposition = None
+        self.socket_path = socket_path
+        self.socket_identity = socket_marker(socket_path, required=require_socket) if socket_path else None
+
+    def session_unchanged(self):
+        if self.socket_identity is None:
+            return True
+        return socket_marker(self.socket_path, required=True) == self.socket_identity
 
     def open_lock(self, name):
         fd = os.open(self.directory / name, os.O_RDWR | os.O_CREAT | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600)
@@ -122,19 +214,39 @@ class Session:
         finally:
             os.close(fd)
 
+    def acquire(self):
+        fd = self.open_lock("owner.lock")
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            os.close(fd)
+            return None
+        self.owner = fd
+        self.cancellation.unlink(missing_ok=True)
+        return fd
+
+    def initialize(self, intent, mode, stage, settings=None):
+        pending = {"token": self.token, "phase": "pending", "request": intent,
+                   "mode": mode, "stage": stage, "revision": 0, "raised": 0, "result": None,
+                   "timer_started_at": None}
+        if mode == "screen":
+            pending["settings"] = settings
+        atomic_json(self.pending, pending)
+        return pending
+
     def begin(self, intent=None):
         intent = validate_request(intent or request())
         with self.gate():
-            fd = self.open_lock("owner.lock")
-            try:
-                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError:
-                os.close(fd)
+            fd = self.acquire()
+            if fd is None:
                 pending = read_json(self.pending)
                 if not isinstance(pending, dict) or not isinstance(pending.get("token"), str):
                     raise RuntimeError("active countdown state is invalid")
                 if pending.get("phase") != "pending" or read_json(self.cancellation) == {"token": pending["token"]}:
                     self.disposition = "cancelling or already committed"
+                elif pending.get("mode") == "screen":
+                    atomic_json(self.cancellation, {"token": pending["token"]})
+                    self.disposition = "session screen cancelled; press again for the legacy action"
                 elif "request" not in pending:
                     # An in-flight pre-0.8 helper cannot render a replacement.
                     atomic_json(self.cancellation, {"token": pending["token"]})
@@ -148,11 +260,64 @@ class Session:
                         atomic_json(self.pending, pending)
                         self.disposition = "pending action replaced with " + intent["operation"]
                 return False
-            self.owner = fd
-            self.cancellation.unlink(missing_ok=True)
-            atomic_json(self.pending, {"token": self.token, "phase": "pending", "request": intent})
+            self.initialize(intent, "legacy", "countdown")
             self.disposition = "started"
         return True
+
+    def begin_screen(self, seconds=5, label="This computer", select=None, *, wait_seconds=3):
+        if type(seconds) is not int or not 1 <= seconds <= 60 or not isinstance(label, str) or not label.strip() or len(label) > 64 or not all(character.isprintable() for character in label):
+            raise ValueError("invalid session screen settings")
+        if select is not None and select not in SCREEN_OPERATIONS:
+            raise ValueError("invalid session screen action")
+        selected = request(select, seconds, label) if select else None
+        deadline = time.monotonic() + wait_seconds
+        while True:
+            with self.gate():
+                fd = self.acquire()
+                if fd is not None:
+                    stage = "confirm" if selected else "choose"
+                    self.initialize(selected, "screen", stage, {"seconds": seconds, "label": label})
+                    self.disposition = "started"
+                    return True
+                pending = read_json(self.pending)
+                if not isinstance(pending, dict) or not isinstance(pending.get("token"), str):
+                    raise RuntimeError("active session state is invalid")
+                if read_json(self.cancellation) == {"token": pending["token"]}:
+                    self.disposition = "cancelling existing action"
+                elif pending.get("phase") != "pending":
+                    self.disposition = "an action is already committed"
+                    return False
+                elif pending.get("mode") == "screen":
+                    validate_screen_state(pending)
+                    if not self.session_unchanged():
+                        atomic_json(self.cancellation, {"token": pending["token"]})
+                        self.disposition = "old compositor session cancelled"
+                    elif select is None:
+                        if type(pending.get("raised")) is not int:
+                            raise RuntimeError("invalid session screen raise state")
+                        pending["raised"] += 1
+                        atomic_json(self.pending, pending)
+                        self.disposition = "raised active session screen"
+                        return False
+                    else:
+                        revision = pending.get("revision")
+                        if type(revision) is not int or pending.get("stage") not in SCREEN_STAGES:
+                            raise RuntimeError("invalid active session screen state")
+                        pending.update({"stage": "confirm", "request": selected, "revision": revision + 1,
+                                        "result": None, "settings": {"seconds": seconds, "label": label},
+                                        "timer_started_at": None})
+                        atomic_json(self.pending, pending)
+                        self.disposition = "screen action replaced; fresh confirmation required"
+                        return False
+                elif pending.get("mode") in (None, "legacy"):
+                    atomic_json(self.cancellation, {"token": pending["token"]})
+                    self.disposition = "legacy countdown cancelled; taking ownership of session screen"
+                else:
+                    raise RuntimeError("invalid active session mode")
+            if time.monotonic() >= deadline:
+                self.disposition = "active action did not release ownership in time"
+                return False
+            time.sleep(0.05)
 
     def cancel(self):
         with self.gate():
@@ -164,6 +329,8 @@ class Session:
                     pending = read_json(self.pending)
                     if not isinstance(pending, dict) or not isinstance(pending.get("token"), str):
                         raise RuntimeError("active countdown state is invalid")
+                    if pending.get("mode") == "screen" and pending.get("phase") != "pending":
+                        return False
                     atomic_json(self.cancellation, {"token": pending["token"]})
                     return True
                 # An interrupted previous instance cannot leave a pending timer.
@@ -184,6 +351,123 @@ class Session:
         if not isinstance(pending, dict) or pending.get("token") != self.token:
             raise RuntimeError("confirmation ownership was lost")
         return validate_request(pending.get("request"))
+
+    def screen_snapshot(self):
+        pending = read_json(self.pending)
+        if not isinstance(pending, dict) or pending.get("token") != self.token:
+            raise RuntimeError("session screen ownership was lost")
+        try:
+            return validate_screen_state(pending, self.token)
+        except (TypeError, ValueError, KeyError) as error:
+            raise RuntimeError(str(error)) from error
+
+    def update_screen(self, expected_revision, stage, intent=None, result=None):
+        if stage not in SCREEN_STAGES or stage == "committing":
+            raise ValueError("invalid session screen transition")
+        if intent is not None:
+            intent = validate_request(intent)
+            if intent["operation"] not in SCREEN_OPERATIONS:
+                raise ValueError("invalid session screen action")
+        with self.gate():
+            pending = read_json(self.pending)
+            if not isinstance(pending, dict) or pending.get("token") != self.token:
+                return False
+            if type(expected_revision) is not int:
+                raise RuntimeError("invalid session screen revision")
+            try:
+                state = validate_screen_state(pending, self.token)
+            except (TypeError, ValueError, KeyError) as error:
+                raise RuntimeError(str(error)) from error
+            if (state["phase"] != "pending" or state["revision"] != expected_revision
+                    or read_json(self.cancellation) == {"token": self.token}):
+                return False
+            if stage == "choose" and intent is not None or stage in {"confirm", "countdown", "result"} and intent is None:
+                raise ValueError("invalid session screen action for stage")
+            if intent is not None:
+                settings = pending.get("settings")
+                if (not isinstance(settings, dict) or intent["seconds"] != settings.get("seconds")
+                        or intent["label"] != settings.get("label")):
+                    raise ValueError("session action does not match screen settings")
+            if stage == "result":
+                if (not isinstance(result, dict) or result.get("operation") != intent["operation"]
+                        or result.get("status") not in {"accepted", "refused", "partial"}
+                        or type(result.get("yield_to_locker")) is not bool
+                        or not isinstance(result.get("summary"), str)
+                        or not isinstance(result.get("diagnostic"), str)):
+                    raise ValueError("invalid session screen result")
+            elif result is not None:
+                raise ValueError("unexpected session screen result")
+            pending.update({"stage": stage, "request": intent, "revision": expected_revision + 1, "result": result})
+            pending["timer_started_at"] = None
+            atomic_json(self.pending, pending)
+            return True
+
+    def start_screen_timer(self, request_id, revision, started_at):
+        if type(started_at) not in (int, float) or not math.isfinite(started_at) or started_at < 0:
+            raise ValueError("invalid session countdown start")
+        with self.gate():
+            pending = read_json(self.pending)
+            if not isinstance(pending, dict) or pending.get("token") != self.token:
+                return False
+            try:
+                state = validate_screen_state(pending, self.token)
+            except (TypeError, ValueError, KeyError) as error:
+                raise RuntimeError(str(error)) from error
+            if (state["phase"] != "pending" or state["stage"] != "countdown"
+                    or state["request"]["id"] != request_id or state["revision"] != revision
+                    or read_json(self.cancellation) == {"token": self.token}):
+                return False
+            if state["timer_started_at"] is not None:
+                return state["timer_started_at"] == started_at
+            pending["timer_started_at"] = float(started_at)
+            atomic_json(self.pending, pending)
+            return True
+
+    def claim_screen(self, request_id):
+        with self.gate():
+            pending = read_json(self.pending)
+            if not isinstance(pending, dict) or pending.get("token") != self.token:
+                return None
+            try:
+                state = validate_screen_state(pending, self.token)
+            except (TypeError, ValueError, KeyError) as error:
+                raise RuntimeError(str(error)) from error
+            if (state["phase"] != "pending" or state["stage"] != "countdown"
+                    or read_json(self.cancellation) == {"token": self.token} or not self.session_unchanged()):
+                return None
+            intent = state["request"]
+            if intent["id"] != request_id:
+                return None
+            started_at = state["timer_started_at"]
+            if started_at is None or time.monotonic() - started_at < intent["seconds"]:
+                return None
+            pending.update({"phase": "committing", "stage": "committing", "revision": pending["revision"] + 1})
+            atomic_json(self.pending, pending)
+            return intent
+
+    def finish_screen(self, result):
+        with self.gate():
+            pending = read_json(self.pending)
+            if not isinstance(pending, dict) or pending.get("token") != self.token:
+                return False
+            try:
+                state = validate_screen_state(pending, self.token)
+            except (TypeError, ValueError, KeyError) as error:
+                raise RuntimeError(str(error)) from error
+            if state["phase"] != "committing":
+                return False
+            if (not isinstance(result, dict) or set(result) != {"operation", "status", "yield_to_locker", "diagnostic", "summary"}
+                    or result.get("operation") != state["request"]["operation"]
+                    or result.get("status") not in {"accepted", "refused", "partial"}
+                    or type(result.get("yield_to_locker")) is not bool
+                    or not isinstance(result.get("diagnostic"), str) or not isinstance(result.get("summary"), str)):
+                raise ValueError("invalid session action result")
+            if result.get("yield_to_locker"):
+                return True
+            pending.update({"phase": "pending", "stage": "result", "result": result,
+                            "revision": pending["revision"] + 1, "timer_started_at": None})
+            atomic_json(self.pending, pending)
+            return True
 
     def commit(self, request_id=None, *, run=subprocess.run, config_home=None):
         with self.gate():
@@ -207,6 +491,9 @@ class Session:
                 run(["systemctl", "--user", "start", "desktop-lock.service"], check=True, timeout=15)
             if operation == "away":
                 run(["desktop-away", "away"], check=True, timeout=10)
+            elif operation == "logout":
+                # The legacy route retains Niri's native confirmation.
+                run(["niri", "msg", "action", "quit"], check=True, timeout=10)
             elif operation != "lock":
                 native = {"suspend": "suspend", "restart": "reboot", "shutdown": "poweroff"}[operation]
                 run(["systemctl", native], check=True, timeout=30)
@@ -224,6 +511,119 @@ class Session:
         finally:
             os.close(self.owner)
             self.owner = None
+
+
+def clean_diagnostic(value, limit=240):
+    if isinstance(value, bytes):
+        value = value.decode("utf-8", errors="replace")
+    if not isinstance(value, str):
+        return ""
+    value = " ".join("".join(character if character.isprintable() else " " for character in value).split())
+    return value[:limit]
+
+
+def native_result(command, timeout, *, run=subprocess.run):
+    try:
+        completed = run(command, check=False, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        detail = clean_diagnostic(error.stderr) or clean_diagnostic(error.stdout) or "the command timed out"
+        return {"ok": False, "started": True, "timed_out": True, "returncode": None, "detail": detail}
+    except (OSError, subprocess.SubprocessError) as error:
+        return {"ok": False, "started": False, "timed_out": False, "returncode": None,
+                "detail": clean_diagnostic(str(error)) or "the command could not run"}
+    code = getattr(completed, "returncode", None)
+    if type(code) is not int:
+        return {"ok": False, "started": True, "timed_out": False, "returncode": None,
+                "detail": "the command returned no valid status"}
+    detail = clean_diagnostic(getattr(completed, "stderr", "")) or clean_diagnostic(getattr(completed, "stdout", ""))
+    return {"ok": code == 0, "started": True, "timed_out": False, "returncode": code, "detail": detail}
+
+
+def screen_suspend_lock_policy(config_home=None):
+    policy = Path(config_home or os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    path = policy / "desktop-session/power.toml"
+    data = tomllib.loads(path.read_text())
+    value = data["lock_before_suspend"]
+    if type(value) is not bool:
+        raise ValueError("lock_before_suspend must be a TOML boolean in " + str(path))
+    return value
+
+
+def execute_screen_action(intent, *, run=subprocess.run, config_home=None):
+    """Send one already-claimed action and report acceptance separately from completion."""
+    operation = intent["operation"]
+    base = {"operation": operation, "status": "refused", "yield_to_locker": False, "diagnostic": ""}
+
+    def send(command, timeout):
+        return native_result(command, timeout, run=run)
+
+    def result(status, summary, detail="", yield_to_locker=False):
+        return dict(base, status=status, summary=summary, diagnostic=detail, yield_to_locker=yield_to_locker)
+
+    locked = False
+    if operation == "suspend":
+        try:
+            locked = screen_suspend_lock_policy(config_home)
+        except (OSError, KeyError, tomllib.TOMLDecodeError, ValueError) as error:
+            return result("refused", "Suspend was not requested because its lock policy could not be read.", clean_diagnostic(str(error)))
+    if operation == "lock" or (operation == "suspend" and locked):
+        outcome = send(["systemctl", "--user", "start", "desktop-lock.service"], 15)
+        if not outcome["ok"]:
+            if outcome["timed_out"]:
+                summary = "Lock readiness timed out. The session may already be locked; no display-off or sleep request was sent."
+                return result("partial", summary, outcome["detail"] or "lock readiness timed out", True)
+            summary = "The lock service did not report a ready session. No display-off or sleep request was sent."
+            return result("refused", summary, outcome["detail"] or "lock service start failed")
+        locked = True
+
+    if operation in {"lock", "away"}:
+        outcome = send(["desktop-away", "away"], 10)
+        if not outcome["ok"]:
+            summary = "The display-off request was not confirmed. Displays may be off if the helper used its one-shot fallback."
+            if locked:
+                summary = "The session is locked. The display-off request was not confirmed; displays may be off if the helper used its one-shot fallback."
+                return result("partial", summary, outcome["detail"] or "away controller did not confirm", True)
+            if not outcome["started"]:
+                return result("refused", "The display-off action could not start; no action was reported.",
+                              outcome["detail"] or "desktop-away could not run")
+            return result("partial", summary, outcome["detail"] or "away controller did not confirm")
+        summary = "Display-off request accepted."
+        if locked:
+            summary = "Session lock ready; display-off request accepted."
+        return result("accepted", summary, outcome["detail"], locked)
+
+    if operation == "logout":
+        outcome = send(["niri", "msg", "action", "quit", "--skip-confirmation"], 10)
+    else:
+        native = {"suspend": "suspend", "restart": "reboot", "shutdown": "poweroff"}[operation]
+        outcome = send(["systemctl", native], 30)
+    if not outcome["ok"]:
+        if outcome["timed_out"]:
+            summary = operation_name(operation) + " request timed out; it may have been accepted."
+            return result("partial", summary, outcome["detail"] or "native action timed out", locked)
+        if locked:
+            return result("partial", "The session is locked, but the " + operation_name(operation).lower() + " request was refused.",
+                          outcome["detail"] or "native action refused", True)
+        return result("refused", "The " + operation_name(operation).lower() + " request was refused.",
+                      outcome["detail"] or "native action refused")
+    summary = operation_name(operation) + " request accepted."
+    return result("accepted", summary, outcome["detail"], locked)
+
+
+def locker_is_active(*, run=subprocess.run):
+    """Return false for known inactive states and fail closed if status is unclear."""
+    try:
+        outcome = run(["systemctl", "--user", "is-active", "desktop-lock.service"],
+                      check=False, capture_output=True, text=True, timeout=3)
+    except (OSError, subprocess.SubprocessError) as error:
+        raise RuntimeError("cannot verify whether the session is locked") from error
+    state = clean_diagnostic(getattr(outcome, "stdout", "")).lower()
+    code = getattr(outcome, "returncode", None)
+    if state in {"inactive", "failed", "dead", "not-found"} and code != 0:
+        return False
+    if state == "active" and code == 0:
+        return True
+    raise RuntimeError("cannot verify whether the session is locked")
 
 
 class Countdown:
@@ -262,6 +662,52 @@ class Countdown:
         return self.seconds if self.started is None else max(0, math.ceil(self.seconds - (now - self.started)))
 
 
+class ActivationKeys:
+    """Accept one activation per press, with no delay after a genuine release."""
+    def __init__(self):
+        self.held = set()
+
+    def press(self, key):
+        if key in self.held:
+            return False
+        self.held.add(key)
+        return True
+
+    def release(self, key):
+        self.held.discard(key)
+
+
+class ScreenFocusWatch:
+    """Invalidate an uncommitted screen after focus loss, a stall, or sleep."""
+    def __init__(self, *, clock=time.monotonic, boot_clock=None):
+        self.clock = clock
+        self.boot_clock = boot_clock or (lambda: time.clock_gettime(time.CLOCK_BOOTTIME))
+        self.created = clock()
+        self.acquired = False
+        self.last = None
+        self.last_boot = None
+        self.invalid = False
+
+    def tick(self, focused, cancelled=False):
+        if self.invalid:
+            return True
+        now, boot = self.clock(), self.boot_clock()
+        if cancelled:
+            self.invalid = True
+        elif self.acquired and not focused:
+            self.invalid = True
+        elif not self.acquired:
+            if focused:
+                self.acquired = True
+            elif now - self.created >= 3:
+                self.invalid = True
+        elif (self.last is not None and
+              (now - self.last > 2 or abs((boot - self.last_boot) - (now - self.last)) > 0.5)):
+            self.invalid = True
+        self.last, self.last_boot = now, boot
+        return self.invalid
+
+
 def focused_monitor_index(geometries, output):
     """Match Niri's focused output to GDK's logical coordinates, including scale."""
     logical = output.get("logical") if isinstance(output, dict) else None
@@ -275,6 +721,709 @@ def focused_monitor_index(geometries, output):
     if len(matches) != 1:
         raise RuntimeError("the focused output cannot be matched to one monitor")
     return matches[0]
+
+
+def show_session_screen(session):
+    """Render the chooser, confirmation, countdown and result in one native owner."""
+    snapshot = session.screen_snapshot()
+    settings = snapshot["settings"]
+    if not session.session_unchanged():
+        raise RuntimeError("the captured compositor session changed")
+
+    import gi
+    gi.require_version("Gtk", "3.0")
+    gi.require_version("Gdk", "3.0")
+    gi.require_version("GtkLayerShell", "0.1")
+    from gi.repository import GLib
+    GLib.set_prgname(SCREEN_APP_ID)
+    from gi.repository import Gdk, Gtk, GtkLayerShell
+    ready, _ = Gtk.init_check(None)
+    display = Gdk.Display.get_default()
+    if not ready or display is None or display.__gtype__.name != "GdkWaylandDisplay":
+        raise RuntimeError("the session screen requires a live Wayland display")
+    if not GtkLayerShell.is_supported():
+        raise RuntimeError("the session screen requires Wayland layer-shell support")
+    monitors = [display.get_monitor(index) for index in range(display.get_n_monitors())]
+    if not monitors:
+        raise RuntimeError("no monitor is available for the session screen")
+
+    geometries = [(rect.x, rect.y, rect.width, rect.height)
+                  for rect in (monitor.get_geometry() for monitor in monitors)]
+    focused_index = 0
+    if len(monitors) > 1:
+        result = subprocess.run(["niri", "msg", "--json", "focused-output"], check=True,
+                                capture_output=True, text=True, timeout=2)
+        focused_index = focused_monitor_index(geometries, json.loads(result.stdout))
+    compact_screen = geometries[focused_index][3] <= 420
+
+    windows, handlers, sources = [], [], []
+    active_window = None
+    panel = None
+    panel_title = None
+    panel_subtitle = None
+    content = None
+    controls = {}
+    control_order = []
+    current = snapshot
+    focus_target = None
+    focus_watch = ScreenFocusWatch()
+    timer = Countdown(settings["seconds"]) if snapshot["stage"] == "countdown" else None
+    remaining_label = None
+    remaining_display = None
+    finished = False
+    dispatching = False
+    last_action = snapshot["request"]["operation"] if snapshot["request"] else "lock"
+    previous_count = None
+    raised = snapshot["raised"]
+    exit_status = 0
+    activation_keys = ActivationKeys()
+    output_stop = threading.Event()
+
+    def visible_and_focused():
+        return (all(window.get_mapped() for window in windows)
+                and active_window is not None and active_window.is_active())
+
+    def stop_and_close(*_):
+        nonlocal finished
+        if finished:
+            return True
+        if current.get("phase") == "committing":
+            return True
+        if current.get("stage") == "result":
+            log("screen: result dismissed: " + str(current.get("result", {}).get("status", "unknown")))
+            finish()
+            return True
+        try:
+            if current.get("phase") == "pending":
+                session.cancel()
+        except (OSError, RuntimeError, ValueError):
+            pass
+        log("screen: cancelled")
+        finish()
+        return True
+
+    def finish():
+        nonlocal finished
+        if finished:
+            return
+        finished = True
+        output_stop.set()
+        for window in windows:
+            window.destroy()
+        if Gtk.main_level():
+            Gtk.main_quit()
+
+    def action_button(operation, title, note, icon):
+        button = Gtk.Button()
+        button.set_name("control-action-" + operation)
+        button.get_style_context().add_class("action-button")
+        button.set_can_focus(True)
+        button.set_can_default(False)
+        button.set_receives_default(False)
+        stack = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4 if compact_screen else 7)
+        stack.set_halign(Gtk.Align.CENTER)
+        image = Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.MENU)
+        image.set_pixel_size(22 if compact_screen else 24)
+        image.get_style_context().add_class("action-icon")
+        name = Gtk.Label(label=title)
+        name.get_style_context().add_class("action-title")
+        detail = Gtk.Label(label=note)
+        detail.get_style_context().add_class("action-note")
+        detail.set_line_wrap(True)
+        detail.set_justify(Gtk.Justification.CENTER)
+        stack.pack_start(image, False, False, 0)
+        stack.pack_start(name, False, False, 0)
+        stack.pack_start(detail, False, False, 0)
+        button.add(stack)
+        button.connect("clicked", lambda _button, op=operation: choose_action(op))
+        register_control(operation, button)
+        return button
+
+    def register_control(name, button):
+        controls[name] = button
+        control_order.append(name)
+        button.connect("key-press-event", key_press)
+        button.connect("key-release-event", key_release)
+
+    def button(name, label, callback, style=None):
+        control = Gtk.Button.new_with_label(label)
+        control.set_name("control-" + name)
+        control.set_can_focus(True)
+        control.set_can_default(False)
+        control.set_receives_default(False)
+        if style:
+            control.get_style_context().add_class(style)
+        control.connect("clicked", callback)
+        register_control(name, control)
+        return control
+
+    def clear_content():
+        nonlocal panel_title, panel_subtitle, focus_target, remaining_label, remaining_display
+        for child in panel.get_children():
+            panel.remove(child)
+        controls.clear()
+        control_order.clear()
+        panel_title = None
+        panel_subtitle = None
+        focus_target = None
+        remaining_label = None
+        remaining_display = None
+
+    def header(title):
+        nonlocal panel_title, panel_subtitle
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        labels = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+        panel_title = Gtk.Label(label=title, xalign=0)
+        panel_title.get_style_context().add_class("panel-title")
+        panel_subtitle = Gtk.Label(label=settings["label"], xalign=0)
+        panel_subtitle.get_style_context().add_class("panel-subtitle")
+        panel_subtitle.set_ellipsize(3)
+        labels.pack_start(panel_title, False, False, 0)
+        labels.pack_start(panel_subtitle, False, False, 0)
+        row.pack_start(labels, True, True, 0)
+        panel.pack_start(row, False, False, 0)
+
+    def footer(buttons):
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        row.set_halign(Gtk.Align.END)
+        for control in buttons:
+            row.pack_start(control, False, False, 0)
+        panel.pack_start(row, False, False, 0)
+
+    def render(screen_state):
+        nonlocal focus_target, timer, last_action
+        current_stage = screen_state["stage"]
+        intent = screen_state["request"]
+        clear_content()
+        if intent is not None:
+            last_action = intent["operation"]
+
+        if current_stage == "choose":
+            header("Session actions")
+            intro = Gtk.Label(label="Choose an action for " + settings["label"] + ".", xalign=0)
+            intro.set_line_wrap(True)
+            intro.get_style_context().add_class("picker-intro")
+            panel.pack_start(intro, False, False, 0)
+            grid = Gtk.Grid()
+            grid.set_row_spacing(4 if compact_screen else 9)
+            grid.set_column_spacing(9)
+            grid.set_column_homogeneous(True)
+            actions = (
+                ("lock", "Lock", "Lock, then turn off displays", "system-lock-screen-symbolic"),
+                ("away", "Display off", "Keep the session unlocked", "video-display-symbolic"),
+                ("suspend", "Suspend", "Pause the computer", "media-playback-pause-symbolic"),
+                ("logout", "Log out", "Close this session", "system-log-out-symbolic"),
+                ("restart", "Restart", "Restart the computer", "system-reboot-symbolic"),
+                ("shutdown", "Shut down", "Power off the computer", "system-shutdown-symbolic"),
+            )
+            for index, (operation, title, note, icon) in enumerate(actions):
+                control = action_button(operation, title, note, icon)
+                grid.attach(control, index % 3, index // 3, 1, 1)
+            panel.pack_start(grid, True, True, 0)
+            close = button("close", "Close", stop_and_close)
+            footer([close])
+            focus_target = controls.get(last_action, controls["lock"])
+            log("screen: picker")
+        elif current_stage == "confirm":
+            operation = intent["operation"]
+            header("Confirm " + operation_name(operation))
+            statement = Gtk.Label(label=operation_name(operation) + " " + settings["label"] + "?", xalign=0.5)
+            statement.set_line_wrap(True)
+            statement.get_style_context().add_class("confirm-title")
+            statement.set_justify(Gtk.Justification.CENTER)
+            effect = Gtk.Label(label=operation_effect(operation, settings["label"]), xalign=0.5)
+            effect.set_line_wrap(True)
+            effect.set_justify(Gtk.Justification.CENTER)
+            effect.get_style_context().add_class("stage-copy")
+            panel.pack_start(statement, True, True, 0)
+            panel.pack_start(effect, False, False, 20)
+            back = button("back", "Back", back_to_choices)
+            confirm = button("confirm", "Confirm " + operation_name(operation), begin_countdown, "primary-button")
+            footer([back, confirm])
+            focus_target = back
+            log("screen: confirm: " + operation)
+        elif current_stage == "countdown":
+            operation = intent["operation"]
+            header(operation_name(operation))
+            effect = Gtk.Label(label=operation_effect(operation, settings["label"]), xalign=0.5)
+            effect.set_line_wrap(True)
+            effect.set_justify(Gtk.Justification.CENTER)
+            effect.get_style_context().add_class("stage-copy")
+            remaining_label = Gtk.Label(label="Starting countdown")
+            remaining_label.get_style_context().add_class("countdown-remaining")
+            remaining_display = Gtk.Label(label=str(settings["seconds"]))
+            remaining_display.get_style_context().add_class("countdown-number")
+            panel.pack_start(remaining_label, False, False, 12)
+            panel.pack_start(remaining_display, True, True, 0)
+            panel.pack_start(effect, False, False, 12)
+            cancel = button("countdown-cancel", "Cancel", cancel_countdown)
+            footer([cancel])
+            focus_target = cancel
+        elif current_stage == "committing":
+            operation = intent["operation"]
+            header("Sending " + operation_name(operation) + " request")
+            text = Gtk.Label(label="The request is being sent. It cannot be recalled after dispatch starts.")
+            text.set_line_wrap(True)
+            text.set_justify(Gtk.Justification.CENTER)
+            text.get_style_context().add_class("stage-copy")
+            panel.pack_start(text, True, True, 12)
+        elif current_stage == "result":
+            result = screen_state["result"]
+            title = {"accepted": "Request accepted", "refused": "Request refused", "partial": "Partial result"}[result["status"]]
+            header(title)
+            summary = Gtk.Label(label=result["summary"], xalign=0.5)
+            summary.set_line_wrap(True)
+            summary.set_justify(Gtk.Justification.CENTER)
+            summary.get_style_context().add_class("stage-copy")
+            panel.pack_start(summary, True, True, 12)
+            diagnostic = clean_diagnostic(result.get("diagnostic", ""))
+            if diagnostic:
+                detail = Gtk.Label(label=diagnostic, xalign=0)
+                detail.set_line_wrap(True)
+                detail.get_style_context().add_class("diagnostic-copy")
+                panel.pack_start(detail, False, False, 8)
+            if result["status"] in {"refused", "partial"}:
+                back = button("result-back", "Back", back_to_choices)
+                retry = button("retry", "Retry", retry_action, "primary-button")
+                footer([back, retry])
+                focus_target = back
+            else:
+                close = button("result-close", "Close", stop_and_close)
+                footer([close])
+                focus_target = close
+
+        panel.show_all()
+        if focus_target is not None:
+            focus_target.grab_focus()
+
+    def refresh():
+        nonlocal current, timer, raised, previous_count, exit_status, settings
+        latest = session.screen_snapshot()
+        if latest["revision"] != current["revision"]:
+            previous_stage = current["stage"]
+            previous_request = current["request"]
+            current = latest
+            settings = latest["settings"]
+            if (current["stage"] != previous_stage or current["request"] != previous_request):
+                timer = Countdown(settings["seconds"]) if current["stage"] == "countdown" else None
+                previous_count = None
+                render(current)
+                if current["stage"] == "result" and current["result"]["status"] in {"refused", "partial"}:
+                    exit_status = 1
+        elif latest["phase"] != current["phase"]:
+            current = latest
+            render(current)
+        else:
+            current = latest
+        if latest["raised"] != raised:
+            raised = latest["raised"]
+            active_window.present()
+            if focus_target is not None:
+                focus_target.grab_focus()
+        return current
+
+    def transition(stage, intent=None, result=None):
+        if session.update_screen(current["revision"], stage, intent, result):
+            refresh()
+            return True
+        refresh()
+        return False
+
+    def choose_action(operation):
+        nonlocal last_action
+        if current["stage"] != "choose":
+            return
+        last_action = operation
+        intent = request(operation, settings["seconds"], settings["label"])
+        transition("confirm", intent)
+
+    def back_to_choices(*_):
+        nonlocal timer
+        if current["stage"] == "confirm":
+            timer = None
+            transition("choose")
+        elif current["stage"] == "result" and current["result"]["status"] in {"refused", "partial"}:
+            timer = None
+            transition("choose")
+        return True
+
+    def retry_action(*_):
+        nonlocal timer
+        if current["stage"] != "result" or current["result"]["status"] not in {"refused", "partial"}:
+            return True
+        timer = None
+        intent = request(current["request"]["operation"], settings["seconds"], settings["label"])
+        transition("confirm", intent)
+        return True
+
+    def begin_countdown(*_):
+        nonlocal timer, previous_count
+        if current["stage"] != "confirm" or current["request"] is None:
+            return True
+        if transition("countdown", current["request"]):
+            timer = Countdown(settings["seconds"])
+            previous_count = None
+        return True
+
+    def cancel_countdown(*_):
+        nonlocal timer, previous_count
+        if current["stage"] == "countdown":
+            if transition("choose"):
+                if timer is not None:
+                    timer.cancel()
+                timer = None
+                previous_count = None
+                log("screen: cancelled countdown")
+        return True
+
+    def invalidate(reason):
+        if finished or current.get("phase") == "committing":
+            return
+        if current.get("stage") == "result" and current.get("result", {}).get("status") == "accepted":
+            log("screen: dismissed after accepted request")
+            finish()
+            return
+        try:
+            session.cancel()
+        except (OSError, RuntimeError, ValueError):
+            pass
+        log("screen: cancelled: " + reason)
+        finish()
+
+    def launch_dispatch(intent):
+        nonlocal dispatching, exit_status
+        claimed = session.claim_screen(intent["id"])
+        if claimed is None:
+            refresh()
+            return
+        dispatching = True
+        log("screen: request: " + intent["operation"])
+        current.update({"phase": "committing", "stage": "committing"})
+        render(current)
+
+        def worker():
+            result = execute_screen_action(claimed)
+            if result["status"] == "accepted":
+                log("screen: request accepted: " + claimed["operation"])
+            elif result["status"] == "refused":
+                print("desktop-suspend: screen: refusal: " + claimed["operation"] + ": "
+                      + (result["diagnostic"] or result["summary"]), file=sys.stderr, flush=True)
+            else:
+                print("desktop-suspend: screen: partial: " + claimed["operation"] + ": "
+                      + (result["diagnostic"] or result["summary"]), file=sys.stderr, flush=True)
+            GLib.idle_add(dispatch_finished, result)
+
+        threading.Thread(target=worker, name="session-screen-dispatch", daemon=True).start()
+
+    def dispatch_finished(result):
+        nonlocal exit_status, dispatching, focus_watch
+        dispatching = False
+        if result["status"] in {"refused", "partial"}:
+            exit_status = 1
+        if result["status"] == "accepted" or result["yield_to_locker"]:
+            finish()
+            return False
+        if not session.finish_screen(result):
+            finish()
+            return False
+        if result["status"] in {"refused", "partial"}:
+            # A slow native refusal may outlast the focus/heartbeat lease. Give
+            # its recoverable result a fresh, focused screen owner.
+            focus_watch = ScreenFocusWatch()
+            active_window.present()
+            if focus_target is not None:
+                focus_target.grab_focus()
+        refresh()
+        return False
+
+    def key_control(widget):
+        node = widget
+        while node is not None:
+            for name, control in controls.items():
+                if node is control:
+                    return name
+            node = node.get_parent()
+        focused = active_window.get_focus()
+        node = focused
+        while node is not None:
+            for name, control in controls.items():
+                if node is control:
+                    return name
+            node = node.get_parent()
+        return None
+
+    def move_focus(direction):
+        if not control_order:
+            return
+        focused = key_control(active_window.get_focus())
+        index = control_order.index(focused) if focused in control_order else 0
+        target = (index + direction) % len(control_order)
+        controls[control_order[target]].grab_focus()
+
+    def move_grid(keyval):
+        operations = ("lock", "away", "suspend", "logout", "restart", "shutdown")
+        focused = key_control(active_window.get_focus())
+        if focused not in operations:
+            focused = last_action
+        index = operations.index(focused)
+        row, column = divmod(index, 3)
+        if keyval == Gdk.KEY_Left:
+            column = (column - 1) % 3
+        elif keyval == Gdk.KEY_Right:
+            column = (column + 1) % 3
+        elif keyval == Gdk.KEY_Up:
+            row = max(0, row - 1)
+        elif keyval == Gdk.KEY_Down:
+            row = min(1, row + 1)
+        controls[operations[row * 3 + column]].grab_focus()
+
+    def activate_focused(widget):
+        name = key_control(widget)
+        if name is None:
+            return
+        if current["stage"] == "choose" and name in SCREEN_OPERATIONS:
+            choose_action(name)
+        elif current["stage"] == "confirm":
+            if name == "confirm":
+                begin_countdown()
+            elif name == "back":
+                back_to_choices()
+        elif current["stage"] == "countdown":
+            if name == "countdown-cancel":
+                cancel_countdown()
+        elif current["stage"] == "result":
+            if name in {"result-back"}:
+                back_to_choices()
+            elif name == "retry":
+                retry_action()
+            elif name in {"result-close"}:
+                stop_and_close()
+        elif name == "close":
+            stop_and_close()
+
+    def key_release(_widget, event):
+        keyval = event.keyval
+        if keyval not in {Gdk.KEY_Return, Gdk.KEY_KP_Enter, Gdk.KEY_space, Gdk.KEY_ISO_Enter}:
+            return False
+        activation_keys.release(keyval)
+        return True
+
+    def key_press(widget, event):
+        keyval = event.keyval
+        if current.get("phase") == "committing":
+            return keyval in {Gdk.KEY_Return, Gdk.KEY_KP_Enter, Gdk.KEY_space, Gdk.KEY_ISO_Enter,
+                              Gdk.KEY_Escape, Gdk.KEY_Tab, Gdk.KEY_ISO_Left_Tab, Gdk.KEY_Left, Gdk.KEY_Right,
+                              Gdk.KEY_Up, Gdk.KEY_Down}
+        if keyval == Gdk.KEY_Escape:
+            stop_and_close()
+            return True
+        if keyval in {Gdk.KEY_Tab, Gdk.KEY_ISO_Left_Tab}:
+            reverse = bool(event.state & Gdk.ModifierType.SHIFT_MASK) or keyval == Gdk.KEY_ISO_Left_Tab
+            move_focus(-1 if reverse else 1)
+            return True
+        if current["stage"] == "choose" and keyval in {Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_Up, Gdk.KEY_Down}:
+            move_grid(keyval)
+            return True
+        if keyval in {Gdk.KEY_Return, Gdk.KEY_KP_Enter, Gdk.KEY_space, Gdk.KEY_ISO_Enter}:
+            if not activation_keys.press(keyval):
+                return True
+            activate_focused(widget)
+            return True
+        return False
+
+    def active_changed(*_):
+        if focus_watch.acquired and not visible_and_focused():
+            invalidate("focus left the session screen")
+
+    def unmapped(*_):
+        if focus_watch.acquired and not finished:
+            invalidate("session screen was unmapped")
+
+    for index, monitor in enumerate(monitors):
+        window = Gtk.Window(title="Niri Plus Session")
+        windows.append(window)
+        window.set_name("session-screen-" + str(index))
+        window.set_decorated(False)
+        window.set_app_paintable(True)
+        geometry = monitor.get_geometry()
+        window.set_default_size(geometry.width, geometry.height)
+        visual = window.get_screen().get_rgba_visual()
+        if visual is None:
+            raise RuntimeError("the session screen requires an alpha-capable visual")
+        window.set_visual(visual)
+        GtkLayerShell.init_for_window(window)
+        GtkLayerShell.set_namespace(window, SCREEN_APP_ID)
+        GtkLayerShell.set_layer(window, GtkLayerShell.Layer.OVERLAY)
+        GtkLayerShell.set_monitor(window, monitor)
+        mode = (GtkLayerShell.KeyboardMode.ON_DEMAND if index == focused_index
+                else GtkLayerShell.KeyboardMode.NONE)
+        GtkLayerShell.set_keyboard_mode(window, mode)
+        GtkLayerShell.set_exclusive_zone(window, -1)
+        if hasattr(GtkLayerShell, "set_respect_close"):
+            GtkLayerShell.set_respect_close(window, True)
+        for edge in (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.BOTTOM,
+                     GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.RIGHT):
+            GtkLayerShell.set_anchor(window, edge, True)
+
+        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        root.set_name("session-screen-root-" + str(index))
+        root.set_halign(Gtk.Align.FILL)
+        root.set_valign(Gtk.Align.FILL)
+        root.set_hexpand(True)
+        root.set_vexpand(True)
+        window.add(root)
+        if index == focused_index:
+            active_window = window
+            panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6 if compact_screen else 10)
+            panel.set_name("session-panel-" + str(index))
+            panel.set_border_width(0)
+            panel.set_size_request(min(760, max(280, geometry.width - 40)), -1)
+            panel.set_halign(Gtk.Align.CENTER)
+            panel.set_valign(Gtk.Align.CENTER)
+            root.pack_start(panel, True, False, 0)
+        else:
+            fill = Gtk.Box()
+            fill.set_hexpand(True)
+            fill.set_vexpand(True)
+            root.pack_start(fill, True, True, 0)
+
+        css = Gtk.CssProvider()
+        css.load_from_data((f"""
+            #session-screen-root-{index} {{ background-color: rgba(0, 0, 0, 0.55); }}
+            #session-screen-{index} {{ background-color: transparent; }}
+            #session-panel-{index} {{ background-color: #1b1d1f; background-image: none; border: 1px solid #454b50; color: #efefec; padding: {8 if compact_screen else 16}px; box-shadow: none; text-shadow: none; -gtk-icon-shadow: none; transition: none; animation: none; }}
+            #session-panel-{index} * {{ background-image: none; box-shadow: none; text-shadow: none; -gtk-icon-shadow: none; transition: none; animation: none; }}
+            #session-panel-{index} label {{ font-family: 'Noto Sans', sans-serif; color: #efefec; }}
+            #session-panel-{index} .panel-title {{ font-size: {20 if compact_screen else 22}px; font-weight: 500; }}
+            #session-panel-{index} .panel-subtitle {{ font-size: 13px; color: #aaaeac; }}
+            #session-panel-{index} .picker-intro {{ font-size: {13 if compact_screen else 14}px; color: #c9cbc8; padding: {2 if compact_screen else 8}px {4 if compact_screen else 12}px; }}
+            #session-panel-{index} .stage-copy {{ font-size: {13 if compact_screen else 14}px; color: #c9cbc8; padding: {4 if compact_screen else 8}px {8 if compact_screen else 12}px; }}
+            #session-panel-{index} .confirm-title {{ font-size: {20 if compact_screen else 24}px; font-weight: 500; padding: {10 if compact_screen else 16}px; }}
+            #session-panel-{index} .countdown-remaining {{ color: #aaaeac; font-size: 13px; }}
+            #session-panel-{index} .countdown-number {{ font-size: {64 if compact_screen else 72}px; font-weight: 400; color: #efefec; }}
+            #session-panel-{index} .diagnostic-copy {{ background-color: #303336; border-left: 3px solid #e9b55f; padding: 10px 12px; font-size: 12px; color: #c9cbc8; }}
+            #session-panel-{index} .action-icon {{ color: #c9cbc8; }}
+            #session-panel-{index} .action-title {{ font-size: {14 if compact_screen else 15}px; font-weight: 500; }}
+            #session-panel-{index} .action-note {{ font-size: {11 if compact_screen else 12}px; color: #aaaeac; }}
+            #session-panel-{index} button {{ background-image: none; background-color: #303336; color: #efefec; border: 1px solid #81878c; border-radius: 3px; padding: {6 if compact_screen else 9}px {12 if compact_screen else 16}px; font-family: 'Noto Sans', sans-serif; font-size: {13 if compact_screen else 14}px; }}
+            #session-panel-{index} button.action-button {{ background-image: none; background-color: #1b1d1f; border-color: transparent; min-height: {68 if compact_screen else 84}px; padding: {4 if compact_screen else 8}px 6px; }}
+            #session-panel-{index} button:hover {{ background-image: none; background-color: #3b4044; }}
+            #session-panel-{index} button.action-button:hover {{ background-image: none; background-color: #25282b; }}
+            #session-panel-{index} button:focus {{ background-image: none; background-color: #294e75; border-color: #a6ceff; }}
+            #session-panel-{index} button.primary-button {{ background-image: none; background-color: #294e75; border-color: #6eafff; }}
+            #session-panel-{index} button.primary-button:focus {{ background-image: none; border-color: #a6ceff; }}
+        """).encode())
+        Gtk.StyleContext.add_provider_for_screen(window.get_screen(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        window.connect("key-press-event", key_press)
+        window.connect("key-release-event", key_release)
+        window.connect("notify::is-active", active_changed)
+        window.connect("unmap", unmapped)
+        window.connect("delete-event", stop_and_close)
+        if index == focused_index:
+            handlers.extend([
+                display.connect("closed", lambda *_: invalidate("display closed")),
+                display.connect("monitor-added", lambda *_: invalidate("monitor set changed")),
+                display.connect("monitor-removed", lambda *_: invalidate("monitor set changed")),
+                display.connect("seat-added", lambda *_: invalidate("input seat changed")),
+                display.connect("seat-removed", lambda *_: invalidate("input seat changed")),
+            ])
+        window.show_all()
+
+    render(current)
+    for window in windows:
+        window.show_all()
+    active_window.present()
+    if focus_target is not None:
+        focus_target.grab_focus()
+
+    def watch_focused_output():
+        if len(monitors) <= 1:
+            return
+
+        def worker():
+            while not output_stop.wait(0.5):
+                try:
+                    if not session.session_unchanged():
+                        GLib.idle_add(invalidate, "compositor session changed")
+                        return
+                    result = subprocess.run(["niri", "msg", "--json", "focused-output"], check=True,
+                                            capture_output=True, text=True, timeout=2)
+                    index = focused_monitor_index(geometries, json.loads(result.stdout))
+                    if index != focused_index:
+                        GLib.idle_add(invalidate, "focused monitor changed")
+                        return
+                except (OSError, RuntimeError, ValueError, TypeError, subprocess.SubprocessError):
+                    GLib.idle_add(invalidate, "compositor output state changed")
+                    return
+
+        threading.Thread(target=worker, name="session-screen-output-watch", daemon=True).start()
+
+    watch_focused_output()
+
+    def tick():
+        nonlocal timer, previous_count
+        if finished:
+            return False
+        try:
+            latest = refresh()
+            if not session.session_unchanged():
+                invalidate("compositor session changed")
+                return False
+            if latest["phase"] == "committing":
+                # The native request has crossed its non-recallable boundary;
+                # keep the heartbeat current but never claim that focus loss
+                # cancels an already-dispatched request.
+                focus_watch.tick(visible_and_focused(), False)
+                return True
+            was_acquired = focus_watch.acquired
+            if focus_watch.tick(visible_and_focused(), session.cancelled()):
+                invalidate("focus, responsiveness, or sleep state changed")
+                return False
+            if not was_acquired and focus_watch.acquired:
+                log("screen: ready")
+            if latest["stage"] == "countdown":
+                if timer is None:
+                    timer = Countdown(settings["seconds"])
+                remaining = timer.tick(visible_and_focused(), session.cancelled())
+                if timer.outcome == "cancelled":
+                    invalidate("countdown lost focus or was interrupted")
+                    return False
+                if timer.started is not None and latest["timer_started_at"] is None:
+                    if not session.start_screen_timer(latest["request"]["id"], latest["revision"], timer.started):
+                        refresh()
+                        return True
+                    latest["timer_started_at"] = float(timer.started)
+                if remaining != previous_count:
+                    if remaining_label is not None:
+                        remaining_label.set_text("Starting in")
+                    if remaining_display is not None:
+                        remaining_display.set_text(str(remaining))
+                    operation = latest["request"]["operation"]
+                    log("screen: countdown: " + operation + " " + str(remaining))
+                    previous_count = remaining
+                if timer.outcome == "elapsed":
+                    launch_dispatch(latest["request"])
+        except (OSError, RuntimeError, ValueError, TypeError, KeyError, subprocess.SubprocessError) as error:
+            invalidate("invalid or unavailable session state: " + clean_diagnostic(str(error)))
+            return False
+        return not finished
+
+    sources.append(GLib.timeout_add(100, tick))
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        sources.append(GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, sig, stop_and_close))
+    try:
+        Gtk.main()
+        return exit_status
+    finally:
+        output_stop.set()
+        for source in sources:
+            if GLib.MainContext.default().find_source_by_id(source):
+                GLib.source_remove(source)
+        for handler in handlers:
+            display.disconnect(handler)
+        finished = True
+        for window in windows:
+            window.destroy()
 
 
 def show_countdown(session):
@@ -481,24 +1630,43 @@ def away(session, lock=False, *, run=subprocess.run):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("countdown", "cancel", "away"))
+    parser.add_argument("action", choices=("countdown", "cancel", "away", "menu"))
     parser.add_argument("--operation", choices=tuple(OPERATIONS), default="suspend")
     parser.add_argument("--seconds", type=int, default=5)
     parser.add_argument("--label", default=socket.gethostname())
     parser.add_argument("--lock", action="store_true", help="Lock before the away action")
+    parser.add_argument("--select", choices=SCREEN_OPERATIONS,
+                        help="Open the native session screen at this action's confirmation")
     args = parser.parse_args(argv)
     if not 1 <= args.seconds <= 60:
         parser.error("--seconds must be between 1 and 60")
+    if args.action != "menu" and args.select is not None:
+        parser.error("--select is only valid with the menu action")
+    if args.action == "menu" and (args.operation != "suspend" or args.lock):
+        parser.error("--operation and --lock are only valid with countdown or away")
     label = "".join(character for character in args.label if character.isprintable()).strip()[:64]
     session = None
     try:
+        ready = Path(__file__).resolve().with_name("desktop-session-ready")
+        if args.action == "menu":
+            subprocess.run([str(ready)], check=True, timeout=3)
+            if not args.label or len(args.label) > 64 or not all(character.isprintable() for character in args.label):
+                raise ValueError("session screen label must be 1 to 64 printable characters")
+            session = Session(state_directory(), socket_path=os.environ.get("NIRI_SOCKET"), require_socket=True)
+            if locker_is_active():
+                log("screen: refused: session is already locked")
+                return 1
+            if not session.begin_screen(args.seconds, args.label, args.select):
+                log("screen: " + str(session.disposition))
+                return 0
+            return show_session_screen(session)
+
         session = Session(state_directory())
         if args.action == "cancel":
             log("pending countdown cancelled" if session.cancel() else "no pending countdown")
         elif args.action == "away":
             away(session, args.lock)
         else:
-            ready = Path(__file__).resolve().with_name("desktop-session-ready")
             subprocess.run([str(ready)], check=True, timeout=3)
             if not session.begin(request(args.operation, args.seconds, label or "This computer", args.lock)):
                 log(session.disposition)

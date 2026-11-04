@@ -14,6 +14,21 @@ loader.exec_module(menu)
 
 
 class SessionConfirmationTests(unittest.TestCase):
+    def test_screen_route_is_opt_in_and_can_start_at_confirmation(self):
+        command = menu.screen_command(7, "Example", "shutdown")
+        self.assertEqual(Path(command[0]).name, "desktop-suspend")
+        self.assertEqual(command[1:], ["menu", "--seconds", "7", "--label", "Example",
+                                       "--select", "shutdown"])
+        with mock.patch.object(menu.subprocess, "run") as run:
+            self.assertEqual(menu.main(["--screen", "--seconds", "7", "--label", "Example", "--select", "shutdown"]), 0)
+        run.assert_called_once_with(command, check=True)
+
+    def test_screen_route_rejects_invalid_values(self):
+        for args in ((0, "Example", None), (5, "", None), (5, "bad\nlabel", None),
+                     (5, "Example", "not-an-action")):
+            with self.subTest(args=args), self.assertRaises(ValueError):
+                menu.screen_command(*args)
+
     def test_every_manual_action_routes_through_one_guard_without_another_prompt(self):
         policy = {"seconds": 5, "label": "Example", "lock_on_away": True}
         actions = {"Lock": "lock", "Suspend": "suspend", "Restart": "restart", "Shut down": "shutdown",

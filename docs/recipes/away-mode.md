@@ -134,6 +134,13 @@ Treat that result as a failure, not as away mode. Use ordinary session input or
 display controls to wake the display, then recover or start the service in the
 active graphical user's session before relying on `status` or `resume`.
 
+The separate [unified session screen](session.md#optional-unified-session-screen)
+offers Display off without locking and Lock followed by display-off, with the
+same meanings on every machine. Its optional Ctrl+Alt+Delete profile is
+independent of this recipe's retained Mod+Shift+P binding and 0.5.0 Away pin.
+Adopting that screen does not change the manual latch's input/resume behavior
+or make this dated evidence new screen acceptance.
+
 ## Input, inhibitors and display limits
 
 When physical evdev input is already readable, the helper observes keyboard,

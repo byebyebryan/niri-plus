@@ -1,0 +1,5 @@
+// Optional native session screen. Merge or include only when selected.
+// This binding is deliberately unavailable while the real locker owns input.
+binds {
+    Ctrl+Alt+Delete repeat=false { spawn "desktop-session-menu" "--screen"; }
+}

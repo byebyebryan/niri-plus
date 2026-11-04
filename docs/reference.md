@@ -8,6 +8,11 @@ the tested Arch reference and dated adoption evidence. Components 0.4.1, direct
 device controls and the black workspace identity are installed on Carbon,
 Starship and Snap. Earlier delivery records retain their historical context.
 
+The local 0.9.0 candidate's [optional unified session screen](recipes/session.md#optional-unified-session-screen)
+replaces Ctrl+Alt+Delete with the action grid only when its profile is selected.
+The baseline bindings below and dated fleet evidence do not establish adoption
+of that screen.
+
 ## Keyboard reference
 
 `Mod` is Niri's compositor modifier, normally Super on a regular session.
@@ -40,6 +45,13 @@ Starship and Snap. Earlier delivery records retain their historical context.
 is selected and its optional binding is included. The [away-mode
 recipe](recipes/away-mode.md) explains its manual latch and how to add the
 binding without replacing the rest of your Niri config.
+
+For the optional screen, Ctrl+Alt+Delete instead launches
+`desktop-session-menu --screen`. Lock, Display off and Suspend form the first
+row; Log out, Restart and Shut down form the second. Every action has an
+explicit confirmation and a cancellable countdown. Display off does not add a
+lock; Lock always locks then turns displays off. Its profile replaces the
+baseline lock binding and is unavailable while locked.
 
 ## Launchers
 

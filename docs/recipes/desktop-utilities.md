@@ -54,7 +54,7 @@ the entries themselves do not need separate key bindings.
 
 ## Optional Close All
 
-The components 0.10.0 **release candidate** adds the first-party
+Published [components 0.10.0](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.10.0) add the first-party
 [`niri-close-all` utility](../../examples/desktop/niri-close-all) and its
 [opt-in Niri profile](../../examples/desktop/profiles/minimal-niri/close-all.kdl).
 It requests ordinary closes for **all normal windows across every workspace
@@ -77,7 +77,7 @@ The helper checks the captured compositor socket before each request and stops
 if that socket changes or disappears.
 
 Use Python 3.11+ and a Niri session exposing `NIRI_SOCKET`. For a reviewed
-checkout containing this candidate, first inspect existing target and binding
+`components-v0.10.0` checkout, first inspect existing target and binding
 preimages. Install only the helper, and merge or include the optional profile:
 
 ```sh
@@ -103,9 +103,9 @@ partial request failure, and 2 for invalid command-line arguments.
 An invalid or unavailable snapshot reports an error on stderr without sending
 any close request.
 
-Managed consumers must wait for a published immutable archive, verify its
+Managed consumers must use the published immutable archive, verify its
 manifest, and select only the helper/profile alongside their existing pins.
-The qualified reference is not updated by this optional candidate. Tests use
+The qualified reference is not updated by this optional release. Tests use
 private IPC command fixtures; never test it by closing ordinary live work.
 Removing the optional binding and helper reverses adoption; applications
 already closed by an explicit invocation cannot be reopened by that rollback.

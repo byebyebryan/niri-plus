@@ -745,13 +745,13 @@ apply to adopt the screen.
 
 ## Optional post-reference branch: Close All
 
-The 0.10.0 release candidate contains the independent
+Published components 0.10.0 contain the independent
 [Close All utility](recipes/desktop-utilities.md#optional-close-all) and
 `examples/desktop/profiles/minimal-niri/close-all.kdl`. It requests ordinary
 closes across all workspaces and outputs from one captured window-ID list.
 Apps retain their save/cancel dialogs; this is not logout or a process kill.
 
-Wait for an immutable published tuple before managed adoption. Select only
+Verify the immutable published tuple before managed adoption. Select only
 `niri-close-all` and the optional profile from that verified archive, preserving
 the existing component and policy pins. Merge Mod+Shift+Q with `repeat=false`
 and keep Mod+Q unchanged. Preserve the helper/binding preimages and record

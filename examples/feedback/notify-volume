@@ -31,14 +31,25 @@ percent=$(awk -v level="${BASH_REMATCH[1]}" 'BEGIN { printf "%.0f", level * 100 
 value=$percent
 (( value > 100 )) && value=100
 summary="$label: $percent%"
+icon_prefix=audio-volume
+[[ $tag == microphone ]] && icon_prefix=microphone-sensitivity
+if (( percent <= 33 )); then
+    icon="$icon_prefix-low-symbolic"
+elif (( percent <= 66 )); then
+    icon="$icon_prefix-medium-symbolic"
+else
+    icon="$icon_prefix-high-symbolic"
+fi
 if [[ $line == *MUTED* ]]; then
     summary="$label: Muted ($percent%)"
     value=0
+    icon="$icon_prefix-muted-symbolic"
 elif [[ $tag == microphone ]]; then
     summary="$label: On ($percent%)"
 fi
 
 notify-send --app-name=desktop-feedback --urgency=low --expire-time=1500 \
+    --icon="$icon" \
     --hint="string:x-canonical-private-synchronous:$tag" \
     --hint="int:value:$value" --hint=boolean:transient:true \
     --hint=boolean:suppress-sound:true "$summary"

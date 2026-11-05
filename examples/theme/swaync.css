@@ -11,6 +11,14 @@
   --text-color: #efefec;
   --text-color-disabled: #aaaeac;
   --bg-selected: #6eafff;
+  --information-bg: #303336;
+  --information-border-color: #454b50;
+  --information-heading-color: #c9cbc8;
+  --information-meter-track: #111315;
+  --information-meter-fill: #6eafff;
+  --information-meter-charging: #a9d180;
+  --information-meter-warning: #e9b55f;
+  --information-meter-critical: #f27d78;
   --border-radius: 0px;
   --notification-icon-size: 40px;
   --font-size-body: 11pt;
@@ -26,10 +34,19 @@
   background: alpha(#303336, 1);
   border: 2px solid #f27d78;
 }
-.notification-row .notification-background .notification .notification-default-action { padding: 14px 16px; }
+.notification-row .notification-background .notification .notification-default-action { padding: 12px; }
 .notification-row .notification-background .notification .notification-default-action .body { margin-top: 6px; }
 .notification-row .notification-background .notification .notification-alt-actions { padding: 0 12px 10px; }
+.widget-notifications { margin: 8px 16px; padding: 0; }
+.control-center .notification-group { padding: 0; }
+.control-center .notification-row .notification-background { padding: 6px 0; }
+.control-center .control-center-list .notification { box-shadow: none; border-color: #454b50; }
+.control-center .notification-row .notification-background .notification .notification-default-action .notification-content .text-box .time { font-weight: 400; font-size: 10pt; color: #aaaeac; }
+.control-center .notification-row:focus, .control-center .notification-group:focus { background: transparent; }
+.control-center .notification-row:focus .notification:not(.critical), .control-center .notification-group:focus .notification:not(.critical) { border-color: #6eafff; box-shadow: inset 3px 0 0 #6eafff; }
+.control-center .notification-row:focus .notification.critical, .control-center .notification-group:focus .notification.critical { box-shadow: inset 3px 0 0 #6eafff; }
 .notification-action > button, .widget-title > button { border-radius: 3px; }
 button:focus-visible { outline: 2px solid #a6ceff; outline-offset: 2px; }
 progressbar trough { background: #111315; }
 progressbar progress { background: #6eafff; }
+.notification progressbar trough, .notification progressbar progress { min-height: 6px; border-radius: 3px; }

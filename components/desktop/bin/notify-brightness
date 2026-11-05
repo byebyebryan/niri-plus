@@ -26,6 +26,7 @@ if [[ ! $percent =~ ^[0-9]+$ ]] || (( percent > 100 )); then
 fi
 
 notify-send --app-name=desktop-feedback --urgency=low --expire-time=1500 \
+    --icon=display-brightness-symbolic \
     --hint=string:x-canonical-private-synchronous:brightness \
     --hint="int:value:$percent" --hint=boolean:transient:true \
     --hint=boolean:suppress-sound:true "Brightness: $percent%"

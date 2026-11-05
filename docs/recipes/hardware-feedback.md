@@ -3,6 +3,9 @@
 Hardware keys provide small, replaceable notifications through the existing
 notification daemon. The helpers keep microphone and speaker feedback distinct;
 the popups are transient and do not enter SwayNC history.
+Symbolic icons distinguish speaker, microphone and brightness feedback. Audio
+icons reflect the resulting level or mute state; the percentage remains visible
+beside the notification's progress indicator.
 
 ## Install the helpers
 

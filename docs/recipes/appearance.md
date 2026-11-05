@@ -51,7 +51,8 @@ Libadwaita keep their own supported colors and may look different from the
 specimens. Gtklock has its own explicit stylesheet because it owns a separate
 password surface.
 
-The optional `shared.swaync_sidebar` identity object enables the selected
+The optional `shared.swaync_sidebar` identity object, available in the
+[0.4.3 maintenance release](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.3), enables the selected
 translucent sidebar treatment. It accepts only `opacity`, `border_color`, and
 `card_border_color`; without it, SwayNC rendering retains the legacy output.
 The selected values set a 75% panel and card fill, a single left panel border,

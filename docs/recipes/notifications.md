@@ -91,16 +91,18 @@ one left border; internal information dividers retain their separator color.
 Notification text and controls remain opaque and focus and critical outlines
 remain active. Omitting the block keeps the legacy stylesheet output.
 
-The stylesheet and matching layout below are source candidates in this
-checkout. They are not part of the qualified Arch reference, published example
-snapshot, or managed consumer selection.
+The style is available in the [0.4.3 maintenance backport](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.3).
+It changes only the two appearance implementation files from 0.4.2, retaining
+all 42 other runtime payloads. The dated Arch reference and optional desktop
+feature releases retain their own selections and acceptance records.
 
-For a matching edge-attached layout candidate, merge these optional values
-into a SwayNC config:
+For a matching edge-attached layout with individual notification cards, merge
+these optional values into a SwayNC config:
 
 ```json
 {
   "fit-to-screen": true,
+  "notification-grouping": false,
   "control-center-width": 448,
   "control-center-margin-top": 0,
   "control-center-margin-bottom": 0,

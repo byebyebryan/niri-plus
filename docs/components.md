@@ -73,6 +73,13 @@ Established projects keep their implementation and release authority:
 
 ## Immutable bundle and independent selections
 
+The [0.4.3 SwayNC maintenance backport](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.3)
+adds an opt-in translucent sidebar with matching information and notification
+cards. Only the appearance renderer and identity validator change among its
+44 runtime payloads; all other 42 match 0.4.2. Its independently pinned identity
+and host layout select the new appearance. The qualified Arch reference and
+optional desktop feature releases retain their own tuples.
+
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.
 The published optional session screen includes the 0.9.2 visible-countdown fix in the

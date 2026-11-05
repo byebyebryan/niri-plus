@@ -14,7 +14,7 @@
     "deterministic_builds": 2
   },
   "identity": {
-    "path": "design/identity.json",
+    "path": "design/history/neutral-slate-black-workspace.json",
     "schema_version": 2,
     "source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
     "sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",

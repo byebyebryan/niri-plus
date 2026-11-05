@@ -53,6 +53,11 @@
     "normal_notification_timeout_ms": 30000,
     "critical_notification_timeout_ms": 0,
     "overlay_opacity": 1,
+    "swaync_sidebar": {
+      "opacity": 0.75,
+      "border_color": "#6b747c",
+      "card_border_color": "#5d666e"
+    },
     "native_app_opacity": 1,
     "blur": false,
     "new_ambient_animations": false,

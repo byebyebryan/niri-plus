@@ -51,6 +51,13 @@ Libadwaita keep their own supported colors and may look different from the
 specimens. Gtklock has its own explicit stylesheet because it owns a separate
 password surface.
 
+The optional `shared.swaync_sidebar` identity object enables the selected
+translucent sidebar treatment. It accepts only `opacity`, `border_color`, and
+`card_border_color`; without it, SwayNC rendering retains the legacy output.
+The selected values set a 75% panel and card fill, a single left panel border,
+and matching information and notification outlines. Text, focus accents,
+critical edges, information dividers, and widget data keep their own roles.
+
 For this reference account, GTK appearance uses the `org.gnome.desktop.interface`
 GSettings values below. Leave `GTK_THEME` unset: GTK documents it as a theme
 debug override that can take precedence over the selected system color

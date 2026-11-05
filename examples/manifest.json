@@ -429,7 +429,7 @@
       "component_version": "0.10.0",
       "source": "Niri Plus appearance component module",
       "notes": "Selected Balanced+ terminal colors only; existing Kitty behavior remains separately owned.",
-      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+      "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
     },
     {
       "path": "examples/kitty/slate-blue.conf",
@@ -440,7 +440,7 @@
     },
     {
       "path": "examples/login/derive-theme.py",
-      "sha256": "bfe80a687b81b567e186325947538105a3df7138dd49f76b9c6723a7576b932c",
+      "sha256": "09d1b273a682ecb1077565adedf438da0776a8b07838e47b19cfc132bbea05e9",
       "kind": "generated first-party component export",
       "module": "appearance",
       "generated": true,
@@ -719,7 +719,7 @@
       "component_version": "0.10.0",
       "source": "Niri Plus appearance component module",
       "notes": "Generated KDE color groups; keep unrelated kdeglobals groups and font preferences. not a deployed artifact.",
-      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+      "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
     },
     {
       "path": "examples/theme/controls-appearance.json",
@@ -732,7 +732,7 @@
       "component_version": "0.10.0",
       "source": "Niri Plus appearance component module",
       "notes": "Unreleased direct Rofi controls candidate; generated from canonical desktop roles independently of terminal colors.",
-      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+      "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
     },
     {
       "path": "examples/theme/gtklock.css",
@@ -745,7 +745,7 @@
       "component_version": "0.10.0",
       "source": "Niri Plus appearance component module",
       "notes": "Password-form appearance only; authentication and lock-service ownership remain separate. not a deployed artifact.",
-      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+      "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
     },
     {
       "path": "examples/theme/neutral-slate.rasi",
@@ -758,7 +758,7 @@
       "component_version": "0.10.0",
       "source": "Niri Plus appearance component module",
       "notes": "Rofi appearance only; existing actions and launcher behavior remain separately owned. not a deployed artifact.",
-      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+      "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
     },
     {
       "path": "examples/theme/niri-neutral-slate.kdl",
@@ -771,7 +771,7 @@
       "component_version": "0.10.0",
       "source": "Niri Plus appearance component module",
       "notes": "Canvas and focus-ring appearance fragment for the existing Niri layout block. not a deployed artifact.",
-      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+      "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
     },
     {
       "path": "examples/theme/niri-plus-controls.rasi",
@@ -784,7 +784,7 @@
       "component_version": "0.10.0",
       "source": "Niri Plus appearance component module",
       "notes": "Unreleased direct Rofi controls candidate; generated from canonical desktop roles independently of terminal colors.",
-      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+      "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
     },
     {
       "path": "examples/theme/qt5-palette.conf",
@@ -797,7 +797,7 @@
       "component_version": "0.10.0",
       "source": "Niri Plus appearance component module",
       "notes": "Qt 5 QPalette colors only; style and dialog preferences remain separately owned. not a deployed artifact.",
-      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+      "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
     },
     {
       "path": "examples/theme/qt6-palette.conf",
@@ -810,11 +810,11 @@
       "component_version": "0.10.0",
       "source": "Niri Plus appearance component module",
       "notes": "Qt 6 QPalette colors only; style and dialog preferences remain separately owned. not a deployed artifact.",
-      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+      "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
     },
     {
       "path": "examples/theme/swaync.css",
-      "sha256": "bf89d38e6d2e2870c0a5eaf52cd0d4ad510a56920d101296b06b221b9a8bee84",
+      "sha256": "dff40154c15fd2fed456a62d0db2401ffafac8885d69e4ddd7562ae6a2849383",
       "kind": "generated first-party component export",
       "module": "appearance",
       "generated": true,
@@ -823,7 +823,7 @@
       "component_version": "0.10.0",
       "source": "Niri Plus appearance component module",
       "notes": "CSS for the selected SwayNC fork; notification behavior remains separately owned. not a deployed artifact.",
-      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+      "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
     },
     {
       "path": "scripts/check-desktop-away.py",

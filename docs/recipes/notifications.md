@@ -83,6 +83,32 @@ It imports the fork's packaged base stylesheet. The config requires the fork;
 the older `examples/notifications/config.json` remains a historical portable
 specimen, not the selected Arch dashboard config.
 
+When the optional `shared.swaync_sidebar` identity block is present, the
+rendered style gives the sidebar, information surface, and notification cards
+75% charcoal backgrounds. Its `opacity`, `border_color`, and
+`card_border_color` values set the surface alpha and outlines. The sidebar has
+one left border; internal information dividers retain their separator color.
+Notification text and controls remain opaque and focus and critical outlines
+remain active. Omitting the block keeps the legacy stylesheet output.
+
+The stylesheet and matching layout below are source candidates in this
+checkout. They are not part of the qualified Arch reference, published example
+snapshot, or managed consumer selection.
+
+For a matching edge-attached layout candidate, merge these optional values
+into a SwayNC config:
+
+```json
+{
+  "fit-to-screen": true,
+  "control-center-width": 448,
+  "control-center-margin-top": 0,
+  "control-center-margin-bottom": 0,
+  "control-center-margin-left": 0,
+  "control-center-margin-right": 0
+}
+```
+
 ## Unified information panel
 
 The qualified Arch reference above retains its recorded dashboard profile.

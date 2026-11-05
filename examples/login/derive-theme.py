@@ -4,6 +4,7 @@
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 
@@ -42,6 +43,7 @@ COLOR_KEYS = (
 )
 OPTIONAL_BACKGROUND_COLOR_KEYS = ("workspace_background", "overview_background")
 HEX_COLOR = re.compile(r"#[0-9a-fA-F]{6}\Z")
+SWAYNC_SIDEBAR_KEYS = frozenset(("opacity", "border_color", "card_border_color"))
 
 
 def _selected_profile(identity):
@@ -77,6 +79,21 @@ def _selected_profile(identity):
     shared = identity.get("shared")
     if not isinstance(shared, dict):
         raise ValueError("schema-2 identity has no shared typography and geometry")
+    if "swaync_sidebar" in shared:
+        sidebar = shared["swaync_sidebar"]
+        if not isinstance(sidebar, dict) or set(sidebar) != SWAYNC_SIDEBAR_KEYS:
+            raise ValueError("shared.swaync_sidebar must define exactly opacity, border_color, and card_border_color")
+        opacity = sidebar["opacity"]
+        valid_opacity = not isinstance(opacity, bool) and isinstance(opacity, (int, float))
+        if valid_opacity:
+            valid_opacity = (isinstance(opacity, int) or math.isfinite(opacity)) and 0 <= opacity <= 1
+        if not valid_opacity:
+            raise ValueError("shared.swaync_sidebar opacity must be finite and between zero and one")
+        if any(
+            not isinstance(sidebar[key], str) or not HEX_COLOR.fullmatch(sidebar[key])
+            for key in ("border_color", "card_border_color")
+        ):
+            raise ValueError("shared.swaync_sidebar colors must be six-digit hexadecimal colors")
     terminal = identity.get("terminal")
     if not isinstance(terminal, dict) or terminal.get("variant") != "balanced-plus":
         raise ValueError("expected the separate Balanced+ terminal identity")

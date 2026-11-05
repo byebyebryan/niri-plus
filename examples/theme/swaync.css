@@ -1,18 +1,18 @@
 /* Neutral Slate over the selected fork's native GTK4 layout. */
 @import url("/etc/xdg/swaync/style.css");
 :root {
-  --cc-bg: alpha(#1b1d1f, 1);
+  --cc-bg: alpha(#1b1d1f, 0.75);
   --noti-bg: 27, 29, 31;
-  --noti-bg-alpha: 1;
+  --noti-bg-alpha: 0.75;
   --noti-bg-darker: #111315;
-  --noti-bg-hover: #303336;
+  --noti-bg-hover: alpha(#303336, 0.75);
   --noti-bg-focus: #294e75;
-  --noti-border-color: #81878c;
+  --noti-border-color: #5d666e;
   --text-color: #efefec;
   --text-color-disabled: #aaaeac;
   --bg-selected: #6eafff;
-  --information-bg: #303336;
-  --information-border-color: #454b50;
+  --information-bg: alpha(#1b1d1f, 0.75);
+  --information-border-color: #5d666e;
   --information-heading-color: #c9cbc8;
   --information-meter-track: #111315;
   --information-meter-fill: #6eafff;
@@ -25,13 +25,13 @@
   --font-size-summary: 11pt;
 }
 * { font-family: "Noto Sans", "Source Han Sans CN", sans-serif; }
-.control-center { border: 1px solid var(--noti-border-color); }
+.control-center { border: 0; border-left: 1px solid #6b747c; }
 .widget-dashboard { margin-left: 16px; margin-right: 16px; }
 .widget-dashboard .dashboard-card { background: #303336; border: 1px solid #454b50; }
 .widget-dashboard .dashboard-card-title { color: #c9cbc8; }
 .widget-dashboard .metric-label { color: #aaaeac; }
 .notification-row .notification-background .notification.critical {
-  background: alpha(#303336, 1);
+  background: alpha(#1b1d1f, 0.75);
   border: 2px solid #f27d78;
 }
 .notification-row .notification-background .notification .notification-default-action { padding: 12px; }
@@ -40,7 +40,7 @@
 .widget-notifications { margin: 8px 16px; padding: 0; }
 .control-center .notification-group { padding: 0; }
 .control-center .notification-row .notification-background { padding: 6px 0; }
-.control-center .control-center-list .notification { box-shadow: none; border-color: #454b50; }
+.control-center .control-center-list .notification { box-shadow: none; border-color: #5d666e; }
 .control-center .notification-row .notification-background .notification .notification-default-action .notification-content .text-box .time { font-weight: 400; font-size: 10pt; color: #aaaeac; }
 .control-center .notification-row:focus, .control-center .notification-group:focus { background: transparent; }
 .control-center .notification-row:focus .notification:not(.critical), .control-center .notification-group:focus .notification:not(.critical) { border-color: #6eafff; box-shadow: inset 3px 0 0 #6eafff; }
@@ -50,3 +50,8 @@ button:focus-visible { outline: 2px solid #a6ceff; outline-offset: 2px; }
 progressbar trough { background: #111315; }
 progressbar progress { background: #6eafff; }
 .notification progressbar trough, .notification progressbar progress { min-height: 6px; border-radius: 3px; }
+.widget-information .information-divider { background: #454b50; }
+.control-center .control-center-list .notification { background: rgba(var(--noti-bg), var(--noti-bg-alpha)); }
+.notification-group.collapsed.not-expanded { opacity: 1; }
+.control-center .notification-group.collapsed .notification { background-color: rgba(var(--noti-bg), var(--noti-bg-alpha)); }
+.control-center .notification-group.collapsed:hover .notification { background-color: var(--noti-bg-hover); }

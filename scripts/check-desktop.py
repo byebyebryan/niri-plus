@@ -211,6 +211,7 @@ if command == "brightnessctl" and sys.argv[-1:] == ["info"]:
             subprocess.run(["desktop-file-validate", str(path)], check=True)
             checks += 1
         for name in ("examples/niri/config.kdl", "examples/feedback/binds.kdl",
+                     "examples/desktop/profiles/minimal-niri/close-all.kdl",
                      "examples/session/profiles/minimal-niri/away-mode.kdl"):
             subprocess.run(["niri", "validate", "--config", str(ROOT / name)], check=True, capture_output=True)
             checks += 1
@@ -219,8 +220,11 @@ if command == "brightnessctl" and sys.argv[-1:] == ["info"]:
             (profile / "local").mkdir()
             (profile / "local/away-mode.kdl").write_bytes(
                 (ROOT / "examples/session/profiles/minimal-niri/away-mode.kdl").read_bytes())
+            (profile / "local/close-all.kdl").write_bytes(
+                (ROOT / "examples/desktop/profiles/minimal-niri/close-all.kdl").read_bytes())
             (profile / "config.kdl").write_text(
-                (ROOT / "examples/niri/config.kdl").read_text() + '\ninclude "local/away-mode.kdl"\n')
+                (ROOT / "examples/niri/config.kdl").read_text()
+                + '\ninclude "local/away-mode.kdl"\ninclude "local/close-all.kdl"\n')
             subprocess.run(["niri", "validate", "--config", str(profile / "config.kdl")],
                            check=True, capture_output=True)
             checks += 1

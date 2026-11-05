@@ -743,6 +743,26 @@ readiness, installed-consumer and physical panel/wake acceptance. A consumer's
 managed source owns final machine admission and deployment; do not run a broad
 apply to adopt the screen.
 
+## Optional post-reference branch: Close All
+
+The 0.10.0 release candidate contains the independent
+[Close All utility](recipes/desktop-utilities.md#optional-close-all) and
+`examples/desktop/profiles/minimal-niri/close-all.kdl`. It requests ordinary
+closes across all workspaces and outputs from one captured window-ID list.
+Apps retain their save/cancel dialogs; this is not logout or a process kill.
+
+Wait for an immutable published tuple before managed adoption. Select only
+`niri-close-all` and the optional profile from that verified archive, preserving
+the existing component and policy pins. Merge Mod+Shift+Q with `repeat=false`
+and keep Mod+Q unchanged. Preserve the helper/binding preimages and record
+source, archive/manifest hashes, installed hashes/modes and scoped convergence.
+This extension does not join the numbered reference's completion claim.
+
+Use fixture command traces or controlled windows for acceptance. A dry run can
+inspect the one ID snapshot without closing windows; ordinary live work must
+never serve as a destructive test fixture. Follow the recipe's JSON/exit-status
+contract and do not infer actual application exit from a successful request.
+
 ## Focused recipes
 
 - [SDDM login and greeter](recipes/login.md)

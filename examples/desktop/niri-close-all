@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""Request ordinary closes once for all snapshotted Niri toplevel windows."""
+import argparse
+import json
+import os
+from pathlib import Path
+import stat
+import subprocess
+import sys
+
+SCOPE = "all-workspaces-and-outputs"
+TIMEOUT = 5
+
+
+def socket_identity(path):
+    if not path or not Path(path).is_absolute():
+        raise RuntimeError("run from the intended Niri session with an absolute NIRI_SOCKET")
+    info = Path(path).lstat()
+    if not stat.S_ISSOCK(info.st_mode) or info.st_uid != os.getuid():
+        raise RuntimeError("NIRI_SOCKET must be an owned compositor socket")
+    return info.st_dev, info.st_ino, info.st_ctime_ns
+
+
+def window_ids(value):
+    """Validate the entire snapshot before dispatch; ignore future extra fields."""
+    if not isinstance(value, list):
+        raise ValueError("the window snapshot must be a JSON list")
+    ids, seen = [], set()
+    for window in value:
+        if (not isinstance(window, dict) or type(window.get("id")) is not int
+                or not 0 <= window["id"] < 2 ** 64):
+            raise ValueError("the window snapshot contains an invalid unsigned window id")
+        if window["id"] not in seen:
+            ids.append(window["id"])
+            seen.add(window["id"])
+    return ids
+
+
+def close_all(*, dry_run=False, environment=None, run=subprocess.run, errors=None):
+    env = dict(os.environ if environment is None else environment)
+    errors = sys.stderr if errors is None else errors
+    endpoint = env.get("NIRI_SOCKET")
+    identity = socket_identity(endpoint)
+    snapshot = run(["niri", "msg", "--json", "windows"], env=env,
+                   capture_output=True, text=True, check=False, timeout=TIMEOUT)
+    if snapshot.returncode != 0:
+        raise RuntimeError("Niri did not provide a window snapshot; no close requests sent")
+    ids = window_ids(json.loads(snapshot.stdout))
+    result = {"scope": SCOPE, "dry_run": dry_run, "snapshot_ids": ids,
+              "requested_ids": [], "failed_ids": [], "not_attempted_ids": []}
+    if dry_run:
+        return result
+    for index, window_id in enumerate(ids):
+        try:
+            if socket_identity(endpoint) != identity:
+                raise RuntimeError("the captured compositor socket changed")
+        except (OSError, RuntimeError) as error:
+            print("niri-close-all: stopped: " + str(error), file=errors)
+            result["not_attempted_ids"] = ids[index:]
+            break
+        try:
+            outcome = run(["niri", "msg", "action", "close-window", "--id", str(window_id)],
+                          env=env, capture_output=True, text=True, check=False, timeout=TIMEOUT)
+            if outcome.returncode != 0:
+                raise RuntimeError("Niri refused the request")
+        except (OSError, RuntimeError, subprocess.SubprocessError) as error:
+            print(f"niri-close-all: window {window_id}: {error}; no retry", file=errors)
+            result["failed_ids"].append(window_id)
+        else:
+            result["requested_ids"].append(window_id)
+    return result
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Request Close All across every workspace and output in this Niri session. "
+                    "Applications keep their normal save/cancel dialogs; this does not log out.")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="print the one window-ID snapshot as JSON without requesting closes")
+    args = parser.parse_args(argv)
+    try:
+        result = close_all(dry_run=args.dry_run)
+    except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
+        print("niri-close-all: " + str(error), file=sys.stderr)
+        return 1
+    print(json.dumps(result, sort_keys=True))
+    return 1 if result["failed_ids"] or result["not_attempted_ids"] else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

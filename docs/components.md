@@ -75,7 +75,7 @@ Established projects keep their implementation and release authority:
 
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.
-The latest optional release is 0.9.2, fixing the visible countdown in the
+The published optional session screen includes the 0.9.2 visible-countdown fix in the
 [unified session screen](recipes/session.md#optional-unified-session-screen).
 All six actions execute after their cancellable countdown; Cancel or Escape
 returns directly to the desktop. The retained
@@ -86,6 +86,14 @@ Historical recordings keep their original
 component tuple and retained identity source in
 [media provenance](../assets/provenance.json), with their capture date and
 component version beside the player.
+
+The 0.10.0 **release candidate** adds the opt-in
+[Close All utility](recipes/desktop-utilities.md#optional-close-all): one
+desktop-wide window snapshot followed by ordinary close requests across all
+workspaces and outputs. Its new helper and Mod+Shift+Q profile are independent
+selections; Mod+Q and the reference starter stay unchanged. The bundle has 50
+payloads, retaining the existing 48 from 0.9.3 unchanged. This candidate is not
+a published adoption pin or a new whole-reference qualification.
 
 The 0.9.2 update fixes the rendered countdown without changing its timing.
 It changes only `desktop-suspend` among the 48 payloads from 0.9.1; the other

@@ -1,0 +1,6 @@
+// Opt-in Close All: all normal windows across every workspace and output.
+// Apps receive ordinary close requests and retain their save/cancel dialogs.
+// Keep the existing Mod+Q close-window binding unchanged.
+binds {
+    Mod+Shift+Q repeat=false hotkey-overlay-title="Close all windows (all workspaces and outputs)" { spawn "niri-close-all"; }
+}

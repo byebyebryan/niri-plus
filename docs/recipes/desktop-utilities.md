@@ -52,6 +52,64 @@ menu; select the screen's portable Ctrl+Alt+Delete profile intentionally.
 The Niri starter binds `Mod+D` to `rofi -show drun`, which lists these entries;
 the entries themselves do not need separate key bindings.
 
+## Optional Close All
+
+The components 0.10.0 **release candidate** adds the first-party
+[`niri-close-all` utility](../../examples/desktop/niri-close-all) and its
+[opt-in Niri profile](../../examples/desktop/profiles/minimal-niri/close-all.kdl).
+It requests ordinary closes for **all normal windows across every workspace
+and output in the captured Niri session**. It is not limited to the focused
+workspace, output or application.
+
+The helper reads `niri msg --json windows` once, validates and deduplicates its
+unsigned window IDs, then sends one `niri msg action close-window --id ID`
+request per captured ID. Niri's [window IPC](https://niri-wm.github.io/niri/niri_ipc/struct.Window.html)
+describes toplevel windows; layer-shell panels are separate surfaces. Floating
+and unfocused windows are included. Additional IPC fields are ignored, but an
+invalid ID rejects the entire snapshot before any close request is sent.
+
+Applications keep their normal save/cancel dialogs and may remain open. New
+dialogs and windows created after the snapshot are not added to the operation.
+The helper does not kill applications, quit the session, focus each window,
+or repeatedly query until the desktop is empty. A disappeared or refused ID
+is attempted once without retry; other captured IDs are still attempted.
+The helper checks the captured compositor socket before each request and stops
+if that socket changes or disappears.
+
+Use Python 3.11+ and a Niri session exposing `NIRI_SOCKET`. For a reviewed
+checkout containing this candidate, first inspect existing target and binding
+preimages. Install only the helper, and merge or include the optional profile:
+
+```sh
+install -Dm755 examples/desktop/niri-close-all "$HOME/.local/bin/niri-close-all"
+```
+
+```kdl
+Mod+Shift+Q repeat=false hotkey-overlay-title="Close all windows (all workspaces and outputs)" { spawn "niri-close-all"; }
+```
+
+Keep `Mod+Q { close-window; }` unchanged. The portable starter does not select
+Close All automatically. This action dispatches immediately when invoked;
+it is separate from the session screen's six-action countdown. No hot-corner
+tool, startup service or additional privilege is required.
+
+For read-only inspection, `niri-close-all --dry-run` prints the one captured
+ID list without sending closes. After a valid snapshot, both modes print a JSON record with `scope`,
+`dry_run`, `snapshot_ids`, `requested_ids`, `failed_ids` and
+`not_attempted_ids`. `requested_ids` means Niri accepted the request, not that
+an application actually closed. Exit status is 0 when the snapshot and every
+attempted request succeed (including an empty desktop), 1 on snapshot/IPC or
+partial request failure, and 2 for invalid command-line arguments.
+An invalid or unavailable snapshot reports an error on stderr without sending
+any close request.
+
+Managed consumers must wait for a published immutable archive, verify its
+manifest, and select only the helper/profile alongside their existing pins.
+The qualified reference is not updated by this optional candidate. Tests use
+private IPC command fixtures; never test it by closing ordinary live work.
+Removing the optional binding and helper reverses adoption; applications
+already closed by an explicit invocation cannot be reopened by that rollback.
+
 ## Network owner handover
 
 NetworkManager is installed by the main walkthrough, but installation does not

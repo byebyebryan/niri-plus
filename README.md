@@ -37,6 +37,12 @@ Published components 0.9.2 include an opt-in
 Ctrl+Alt+Delete opens the action grid only when its portable profile is selected;
 the published release catalog and qualified 0.4.1 reference remain separate.
 
+The 0.10.0 release candidate adds an optional
+[desktop-wide Close All helper](docs/recipes/desktop-utilities.md#optional-close-all).
+It snapshots window IDs once and preserves application save dialogs. Its
+Mod+Shift+Q profile is opt-in and leaves Mod+Q unchanged; managed adoption waits
+for a published immutable pin.
+
 The build and module checks work offline after dependencies are installed. They
 use declared repository inputs; they do not inspect or operate a desktop.
 

@@ -1,11 +1,12 @@
 {
-  "version": "0.9.3",
+  "version": "0.10.0",
   "modules": {
     "desktop": {
       "prerequisites": [
         "Linux with a Wayland graphical session",
         "systemd --user for the reusable service units",
         "Python 3.11 or newer for the Python helpers",
+        "For opt-in Close All: Niri IPC with windows and close-window --id; the captured graphical session's owned NIRI_SOCKET",
         "Rofi 2.0 for direct Network, Audio and Bluetooth controls",
         "PyGObject with NetworkManager/libnm and libsecret introspection for Network; BlueZ D-Bus for Bluetooth",
         "pactl and an existing PulseAudio-compatible server for Audio; existing native owners are not installed or started by a menu",
@@ -32,6 +33,14 @@
   "files": [
     {
       "path": "components/desktop/bin/desktop-power",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/bin/niri-close-all",
+      "module": "desktop"
+    },
+    {
+      "path": "components/desktop/config/niri/close-all.kdl",
       "module": "desktop"
     },
     {
@@ -241,6 +250,17 @@
     {
       "path": "examples/desktop/desktop-session-menu",
       "component": "components/desktop/bin/desktop-session-menu"
+    },
+    {
+      "path": "examples/desktop/niri-close-all",
+      "component": "components/desktop/bin/niri-close-all",
+      "notes": "Opt-in desktop-wide ordinary close requests from one window-ID snapshot; applications retain save/cancel dialogs."
+    },
+    {
+      "path": "examples/desktop/profiles/minimal-niri/close-all.kdl",
+      "component": "components/desktop/config/niri/close-all.kdl",
+      "profile": "minimal-niri",
+      "notes": "Optional Mod+Shift+Q binding, repeat=false; all workspaces and outputs. Preserve Mod+Q and select this profile explicitly."
     },
     {
       "path": "examples/desktop/desktop-session-ready",

@@ -83,6 +83,44 @@ It imports the fork's packaged base stylesheet. The config requires the fork;
 the older `examples/notifications/config.json` remains a historical portable
 specimen, not the selected Arch dashboard config.
 
+## Unified information panel
+
+The qualified Arch reference above retains its recorded dashboard profile.
+The newer [fork package revision 16](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/swaync-bryan-0.12.6-16)
+adds an opt-in divided information surface. Use it with
+[components 0.4.2](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.2)
+or the development bundle 0.9.3 for the matching stylesheet and feedback icons.
+Keep the existing configuration and change these entries after installing the
+new fork:
+
+```json
+{
+  "widgets": ["information", "title", "notifications"],
+  "widget-config": {
+    "clock": {"time-format": "%H:%M", "date-format": "%a, %b %-d"},
+    "title": {"show-dnd": true},
+    "system-stats": {"interval": 1},
+    "gpu": {"interval": 2},
+    "battery": {"interval": 5}
+  }
+}
+```
+
+This is a fragment to merge into the existing config. Keep any separately
+selected controls, including a volume widget. The opening row has bold local
+time and a plain date in equal columns, without captions. System uses read-only
+CPU/RAM and active GPU/VRAM meters. Connections keeps Ethernet on the left and
+its full IP on the right; long IPv6 values ellipsize with a complete tooltip.
+Bluetooth uses device metadata for icons and distinguishes `0%` from an
+unreported battery. Battery uses a 0–100 gauge and marks only an actual reported
+charge limit. Missing sections disappear with their dividers, while their
+readers continue to observe changes whenever the panel is open.
+
+Legacy dashboard and standalone widgets remain available. The new native widget
+and private-bus checks are separate from the dated Arch VM reference replay and
+from physical hardware acceptance. The [fork widget documentation](https://github.com/byebyebryan/SwayNotificationCenter/blob/main/docs/system-widgets.md)
+covers formats, suffixes, lifecycle and stylesheet hooks.
+
 ## Start one session owner
 
 The package supplies `swaync.service`. Inspect it, confirm the selected Niri

@@ -116,6 +116,17 @@ unreported battery. Battery uses a 0–100 gauge and marks only an actual report
 charge limit. Missing sections disappear with their dividers, while their
 readers continue to observe changes whenever the panel is open.
 
+[Fork package revision 17](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/swaync-bryan-0.12.6-17)
+keeps this configuration and refines networking into two equal columns. The
+left has the active SSID or Ethernet identity above a Signal/IP label and
+right-aligned value. Signal uses the same percentage formatting as CPU/RAM.
+The right has labelled upload and download rates from that primary interface,
+sampled once per second while the panel is open. Reopening or changing interfaces
+starts a fresh baseline; unavailable values stay distinct from measured zero.
+The existing components 0.4.2 appearance selection still applies unchanged.
+The [fork maintenance guide](https://github.com/byebyebryan/SwayNotificationCenter/blob/main/docs/fork-maintenance.md)
+records its upstream baseline, downstream contracts and native regression checks.
+
 Legacy dashboard and standalone widgets remain available. The new native widget
 and private-bus checks are separate from the dated Arch VM reference replay and
 from physical hardware acceptance. The [fork widget documentation](https://github.com/byebyebryan/SwayNotificationCenter/blob/main/docs/system-widgets.md)

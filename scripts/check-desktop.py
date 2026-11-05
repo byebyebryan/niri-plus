@@ -121,8 +121,18 @@ def main():
         bindir = base / "bin"
         bindir.mkdir()
         log = base / "commands.jsonl"
-        shim = '#!/usr/bin/env python3\nimport json,os,sys\nfrom pathlib import Path\nwith Path(os.environ["NIRI_DESKTOP_CHECK_LOG"]).open("a") as f:f.write(json.dumps([Path(sys.argv[0]).name,*sys.argv[1:]])+"\\n")\nif Path(sys.argv[0]).name=="wpctl" and sys.argv[1:2]==["get-volume"]:print("Volume: 0.42")\n'
-        for command in ("wpctl", "notify-send"):
+        shim = '''#!/usr/bin/env python3
+import json, os, sys
+from pathlib import Path
+command = Path(sys.argv[0]).name
+with Path(os.environ["NIRI_DESKTOP_CHECK_LOG"]).open("a") as stream:
+    stream.write(json.dumps([command, *sys.argv[1:]]) + "\\n")
+if command == "wpctl" and sys.argv[1:2] == ["get-volume"]:
+    print(os.environ.get("NIRI_DESKTOP_CHECK_VOLUME", "Volume: 0.42"))
+if command == "brightnessctl" and sys.argv[-1:] == ["info"]:
+    print("fixture,backlight,42,42%,100")
+'''
+        for command in ("wpctl", "notify-send", "brightnessctl"):
             path = bindir / command
             path.write_text(shim)
             path.chmod(0o755)
@@ -136,6 +146,54 @@ def main():
         assert all("--hint=boolean:transient:true" in command and "--hint=boolean:suppress-sound:true" in command for command in popups)
         assert any("string:x-canonical-private-synchronous:microphone" in argument for command in popups for argument in command)
         assert ["wpctl", "set-volume", "--limit", "1.0", "@DEFAULT_AUDIO_SINK@", "5%+"] in commands
+        for action, reading, icon, value, summary in (
+            ("show", "Volume: 0.00", "audio-volume-low-symbolic", 0, "Volume: 0%"),
+            ("down", "Volume: 0.20", "audio-volume-low-symbolic", 20, "Volume: 20%"),
+            ("show", "Volume: 0.42", "audio-volume-medium-symbolic", 42, "Volume: 42%"),
+            ("up", "Volume: 1.50", "audio-volume-high-symbolic", 100, "Volume: 150%"),
+            ("mute", "Volume: 0.42 [MUTED]", "audio-volume-muted-symbolic", 0, "Volume: Muted (42%)"),
+            ("mic-show", "Volume: 0.70", "microphone-sensitivity-high-symbolic", 70, "Microphone: On (70%)"),
+            ("mic-mute", "Volume: 0.42 [MUTED]", "microphone-sensitivity-muted-symbolic", 0, "Microphone: Muted (42%)"),
+        ):
+            log.write_text("")
+            subprocess.run(["bash", str(volume), action],
+                           env=dict(env, NIRI_DESKTOP_CHECK_VOLUME=reading), check=True, capture_output=True)
+            calls = [json.loads(line) for line in log.read_text().splitlines()]
+            popup, = [call for call in calls if call[0] == "notify-send"]
+            assert f"--icon={icon}" in popup and f"--hint=int:value:{value}" in popup
+            assert popup[-1] == summary and "--expire-time=1500" in popup
+            assert "--hint=boolean:transient:true" in popup and "--hint=boolean:suppress-sound:true" in popup
+            tag = "microphone" if action.startswith("mic-") else "volume"
+            assert f"--hint=string:x-canonical-private-synchronous:{tag}" in popup
+            if action in ("show", "mic-show"):
+                assert [call for call in calls if call[0] == "wpctl"] == [
+                    ["wpctl", "get-volume", "@DEFAULT_AUDIO_SOURCE@" if tag == "microphone" else "@DEFAULT_AUDIO_SINK@"]]
+            checks += 1
+
+        # Override only backlight discovery; every device command remains a stub.
+        bash_env = base / "backlight-discovery.bash"
+        bash_env.write_text('compgen() { return "$NIRI_DESKTOP_CHECK_BACKLIGHT_STATUS"; }\n')
+        brightness = ROOT / "examples/feedback/notify-brightness"
+        for status in ("0", "1"):
+            for action in ("show", "up", "down"):
+                log.write_text("")
+                subprocess.run(["bash", str(brightness), action], env=dict(
+                    env, BASH_ENV=str(bash_env), NIRI_DESKTOP_CHECK_BACKLIGHT_STATUS=status),
+                    check=True, capture_output=True)
+                calls = [json.loads(line) for line in log.read_text().splitlines()]
+                if status == "1":
+                    assert not calls
+                else:
+                    popup, = [call for call in calls if call[0] == "notify-send"]
+                    assert "--icon=display-brightness-symbolic" in popup and popup[-1] == "Brightness: 42%"
+                    assert "--hint=int:value:42" in popup and "--expire-time=1500" in popup
+                    assert "--hint=string:x-canonical-private-synchronous:brightness" in popup
+                    assert "--hint=boolean:transient:true" in popup and "--hint=boolean:suppress-sound:true" in popup
+                    if action == "down":
+                        assert ["brightnessctl", "--class=backlight", "--min-value=1", "set", "5%-"] in calls
+                    if action == "show":
+                        assert len(calls) == 2
+                checks += 1
         for helper in (volume, ROOT / "examples/feedback/notify-brightness"):
             subprocess.run(["bash", "-n", str(helper)], check=True)
         checks += 6

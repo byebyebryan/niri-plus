@@ -266,7 +266,7 @@ class ComponentContracts(unittest.TestCase):
             fingerprint.update(name.encode() + b"\0" + data.encode() + b"\0")
         self.assertEqual(
             fingerprint.hexdigest(),
-            "4aae9f827251a1988ec84c00f4fdfb8f169a5434463fc22bfc4da7935a6b31ce",
+            "7dfe614e4b623addf48e64c9af46531d9a4e9617a4cee57fe8fe69894a757be8",
         )
 
         updated = json.loads(json.dumps(original))

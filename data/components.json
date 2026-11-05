@@ -16,7 +16,7 @@
     "deterministic_builds": 2
   },
   "identity": {
-    "path": "design/identity.json",
+    "path": "design/history/neutral-slate-qualified-core.json",
     "schema_version": 2,
     "sha256": "6dbb163103e911262b5c1a6b1dd8299863ea790f7a12e7fb264fe9603e8e2455",
     "selection_owner": "private chezmoi consumer; independent of the code bundle pin"

@@ -153,7 +153,16 @@ def _rofi(profile, colors, shared):
 
 
 def _swaync(profile, colors, shared):
-    alpha = str(shared["overlay_opacity"])
+    sidebar = shared.get("swaync_sidebar")
+    alpha = str(sidebar["opacity"] if sidebar is not None else shared["overlay_opacity"])
+    card_border = sidebar["card_border_color"] if sidebar is not None else colors["border"]
+    information_border = sidebar["card_border_color"] if sidebar is not None else colors["separator"]
+    information_background = f"alpha({colors['surface']}, {alpha})" if sidebar is not None else colors["raised"]
+    hover_background = f"alpha({colors['raised']}, {alpha})" if sidebar is not None else colors["raised"]
+    control_center_border = (
+        f"border: 0; border-left: 1px solid {sidebar['border_color']};"
+        if sidebar is not None else "border: 1px solid var(--noti-border-color);"
+    )
     lines = [
         "/* Neutral Slate over the selected fork's native GTK4 layout. */",
         '@import url("/etc/xdg/swaync/style.css");',
@@ -162,14 +171,14 @@ def _swaync(profile, colors, shared):
         f"  --noti-bg: {_rgb_spaced(colors['surface'])};",
         f"  --noti-bg-alpha: {alpha};",
         f"  --noti-bg-darker: {colors['input']};",
-        f"  --noti-bg-hover: {colors['raised']};",
+        f"  --noti-bg-hover: {hover_background};",
         f"  --noti-bg-focus: {colors['selection']};",
-        f"  --noti-border-color: {colors['border']};",
+        f"  --noti-border-color: {card_border};",
         f"  --text-color: {colors['text']};",
         f"  --text-color-disabled: {colors['muted']};",
         f"  --bg-selected: {colors['accent']};",
-        f"  --information-bg: {colors['raised']};",
-        f"  --information-border-color: {colors['separator']};",
+        f"  --information-bg: {information_background};",
+        f"  --information-border-color: {information_border};",
         f"  --information-heading-color: {colors['secondary']};",
         f"  --information-meter-track: {colors['input']};",
         f"  --information-meter-fill: {colors['accent']};",
@@ -182,13 +191,13 @@ def _swaync(profile, colors, shared):
         f"  --font-size-summary: {shared['ui_pt']}pt;",
         "}",
         f'* {{ font-family: "{profile["ui_font"]}", "{shared["cjk_fallback"]}", sans-serif; }}',
-        ".control-center { border: 1px solid var(--noti-border-color); }",
+        f".control-center {{ {control_center_border} }}",
         ".widget-dashboard { margin-left: 16px; margin-right: 16px; }",
         f".widget-dashboard .dashboard-card {{ background: {colors['raised']}; border: 1px solid {colors['separator']}; }}",
         f".widget-dashboard .dashboard-card-title {{ color: {colors['secondary']}; }}",
         f".widget-dashboard .metric-label {{ color: {colors['muted']}; }}",
         ".notification-row .notification-background .notification.critical {",
-        f"  background: alpha({colors['raised']}, {alpha});",
+        f"  background: alpha({colors['surface'] if sidebar is not None else colors['raised']}, {alpha});",
         f"  border: 2px solid {colors['error']};",
         "}",
         ".notification-row .notification-background .notification .notification-default-action { padding: 12px; }",
@@ -197,7 +206,7 @@ def _swaync(profile, colors, shared):
         ".widget-notifications { margin: 8px 16px; padding: 0; }",
         ".control-center .notification-group { padding: 0; }",
         ".control-center .notification-row .notification-background { padding: 6px 0; }",
-        f".control-center .control-center-list .notification {{ box-shadow: none; border-color: {colors['separator']}; }}",
+        f".control-center .control-center-list .notification {{ box-shadow: none; border-color: {information_border}; }}",
         f".control-center .notification-row .notification-background .notification .notification-default-action .notification-content .text-box .time {{ font-weight: 400; font-size: {shared['secondary_pt']}pt; color: {colors['muted']}; }}",
         ".control-center .notification-row:focus, .control-center .notification-group:focus { background: transparent; }",
         f".control-center .notification-row:focus .notification:not(.critical), .control-center .notification-group:focus .notification:not(.critical) {{ border-color: {colors['accent']}; box-shadow: inset 3px 0 0 {colors['accent']}; }}",
@@ -208,6 +217,14 @@ def _swaync(profile, colors, shared):
         f"progressbar progress {{ background: {colors['accent']}; }}",
         ".notification progressbar trough, .notification progressbar progress { min-height: 6px; border-radius: 3px; }",
     ]
+    if sidebar is not None:
+        lines.extend([
+            f".widget-information .information-divider {{ background: {colors['separator']}; }}",
+            ".control-center .control-center-list .notification { background: rgba(var(--noti-bg), var(--noti-bg-alpha)); }",
+            ".notification-group.collapsed.not-expanded { opacity: 1; }",
+            ".control-center .notification-group.collapsed .notification { background-color: rgba(var(--noti-bg), var(--noti-bg-alpha)); }",
+            ".control-center .notification-group.collapsed:hover .notification { background-color: var(--noti-bg-hover); }",
+        ])
     return "\n".join(lines) + "\n"
 
 

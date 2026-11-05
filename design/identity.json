@@ -53,6 +53,11 @@
     "normal_notification_timeout_ms": 30000,
     "critical_notification_timeout_ms": 0,
     "overlay_opacity": 1,
+    "swaync_sidebar": {
+      "opacity": 0.75,
+      "border_color": "#6b747c",
+      "card_border_color": "#5d666e"
+    },
     "native_app_opacity": 1,
     "blur": false,
     "new_ambient_animations": false,
@@ -154,7 +159,7 @@
         "secure_button": "#d0d0d0",
         "visited_link": "#c8b9d6",
         "workspace_background": "#000000",
-        "overview_background": "#000000"
+        "overview_background": "#111213"
       },
       "tradeoff": "One identity with separate desktop and terminal palettes. Native toolkit colors and application-owned RGB remain independently reviewed.",
       "desktop_variant": "crisper"
@@ -198,7 +203,7 @@
     "comparison_candidates": "Historical explorations, not supported runtime themes."
   },
   "feedback": {
-    "selection": "Neutral Slate UI with a pure-black workspace and Balanced+ terminal.",
+    "selection": "Neutral Slate UI with a pure-black workspace and Balanced+ terminal; charcoal overview surround preserves empty-workspace boundaries.",
     "next_step": "Qualify the black workspace and overview in native Niri, then publish and deliver the independently pinned identity through chezmoi."
   },
   "terminal": {

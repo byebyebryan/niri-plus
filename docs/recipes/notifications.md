@@ -152,12 +152,12 @@ The right has labelled upload and download rates from that primary interface,
 sampled once per second while the panel is open. Reopening or changing interfaces
 starts a fresh baseline; unavailable values stay distinct from measured zero.
 The existing components 0.4.2 appearance selection still applies unchanged.
-The [fork maintenance guide](https://github.com/byebyebryan/SwayNotificationCenter/blob/main/docs/fork-maintenance.md)
+The [fork maintenance guide](https://github.com/byebyebryan/SwayNotificationCenter/blob/niri-plus/docs/fork-maintenance.md)
 records its upstream baseline, downstream contracts and native regression checks.
 
 Legacy dashboard and standalone widgets remain available. The new native widget
 and private-bus checks are separate from the dated Arch VM reference replay and
-from physical hardware acceptance. The [fork widget documentation](https://github.com/byebyebryan/SwayNotificationCenter/blob/main/docs/system-widgets.md)
+from physical hardware acceptance. The [fork widget documentation](https://github.com/byebyebryan/SwayNotificationCenter/blob/niri-plus/docs/system-widgets.md)
 covers formats, suffixes, lifecycle and stylesheet hooks.
 
 ## Start one session owner

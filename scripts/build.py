@@ -896,7 +896,8 @@ def demo(name):
 
 
 def panel():
-    return f'''<figure class="panel-shot"><div class="media-label"><span>Native SwayNC fork</span><span>Actual rendering ↗</span></div><a class="panel-frame" href="{BASE}assets/panel.png" aria-label="Open the full isolated SwayNC screenshot" style="display:block"><img src="{BASE}assets/panel.png" alt="System, Network, and Bluetooth cards in the actual SwayNC fork" width="1280" height="800" loading="lazy"></a><figcaption>Actual fork in an isolated session, using its default theme. Sample wireless/GPU values; local CPU/RAM. Battery hides on this hardware. <a href="{BASE}assets/provenance.json">Media source</a>.</figcaption></figure>'''
+    image = f"{BASE}assets/workflow-panel-sidebar-800.png"
+    return f'''<figure class="panel-shot"><div class="media-label"><span>Current SwayNC sidebar</span><span>Native capture ↗</span></div><a class="panel-frame" href="{image}" aria-label="Open the full desktop capture showing the current sidebar"><img src="{image}" alt="Full-height SwayNC sidebar with a clock, unified system and connection details, inline Do Not Disturb and individual notification cards" width="1280" height="800" loading="lazy"></a><figcaption>Sidebar detail crop from the native staged Arch capture, 2026-11-07. Actual guest readings; sample notifications. <a href="{image}">Open full desktop</a> · <a href="{BASE}docs/planning/swaync-reference-sync-20261107.md">Capture details</a>.</figcaption></figure>'''
 
 
 def desktop_capture(kind, image, label, alt, caption, receipt):

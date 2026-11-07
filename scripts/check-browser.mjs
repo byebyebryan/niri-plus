@@ -85,6 +85,26 @@ try {
       assert.deepEqual(brokenImages, [], `broken image: ${route}`);
       assert.equal(await page.locator('a[href]').evaluateAll((links) => links.filter((link) => new URL(link.href).pathname.endsWith('/niri-plus/story/')).length), 0, 'retired Story links must stay out of the site');
       checks += 7;
+      if (route === "") {
+        const feature = page.locator(".panel-feature");
+        const preview = feature.locator(".panel-frame");
+        const image = preview.locator("img");
+        assert.match(await feature.locator("h2").innerText(), /No permanent bar\.\s*A panel with a job\./);
+        assert.ok((await image.getAttribute("src")).endsWith("assets/workflow-panel-sidebar-800.png"));
+        assert.equal(await preview.getAttribute("href"), await image.getAttribute("src"));
+        assert.deepEqual(await image.evaluate((node) => [node.naturalWidth, node.naturalHeight]), [1280, 800]);
+        const frameBounds = await preview.boundingBox();
+        const imageBounds = await image.boundingBox();
+        assert.ok(Math.abs(frameBounds.width / frameBounds.height - 448 / 800) < 0.001, "the detail must show the full-height sidebar");
+        assert.ok(Math.abs(imageBounds.x + imageBounds.width - frameBounds.x - frameBounds.width) < 2, "the detail must stay aligned to the sidebar at the right edge");
+        assert.ok(Math.abs(imageBounds.y + imageBounds.height - frameBounds.y - frameBounds.height) < 3, "the detail must include the sidebar bottom");
+        assert.match(await feature.locator("figcaption").innerText(), /Sidebar detail crop/);
+        checks += 8;
+        if (process.env.NIRI_SCREENSHOTS) {
+          await fs.mkdir(process.env.NIRI_SCREENSHOTS, { recursive: true });
+          await feature.screenshot({ path: path.join(process.env.NIRI_SCREENSHOTS, `homepage-sidebar-${width}.png`) });
+        }
+      }
       if (process.env.NIRI_SCREENSHOTS && ["", "tour/", "tour/earlier/", "design/", "design/contrast/", "recipes/terminal/", "setup/", "setup/agent/", "recipes/login/", "recipes/session/", "recipes/input/", "recipes/desktop-utilities/"].includes(route) && [375, 1280].includes(width)) {
         await page.evaluate(() => document.fonts.ready);
         await fs.mkdir(process.env.NIRI_SCREENSHOTS, { recursive: true });
@@ -541,6 +561,12 @@ try {
     if (["", "tour/"].includes(route)) {
       assert.equal(await staticPage.locator("[data-scene-panel]:visible").count(), 4);
       assert.equal(await staticPage.locator("[data-scene-panel] .scene-links a:first-child").count(), 4);
+      checks += 2;
+    }
+    if (route === "") {
+      const feature = staticPage.locator(".panel-feature");
+      assert.ok((await feature.locator("img").getAttribute("src")).endsWith("assets/workflow-panel-sidebar-800.png"));
+      assert.match(await feature.locator("figcaption").innerText(), /Sidebar detail crop/);
       checks += 2;
     }
     assert.equal(await staticPage.locator("[data-surface-switcher]:visible").count(), 0);

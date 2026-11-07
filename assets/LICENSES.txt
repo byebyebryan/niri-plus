@@ -169,7 +169,7 @@ to the original capture media or independent application and font interfaces.
 See provenance.json and docs/planning/capture-refresh-git-800-receipt.md for the
 exact fetched HTML hash and the historical capture/media boundary.
 
-Current homepage captures:
+Previous homepage captures (2026-10-31, retained unchanged):
 
 assets/demo-desktop-site-800.mp4 and workflow-panel-site-800.png: original
 native 1280x800 staged-Arch capture media from 2026-10-31. The overview video
@@ -195,3 +195,26 @@ with fictional documentation rows. No full Agent Plus runtime, provider
 discovery, authentication, live session or remote action is shown. See
 provenance.json and docs/planning/capture-refresh-site-800-receipt.md for the
 frame and capture hashes, source pins, processing, and review boundary.
+
+Current sidebar reference captures (2026-11-07):
+
+assets/demo-desktop-sidebar-800.mp4 and assets/workflow-panel-sidebar-800.png:
+original full-frame native 1280x800 staged Arch capture media, GPL-3.0-only,
+Copyright 2026 Bryan Bai. They include the maintained SwayNC fork interface,
+attributed to Erik Reider and contributors. SwayNC source/license links above
+remain applicable; exact source and recipe revisions are recorded in provenance.json.
+
+assets/demo-desktop-sidebar-800.png, assets/demo-controls-sidebar-800.mp4,
+assets/demo-controls-sidebar-800.png, assets/workflow-browser-sidebar-800.png,
+assets/workflow-terminal-sidebar-800.png, assets/workflow-controls-sidebar-800.png
+and assets/arch-reference/desktop-sidebar-800.png: original capture media under
+the repository MIT license, Copyright 2026 Bryan Bai. The browser shows a frozen
+public Niri Plus homepage export; Kitty shows the public Hello-World sample.
+The opening poster contains no SwayNC interface. Native software interfaces,
+fonts and underlying source keep their own terms. These media notices do not
+relicense SwayNC, independent applications, fonts or Niri Plus source.
+
+The new media use components 0.4.3 and swaync-bryan 0.12.6-17. All earlier media,
+pins, dates and capture receipts are retained. See provenance.json and
+docs/planning/swaync-reference-sync-20261107.md for measurements, raw/output/
+stream hashes, capture processing and the separate human review boundary.

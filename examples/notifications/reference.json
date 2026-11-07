@@ -2,11 +2,36 @@
   "$schema": "/etc/xdg/swaync/configSchema.json",
   "control-center-width": 448,
   "keyboard-shortcuts": true,
-  "widgets": ["title", "dnd", "dashboard", "notifications"],
+  "widgets": [
+    "information",
+    "title",
+    "notifications"
+  ],
   "widget-config": {
-    "system-stats": {"interval": 1},
-    "gpu": {"interval": 2},
-    "battery": {"interval": 5},
-    "notifications": {"vexpand": true}
-  }
+    "system-stats": {
+      "interval": 1
+    },
+    "gpu": {
+      "interval": 2
+    },
+    "battery": {
+      "interval": 5
+    },
+    "notifications": {
+      "vexpand": true
+    },
+    "clock": {
+      "time-format": "%H:%M",
+      "date-format": "%a, %b %-d"
+    },
+    "title": {
+      "show-dnd": true
+    }
+  },
+  "fit-to-screen": true,
+  "control-center-margin-top": 0,
+  "control-center-margin-bottom": 0,
+  "control-center-margin-left": 0,
+  "control-center-margin-right": 0,
+  "notification-grouping": false
 }

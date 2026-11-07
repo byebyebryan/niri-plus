@@ -56,10 +56,13 @@ SOURCES = {source: route for route, (source, _) in PAGES.items()}
 ASSETS = {"style.css", "site.js", "contrast.css", "contrast.js", "favicon.svg", "social.png", "workflow-browser.png", "workflow-terminal.png", "workflow-panel.png", "workflow-controls.png", "workflow-browser-git-800.png", "workflow-terminal-git-800.png", "workflow-panel-git-800.png", "workflow-controls-git-800.png", "workflow-browser-site-800.png", "workflow-terminal-site-800.png", "workflow-panel-site-800.png", "workflow-controls-site-800.png", "agent-plus.png", "agent-plus-800.png", "agent-plus-git-800.png", "agent-plus-site-800.png", "panel.png", "panel-ethernet.png", "provenance.json", "LICENSES.txt", "arch-reference/themed-greeter-after-reboot.png", "arch-reference/gtklock-replay-neutral-slate.png", "arch-reference/chrome-ime-replay-fractional-preedit.png", "arch-reference/black-workspace-041.png", "arch-reference/desktop-800.png", "arch-reference/desktop-git-800.png", "arch-reference/desktop-site-800.png"}
 DEMO_ASSETS = {
     f"assets/demo-{scene}.{suffix}"
-    for scene in ("overview", "browser-files", "terminal", "information", "controls", "desktop-041", "desktop-800", "controls-800", "desktop-git-800", "controls-git-800", "desktop-site-800", "controls-site-800")
+    for scene in ("overview", "browser-files", "terminal", "information", "controls", "desktop-041", "desktop-800", "controls-800", "desktop-git-800", "controls-git-800", "desktop-site-800", "controls-site-800", "desktop-sidebar-800", "controls-sidebar-800")
     for suffix in ("mp4", "png")
 }
+ASSETS |= {"workflow-browser-sidebar-800.png", "workflow-terminal-sidebar-800.png", "workflow-panel-sidebar-800.png", "workflow-controls-sidebar-800.png", "arch-reference/desktop-sidebar-800.png"}
 SWAYNC_DEMO_ASSETS = {
+    "assets/demo-desktop-sidebar-800.mp4",
+    "assets/workflow-panel-sidebar-800.png",
     "assets/demo-desktop-800.mp4",
     "assets/demo-desktop-800.png",
     "assets/demo-desktop-git-800.mp4",
@@ -80,6 +83,16 @@ SWAYNC_PIN = {
     "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
     "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83",
 }
+
+# Retained media tuple: changing the selected reference pin must not rebind captures.
+_SIDEBAR_SWAYNC_PIN = json.loads(
+    (ROOT / "tools/reference/history/swaync-pins-0.12.6-17.json").read_text()
+)
+CURRENT_SWAYNC_PIN = {key: _SIDEBAR_SWAYNC_PIN[key] for key in SWAYNC_PIN}
+SWAYNC_CLIP_PINS = {
+    name: SWAYNC_PIN for name in ("overview", "information", "desktop", "desktop-800", "desktop-git-800", "desktop-site-800")
+}
+SWAYNC_CLIP_PINS["desktop-sidebar-800"] = CURRENT_SWAYNC_PIN
 DEMO_ASSET_LICENSES = {
     path: "GPL-3.0-only" if path in SWAYNC_DEMO_ASSETS else "MIT"
     for path in DEMO_ASSETS
@@ -95,6 +108,11 @@ PUBLIC_TOOLS = {
     "tools/reference/away-inputs.json",
 }
 PUBLIC_LOCAL_DOCS = {
+    "docs/planning/swaync-reference-sync-20261107.md",
+    "tools/reference/history/inputs-0.4.1.json",
+    "tools/reference/history/notifications-0.4.1.json",
+    "tools/reference/swaync-pins.json",
+    "tools/reference/history/swaync-pins-0.12.6-17.json",
     "LICENSE",
     "docs/planning/arch-installation-receipt.md",
     "docs/planning/components-0.3.1-receipt.md",
@@ -310,6 +328,38 @@ DEMO_CLIPS = {
     },
 }
 
+DEMO_CLIPS.update({
+    "desktop-sidebar-800": {
+        "video": "assets/demo-desktop-sidebar-800.mp4",
+        "poster": "assets/demo-desktop-sidebar-800.png",
+        "id": "demo-desktop-sidebar-800",
+        "title": "Information at a glance",
+        "description": "The current full-height sidebar beside Chrome and a black Kitty terminal: time, system meters, paired Ethernet details and individual notification cards in a fresh staged Arch guest.",
+        "steps": [
+            "Return from the homepage to the public sample project in Kitty.",
+            "Open the sidebar for time, system readings, the active Ethernet address and upload/download rates.",
+            "Inspect two separate notifications from one sample app, toggle Do Not Disturb and restore it.",
+            "Close and reopen the panel, then inspect Audio without leaving the desktop.",
+        ],
+        "setup": [("Notification sidebar", "recipes/notifications.md"), ("Kitty and Zsh", "recipes/terminal.md")],
+        "dimensions": (1280, 800),
+    },
+    "controls-sidebar-800": {
+        "video": "assets/demo-controls-sidebar-800.mp4",
+        "poster": "assets/demo-controls-sidebar-800.png",
+        "id": "demo-controls-sidebar-800",
+        "title": "Native controls beside the sidebar reference",
+        "description": "Audio and Network use the same retained controls payloads in components 0.4.3. The fresh Arch guest reports virtual audio and its actual primary Ethernet link.",
+        "steps": [
+            "Open Audio and inspect the default virtual devices and Details.",
+            "Inspect Network and its connected Ethernet address.",
+            "Return to the browser and terminal; absent wireless hardware stays unavailable.",
+        ],
+        "setup": [("Direct Rofi controls", "recipes/rofi-controls.md"), ("Arch reference", "setup-agent.md")],
+        "dimensions": (1280, 800),
+    },
+})
+
 
 def component_releases():
     """Read the reviewed immutable tuples independently of the latest release."""
@@ -429,9 +479,9 @@ def validate_desktop_demo_manifest(provenance, *, require_complete=False):
             raise ValueError(f"desktop demo must record its video codec: {clip['id']}")
         if not isinstance(clip.get("pixel_format"), str) or not clip["pixel_format"].strip():
             raise ValueError(f"desktop demo must record its pixel format: {clip['id']}")
-        if clip["id"] in {"overview", "information", "desktop", "desktop-800", "desktop-git-800", "desktop-site-800"}:
+        if clip["id"] in SWAYNC_CLIP_PINS:
             swaync_pin = clip.get("additional_source_versions", {}).get("swaync")
-            if not isinstance(swaync_pin, dict) or any(swaync_pin.get(key) != value for key, value in SWAYNC_PIN.items()):
+            if not isinstance(swaync_pin, dict) or any(swaync_pin.get(key) != value for key, value in SWAYNC_CLIP_PINS[clip["id"]].items()):
                 raise ValueError(f"SwayNC-containing clip must record the exact fork and recipe source tuple: {clip['id']}")
         capture_date = clip.get("capture_date")
         try:
@@ -717,7 +767,7 @@ def public_files():
     provenance = json.loads((ROOT / "assets/provenance.json").read_text())["desktop_demos"]
     captures = [provenance["source_versions"], *(clip["source_versions"] for clip in provenance["clips"] if "source_versions" in clip)]
     retained_identities = {item["identity"]["path"] for item in captures}
-    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/history/setup-20261026.json", "data/history/components-0.3.1.json", "data/components.json", "data/component-releases.json", "examples/manifest.json"} | retained_identities | examples | FONT_ASSETS | GENERATED
+    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/history/setup-20261026.json", "data/history/components-0.3.1.json", "data/components.json", "data/component-releases.json", "data/history/components-0.4.1.json", "data/history/setup-0.4.1.json", "examples/manifest.json"} | retained_identities | examples | FONT_ASSETS | GENERATED
 
 
 def validate_identity_associations(records):
@@ -864,10 +914,10 @@ def desktop_capture(kind, image, label, alt, caption, receipt):
 
 def desktop_panel():
     return desktop_capture(
-        "panel", "workflow-panel-site-800.png", "SwayNC in the desktop",
-        "The complete Arch reference desktop: SwayNC showing actual guest CPU, RAM and Ethernet readings beside the Niri Plus homepage and Kitty.",
+        "panel", "workflow-panel-sidebar-800.png", "SwayNC in the desktop",
+        "The complete Arch reference desktop: SwayNC showing time, system meters, paired Ethernet details and individual notification cards beside the Niri Plus homepage and Kitty.",
         "Native staged Arch reference · actual guest CPU, RAM and Ethernet readings.",
-        "capture-refresh-site-800-receipt.md",
+        "swaync-reference-sync-20261107.md",
     )
 
 

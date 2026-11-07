@@ -28,13 +28,23 @@ report what it verified. For one component, use a [focused recipe](setup-agent.m
   feedback, files, network/Bluetooth entry points, input methods and
   whole-monitor sharing.
 
-The 0.4.1 reference includes [direct Rofi controls](recipes/rofi-controls.md)
+The numbered Arch reference selects components 0.4.3 with SwayNC 0.12.6-17. Its
+authored reference profile selects the unified information panel at width 448,
+full height, with zero margins, individual notifications, a bold clock and
+inline Do Not Disturb control. Scoped fresh-Arch installation, password/cold
+login, sidebar/DND, clipboard and
+direct-controls checks passed; current native media is recorded in the
+[current receipt](planning/swaync-reference-sync-20261107.md). This reference
+uses the same pins as the separate [managed-host rollout](../data/setup.json);
+that delivery evidence does not replace fresh-install acceptance.
+
+The 0.4.3 reference includes [direct Rofi controls](recipes/rofi-controls.md)
 for Network, Audio and Bluetooth. Native tools remain available for deeper
 settings and recovery. The [stateful illustration](../design/rofi-controls/index.html)
 explains the shared action and status presentation with sample devices.
 
 Manual display-away is a separate, opt-in extension from components 0.5.0. It
-does not change the numbered reference's 0.4.1 selection or automatic power
+does not change the numbered reference's 0.4.3 selection or automatic power
 policy; see the [away-mode recipe](recipes/away-mode.md) after the reference is
 complete.
 
@@ -44,6 +54,9 @@ Lock, Display off, Suspend, Log out, Restart and Shut down. Selecting one starts
 a cancellable countdown that confirms the action automatically at expiry.
 It is separate from the published component selections and the reference's
 acceptance evidence.
+
+The published 0.10.0 Close All helper and profile remain a separate opt-in;
+the numbered reference keeps its existing Mod+Q behavior.
 
 ## Starting point
 
@@ -81,8 +94,12 @@ keep manual locking independent of idle-policy reloads.
 
 ## What has been checked
 
-The reference passed a fresh installed-Arch VM replay. The [installation
-receipt](planning/black-workspace-receipt.md#fresh-arch-reference) records the results and the VM's
-VirtIO sharing workaround; physical hardware and human acceptance remain
-separate. See the [component source map](components.md) for release and
-personal-host deployment status.
+The current 0.4.3/SwayNC 0.12.6-17 reference passed scoped fresh-Arch staging,
+package installation, stock and themed password/cold login, sidebar/DND lifecycle,
+clipboard and direct-controls checks. New native videos and stills show the
+selected sidebar. The [current receipt](planning/swaync-reference-sync-20261107.md)
+records exact inputs, captures, recovery and limitations. The last complete task
+replay used 0.4.1 and is preserved in its
+[dated installation receipt](planning/black-workspace-receipt.md#fresh-arch-reference).
+Sharing, wallet, IME, suspend and physical-device tasks were not relabelled as
+new results in this focused sync. Recheck the full guide on a new target.

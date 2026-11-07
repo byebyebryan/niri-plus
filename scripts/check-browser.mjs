@@ -121,7 +121,7 @@ try {
   await nativeDemoLink.click();
   assert.match(page.url(), /tour\/#native-reference-demo$/);
   assert.equal(await page.locator("[data-native-demo]").count(), 2);
-  assert.equal(await page.locator("[data-native-demo]").first().getAttribute("data-native-demo"), "desktop-site-800");
+  assert.equal(await page.locator("[data-native-demo]").first().getAttribute("data-native-demo"), "desktop-sidebar-800");
   const earlierLink = page.locator('main a[href$="tour/earlier/"], main a[href="earlier/"]').first();
   assert.equal(await earlierLink.count(), 1);
   const provenanceResponse = await page.request.get(origin + "assets/provenance.json");
@@ -129,10 +129,22 @@ try {
   const provenance = await provenanceResponse.json();
   const clipsById = Object.fromEntries(provenance.desktop_demos.clips.map((clip) => [clip.id, clip]));
   const inventoriedAssets = new Set(provenance.files.map((file) => file.path));
-  assert.deepEqual(Object.keys(clipsById).sort(), ["browser-files", "controls", "controls-800", "controls-git-800", "controls-site-800", "desktop", "desktop-800", "desktop-git-800", "desktop-site-800", "information", "overview", "terminal"].sort());
-  for (const id of ["desktop-git-800", "controls-git-800", "desktop-800", "controls-800", "desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
+  const previousClipIds = ["browser-files", "controls", "controls-800", "controls-git-800", "controls-site-800", "desktop", "desktop-800", "desktop-git-800", "desktop-site-800", "information", "overview", "terminal"];
+  const currentClipIds = new Set(["desktop-sidebar-800", "controls-sidebar-800"]);
+  assert.deepEqual(Object.keys(clipsById).sort(), [...previousClipIds, ...currentClipIds].sort());
+  const archiveClipIds = Object.keys(clipsById).filter((id) => !currentClipIds.has(id)).sort();
+  assert.deepEqual(archiveClipIds, [...previousClipIds].sort());
+  assert.equal(currentClipIds.size, 2);
+  assert.equal(archiveClipIds.length, 12);
+  for (const id of previousClipIds) {
     assert.ok(clipsById[id], `archived clip record is retained: ${id}`);
   }
+  assert.equal(clipsById["desktop-site-800"].additional_source_versions.swaync.version, "0.12.6-15");
+  assert.equal(clipsById["desktop-sidebar-800"].additional_source_versions.swaync.version, "0.12.6-17");
+  const filesByPath = Object.fromEntries(provenance.files.map((file) => [file.path, file]));
+  assert.equal(filesByPath["assets/demo-desktop-sidebar-800.mp4"].license, "GPL-3.0-only");
+  assert.equal(filesByPath["assets/demo-desktop-sidebar-800.png"].license, "MIT");
+  assert.equal(filesByPath["assets/workflow-panel-sidebar-800.png"].license, "GPL-3.0-only");
   checks += 3;
   const rangeResponse = await page.request.get(origin + "assets/demo-overview.mp4", { headers: { Range: "bytes=0-99" } });
   assert.equal(rangeResponse.status(), 206);
@@ -143,8 +155,7 @@ try {
   const invalidRange = await page.request.get(origin + "assets/demo-overview.mp4", { headers: { Range: "bytes=999999999999999-" } });
   assert.equal(invalidRange.status(), 416);
   checks += 5;
-  const currentClipIds = new Set(["desktop-site-800", "controls-site-800"]);
-  for (const name of ["desktop-site-800", "controls-site-800", "desktop-git-800", "controls-git-800", "desktop-800", "controls-800", "desktop", "controls", "overview", "browser-files", "terminal", "information"]) {
+  for (const name of [...previousClipIds, ...currentClipIds]) {
     await page.goto(origin + (currentClipIds.has(name) ? "tour/" : "tour/earlier/"));
     const selector = `[data-native-demo="${name}"] video`;
     const video = page.locator(selector);
@@ -159,14 +170,41 @@ try {
     if (currentClipIds.has(name)) {
       assert.equal(clip.source_versions.browser_content.url, "http://127.0.0.1:8766/");
       assert.equal(clip.source_versions.browser_content.title, "A desktop for the way I work — Niri Plus");
-      assert.equal(clip.source_versions.browser_content.account_state, "signed out; public local source snapshot");
-      assert.equal(clip.source_versions.browser_content.source_commit, "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a");
+      assert.equal(clip.source_versions.browser_content.account_state, "signed out; real first-run flow in a disposable guest");
+      assert.equal(clip.source_versions.browser_content.source_commit, "4672016e7cfe4f4631b67209636b0720e9068784");
+      assert.equal(clip.source_versions.browser_content.source_file_count, 203);
+      assert.equal(clip.source_versions.browser_content.served_snapshot_hashes_match, true);
       assert.equal(clip.source_versions.browser_content.browser_zoom_percent, 125);
       assert.equal(clip.source_versions.browser_content.compositor_scale, 1);
-      assert.equal(clip.source_versions.public_source_commit, "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a");
+      assert.equal(clip.source_versions.public_source_commit, "4672016e7cfe4f4631b67209636b0720e9068784");
+      assert.equal(clip.source_versions.components.version, "0.4.3");
+      assert.equal(clip.source_versions.identity.path, "design/history/neutral-slate-sidebar.json");
+      assert.equal(clip.source_versions.identity.sha256, "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e");
       assert.doesNotMatch(JSON.stringify(clip), /\bstory\b|\/story\//i);
       assert.equal(clip.width, 1280);
       assert.equal(clip.height, 800);
+      assert.ok(clip.duration_seconds > 0);
+      assert.ok(clip.frame_count > 0);
+      assert.ok(clip.container_frame_count >= clip.frame_count);
+      assert.equal(clip.average_frame_rate, "30/1");
+      assert.equal(clip.video_codec, "h264");
+      assert.equal(clip.pixel_format, "yuv420p");
+      assert.equal(clip.full_decode, "passed");
+      assert.match(clip.blackdetect, /no intervals/);
+      const currentSteps = await page.locator(`[data-native-demo="${name}"] .native-demo-steps`).innerText();
+      if (name === "desktop-sidebar-800") {
+        assert.match(currentSteps, /two separate notifications from one sample app/i);
+        assert.match(currentSteps, /Do Not Disturb and restore it/i);
+        assert.match(currentSteps, /Close and reopen the panel/i);
+      } else {
+        assert.match(currentSteps, /Audio.*Details/i);
+        assert.match(currentSteps, /Network.*connected Ethernet address/i);
+        assert.doesNotMatch(currentSteps, /adjust.*volume/i);
+      }
+    }
+    if (name === "controls-site-800") {
+      const archivedSteps = await page.locator(`[data-native-demo="${name}"] .native-demo-steps`).innerText();
+      assert.match(archivedSteps, /Adjust the virtual output volume and mute state/i);
     }
     const mediaPaths = await video.evaluate((element) => ({
       poster: new URL(element.getAttribute("poster"), document.baseURI).pathname.replace(/^\/niri-plus\//, ""),
@@ -230,10 +268,10 @@ try {
   }
   checks += 8;
   await page.goto(origin + "recipes/rofi-controls/");
-  const recipeClip = page.locator('[data-native-demo="controls-site-800"] video');
+  const recipeClip = page.locator('[data-native-demo="controls-sidebar-800"] video');
   assert.equal(await recipeClip.count(), 1);
-  assert.ok((await recipeClip.getAttribute("poster")).endsWith("assets/demo-controls-site-800.png"));
-  assert.ok((await recipeClip.locator("source").getAttribute("src")).endsWith("assets/demo-controls-site-800.mp4"));
+  assert.ok((await recipeClip.getAttribute("poster")).endsWith("assets/demo-controls-sidebar-800.png"));
+  assert.ok((await recipeClip.locator("source").getAttribute("src")).endsWith("assets/demo-controls-sidebar-800.mp4"));
   checks += 3;
   await page.setViewportSize({ width: 375, height: 900 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
@@ -246,7 +284,7 @@ try {
   checks += 7;
   await page.setViewportSize({ width: 1280, height: 1000 });
   await page.goto(origin + "design/");
-  const designCapture = page.locator('img[src$="assets/arch-reference/desktop-site-800.png"]');
+  const designCapture = page.locator('img[src$="assets/arch-reference/desktop-sidebar-800.png"]');
   await designCapture.evaluate((image) => image.decode());
   assert.deepEqual(await designCapture.evaluate((image) => [image.naturalWidth, image.naturalHeight]), [1280, 800]);
   assert.doesNotMatch(await designCapture.getAttribute("alt"), /story/i);
@@ -373,7 +411,7 @@ try {
       await contents.locator('a[href="#explore-the-workflow"]').click();
       assert.equal(await contents.evaluate((node) => node.open), false);
     }
-    for (const [kind, asset] of [["panel", "workflow-panel-site-800.png"], ["agent", "agent-plus-site-800.png"]]) {
+    for (const [kind, asset] of [["panel", "workflow-panel-sidebar-800.png"], ["agent", "agent-plus-site-800.png"]]) {
       const capture = page.locator(`.native-${kind}-shot`);
       const image = capture.locator("img");
       await image.scrollIntoViewIfNeeded();
@@ -392,18 +430,26 @@ try {
   }
   const workflow = provenance.desktop_walkthrough;
   assert.equal(workflow.type, "native captured frames");
-  assert.equal(workflow.related_video, "assets/demo-desktop-site-800.mp4");
+  assert.equal(workflow.related_video, "assets/demo-desktop-sidebar-800.mp4");
   assert.deepEqual(workflow.scenes.map((scene) => scene.image).sort(), [
-    "assets/workflow-browser-site-800.png",
-    "assets/workflow-controls-site-800.png",
-    "assets/workflow-panel-site-800.png",
-    "assets/workflow-terminal-site-800.png",
+    "assets/workflow-browser-sidebar-800.png",
+    "assets/workflow-controls-sidebar-800.png",
+    "assets/workflow-panel-sidebar-800.png",
+    "assets/workflow-terminal-sidebar-800.png",
   ].sort());
+  assert.deepEqual(Object.fromEntries(workflow.scenes.map((scene) => [scene.id, scene.watch_from_seconds])), {
+    browser: 0,
+    terminal: 6,
+    panel: 11,
+    controls: 29,
+  });
   for (const route of ["", "tour/"]) {
     for (const width of [375, 1280]) {
       await page.setViewportSize({ width, height: 1000 });
       await page.goto(origin + route);
       const workbench = page.locator("[data-workbench]");
+      assert.ok((await workbench.locator(":scope > figcaption").innerText()).includes(`Components ${workflow.components_version}`));
+      checks += 1;
       assert.equal(await workbench.locator(".desktop-stage, [data-scene-overlay]").count(), 0);
       for (const scene of workflow.scenes) {
         const button = workbench.locator(`[data-scene-button="${scene.id}"]`);
@@ -508,7 +554,7 @@ try {
   const currentNoJsClipIds = [...currentClipIds];
   const archiveNoJsClipIds = Object.keys(clipsById).filter((id) => !currentClipIds.has(id));
   assert.equal(currentNoJsClipIds.length, 2);
-  assert.equal(archiveNoJsClipIds.length, 10);
+  assert.equal(archiveNoJsClipIds.length, 12);
   checks += 2;
   for (const [route, clipIds] of [
     ["tour/", currentNoJsClipIds],

@@ -243,7 +243,7 @@ kitty --config "$HOME/.config/kitty/kitty.conf" \
 
 Use the values in the staged `$APPEARANCE/niri-neutral-slate.kdl` fragment.
 Merge its `layout` settings into the existing block and any separate `overview`
-settings at top level. The 0.4.1 identity uses workspace `#000000`, overview
+settings at top level. The selected identity uses workspace `#000000`, overview
 surround `#111213`, active focus `#a6ceff` and inactive focus `#81878c`. An older
 reference keeps the values in its own verified fragment. Preserve proportional
 widths, gaps, focus-ring width, binds and other behavior.

@@ -4,9 +4,13 @@ The bindings below describe my managed Niri desktop. Portable examples and
 component guides let you adopt the parts you want.
 
 The [component source map](components.md) distinguishes published components,
-the tested Arch reference and dated adoption evidence. Components 0.4.1, direct
-device controls and the black workspace identity are installed on Carbon,
-Starship and Snap. Earlier delivery records retain their historical context.
+the Arch reference and dated adoption evidence. Components 0.4.3, SwayNC
+0.12.6-17 and the black-workspace sidebar identity are delivered on Carbon,
+Starship and Snap through chezmoi, as recorded in the
+[managed-host delivery record](../data/setup.json). The numbered Arch reference
+uses the same pins. Its changed installation/login/sidebar path, clipboard and
+direct-controls checks passed in a fresh guest, with new native captures ([current receipt](planning/swaync-reference-sync-20261107.md)).
+Earlier delivery records retain their historical context.
 
 Published components 0.9.2 include the
 [optional unified session screen](recipes/session.md#optional-unified-session-screen).
@@ -86,12 +90,15 @@ Bluetooth retains `bluetoothctl` for deeper settings and recovery. Native
 providers keep device ownership. **Session** retains its existing lock, logout
 and confirmed power actions; see the [utility recipe](recipes/desktop-utilities.md).
 
-The 0.4.1 delivery on all three hosts passed exact installed-file,
-native dependency, fresh callback/startup and no-write repeat checks on
-2026-10-29. Physical Wi-Fi/wallet, speaker/microphone and peripheral actions
-remain normal-use checks. The [Arch agent guide](setup-agent.md) now selects
-0.4.1; its [fresh-base receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
-records the separate guest tasks and documented VirtIO sharing branch.
+The historical 0.4.1 delivery passed exact installed-file, native dependency,
+fresh callback/startup and no-write repeat checks on 2026-10-29; its result
+remains in the [0.4.1 delivery history](../data/history/setup-0.4.1.json).
+Physical Wi-Fi/wallet, speaker/microphone and peripheral actions remain
+normal-use checks. The [Arch agent guide](setup-agent.md) now targets
+0.4.3/SwayNC 0.12.6-17. The current scoped fresh-base qualification is recorded in the
+[sync receipt](planning/swaync-reference-sync-20261107.md);
+the [0.4.1 fresh-base receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
+records only the earlier guest tasks and documented VirtIO sharing branch.
 
 ## Session and hardware ownership
 
@@ -111,18 +118,18 @@ records the separate guest tasks and documented VirtIO sharing branch.
 
 ## Working setup
 
-Crisper Neutral Slate, the pure-black workspace and the independent Balanced+
-terminal are installed on Carbon, Starship and Snap. The overview surround is
-charcoal so empty workspace boundaries remain visible. All 23 scoped targets
-matched their reviewed source; status/diff were empty and repeat applies made
-no writes. This refinement changed only Niri config and controls role metadata.
-Existing UI palettes, terminal colors, packages, services and sessions were
-preserved. The greeter remains
-`/usr/local/share/sddm/themes/niri-neutral-fe1a7a554ed6`; SDDM was not restarted.
+Crisper Neutral Slate, the pure-black workspace, Balanced+ terminal and the
+components0.4.3/SwayNC17 sidebar are delivered on Carbon, Starship and Snap.
+The sidebar uses a unified information surface and separate notification cards
+with 75% fill; chezmoi selects host layout and policy. Carbon's delivery completed
+on 2026-11-07. Exact installed checks, retained preimages and recovery artifacts
+stay in the private consumer receipts. This public sync changes the reference
+and showcase, with no new fleet deployment.
 
-This is scoped deployment evidence, not a fresh-install or complete physical
-acceptance record. New login/unlock appearance, application visuals, device and
-backlight behavior, and docking checks remain for normal use.
+The earlier black-workspace-only rollout changed Niri configuration and controls
+role metadata; its 23-target/no-write repeat results remain in
+[the dated 0.4.1 delivery history](../data/history/setup-0.4.1.json). Fresh guest,
+managed delivery, physical hardware and human visual acceptance are separate.
 
 <!-- niri-plus:snapshot -->
 The producer, consumer, host results, and selected identity hash are recorded in

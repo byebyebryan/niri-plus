@@ -614,6 +614,137 @@
       "processing": "Exact native PNG bytes without crop, resize, overlays or retouching. The production presentation frame is sampled; the full Agent Plus runtime is not installed or exercised.",
       "agent_review": "passed; primary visually reviewed the native still",
       "human_review": "pending"
+    },
+    {
+      "path": "assets/workflow-browser-sidebar-800.png",
+      "sha256": "ac521e98ec9e69d75d6c656e06721bd9d35f1235f3fb4482ebc131dbb2f5a9fb",
+      "source": "Separate unedited native grim PNG from the owned guest; exact transferred bytes.",
+      "license": "MIT",
+      "description": "Full native desktop: browser in the components0.4.3/SwayNC17 reference.",
+      "capture_date": "2026-11-07",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-11-07T22:31:12.372760+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md"
+    },
+    {
+      "path": "assets/workflow-terminal-sidebar-800.png",
+      "sha256": "715ea9b84dda95bc98101b8090452b1a6d4afad09828eeba7b8bee22a0b4f5e3",
+      "source": "Separate unedited native grim PNG from the owned guest; exact transferred bytes.",
+      "license": "MIT",
+      "description": "Full native desktop: terminal in the components0.4.3/SwayNC17 reference.",
+      "capture_date": "2026-11-07",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-11-07T22:31:17.311605+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md"
+    },
+    {
+      "path": "assets/workflow-panel-sidebar-800.png",
+      "sha256": "28853e35b6b1feb8078938a1d916580baa173f5448ed93a29bdcf6373011c537",
+      "source": "Separate unedited native grim PNG from the owned guest; exact transferred bytes.",
+      "license": "GPL-3.0-only",
+      "description": "Full native desktop: panel in the components0.4.3/SwayNC17 reference.",
+      "capture_date": "2026-11-07",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-11-07T22:31:22.713704+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md"
+    },
+    {
+      "path": "assets/workflow-controls-sidebar-800.png",
+      "sha256": "0575adab90c2a02460cc092180e0f54c945c1be15bdc7f9735234a4a018fbec5",
+      "source": "Separate unedited native grim PNG from the owned guest; exact transferred bytes.",
+      "license": "MIT",
+      "description": "Full native desktop: controls in the components0.4.3/SwayNC17 reference.",
+      "capture_date": "2026-11-07",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-11-07T22:31:39.437765+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md"
+    },
+    {
+      "path": "assets/arch-reference/desktop-sidebar-800.png",
+      "sha256": "ac521e98ec9e69d75d6c656e06721bd9d35f1235f3fb4482ebc131dbb2f5a9fb",
+      "source": "Separate unedited native grim PNG from the owned guest; exact transferred bytes.",
+      "license": "MIT",
+      "description": "Chrome homepage and Kitty in the fresh current reference guest.",
+      "capture_date": "2026-11-07",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-11-07T22:31:12.372760+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md"
+    },
+    {
+      "path": "assets/demo-desktop-sidebar-800.png",
+      "sha256": "ac521e98ec9e69d75d6c656e06721bd9d35f1235f3fb4482ebc131dbb2f5a9fb",
+      "source": "Separate unedited native grim PNG from the owned guest; exact transferred bytes.",
+      "license": "MIT",
+      "description": "Independent native opening still for desktop-sidebar-800.",
+      "capture_date": "2026-11-07",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-11-07T22:31:12.372760+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md"
+    },
+    {
+      "path": "assets/demo-desktop-sidebar-800.mp4",
+      "sha256": "3493f4ad2b8e314fc2de60a34c8a0a1caf758841a073218de64a4bfcdd2456a1",
+      "source": "Continuous silent native wf-recorder take from the owned fresh Arch guest.",
+      "license": "GPL-3.0-only",
+      "description": "Current information sidebar, individual cards and DND lifecycle.",
+      "capture_date": "2026-11-07",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md",
+      "source_capture_sha256": "4118557c8ee85d10bc2f69f3e01c4235a50dc6c5a1c726d0542e233791417143",
+      "stream_sha256": "55cf0c45d029c4f2802f013eb3fab5117ded8aa1c855cb7750a20420cef5d071",
+      "duration_seconds": 33.9,
+      "frame_count": 1017,
+      "container_frame_count": 1018,
+      "average_frame_rate": "30/1",
+      "video_codec": "h264",
+      "video_profile": "High",
+      "pixel_format": "yuv420p",
+      "capture_utc": "2026-11-07T22:31:11.025278+00:00"
+    },
+    {
+      "path": "assets/demo-controls-sidebar-800.png",
+      "sha256": "f5c1cb7818446be9a75d4864acee80fccfb7b388bb9733b581a156b8d0c84b47",
+      "source": "Separate unedited native grim PNG from the owned guest; exact transferred bytes.",
+      "license": "MIT",
+      "description": "Independent native opening still for controls-sidebar-800.",
+      "capture_date": "2026-11-07",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_utc": "2026-11-07T22:31:47.373993+00:00",
+      "width": 1280,
+      "height": 800,
+      "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md"
+    },
+    {
+      "path": "assets/demo-controls-sidebar-800.mp4",
+      "sha256": "51251a8ba37e07cd5d65c64873dd4f6b5e1f5fcb8f851751a21a4d6f2098183b",
+      "source": "Continuous silent native wf-recorder take from the owned fresh Arch guest.",
+      "license": "MIT",
+      "description": "Current installed Audio and Network controls with native Details pages.",
+      "capture_date": "2026-11-07",
+      "capture_label": "Staged Arch Linux x86_64 guest, native 1280x800 scale 1",
+      "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md",
+      "source_capture_sha256": "f684d7da2db0ef0f2f80bbae4df6a9c954184d8de269328c645be3e7b5ad787e",
+      "stream_sha256": "5566a77ec3a493dd4d46fb5df2c9e4747a8defb505f7176d1fc125d8301e0be3",
+      "duration_seconds": 23.033333,
+      "frame_count": 691,
+      "container_frame_count": 692,
+      "average_frame_rate": "30/1",
+      "video_codec": "h264",
+      "video_profile": "High",
+      "pixel_format": "yuv420p",
+      "capture_utc": "2026-11-07T22:31:44.848948+00:00"
     }
   ],
   "desktop_demos": {
@@ -1850,6 +1981,248 @@
             31
           ]
         }
+      },
+      {
+        "id": "desktop-sidebar-800",
+        "video": "assets/demo-desktop-sidebar-800.mp4",
+        "poster": "assets/demo-desktop-sidebar-800.png",
+        "width": 1280,
+        "height": 800,
+        "duration_seconds": 33.9,
+        "frame_count": 1017,
+        "container_frame_count": 1018,
+        "average_frame_rate": "30/1",
+        "video_codec": "h264",
+        "video_profile": "High",
+        "pixel_format": "yuv420p",
+        "color_range": null,
+        "capture_date": "2026-11-07",
+        "source_capture_sha256": "4118557c8ee85d10bc2f69f3e01c4235a50dc6c5a1c726d0542e233791417143",
+        "source_capture_bytes": 677022,
+        "source_captures": null,
+        "poster_source": {
+          "path": "assets/demo-desktop-sidebar-800.png",
+          "sha256": "ac521e98ec9e69d75d6c656e06721bd9d35f1235f3fb4482ebc131dbb2f5a9fb",
+          "capture_utc": "2026-11-07T22:31:12.372760+00:00",
+          "method": "Independent unedited native grim PNG captured during the continuous take."
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Frozen public Niri Plus homepage from main 4672016, clean octocat/Hello-World sample; actual guest CPU/RAM/Ethernet and virtual audio, owned sample notifications. Wi-Fi/Bluetooth/GPU/battery hardware are absent.",
+        "processing_notes": [
+          "Continuous native 1280x800 capture at compositor scale 1; Chrome 125% page zoom. No crop, overlays, time changes or color conversion.",
+          "Full decode and full-frame black detection passed: d=0.20 pix_th=0.10 pic_th=0.999; no intervals.",
+          "FFmpeg copy-faststart remux preserved compressed H.264 stream without re-encoding.",
+          "Independent native PNG poster; installed desktop entries invoked through gtk-launch for the control menus."
+        ],
+        "agent_review": "passed; primary reviewed native stills and representative full-resolution encoded frames",
+        "automated_review": "passed",
+        "human_review": "pending",
+        "capture_started_utc": "2026-11-07T22:31:11.025278+00:00",
+        "capture_ended_utc": "2026-11-07T22:31:46.012887+00:00",
+        "capture_unit": "niri-plus-sync-desktop-sidebar-800-take4.service",
+        "capture_baseline_repo_commit": "4672016e7cfe4f4631b67209636b0720e9068784",
+        "source_versions": {
+          "components": {
+            "version": "0.4.3",
+            "api_version": 1,
+            "source_commit": "07cf4a393314c195ace7e66d162f21d3a2f73136",
+            "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.3/niri-plus-components-0.4.3.tar.gz",
+            "archive_sha256": "146b4d4b81dac3804b5836348045b5b89a8fa3c62719b643a90302da8346d87a",
+            "manifest_sha256": "31a30ac9f11dcb4182e9b0c26e5c33ca741bdb28a2c1a195f298db8ea79dd79b"
+          },
+          "identity": {
+            "source_commit": "07cf4a393314c195ace7e66d162f21d3a2f73136",
+            "path": "design/history/neutral-slate-sidebar.json",
+            "sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
+          },
+          "guest_software": {
+            "niri": "26.04-1",
+            "swaync-bryan": "0.12.6-17",
+            "kanshi": "1.9.0-1",
+            "fcitx5": "5.1.23-1",
+            "cliphist": "1:0.7.0-2",
+            "swayidle": "1.9.1-1",
+            "pipewire": "1:1.6.10-1",
+            "wireplumber": "0.5.18-1",
+            "rofi": "2.0.0-1",
+            "kitty": "0.49.2-1",
+            "zsh": "5.9.2-1",
+            "google-chrome": "156.0.8078.47-1",
+            "xdg-desktop-portal": "1.22.1-2",
+            "xdg-desktop-portal-gtk": "1.15.3-2",
+            "xdg-desktop-portal-wlr": "0.8.4-1",
+            "polkit-kde-agent": "6.8.2-1",
+            "gtklock": "5.0.0-1",
+            "wf-recorder": "0.6.0-2",
+            "ffmpeg": "2:9.0.2-2"
+          },
+          "git_sample": {
+            "remote": "https://github.com/octocat/Hello-World.git",
+            "commit": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+            "branch": "master",
+            "working_tree": "clean"
+          },
+          "public_source_commit": "4672016e7cfe4f4631b67209636b0720e9068784",
+          "browser_content": {
+            "url": "http://127.0.0.1:8766/",
+            "title": "A desktop for the way I work \u2014 Niri Plus",
+            "source_commit": "4672016e7cfe4f4631b67209636b0720e9068784",
+            "served_html_sha256": "b22fc72ae02554b02a42ddb76b564a0afb8a0b64e00e4a4ca213bbbb1548bf4c",
+            "served_html_bytes": 14435,
+            "source_file_count": 203,
+            "browser_zoom_percent": 125,
+            "compositor_scale": 1,
+            "account_state": "signed out; real first-run flow in a disposable guest",
+            "verification": "Guest loopback serves an exact copy of the independently built portable export; complete transferred inventory verified.",
+            "served_snapshot_hashes_match": true,
+            "zoom_verification": "Chrome application menu visibly showed 125% before both accepted takes; native verification still retained in the lab receipt."
+          }
+        },
+        "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md",
+        "container_remux": {
+          "method": "ffmpeg-copy-faststart",
+          "reencoded": false,
+          "input_sha256": "4118557c8ee85d10bc2f69f3e01c4235a50dc6c5a1c726d0542e233791417143",
+          "output_sha256": "3493f4ad2b8e314fc2de60a34c8a0a1caf758841a073218de64a4bfcdd2456a1",
+          "input_stream_sha256": "55cf0c45d029c4f2802f013eb3fab5117ded8aa1c855cb7750a20420cef5d071",
+          "output_stream_sha256": "55cf0c45d029c4f2802f013eb3fab5117ded8aa1c855cb7750a20420cef5d071"
+        },
+        "full_decode": "passed",
+        "blackdetect": "passed; d=0.20 pix_th=0.10 pic_th=0.999, no intervals",
+        "primary_visual_review": {
+          "status": "passed",
+          "scope": "Native full-frame stills and representative encoded frames; human playback remains separate."
+        },
+        "additional_source_versions": {
+          "swaync": {
+            "recipe_revision": "c6eeafb4ded51afc0a5f9a3d092fb1d4a86d0662",
+            "recipe_archive_sha256": "f733190593dac14a9bbf47f286ed23b8681b80d53f5c88282a6d873f87a02d5a",
+            "source_revision": "3d4458262c23ac66820cbb7a63b171bab1053ae8",
+            "source_archive_sha256": "11d591899424a1cdc6a627c53f2b2aab3a91e56fa1ff390ba0d4878806e832e6",
+            "package": "swaync-bryan",
+            "version": "0.12.6-17"
+          }
+        },
+        "watch_from_seconds": {
+          "browser": 0,
+          "terminal": 6,
+          "panel": 11,
+          "controls": 29
+        }
+      },
+      {
+        "id": "controls-sidebar-800",
+        "video": "assets/demo-controls-sidebar-800.mp4",
+        "poster": "assets/demo-controls-sidebar-800.png",
+        "width": 1280,
+        "height": 800,
+        "duration_seconds": 23.033333,
+        "frame_count": 691,
+        "container_frame_count": 692,
+        "average_frame_rate": "30/1",
+        "video_codec": "h264",
+        "video_profile": "High",
+        "pixel_format": "yuv420p",
+        "color_range": null,
+        "capture_date": "2026-11-07",
+        "source_capture_sha256": "f684d7da2db0ef0f2f80bbae4df6a9c954184d8de269328c645be3e7b5ad787e",
+        "source_capture_bytes": 419009,
+        "source_captures": null,
+        "poster_source": {
+          "path": "assets/demo-controls-sidebar-800.png",
+          "sha256": "f5c1cb7818446be9a75d4864acee80fccfb7b388bb9733b581a156b8d0c84b47",
+          "capture_utc": "2026-11-07T22:31:47.373993+00:00",
+          "method": "Independent unedited native grim PNG captured during the continuous take."
+        },
+        "reuse_reason": null,
+        "audio": "none",
+        "fixture_label": "Frozen public Niri Plus homepage from main 4672016, clean octocat/Hello-World sample; actual guest CPU/RAM/Ethernet and virtual audio, owned sample notifications. Wi-Fi/Bluetooth/GPU/battery hardware are absent.",
+        "processing_notes": [
+          "Continuous native 1280x800 capture at compositor scale 1; Chrome 125% page zoom. No crop, overlays, time changes or color conversion.",
+          "Full decode and full-frame black detection passed: d=0.20 pix_th=0.10 pic_th=0.999; no intervals.",
+          "FFmpeg copy-faststart remux preserved compressed H.264 stream without re-encoding.",
+          "Independent native PNG poster; installed desktop entries invoked through gtk-launch for the control menus."
+        ],
+        "agent_review": "passed; primary reviewed native stills and representative full-resolution encoded frames",
+        "automated_review": "passed",
+        "human_review": "pending",
+        "capture_started_utc": "2026-11-07T22:31:44.848948+00:00",
+        "capture_ended_utc": "2026-11-07T22:32:08.981913+00:00",
+        "capture_unit": "niri-plus-sync-controls-sidebar-800-take4.service",
+        "capture_baseline_repo_commit": "4672016e7cfe4f4631b67209636b0720e9068784",
+        "source_versions": {
+          "components": {
+            "version": "0.4.3",
+            "api_version": 1,
+            "source_commit": "07cf4a393314c195ace7e66d162f21d3a2f73136",
+            "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.3/niri-plus-components-0.4.3.tar.gz",
+            "archive_sha256": "146b4d4b81dac3804b5836348045b5b89a8fa3c62719b643a90302da8346d87a",
+            "manifest_sha256": "31a30ac9f11dcb4182e9b0c26e5c33ca741bdb28a2c1a195f298db8ea79dd79b"
+          },
+          "identity": {
+            "source_commit": "07cf4a393314c195ace7e66d162f21d3a2f73136",
+            "path": "design/history/neutral-slate-sidebar.json",
+            "sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
+          },
+          "guest_software": {
+            "niri": "26.04-1",
+            "swaync-bryan": "0.12.6-17",
+            "kanshi": "1.9.0-1",
+            "fcitx5": "5.1.23-1",
+            "cliphist": "1:0.7.0-2",
+            "swayidle": "1.9.1-1",
+            "pipewire": "1:1.6.10-1",
+            "wireplumber": "0.5.18-1",
+            "rofi": "2.0.0-1",
+            "kitty": "0.49.2-1",
+            "zsh": "5.9.2-1",
+            "google-chrome": "156.0.8078.47-1",
+            "xdg-desktop-portal": "1.22.1-2",
+            "xdg-desktop-portal-gtk": "1.15.3-2",
+            "xdg-desktop-portal-wlr": "0.8.4-1",
+            "polkit-kde-agent": "6.8.2-1",
+            "gtklock": "5.0.0-1",
+            "wf-recorder": "0.6.0-2",
+            "ffmpeg": "2:9.0.2-2"
+          },
+          "git_sample": {
+            "remote": "https://github.com/octocat/Hello-World.git",
+            "commit": "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+            "branch": "master",
+            "working_tree": "clean"
+          },
+          "public_source_commit": "4672016e7cfe4f4631b67209636b0720e9068784",
+          "browser_content": {
+            "url": "http://127.0.0.1:8766/",
+            "title": "A desktop for the way I work \u2014 Niri Plus",
+            "source_commit": "4672016e7cfe4f4631b67209636b0720e9068784",
+            "served_html_sha256": "b22fc72ae02554b02a42ddb76b564a0afb8a0b64e00e4a4ca213bbbb1548bf4c",
+            "served_html_bytes": 14435,
+            "source_file_count": 203,
+            "browser_zoom_percent": 125,
+            "compositor_scale": 1,
+            "account_state": "signed out; real first-run flow in a disposable guest",
+            "verification": "Guest loopback serves an exact copy of the independently built portable export; complete transferred inventory verified.",
+            "served_snapshot_hashes_match": true,
+            "zoom_verification": "Chrome application menu visibly showed 125% before both accepted takes; native verification still retained in the lab receipt."
+          }
+        },
+        "capture_receipt_path": "docs/planning/swaync-reference-sync-20261107.md",
+        "container_remux": {
+          "method": "ffmpeg-copy-faststart",
+          "reencoded": false,
+          "input_sha256": "f684d7da2db0ef0f2f80bbae4df6a9c954184d8de269328c645be3e7b5ad787e",
+          "output_sha256": "51251a8ba37e07cd5d65c64873dd4f6b5e1f5fcb8f851751a21a4d6f2098183b",
+          "input_stream_sha256": "5566a77ec3a493dd4d46fb5df2c9e4747a8defb505f7176d1fc125d8301e0be3",
+          "output_stream_sha256": "5566a77ec3a493dd4d46fb5df2c9e4747a8defb505f7176d1fc125d8301e0be3"
+        },
+        "full_decode": "passed",
+        "blackdetect": "passed; d=0.20 pix_th=0.10 pic_th=0.999, no intervals",
+        "primary_visual_review": {
+          "status": "passed",
+          "scope": "Native full-frame stills and representative encoded frames; human playback remains separate."
+        }
       }
     ],
     "capture_receipt_path": "docs/planning/desktop-demonstration-receipt.md"
@@ -1902,37 +2275,37 @@
   },
   "desktop_walkthrough": {
     "type": "native captured frames",
-    "description": "Fresh independent native 1280x800 stills captured during the current Niri Plus homepage overview; scene links use primary-reviewed encoded-PTS starts.",
-    "related_video": "assets/demo-desktop-site-800.mp4",
-    "components_version": "0.4.1",
-    "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
-    "capture_date": "2026-10-31",
+    "description": "Independent native current-sidebar stills; public homepage source main4672016, current desktop components0.4.3 and SwayNC17.",
+    "related_video": "assets/demo-desktop-sidebar-800.mp4",
+    "components_version": "0.4.3",
+    "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e",
+    "capture_date": "2026-11-07",
     "width": 1280,
     "height": 800,
     "scenes": [
       {
         "id": "browser",
-        "image": "assets/workflow-browser-site-800.png",
-        "capture_utc": "2026-10-31T02:52:03.819432+00:00",
+        "image": "assets/workflow-browser-sidebar-800.png",
+        "capture_utc": "2026-11-07T22:31:12.372760+00:00",
         "watch_from_seconds": 0
       },
       {
         "id": "terminal",
-        "image": "assets/workflow-terminal-site-800.png",
-        "capture_utc": "2026-10-31T02:52:38.610579+00:00",
-        "watch_from_seconds": 35
+        "image": "assets/workflow-terminal-sidebar-800.png",
+        "capture_utc": "2026-11-07T22:31:17.311605+00:00",
+        "watch_from_seconds": 6
       },
       {
         "id": "panel",
-        "image": "assets/workflow-panel-site-800.png",
-        "capture_utc": "2026-10-31T02:52:42.989002+00:00",
-        "watch_from_seconds": 40
+        "image": "assets/workflow-panel-sidebar-800.png",
+        "capture_utc": "2026-11-07T22:31:22.713704+00:00",
+        "watch_from_seconds": 11
       },
       {
         "id": "controls",
-        "image": "assets/workflow-controls-site-800.png",
-        "capture_utc": "2026-10-31T02:52:53.653573+00:00",
-        "watch_from_seconds": 50
+        "image": "assets/workflow-controls-sidebar-800.png",
+        "capture_utc": "2026-11-07T22:31:39.437765+00:00",
+        "watch_from_seconds": 29
       }
     ],
     "processing": "Unedited native grim PNG bytes at the full 1280x800 output and compositor scale 1; Chrome page zoom is 125%. Each image is an independent capture made during the continuous overview, not a decoded video frame.",
@@ -1942,5 +2315,50 @@
       "default_view": "full desktop",
       "method": "Uncropped source image at its native aspect ratio; linked original at full resolution."
     }
-  }
+  },
+  "desktop_walkthrough_history": [
+    {
+      "type": "native captured frames",
+      "description": "Fresh independent native 1280x800 stills captured during the current Niri Plus homepage overview; scene links use primary-reviewed encoded-PTS starts.",
+      "related_video": "assets/demo-desktop-site-800.mp4",
+      "components_version": "0.4.1",
+      "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
+      "capture_date": "2026-10-31",
+      "width": 1280,
+      "height": 800,
+      "scenes": [
+        {
+          "id": "browser",
+          "image": "assets/workflow-browser-site-800.png",
+          "capture_utc": "2026-10-31T02:52:03.819432+00:00",
+          "watch_from_seconds": 0
+        },
+        {
+          "id": "terminal",
+          "image": "assets/workflow-terminal-site-800.png",
+          "capture_utc": "2026-10-31T02:52:38.610579+00:00",
+          "watch_from_seconds": 35
+        },
+        {
+          "id": "panel",
+          "image": "assets/workflow-panel-site-800.png",
+          "capture_utc": "2026-10-31T02:52:42.989002+00:00",
+          "watch_from_seconds": 40
+        },
+        {
+          "id": "controls",
+          "image": "assets/workflow-controls-site-800.png",
+          "capture_utc": "2026-10-31T02:52:53.653573+00:00",
+          "watch_from_seconds": 50
+        }
+      ],
+      "processing": "Unedited native grim PNG bytes at the full 1280x800 output and compositor scale 1; Chrome page zoom is 125%. Each image is an independent capture made during the continuous overview, not a decoded video frame.",
+      "agent_review": "passed; primary reviewed the native stills and representative encoded watch-point frames",
+      "human_review": "pending",
+      "presentation": {
+        "default_view": "full desktop",
+        "method": "Uncropped source image at its native aspect ratio; linked original at full resolution."
+      }
+    }
+  ]
 }

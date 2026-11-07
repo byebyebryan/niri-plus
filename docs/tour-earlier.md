@@ -1,9 +1,23 @@
 # Earlier desktop recordings
 
 These staged Arch recordings retain their original resolutions, source pins,
-capture dates and media bytes. The archive retains ten earlier videos,
+capture dates and media bytes. The archive retains twelve earlier videos,
 including superseded 800p takes and the earlier 1080p recordings. Return to the
 [current desktop overview](tour.md#native-reference-demo).
+
+## Previous homepage captures with the split dashboard
+
+These two 2026-10-31 native 800p recordings retain components 0.4.1 and SwayNC15.
+They show the previous split status boxes; the current Tour uses the unified
+translucent sidebar. Their source pins, dates, receipts and media bytes are unchanged.
+
+<!-- niri-plus:demo-desktop-site-800 -->
+Browser/files, terminal, the former dashboard, clipboard and Audio on demand.
+<!-- /niri-plus:demo-desktop-site-800 -->
+
+<!-- niri-plus:demo-controls-site-800 -->
+Inspect and adjust virtual audio, restore its state and inspect Ethernet.
+<!-- /niri-plus:demo-controls-site-800 -->
 
 ## Previous black-workspace overview
 

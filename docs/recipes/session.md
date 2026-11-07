@@ -61,7 +61,7 @@ idle listener such as swayidle, in addition to the lock service.
 ## Optional unified session screen
 
 Published [components 0.9.2](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.9.2)
-add a native session screen. Selection is independent of the qualified 0.4.1
+add a native session screen. Selection is independent of the selected 0.4.3
 reference and the 0.5.0 Away companion.
 `desktop-session-menu --screen` opens a two-row action grid on the focused
 monitor; other monitors receive only a dim backdrop. The panel uses Neutral

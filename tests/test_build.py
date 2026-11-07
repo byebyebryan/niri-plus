@@ -23,6 +23,7 @@ def demo_provenance_fixture():
     ]
     clips = []
     for name, contract in builder.DEMO_CLIPS.items():
+        swaync_pin = builder.SWAYNC_CLIP_PINS.get(name)
         clips.append({
             "id": name,
             "video": contract["video"],
@@ -47,7 +48,7 @@ def demo_provenance_fixture():
             "agent_review": "passed",
             "automated_review": "passed",
             "human_review": "pending",
-            **({"additional_source_versions": {"swaync": builder.SWAYNC_PIN}} if name in {"overview", "information", "desktop", "desktop-800", "desktop-git-800", "desktop-site-800"} else {}),
+            **({"additional_source_versions": {"swaync": dict(swaync_pin)}} if swaync_pin else {}),
         })
     return {
         "files": files,
@@ -93,6 +94,7 @@ class BuildContracts(unittest.TestCase):
                 "docs/planning/desktop-demonstration-receipt.md",
                 "docs/planning/desktop-away-integration.md",
                 "docs/planning/rofi-controls-implementation-receipt.md",
+                "docs/planning/swaync-reference-sync-20261107.md",
             },
         )
         self.assertTrue((self.output / "tools/vm/desktop/wlr-compat/README.md").is_file())
@@ -230,7 +232,7 @@ class BuildContracts(unittest.TestCase):
 
         core = json.loads((ROOT / "tools/reference/inputs.json").read_text())
         away = json.loads((self.output / "tools/reference/away-inputs.json").read_text())
-        self.assertEqual(core["components"]["version"], "0.4.1")
+        self.assertEqual(core["components"]["version"], "0.4.3")
         self.assertEqual(away["components"]["version"], "0.5.0")
         self.assertEqual(away["selected_files"], [
             "components/desktop/bin/desktop-away",
@@ -268,6 +270,21 @@ class BuildContracts(unittest.TestCase):
         self.assertEqual([item["id"] for item in builder.validate_desktop_demo_manifest(manifest)["clips"]], ["terminal"])
         with self.assertRaisesRegex(ValueError, "complete site clip inventory"):
             builder.validate_desktop_demo_manifest(manifest, require_complete=True)
+
+    def test_swaync_clip_pins_keep_current_and_historical_package_tuples_distinct(self):
+        pin_pairs = (
+            ("desktop-site-800", builder.SWAYNC_PIN, builder.CURRENT_SWAYNC_PIN),
+            ("desktop-sidebar-800", builder.CURRENT_SWAYNC_PIN, builder.SWAYNC_PIN),
+        )
+        for clip_id, expected_pin, wrong_pin in pin_pairs:
+            with self.subTest(clip=clip_id):
+                self.assertEqual(builder.SWAYNC_CLIP_PINS[clip_id], expected_pin)
+                manifest = demo_provenance_fixture()
+                clip = next(item for item in manifest["desktop_demos"]["clips"] if item["id"] == clip_id)
+                self.assertEqual(clip["additional_source_versions"]["swaync"], expected_pin)
+                clip["additional_source_versions"]["swaync"] = dict(wrong_pin)
+                with self.assertRaisesRegex(ValueError, "exact fork and recipe source tuple"):
+                    builder.validate_desktop_demo_manifest(manifest)
 
     def test_reused_terminal_pilot_assets_match_their_source_receipt(self):
         provenance = builder.desktop_demo_provenance()
@@ -360,26 +377,35 @@ class BuildContracts(unittest.TestCase):
         self.assertEqual(tour.count('class="native-demo-download"'), 2)
         self.assertEqual(tour.count("Open or download MP4"), 2)
         archive = (self.output / "tour/earlier/index.html").read_text()
-        self.assertEqual(archive.count("<video "), 10)
-        self.assertIn('data-native-demo="desktop-site-800"', tour)
-        self.assertIn('data-native-demo="controls-site-800"', tour)
+        self.assertEqual(archive.count("<video "), 12)
+        self.assertIn('data-native-demo="desktop-sidebar-800"', tour)
+        self.assertIn('data-native-demo="controls-sidebar-800"', tour)
         self.assertNotIn('data-native-demo="desktop-git-800"', tour)
         self.assertNotIn('data-native-demo="controls-git-800"', tour)
         self.assertIn('data-native-demo="desktop-git-800"', archive)
         self.assertIn('data-native-demo="controls-git-800"', archive)
+        self.assertIn('data-native-demo="desktop-site-800"', archive)
+        self.assertIn('data-native-demo="controls-site-800"', archive)
         self.assertNotIn('data-native-demo="desktop-800"', tour)
         self.assertIn('data-native-demo="desktop-800"', archive)
         self.assertIn('data-native-demo="controls-800"', archive)
         self.assertIn('data-native-demo="desktop"', archive)
         self.assertNotIn('data-native-demo="overview"', tour)
         self.assertIn('href="/niri-plus/tour/earlier/"', tour)
-        self.assertIn("Components 0.4.1", tour)
+        self.assertIn("Components 0.4.3", tour)
         self.assertIn("Components 0.3.1", archive)
         self.assertIn("Components 0.4.1", archive)
         self.assertNotIn(" autoplay", tour)
         self.assertIn("Mod+N", tour)
         self.assertIn("Mod+Y", tour)
         self.assertIn("public sample content", " ".join(tour.split()))
+        tour_text = " ".join(tour.split())
+        self.assertIn("Inspect two separate notifications from one sample app", tour_text)
+        self.assertIn("toggle Do Not Disturb and restore it", tour_text)
+        self.assertIn("Close and reopen the panel", tour_text)
+        self.assertIn("Open Audio and inspect the default virtual devices and Details", tour_text)
+        self.assertNotIn("Adjust the virtual output volume", tour_text)
+        self.assertIn("Adjust the virtual output volume and mute state", " ".join(archive.split()))
         self.assertIn("Media provenance", tour)
         self.assertIn("Capture receipt", tour)
         self.assertIn("sharing is not shown in any clip", " ".join(tour.split()))
@@ -388,10 +414,10 @@ class BuildContracts(unittest.TestCase):
         self.assertIn('href="/niri-plus/recipes/notifications/"', tour)
         self.assertIn('href="/niri-plus/recipes/clipboard/"', tour)
         design = (self.output / "design/index.html").read_text()
-        self.assertIn('src="/niri-plus/assets/arch-reference/desktop-site-800.png"', design)
+        self.assertIn('src="/niri-plus/assets/arch-reference/desktop-sidebar-800.png"', design)
         self.assertIn('href="/niri-plus/tour/#native-reference-demo"', design)
         provenance = json.loads((self.output / "assets/provenance.json").read_text())
-        self.assertEqual(len(provenance["desktop_demos"]["clips"]), 12)
+        self.assertEqual(len(provenance["desktop_demos"]["clips"]), 14)
         self.assertTrue(all(item["human_review"] == "pending" for item in provenance["desktop_demos"]["clips"]))
         self.assertTrue(all(item["automated_review"] == "passed" for item in provenance["desktop_demos"]["clips"]))
         sharing = provenance["desktop_demos"]["separate_guest_checks"][0]
@@ -403,13 +429,13 @@ class BuildContracts(unittest.TestCase):
         for path in builder.DEMO_ASSETS:
             self.assertTrue((self.output / path).is_file(), path)
         current_paths = {
-            "desktop-site-800": (
-                "assets/demo-desktop-site-800.mp4",
-                "assets/demo-desktop-site-800.png",
+            "desktop-sidebar-800": (
+                "assets/demo-desktop-sidebar-800.mp4",
+                "assets/demo-desktop-sidebar-800.png",
             ),
-            "controls-site-800": (
-                "assets/demo-controls-site-800.mp4",
-                "assets/demo-controls-site-800.png",
+            "controls-sidebar-800": (
+                "assets/demo-controls-sidebar-800.mp4",
+                "assets/demo-controls-sidebar-800.png",
             ),
         }
         current = {
@@ -424,23 +450,42 @@ class BuildContracts(unittest.TestCase):
             browser = clip["source_versions"]["browser_content"]
             self.assertEqual(browser["url"], "http://127.0.0.1:8766/")
             self.assertEqual(browser["title"], "A desktop for the way I work — Niri Plus")
-            self.assertEqual(browser["source_commit"], "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a")
+            self.assertEqual(browser["source_commit"], "4672016e7cfe4f4631b67209636b0720e9068784")
+            self.assertEqual(browser["source_file_count"], 203)
+            self.assertTrue(browser["served_snapshot_hashes_match"])
             self.assertEqual(browser["browser_zoom_percent"], 125)
             self.assertEqual(browser["compositor_scale"], 1)
-            self.assertEqual(clip["source_versions"]["public_source_commit"], "4e6bf087b2005f5c6f2ce7b79c53b803d66e819a")
+            self.assertEqual(clip["source_versions"]["public_source_commit"], "4672016e7cfe4f4631b67209636b0720e9068784")
+            self.assertEqual(clip["source_versions"]["components"]["version"], "0.4.3")
+            self.assertEqual(clip["source_versions"]["identity"]["path"], "design/history/neutral-slate-sidebar.json")
+            self.assertEqual(clip["source_versions"]["identity"]["sha256"], "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e")
             self.assertEqual(clip["source_versions"]["git_sample"]["working_tree"], "clean")
             self.assertNotRegex(json.dumps(clip).lower(), r"\bstory\b|/story/")
+        for clip_id, clip in current.items():
+            self.assertGreater(clip["duration_seconds"], 0)
+            self.assertGreater(clip["frame_count"], 0)
+            self.assertGreaterEqual(clip["container_frame_count"], clip["frame_count"])
+            self.assertEqual((clip["video_codec"], clip["pixel_format"], clip["average_frame_rate"]), ("h264", "yuv420p", "30/1"))
+            self.assertEqual(clip["full_decode"], "passed")
+            self.assertTrue(clip["blackdetect"].startswith("passed;"))
+            self.assertIn("no intervals", clip["blackdetect"])
+        self.assertEqual(current["desktop-sidebar-800"]["additional_source_versions"]["swaync"]["version"], "0.12.6-17")
+        self.assertEqual(
+            next(item for item in provenance["desktop_demos"]["clips"] if item["id"] == "desktop-site-800")
+            ["additional_source_versions"]["swaync"]["version"],
+            "0.12.6-15",
+        )
 
         current_file_paths = {
             *(path for clip in current.values() for path in (clip["video"], clip["poster"])),
             *(scene["image"] for scene in provenance["desktop_walkthrough"]["scenes"]),
-            "assets/arch-reference/desktop-site-800.png",
-            "assets/agent-plus-site-800.png",
+            "assets/arch-reference/desktop-sidebar-800.png",
         }
-        self.assertEqual(len(current_file_paths), 10)
+        self.assertEqual(len(current_file_paths), 9)
         expected_current_licenses = {
-            "assets/demo-desktop-site-800.mp4": "GPL-3.0-only",
-            "assets/workflow-panel-site-800.png": "GPL-3.0-only",
+            "assets/demo-desktop-sidebar-800.mp4": "GPL-3.0-only",
+            "assets/demo-desktop-sidebar-800.png": "MIT",
+            "assets/workflow-panel-sidebar-800.png": "GPL-3.0-only",
         }
         for media_path in current_file_paths:
             record = file_records[media_path]
@@ -457,40 +502,39 @@ class BuildContracts(unittest.TestCase):
         self.assertIn("documentation sample", agent["method"])
         self.assertIn("full Agent Plus runtime is not installed or exercised", agent_record["processing"])
 
-        # Pin every baseline 4e6bf08 media record and every source byte through
-        # the record hashes, without duplicating the old per-file dictionaries.
-        current_ids = {"desktop-site-800", "controls-site-800"}
-        new_file_paths = current_file_paths
+        # Freeze all twelve pre-sync clips and all 49 original asset records,
+        # including workflow/AgentPlus stills, then verify every retained byte.
+        current_ids = {"desktop-sidebar-800", "controls-sidebar-800"}
         old_clips = sorted(
             (item for item in provenance["desktop_demos"]["clips"] if item["id"] not in current_ids),
             key=lambda item: item["id"],
         )
-        old_files = sorted(
-            (item for item in provenance["files"] if item["path"] not in new_file_paths),
+        old_file_records = sorted(
+            (item for item in provenance["files"] if item["path"] not in current_file_paths),
             key=lambda item: item["path"],
         )
-        self.assertEqual(len(old_clips), 10)
-        self.assertEqual(len(old_files), 39)
-        for record in old_files:
+        self.assertEqual(len(old_clips), 12)
+        self.assertEqual(len(old_file_records), 49)
+        for record in old_file_records:
             source = self.output / record["path"]
             self.assertTrue(source.is_file(), record["path"])
             self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), record["sha256"], record["path"])
-        preserved_records = {"clips": old_clips, "files": old_files}
+        preserved_records = {"clips": old_clips, "files": old_file_records}
         canonical = json.dumps(
             preserved_records, sort_keys=True, separators=(",", ":")
         ).encode()
         self.assertEqual(
             hashlib.sha256(canonical).hexdigest(),
-            "33ffb64e55a9ecbb9eb56835f5ba18f44574a8497e2d8992c01787b0814877a6",
+            "17634b24166c96b55d1eda9edab48e19cbe2babaa69d1cb124b3e33f7e9664e8",
         )
         self.assertEqual(
             provenance["desktop_walkthrough"]["related_video"],
-            "assets/demo-desktop-site-800.mp4",
+            "assets/demo-desktop-sidebar-800.mp4",
         )
         self.assertEqual(
             {scene["image"] for scene in provenance["desktop_walkthrough"]["scenes"]},
-            {"assets/workflow-browser-site-800.png", "assets/workflow-terminal-site-800.png",
-             "assets/workflow-panel-site-800.png", "assets/workflow-controls-site-800.png"},
+            {"assets/workflow-browser-sidebar-800.png", "assets/workflow-terminal-sidebar-800.png",
+             "assets/workflow-panel-sidebar-800.png", "assets/workflow-controls-sidebar-800.png"},
         )
         current_pages = [
             self.output / "index.html",
@@ -727,10 +771,10 @@ class BuildContracts(unittest.TestCase):
         self.assertIn('href="../recipes/appearance/"', text)
         self.assertIn('href="https://dev.byebyebryan.com/niri-plus/design/"', text)
         tour = (self.output / "tour/index.html").read_text()
-        self.assertIn('poster="../assets/demo-desktop-site-800.png"', tour)
-        self.assertIn('src="../assets/demo-desktop-site-800.mp4"', tour)
-        self.assertIn('href="../assets/demo-desktop-site-800.mp4"', tour)
-        self.assertIn('href="../docs/planning/capture-refresh-site-800-receipt.md"', tour)
+        self.assertIn('poster="../assets/demo-desktop-sidebar-800.png"', tour)
+        self.assertIn('src="../assets/demo-desktop-sidebar-800.mp4"', tour)
+        self.assertIn('href="../assets/demo-desktop-sidebar-800.mp4"', tour)
+        self.assertIn('href="../docs/planning/swaync-reference-sync-20261107.md"', tour)
         self.assertIn('href="../tools/vm/desktop/wlr-compat/README.md"', tour)
         self.assertIn('href="https://dev.byebyebryan.com/niri-plus/tour/"', tour)
         archive = (self.output / "tour/earlier/index.html").read_text()

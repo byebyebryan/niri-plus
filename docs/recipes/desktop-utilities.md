@@ -4,7 +4,7 @@ Network, Bluetooth, Audio and Session are available from the regular Rofi
 application list: use `Mod+D` and search for the displayed name. The current
 managed desktop uses [direct Rofi controls](rofi-controls.md) for the first
 three and the shared Session helper for locking, logout and power actions.
-Components 0.4.1 are installed on Carbon, Starship and Snap; the
+Components 0.4.3 are installed on Carbon, Starship and Snap; the
 [managed setup record](../../data/setup.json) keeps installed checks and
 physical-device acceptance separate.
 
@@ -296,7 +296,7 @@ configure another machine's networking or alter unrelated interfaces.
 ## Install and choose policy
 
 For the **legacy launcher option only**, use the reviewed repository checkout.
-The current 0.4.1 staged `SOURCE` intentionally omits the three old device
+The current 0.4.3 staged `SOURCE` intentionally omits the three old device
 entries. In the main walkthrough, `NIRI_PLUS_CHECKOUT` names that checkout.
 These commands overwrite the four listed desktop IDs, so inspect existing
 entries and keep their preimages before choosing this alternative:

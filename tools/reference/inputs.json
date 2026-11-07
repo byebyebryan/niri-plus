@@ -1,21 +1,21 @@
 {
   "schema_version": 1,
   "components": {
-    "version": "0.4.1",
+    "version": "0.4.3",
     "api_version": 1,
-    "source_commit": "317658ee7913bb58536f6ec1b2575043a9494449",
-    "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz",
-    "archive_sha256": "0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11",
-    "manifest_sha256": "30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4"
+    "source_commit": "07cf4a393314c195ace7e66d162f21d3a2f73136",
+    "archive_url": "https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.3/niri-plus-components-0.4.3.tar.gz",
+    "archive_sha256": "146b4d4b81dac3804b5836348045b5b89a8fa3c62719b643a90302da8346d87a",
+    "manifest_sha256": "31a30ac9f11dcb4182e9b0c26e5c33ca741bdb28a2c1a195f298db8ea79dd79b"
   },
   "identity": {
     "path": "design/identity.json",
-    "sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563"
+    "sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e"
   },
   "public_source": {
     "repository": "https://github.com/byebyebryan/niri-plus.git",
-    "commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
-    "examples_manifest_sha256": "1cc868c86bc288ea9b09bd3f300033bfad2e3a5d0da4ca5e8a5ea68c409f9055",
+    "commit": "07cf4a393314c195ace7e66d162f21d3a2f73136",
+    "examples_manifest_sha256": "86cb3c932bb4652dc1c476c6b36ddc9a3bb069fa2456e55ae855753dc9182b6d",
     "assets": [
       "examples/clipboard/config",
       "examples/clipboard/profiles/minimal-niri/clipboard-history@.service",

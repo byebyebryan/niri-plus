@@ -6,17 +6,24 @@ examples, identifies what remains personal configuration, and records the
 current qualification state. It is a maintenance reference, not a workstation
 installer.
 
-The **published 0.4.1 bundle** includes Network/Audio/Bluetooth controls from
-0.4.0 and independent workspace/overview appearance roles. Its shared desktop,
-shell and appearance inputs are listed in `components/metadata.json`.
+The selected **published 0.4.3 core bundle** retains the Network/Audio/Bluetooth
+controls, shell and workspace/overview roles from 0.4.1. It adds the matching
+SwayNC information/sidebar appearance. Its exact input inventory is frozen in
+`components/metadata.json` at the producer revision linked below. Current
+checkout exports can belong to later optional releases; they do not change the
+numbered reference selection.
 See the [release and installation recipe](recipes/rofi-controls.md) and
 [implementation receipt](planning/rofi-controls-implementation-receipt.md).
-Components 0.4.1 are installed through chezmoi on Carbon, Starship and Snap.
-The [numbered Arch reference](setup-agent.md) now selects 0.4.1 and has its
-own [fresh-base replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference).
-The [current execution receipt](planning/black-workspace-receipt.md) records
-publication, native workspace qualification and scoped fleet delivery. Dated
-adoption records below retain the release they qualified.
+Components 0.4.3 and SwayNC 0.12.6-17 are delivered through chezmoi on Carbon,
+Starship and Snap, as recorded in the separate
+[managed-host delivery record](../data/setup.json). The numbered Arch reference
+uses the same pins. Scoped fresh-Arch installation/login/sidebar, clipboard and
+direct-controls checks passed, with new native captures recorded in the
+[current sync receipt](planning/swaync-reference-sync-20261107.md). The completed
+[0.4.1 replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
+and historical [0.4.1 setup guide](https://github.com/byebyebryan/niri-plus/blob/4672016e7cfe4f4631b67209636b0720e9068784/docs/setup-agent.md)
+remain tied to their original selection. Other dated adoption records retain
+the release they qualified.
 Direct-control desktop-entry downloads live under
 `examples/desktop/direct-controls/`; the existing entries are frozen 0.3.1
 baseline/recovery examples. Downloadable wrappers require the complete sibling
@@ -24,13 +31,13 @@ baseline/recovery examples. Downloadable wrappers require the complete sibling
 
 ## Public source and example map
 
-| Module | Canonical source in the 0.4.1 bundle | Public examples and downloads | Consumer boundary |
+| Module | Canonical source in the 0.4.3 reference bundle | Public examples and downloads | Consumer boundary |
 | --- | --- | --- | --- |
-| Desktop | [`components/desktop/`](https://github.com/byebyebryan/niri-plus/tree/317658ee7913bb58536f6ec1b2575043a9494449/components/desktop) | [`desktop-session-ready`](../examples/desktop/desktop-session-ready), [`notify-volume`](../examples/feedback/notify-volume), and [`desktop-power`](../examples/session/desktop-power) | Chezmoi supplies host admission, power policy, package choices and existing service wiring. The two session-readiness downloads come from one source. |
-| Shell | [`components/shell/`](https://github.com/byebyebryan/niri-plus/tree/317658ee7913bb58536f6ec1b2575043a9494449/components/shell) | The [Zsh starter](../examples/terminal/zshrc), [init module](../examples/terminal/init.zsh), and [opt-in fetcher](../examples/terminal/fetch.py) | Chezmoi keeps the personal startup shim, SDK and tool setup, local defaults and history/cache paths. The shared shell also works headlessly without Niri or Wayland. |
-| Appearance | [`components/appearance/`](https://github.com/byebyebryan/niri-plus/tree/317658ee7913bb58536f6ec1b2575043a9494449/components/appearance) | The [Rofi theme](../examples/theme/neutral-slate.rasi), [SwayNC stylesheet](../examples/theme/swaync.css), [Kitty fragment](../examples/kitty/neutral-slate.conf), and standalone [SDDM preview helper](../examples/login/derive-theme.py) | Chezmoi selects the identity and native keys, merges owned preferences, selects machines and owns root installation. |
+| Desktop | [`components/desktop/`](https://github.com/byebyebryan/niri-plus/tree/07cf4a393314c195ace7e66d162f21d3a2f73136/components/desktop) | [`desktop-session-ready`](../examples/desktop/desktop-session-ready), [`notify-volume`](../examples/feedback/notify-volume), and [`desktop-power`](../examples/session/desktop-power) | Chezmoi supplies host admission, power policy, package choices and existing service wiring. The two session-readiness downloads come from one source. |
+| Shell | [`components/shell/`](https://github.com/byebyebryan/niri-plus/tree/07cf4a393314c195ace7e66d162f21d3a2f73136/components/shell) | The [Zsh starter](../examples/terminal/zshrc), [init module](../examples/terminal/init.zsh), and [opt-in fetcher](../examples/terminal/fetch.py) | Chezmoi keeps the personal startup shim, SDK and tool setup, local defaults and history/cache paths. The shared shell also works headlessly without Niri or Wayland. |
+| Appearance | [`components/appearance/`](https://github.com/byebyebryan/niri-plus/tree/07cf4a393314c195ace7e66d162f21d3a2f73136/components/appearance) | The [Rofi theme](../examples/theme/neutral-slate.rasi), [SwayNC stylesheet](../examples/theme/swaync.css), [Kitty fragment](../examples/kitty/neutral-slate.conf), and standalone [SDDM preview helper](../examples/login/derive-theme.py) | Chezmoi selects the identity and native keys, merges owned preferences, selects machines and owns root installation. |
 
-`components/metadata.json` at the [producer revision](https://github.com/byebyebryan/niri-plus/blob/317658ee7913bb58536f6ec1b2575043a9494449/components/metadata.json)
+`components/metadata.json` at the [0.4.3 producer revision](https://github.com/byebyebryan/niri-plus/blob/07cf4a393314c195ace7e66d162f21d3a2f73136/components/metadata.json)
 declares the bundle inputs, public exports and module prerequisites. The
 generated files keep their existing public paths. Their source and hashes are
 recorded in the [example manifest](../examples/manifest.json). Portable profiles
@@ -77,8 +84,11 @@ The [0.4.3 SwayNC maintenance backport](https://github.com/byebyebryan/niri-plus
 adds an opt-in translucent sidebar with matching information and notification
 cards. Only the appearance renderer and identity validator change among its
 44 runtime payloads; all other 42 match 0.4.2. Its independently pinned identity
-and host layout select the new appearance. The qualified Arch reference and
-optional desktop feature releases retain their own tuples.
+and host layout select the new appearance. The numbered Arch reference now
+selects this tuple with the authored 0.12.6-17 SwayNC profile; its scoped fresh-base
+qualification is recorded in the
+[current sync receipt](planning/swaync-reference-sync-20261107.md). Host
+delivery and fresh-Arch acceptance remain separate evidence.
 
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.
@@ -87,9 +97,9 @@ The published optional session screen includes the 0.9.2 visible-countdown fix i
 All six actions execute after their cancellable countdown; Cancel or Escape
 returns directly to the desktop. The retained
 [manual suspend countdown](recipes/session.md#optional-suspend-countdown) remains available.
-The qualified desktop/reference baseline below remains 0.4.1. Its normal workspace is pure black and
-its overview surround remains charcoal for visible empty-workspace boundaries.
-Historical recordings keep their original
+The last completed full Arch replay remains the 0.4.1 run. The 0.4.3 reference
+uses the same pure-black workspace and charcoal overview surround; its changed
+installation/login/sidebar path and new captures passed scoped qualification. Historical recordings keep their original
 component tuple and retained identity source in
 [media provenance](../assets/provenance.json), with their capture date and
 component version beside the player.
@@ -119,25 +129,25 @@ The [standalone stager](../scripts/stage-desktop-away.py) verifies the complete
 0.5.0 archive but selects only the helper and service, using its separate
 [input pin](../tools/reference/away-inputs.json) and the shared
 [archive verifier](../scripts/stage-arch-reference.py). Keep the established
-0.4.1 core selection; do not replace it with the full 0.5.0 bundle. Consumer
-admission is independent of the 0.4.1 desktop, shell and appearance
-qualification and the recorded Arch reference below.
+0.4.3 core selection for this reference and existing managed consumers; do not replace it with
+the full 0.5.0 bundle. Consumer admission is independent of the current 0.4.3
+Arch reference and its scoped qualification.
 
 The optional 0.8.1 confirmation is selected independently in the same way. It
 changes only `desktop-suspend` and `desktop-session-menu` among the 47 payload
 files from 0.7.0. Its temporary GTK 3/GtkLayerShell overlay guards explicitly
 adopted manual shortcuts and Session menu actions; idle, physical power-button, and lid policies retain their native
-owners. Keep the 0.4.1 core and 0.5.0 Away selections when adopting only this
-helper. Publication does not establish a machine's physical sleep acceptance.
+owners. Keep core and optional Away selections independent when adopting only
+this helper. Publication does not establish a machine's physical sleep acceptance.
 
 Published **0.9.0** adds the opt-in
 [unified session screen](recipes/session.md#optional-unified-session-screen)
 and a generated portable Niri binding. It reuses the shared guarded action
 path, adds Logout to that screen, separates Display off from Lock, and keeps
 legacy invocation available. Its [immutable release](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.9.0)
-is recorded in the catalog. It does not establish a new full-reference
-qualification: the 0.4.1 reference and selected 0.5.0 Away companion remain
-independent.
+is recorded in the catalog. It does not establish qualification of the current
+0.4.3 Arch reference; the last completed full replay remains 0.4.1, and the
+selected 0.5.0 Away companion remains independent.
 
 Release 0.8.1 preserves every 0.8.0 payload byte and mode while binding its
 manifest to the corrected Git author/committer history. The 0.6.0–0.8.0 tags
@@ -146,15 +156,16 @@ remain unchanged; historical `source_commit` fields record the original archive
 manifests, while `identity_corrected_source_commit` identifies the corrected
 tag commit. Use 0.8.1 for a current deployment bound to the corrected history.
 
-The [qualified baseline producer and consumer record](../data/components.json) pins
-the published bundle and independently selected identity:
+The [managed-host producer and consumer record](../data/components.json) keeps
+the deployed bundle and independently selected identity distinct from the
+current Arch reference:
 
-- Version: `0.4.1`, API version `1`, 44 payload files.
-- [Release archive](https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz)
-- Source: [`317658ee7913bb58536f6ec1b2575043a9494449`](https://github.com/byebyebryan/niri-plus/tree/317658ee7913bb58536f6ec1b2575043a9494449)
-- Archive SHA-256: `0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11`
-- Manifest SHA-256: `30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4`
-- Identity SHA-256: `3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563`
+- Version: `0.4.3`, API version `1`, 44 payload files.
+- [Release archive](https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.3/niri-plus-components-0.4.3.tar.gz)
+- Source: [`07cf4a393314c195ace7e66d162f21d3a2f73136`](https://github.com/byebyebryan/niri-plus/tree/07cf4a393314c195ace7e66d162f21d3a2f73136)
+- Archive SHA-256: `146b4d4b81dac3804b5836348045b5b89a8fa3c62719b643a90302da8346d87a`
+- Manifest SHA-256: `31a30ac9f11dcb4182e9b0c26e5c33ca741bdb28a2c1a195f298db8ea79dd79b`
+- Identity SHA-256: `c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e`
 
 Adoption can start from a repository clone or from the reviewed release URL and
 digests above. A consumer verifies the archive, manifest and every listed file
@@ -171,9 +182,9 @@ The release pin is separate from other inputs and choices:
   dependency staging is separate from sourcing Zsh.
 - Host profiles and native settings remain consumer decisions. Publishing a
   module does not select it on a machine.
-- The current away selection is helper/unit only from 0.5.0 beside the 0.4.1
-  core. A future single-bundle selection requires a separately qualified next
-  whole bundle and consumer review.
+- The 0.5.0 Away companion remains a separate opt-in helper/unit selection; it
+  is not included by selecting the 0.4.3 core. A future single-bundle selection
+  requires a separately qualified next whole bundle and consumer review.
 
 ## Earlier qualification
 

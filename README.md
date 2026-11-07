@@ -35,7 +35,15 @@ parent, then open `http://127.0.0.1:8000/niri-plus/`.
 Published components 0.9.2 include an opt-in
 [unified session screen](docs/recipes/session.md#optional-unified-session-screen).
 Ctrl+Alt+Delete opens the action grid only when its portable profile is selected;
-the published release catalog and qualified 0.4.1 reference remain separate.
+the published release catalog and numbered reference remain separate. The
+current 0.4.3/SwayNC 0.12.6-17 reference passed scoped fresh-Arch staging,
+package installation, password/cold login, sidebar/DND, clipboard and direct-controls
+checks. New native 125%-zoom captures show the selected sidebar. The earlier full
+reference replay retains its separate dated evidence. The matching managed-host
+rollout is recorded separately in [setup status](data/setup.json)
+([current receipt](docs/planning/swaync-reference-sync-20261107.md)). The
+previous 0.4.1 setup guide remains available at
+[source revision 4672016](https://github.com/byebyebryan/niri-plus/blob/4672016e7cfe4f4631b67209636b0720e9068784/docs/setup-agent.md).
 
 Published [components 0.10.0](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.10.0) add an optional
 [desktop-wide Close All helper](docs/recipes/desktop-utilities.md#optional-close-all).
@@ -46,7 +54,7 @@ immutable archive and select only the helper/profile beside their existing pins.
 The build and module checks work offline after dependencies are installed. They
 use declared repository inputs; they do not inspect or operate a desktop.
 
-The 0.4.1 Arch reference includes [direct Rofi controls](docs/recipes/rofi-controls.md).
+The 0.4.3 numbered Arch reference includes [direct Rofi controls](docs/recipes/rofi-controls.md).
 They can also be adopted separately. Native binding tests need the system
 Python with PyGObject/libnm/libsecret; environments without those bindings report
 explicit skips. Run the separate required native gate on an equipped machine:

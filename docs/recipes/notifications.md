@@ -7,27 +7,27 @@ when their keys are used; those helpers are covered by the
 
 ## Build the selected Arch package
 
-The Arch reference uses the existing `swaync-bryan` fork because its dashboard
-and notification activation behavior are part of the selected panel. Upstream
-SwayNC remains a smaller alternative, but it does not provide these dashboard
-widgets.
+The Arch reference uses the existing `swaync-bryan` fork because its unified
+information panel and notification activation behavior are part of the selected
+profile. Upstream SwayNC remains a smaller alternative, but it does not provide
+these widgets.
 
 | Input | Pin |
 | --- | --- |
-| Arch recipe revision | `cd1038d1c824f256ecb5a448d78df9f71b64850a` |
-| Recipe archive SHA-256 | `297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0` |
-| SwayNC source revision | `4114c9cd56f086e166253880d0c96c6c5212e4aa` |
-| Source archive SHA-256 | `8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83` |
-| Runtime package | `swaync-bryan 0.12.6-15` |
+| Arch recipe revision | `c6eeafb4ded51afc0a5f9a3d092fb1d4a86d0662` |
+| Recipe archive SHA-256 | `f733190593dac14a9bbf47f286ed23b8681b80d53f5c88282a6d873f87a02d5a` |
+| SwayNC source revision | `3d4458262c23ac66820cbb7a63b171bab1053ae8` |
+| Source archive SHA-256 | `11d591899424a1cdc6a627c53f2b2aab3a91e56fa1ff390ba0d4878806e832e6` |
+| Runtime package | `swaync-bryan 0.12.6-17` |
 
 Fetch and verify the immutable Arch recipe archive before extracting it:
 
 ```sh
 SWAYNC_BUILD=$(mktemp -d)
 curl --fail --location --output "$SWAYNC_BUILD/recipe.tar.gz" \
-  https://codeload.github.com/byebyebryan/SwayNotificationCenter/tar.gz/cd1038d1c824f256ecb5a448d78df9f71b64850a
+  https://codeload.github.com/byebyebryan/SwayNotificationCenter/tar.gz/c6eeafb4ded51afc0a5f9a3d092fb1d4a86d0662
 printf '%s  %s\n' \
-  297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0 \
+  f733190593dac14a9bbf47f286ed23b8681b80d53f5c88282a6d873f87a02d5a \
   "$SWAYNC_BUILD/recipe.tar.gz" | sha256sum --check
 mkdir "$SWAYNC_BUILD/source"
 tar -xzf "$SWAYNC_BUILD/recipe.tar.gz" --strip-components=1 -C "$SWAYNC_BUILD/source"
@@ -53,16 +53,22 @@ transaction: the fork replaces upstream `swaync`.
 
 ## Install the reference config and rendered stylesheet
 
-The small [`reference.json`](../../examples/notifications/reference.json) is an
-authored Arch reference profile, recorded separately from the published
-component bundle and the pinned public example snapshot. Its SHA-256 is
-`da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577`. Verify it
-from the reviewed checkout; do not fetch it from the older pinned source
-commit. Keep using the `NIRI_PLUS_CHECKOUT` path exported by the main guide,
-since the build above changes the current directory. If running this recipe in
-a separate shell, export that variable from the reviewed checkout before
-building. The config selects the dashboard and the same 1/2/5-second widget
-refresh intervals as the existing panel design.
+The [`reference.json`](../../examples/notifications/reference.json) is the
+authored profile for the current 0.4.3/SwayNC 0.12.6-17 Arch reference. Its
+SHA-256 is
+`c40e8a0cbf1327c87b5b713b6c68ba3d0462dff654d7b51d1bd58333bdf79543`. It
+selects the unified `information`, `title` and `notifications` widgets,
+width 448, full-height fit, zero margins, ungrouped notifications, bold local
+time, plain date and inline Do Not Disturb control. The profile remains a
+reviewed checkout input, separate from both the published bundle and pinned
+public-example snapshot. The old profile bytes are retained at
+[`tools/reference/history/notifications-0.4.1.json`](../../tools/reference/history/notifications-0.4.1.json)
+with their original SHA-256
+`da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577`.
+
+Keep using the `NIRI_PLUS_CHECKOUT` path exported by the main guide, since the
+build above changes the current directory. If running this recipe in a separate
+shell, export that variable from the reviewed checkout before building.
 
 With the verified stager output from the
 [Arch walkthrough](../setup-agent.md#2-stage-the-reviewed-inputs), set `STAGE` to that
@@ -70,7 +76,7 @@ directory and install only after backing up any existing SwayNC files:
 
 ```sh
 printf '%s  %s\n' \
-  da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577 \
+  c40e8a0cbf1327c87b5b713b6c68ba3d0462dff654d7b51d1bd58333bdf79543 \
   "$NIRI_PLUS_CHECKOUT/examples/notifications/reference.json" | sha256sum --check
 install -Dm644 "$NIRI_PLUS_CHECKOUT/examples/notifications/reference.json" \
   "$HOME/.config/swaync/config.json"
@@ -78,8 +84,8 @@ install -Dm644 "$STAGE/appearance/swaync.css" \
   "$HOME/.config/swaync/style.css"
 ```
 
-The stylesheet is rendered from the separately pinned Neutral Slate identity.
-It imports the fork's packaged base stylesheet. The config requires the fork;
+The stylesheet is rendered from the separately pinned 0.4.3 Neutral Slate
+identity. It imports the fork's packaged base stylesheet. The config requires the fork;
 the older `examples/notifications/config.json` remains a historical portable
 specimen, not the selected Arch dashboard config.
 
@@ -91,13 +97,15 @@ one left border; internal information dividers retain their separator color.
 Notification text and controls remain opaque and focus and critical outlines
 remain active. Omitting the block keeps the legacy stylesheet output.
 
-The style is available in the [0.4.3 maintenance backport](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.3).
-It changes only the two appearance implementation files from 0.4.2, retaining
-all 42 other runtime payloads. The dated Arch reference and optional desktop
-feature releases retain their own selections and acceptance records.
+The style is available in the [0.4.3 maintenance backport](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.3),
+which changes only the two appearance implementation files from 0.4.2 and
+retains all 42 other runtime payloads. The current numbered reference selects
+this sidebar appearance; the changed native reference path passed scoped
+fresh-Arch qualification.
 
-For a matching edge-attached layout with individual notification cards, merge
-these optional values into a SwayNC config:
+The authored reference profile uses this edge-attached layout with individual
+notification cards. Merge the same values into another SwayNC config when
+selecting that layout:
 
 ```json
 {
@@ -113,13 +121,11 @@ these optional values into a SwayNC config:
 
 ## Unified information panel
 
-The qualified Arch reference above retains its recorded dashboard profile.
-The newer [fork package revision 16](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/swaync-bryan-0.12.6-16)
-adds an opt-in divided information surface. Use it with
-[components 0.4.2](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.2)
-or the development bundle 0.9.3 for the matching stylesheet and feedback icons.
-Keep the existing configuration and change these entries after installing the
-new fork:
+The current Arch reference selects the divided information panel introduced in
+fork revision 16 and refined by
+[revision 17](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/swaync-bryan-0.12.6-17),
+with the matching [components 0.4.3 appearance](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.3).
+The selected profile is:
 
 ```json
 {
@@ -134,11 +140,12 @@ new fork:
 }
 ```
 
-This is a fragment to merge into the existing config. Keep any separately
-selected controls, including a volume widget. The opening row has bold local
-time and a plain date in equal columns, without captions. System uses read-only
-CPU/RAM and active GPU/VRAM meters. Connections keeps Ethernet on the left and
-its full IP on the right; long IPv6 values ellipsize with a complete tooltip.
+For other configurations, merge these widget entries while retaining any
+separately selected controls, including a volume widget. The opening row has
+bold local time and a plain date in equal columns, without captions. System uses read-only
+CPU/RAM and active GPU/VRAM meters. Connections keeps the active connection identity and labelled Signal/IP detail
+in the left column, with upload/download rates in the right. Long IPv6 values
+ellipsize with a complete tooltip.
 Bluetooth uses device metadata for icons and distinguishes `0%` from an
 unreported battery. Battery uses a 0–100 gauge and marks only an actual reported
 charge limit. Missing sections disappear with their dividers, while their
@@ -151,14 +158,21 @@ right-aligned value. Signal uses the same percentage formatting as CPU/RAM.
 The right has labelled upload and download rates from that primary interface,
 sampled once per second while the panel is open. Reopening or changing interfaces
 starts a fresh baseline; unavailable values stay distinct from measured zero.
-The existing components 0.4.2 appearance selection still applies unchanged.
+The current components 0.4.3 appearance selection supplies the translucent
+sidebar and matching information/notification cards.
 The [fork maintenance guide](https://github.com/byebyebryan/SwayNotificationCenter/blob/niri-plus/docs/fork-maintenance.md)
 records its upstream baseline, downstream contracts and native regression checks.
 
-Legacy dashboard and standalone widgets remain available. The new native widget
-and private-bus checks are separate from the dated Arch VM reference replay and
-from physical hardware acceptance. The [fork widget documentation](https://github.com/byebyebryan/SwayNotificationCenter/blob/niri-plus/docs/system-widgets.md)
+Legacy dashboard and standalone widgets remain available. Scoped fresh-Arch
+staging, exact package installation, password/cold login, sidebar/DND, clipboard
+and direct-controls checks passed, with new native media in the
+[sync receipt](../planning/swaync-reference-sync-20261107.md). Native widget
+and private-bus checks remain separate from the earlier 0.4.1 VM replay and
+physical hardware acceptance. The [fork widget documentation](https://github.com/byebyebryan/SwayNotificationCenter/blob/niri-plus/docs/system-widgets.md)
 covers formats, suffixes, lifecycle and stylesheet hooks.
+
+This SwayNC profile does not select the separate components 0.5.0 Away
+companion, 0.9.2 session screen or 0.10.0 Close All helper.
 
 ## Start one session owner
 
@@ -189,8 +203,8 @@ session dependency, stop the unit and remove only the exact
 
 Open and close the panel with `Mod+N`. Send a disposable notification with
 `notify-send`; test application focus separately with an action-bearing
-notification from a real application. Check the System, Network, Bluetooth,
-and Battery cards against available devices. Missing hardware should remain
+notification from a real application. Check the System, Connections, Bluetooth,
+and Battery sections against available devices. Missing hardware should remain
 hidden rather than be represented with fixture values.
 
 CPU and RAM refresh every second, active GPU information every two seconds, and

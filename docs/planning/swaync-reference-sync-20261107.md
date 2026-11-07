@@ -162,4 +162,7 @@ updates. The primary owned immutable-reference contracts, fresh VM setup,
 native qualification/capture, provenance, preservation, history-test corrections
 and final integration review. The optional 0.5.0 Away parity test now explicitly
 compares its original 0.4.1 baseline; it does not pretend that archive contains
-the later 0.4.3 sidebar backport. Publication is tracked separately below.
+the later 0.4.3 sidebar backport. Publication follows [PR2](https://github.com/byebyebryan/niri-plus/pull/2)
+and its [Actions checks](https://github.com/byebyebryan/niri-plus/actions/workflows/pages.yml).
+Those live records identify the resulting source commit and Pages deployment;
+local acceptance above is independent.

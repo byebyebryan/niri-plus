@@ -370,6 +370,12 @@ class BuildContracts(unittest.TestCase):
 
     def test_native_demos_have_static_steps_controls_and_staged_provenance(self):
         builder.build(self.output)
+        homepage = (self.output / "index.html").read_text()
+        feature = homepage.split('<section class="panel-feature', 1)[1].split('</section>', 1)[0]
+        self.assertIn('src="/niri-plus/assets/workflow-panel-sidebar-800.png"', feature)
+        self.assertIn('href="/niri-plus/assets/workflow-panel-sidebar-800.png"', feature)
+        self.assertIn("Sidebar detail crop", feature)
+        self.assertNotIn('assets/panel.png', feature)
         tour = (self.output / "tour/index.html").read_text()
         self.assertEqual(tour.count("<video "), 2)
         self.assertEqual(tour.count('controls preload="none"'), 2)

@@ -74,7 +74,7 @@
   .panel-copy p:not(.eyebrow) { max-width: 400px; font-size: 14px; }
   .panel-copy p + p { margin-top: 15px; }
   .panel-copy a { margin-top: 25px; }
-  .panel-media { min-width: 0; max-width: 448px; justify-self: center; width: 100%; }
+  .panel-media { min-width: 0; max-width: 384px; justify-self: center; width: 100%; }
   .build-section { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; padding-block: 86px; }
   .build-section h2 { margin-block: 16px 24px; }
   .build-section p:not(.eyebrow) { font-size: 14px; color: var(--muted); max-width: 390px; }
@@ -135,7 +135,7 @@
   .key-hint { white-space: nowrap; font-size: 10px; color: #93a2ac; margin-top: 3px; }
   .illustration-note { font: 9px/1.7 var(--mono); color: #8a949b; margin-top: 14px; }
   .panel-shot figcaption { font: 10px/1.8 var(--mono); color: var(--muted); margin-top: 17px; }
-  .panel-frame { position: relative; aspect-ratio: 448 / 320; width: 100%; border-radius: 11px; overflow: hidden; border: 1px solid #454a4e; background: #333; }
+  .panel-frame { display: block; position: relative; aspect-ratio: 448 / 800; width: 100%; border-radius: 11px; overflow: hidden; border: 1px solid #454a4e; background: #111213; }
   .panel-frame img { position: absolute; top: 0; right: 0; width: 285.7143%; max-width: none; height: auto; }
   .media-label { display: flex; justify-content: space-between; font: 9px var(--mono); color: var(--muted); letter-spacing: .05em; margin-bottom: 13px; }
   .architecture-map { margin-block: 32px; padding: 25px; border: 1px solid var(--line); background: #171c20; border-radius: 5px; }

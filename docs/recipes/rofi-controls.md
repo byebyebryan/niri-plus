@@ -4,20 +4,20 @@ Network, Audio and Bluetooth use the same compact picker as the other Plus
 tools: search, choose a device, then run an explicit action. SwayNC remains the
 place to glance at status. Session and Clipboard keep their existing helpers.
 
-**Component 0.4.1.** These controls are included in the [Arch reference](../setup-agent.md)
+**Component 0.4.3.** These controls are included in the [Arch reference](../setup-agent.md)
 and can be installed separately. Component publication, personal-host admission
 and physical-device acceptance have their own checks.
 
-The [0.4.1 release](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.1)
+The [0.4.3 release](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.3)
 pins the complete 44-file bundle, API 1:
 
 | Input | Exact value |
 | --- | --- |
-| Component code commit | `317658ee7913bb58536f6ec1b2575043a9494449` |
-| [Component archive](https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.1/niri-plus-components-0.4.1.tar.gz) SHA-256 | `0940e0803c84bc6e1cb941ea4074f14a02db0d124bd8c1c676c3375147427d11` |
-| Root `manifest.json` SHA-256 | `30e1ad903fb74d7ee17b74f9f037cdc3ce2224d7538f5096668360aff9b504a4` |
-| Identity and public source snapshot | `f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2` |
-| Independent `design/identity.json` SHA-256 | `3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563` |
+| Component code commit | `07cf4a393314c195ace7e66d162f21d3a2f73136` |
+| [Component archive](https://github.com/byebyebryan/niri-plus/releases/download/components-v0.4.3/niri-plus-components-0.4.3.tar.gz) SHA-256 | `146b4d4b81dac3804b5836348045b5b89a8fa3c62719b643a90302da8346d87a` |
+| Root `manifest.json` SHA-256 | `31a30ac9f11dcb4182e9b0c26e5c33ca741bdb28a2c1a195f298db8ea79dd79b` |
+| Identity and public source snapshot | `07cf4a393314c195ace7e66d162f21d3a2f73136` |
+| Independent `design/identity.json` SHA-256 | `c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e` |
 
 [Try the interactive illustration](../../design/rofi-controls/index.html).
 It uses fictional devices and simulated outcomes. The green frame marks a
@@ -30,10 +30,10 @@ The staged Arch reference shows actual Ethernet and virtual-audio devices
 beside the Niri Plus homepage in Chrome and Kitty. Wi-Fi and Bluetooth hardware
 are absent in this guest.
 
-<!-- niri-plus:demo-controls-site-800 -->
-Open Audio, inspect Details, adjust and restore its volume/mute state, then
-inspect the connected Ethernet link in Network.
-<!-- /niri-plus:demo-controls-site-800 -->
+<!-- niri-plus:demo-controls-sidebar-800 -->
+Open Audio and inspect Details, then inspect the connected Ethernet link in
+Network. Earlier captures retain the volume/mute adjustment and restoration sequence.
+<!-- /niri-plus:demo-controls-sidebar-800 -->
 
 ## Everyday use
 
@@ -163,7 +163,7 @@ staging directory; retain its generated manifest with the execution record.
 
 ```sh
 NIRI_PLUS_DESKTOP="$NIRI_PLUS_CHECKOUT/components/desktop"
-NIRI_PLUS_APPEARANCE="${XDG_CACHE_HOME:-$HOME/.cache}/niri-plus/controls-appearance-0.4.1"
+NIRI_PLUS_APPEARANCE="${XDG_CACHE_HOME:-$HOME/.cache}/niri-plus/controls-appearance-0.4.3"
 python3 "$NIRI_PLUS_CHECKOUT/components/appearance/render.py" \
   --identity "$NIRI_PLUS_CHECKOUT/design/identity.json" \
   --output "$NIRI_PLUS_APPEARANCE"

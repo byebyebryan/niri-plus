@@ -6,7 +6,7 @@ normal/bright terminal pairs stay distinct. Noto Sans UI and Meslo terminal
 typography remain.
 
 This identity is installed on Carbon, Starship and Snap through components
-0.4.1. The [deployment record](reference.md#working-setup) distinguishes
+0.4.3. The [deployment record](reference.md#working-setup) distinguishes
 installed checks from physical display and normal-use acceptance. The gallery
 below uses sample content.
 
@@ -51,11 +51,11 @@ or explore the earlier [browser/files](tour.md#browser-and-files),
 [terminal](tour.md#terminals-and-agents), and
 [information/clipboard](tour.md#information-when-i-want-it) recordings.
 
-[![Current native staged Arch desktop with the Niri Plus homepage in Chrome beside Kitty over a pure-black workspace.](../assets/arch-reference/desktop-site-800.png)](../assets/arch-reference/desktop-site-800.png)
+[![Current native staged Arch desktop with the Niri Plus homepage in Chrome beside Kitty over a pure-black workspace.](../assets/arch-reference/desktop-sidebar-800.png)](../assets/arch-reference/desktop-sidebar-800.png)
 
-*Native 1280×800 staged Arch guest · components 0.4.1 · Chrome 125% browser zoom · compositor scale 1.
-[Open full-size capture](../assets/arch-reference/desktop-site-800.png) ·
-[Capture details and review status](planning/capture-refresh-site-800-receipt.md).*
+*Native 1280×800 staged Arch guest · components 0.4.3 · Chrome 125% browser zoom · compositor scale 1.
+[Open full-size capture](../assets/arch-reference/desktop-sidebar-800.png) ·
+[Capture details and review status](planning/swaync-reference-sync-20261107.md).*
 
 ## Surface gallery
 

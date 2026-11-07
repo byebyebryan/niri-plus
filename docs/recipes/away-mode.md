@@ -17,7 +17,7 @@ interactive playback or a presentation.
 
 ## Select and stage the separate release
 
-The numbered Arch reference still selects components 0.4.1. Away mode is a
+The numbered Arch reference selects components 0.4.3. Away mode is a
 separate, opt-in selection from the published components 0.5.0 archive. Its
 [input pin](../../tools/reference/away-inputs.json) and
 [stager](../../scripts/stage-desktop-away.py) verify all 46 archive payloads,
@@ -34,7 +34,7 @@ The helper uses existing readable physical evdev input or
 permissions, group membership or device rules are required.
 
 Start from the root of a reviewed Niri Plus checkout. Record its revision; the
-profile later in this recipe comes from this checkout, not the frozen 0.4.1
+profile later in this recipe comes from this checkout, not the frozen 0.4.3
 `$SOURCE` tree:
 
 ```sh
@@ -87,7 +87,7 @@ path and is tied to `graphical-session.target`.
 
 The authored [minimal Niri profile fragment](../../examples/session/profiles/minimal-niri/away-mode.kdl)
 comes from the reviewed `NIRI_PLUS_CHECKOUT`, not the reference's frozen
-0.4.1 `$SOURCE` tree. It is deliberately separate from the generated helper
+0.4.3 `$SOURCE` tree. It is deliberately separate from the generated helper
 and unit.
 
 Inspect the current configuration for a `Mod+Shift+P` binding. Keep a copy of

@@ -301,8 +301,29 @@ class ArchReferenceStageTests(unittest.TestCase):
 
 
 class CurrentPublishedReferenceTests(unittest.TestCase):
-    def test_published_041_bytes_and_complete_direct_controls_stage(self):
+    def test_published_043_bytes_and_complete_direct_controls_stage(self):
         inputs = json.loads((ROOT / "tools/reference/inputs.json").read_text())
+        self.assertEqual(inputs["components"], {
+            "version": "0.4.3",
+            "api_version": 1,
+            "source_commit": "07cf4a393314c195ace7e66d162f21d3a2f73136",
+            "archive_url": (
+                "https://github.com/byebyebryan/niri-plus/releases/download/"
+                "components-v0.4.3/niri-plus-components-0.4.3.tar.gz"
+            ),
+            "archive_sha256": "146b4d4b81dac3804b5836348045b5b89a8fa3c62719b643a90302da8346d87a",
+            "manifest_sha256": "31a30ac9f11dcb4182e9b0c26e5c33ca741bdb28a2c1a195f298db8ea79dd79b",
+        })
+        self.assertEqual(inputs["identity"], {
+            "path": "design/identity.json",
+            "sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e",
+        })
+        self.assertEqual(inputs["public_source"]["commit"], "07cf4a393314c195ace7e66d162f21d3a2f73136")
+        self.assertEqual(
+            inputs["public_source"]["examples_manifest_sha256"],
+            "86cb3c932bb4652dc1c476c6b36ddc9a3bb069fa2456e55ae855753dc9182b6d",
+        )
+        self.assertNotIn("examples/notifications/reference.json", inputs["public_source"]["assets"])
         with tempfile.TemporaryDirectory(prefix="niri-plus-current-reference-") as temporary:
             base = Path(temporary)
             code_tree = base / "code"
@@ -316,7 +337,10 @@ class CurrentPublishedReferenceTests(unittest.TestCase):
             archive = builder.archive_bytes(manifest, payloads)
             self.assertEqual(hashlib.sha256(archive).hexdigest(), inputs["components"]["archive_sha256"])
             checked, files = stage.component_manifest(archive, inputs["components"])
-            self.assertEqual((checked["version"], len(files)), ("0.4.1", 44))
+            self.assertEqual(
+                (checked["version"], checked["source_commit"], len(files)),
+                ("0.4.3", "07cf4a393314c195ace7e66d162f21d3a2f73136", 44),
+            )
             # Read the actual public-example commit through an offline clone.
             inputs["public_source"]["repository"] = str(ROOT)
             inputs_path = base / "inputs.json"
@@ -324,10 +348,22 @@ class CurrentPublishedReferenceTests(unittest.TestCase):
             output = base / "staged"
             with mock.patch.object(stage.os, "geteuid", return_value=1000):
                 stage.stage_reference(output, inputs_path, fetcher=lambda _url, **_kwargs: archive)
+            provenance = json.loads((output / "provenance.json").read_text())
+            self.assertEqual(provenance["components"]["version"], "0.4.3")
+            self.assertEqual(provenance["components"]["source_commit"], "07cf4a393314c195ace7e66d162f21d3a2f73136")
+            self.assertEqual(provenance["identity"]["sha256"], inputs["identity"]["sha256"])
+            self.assertEqual(provenance["public_source"]["commit"], "07cf4a393314c195ace7e66d162f21d3a2f73136")
             library = output / "bundle/components/desktop/lib/niri_plus_controls"
-            # The optional 0.5.0 route must not enroll the qualified default.
-            self.assertFalse((output / "bundle/components/desktop/bin/desktop-away").exists())
-            self.assertFalse((output / "bundle/components/desktop/systemd/user/desktop-away.service").exists())
+            # Published optional features stay out of the numbered reference.
+            optional_paths = (
+                "components/desktop/bin/desktop-away",
+                "components/desktop/systemd/user/desktop-away.service",
+                "components/desktop/config/niri/session-screen.kdl",
+                "components/desktop/bin/niri-close-all",
+                "components/desktop/config/niri/close-all.kdl",
+            )
+            for path in optional_paths:
+                self.assertFalse((output / "bundle" / path).exists(), path)
             self.assertEqual(len(list(library.glob("*.py"))), 13)
             for name in ("desktop-network-menu", "desktop-audio-menu", "desktop-bluetooth-menu", "desktop-controls"):
                 self.assertTrue((output / "bundle/components/desktop/bin" / name).is_file())
@@ -337,6 +373,59 @@ class CurrentPublishedReferenceTests(unittest.TestCase):
             for name in ("network", "audio", "bluetooth"):
                 self.assertFalse((output / f"source/examples/desktop/niri-plus-{name}.desktop").exists())
             self.assertTrue((output / "source/examples/desktop/niri-plus-session.desktop").is_file())
+
+    def test_041_inputs_and_profile_bytes_are_preserved_as_history(self):
+        historical_inputs = ROOT / "tools/reference/history/inputs-0.4.1.json"
+        historical_profile = ROOT / "tools/reference/history/notifications-0.4.1.json"
+        self.assertEqual(
+            hashlib.sha256(historical_inputs.read_bytes()).hexdigest(),
+            "e3d5124819ca2396f1cf880239be6476cc9efb2184a541e97539148732dd2c00",
+        )
+        self.assertEqual(
+            hashlib.sha256(historical_profile.read_bytes()).hexdigest(),
+            "da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577",
+        )
+        self.assertEqual(json.loads(historical_inputs.read_text())["components"]["version"], "0.4.1")
+
+    def test_current_notification_profile_matches_the_reference_contract(self):
+        profile_path = ROOT / "examples/notifications/reference.json"
+        profile_bytes = profile_path.read_bytes()
+        self.assertEqual(
+            hashlib.sha256(profile_bytes).hexdigest(),
+            "c40e8a0cbf1327c87b5b713b6c68ba3d0462dff654d7b51d1bd58333bdf79543",
+        )
+        profile = json.loads(profile_bytes)
+        self.assertEqual(profile["control-center-width"], 448)
+        self.assertIs(profile["fit-to-screen"], True)
+        self.assertIs(profile["notification-grouping"], False)
+        self.assertEqual(
+            [profile[f"control-center-margin-{side}"] for side in ("top", "bottom", "left", "right")],
+            [0, 0, 0, 0],
+        )
+        self.assertEqual(profile["widgets"], ["information", "title", "notifications"])
+        self.assertEqual(profile["widget-config"]["clock"], {
+            "time-format": "%H:%M",
+            "date-format": "%a, %b %-d",
+        })
+        self.assertEqual(profile["widget-config"]["title"], {"show-dnd": True})
+        self.assertEqual(profile["widget-config"]["system-stats"], {"interval": 1})
+        self.assertEqual(profile["widget-config"]["gpu"], {"interval": 2})
+        self.assertEqual(profile["widget-config"]["battery"], {"interval": 5})
+        self.assertEqual(profile["widget-config"]["notifications"], {"vexpand": True})
+
+        manifest = json.loads((ROOT / "examples/manifest.json").read_text())
+        record = next(item for item in manifest["files"] if item["path"] == "examples/notifications/reference.json")
+        self.assertEqual(record["sha256"], hashlib.sha256(profile_bytes).hexdigest())
+        self.assertEqual(record["kind"], "authored Arch reference configuration candidate")
+        self.assertEqual(profile["widgets"].count("dnd"), 0)
+
+        pins = json.loads((ROOT / "tools/reference/swaync-pins.json").read_text())
+        self.assertEqual(pins["package"], "swaync-bryan")
+        self.assertEqual(pins["version"], "0.12.6-17")
+        self.assertEqual(pins["recipe_revision"], "c6eeafb4ded51afc0a5f9a3d092fb1d4a86d0662")
+        self.assertEqual(pins["recipe_archive_sha256"], "f733190593dac14a9bbf47f286ed23b8681b80d53f5c88282a6d873f87a02d5a")
+        self.assertEqual(pins["source_revision"], "3d4458262c23ac66820cbb7a63b171bab1053ae8")
+        self.assertEqual(pins["source_archive_sha256"], "11d591899424a1cdc6a627c53f2b2aab3a91e56fa1ff390ba0d4878806e832e6")
 
 
 if __name__ == "__main__":

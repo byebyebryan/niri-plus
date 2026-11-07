@@ -9,10 +9,18 @@ desktop and its choices.
 Agents: follow the numbered stages in order and open each linked recipe before
 applying its part.
 
-**Arch reference 0.4.1.** This route includes direct Network, Audio and
-Bluetooth controls, a pure-black workspace and the selected Neutral Slate
-appearance. The [dated replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
-records native task results, guide amendments and remaining hardware checks.
+**Arch reference target: components 0.4.3 and SwayNC 0.12.6-17.** This route
+includes direct Network, Audio and Bluetooth controls, a pure-black workspace,
+the selected Neutral Slate appearance and the unified full-height information
+panel. Its authored profile uses width 448, zero margins, ungrouped
+notifications, a bold clock and inline Do Not Disturb control.
+Scoped fresh-Arch qualification passed: published-input staging, package installation,
+stock password login and logout/relogin, themed cold login, sidebar/DND,
+clipboard and direct-controls checks. New native media shows the current sidebar;
+see the [current receipt](planning/swaync-reference-sync-20261107.md). The previous
+[0.4.1 guide at source revision 4672016](https://github.com/byebyebryan/niri-plus/blob/4672016e7cfe4f4631b67209636b0720e9068784/docs/setup-agent.md)
+and its [dated replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
+remain historical.
 
 ## Execution contract
 
@@ -66,11 +74,11 @@ explicit; they are not passes.
 
 Use a reviewed checkout of [Niri Plus](https://github.com/byebyebryan/niri-plus)
 containing this guide, its input inventory and `scripts/stage-arch-reference.py`.
-Record its revision before starting. The input stager and reference dashboard
-profile are checkout files, separate from the published components 0.4.1
-archive. If a specific revision or source export was supplied, use that exact
-source; do not substitute the older component archive or a private machine's
-configuration.
+Record its revision before starting. The input stager and authored SwayNC
+reference profile are checkout files, separate from the published components
+0.4.3 archive and the pinned public examples. If a specific revision or source
+export was supplied, use that exact source; do not substitute an older component
+archive or a private machine's configuration.
 
 This walkthrough starts from an installed Arch Linux x86-64 system, an ordinary
 sudo-capable user, working networking, and package access. It does not install
@@ -103,10 +111,11 @@ recipe](recipes/notifications.md); fetched Zsh dependencies include their own
 fonts, GTK themes, and icon themes remain governed by their upstream terms and
 package notices; Chrome presents its own terms on first run.
 
-> **Verified scope:** a fresh installed-Arch VM, public inputs and the native
-> desktop tasks in the [replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference).
-> The guest needed the documented VirtIO monitor-sharing branch. Physical
-> hardware and human acceptance remain separate.
+> **Verified scope:** the changed 0.4.3/SwayNC 0.12.6-17 installation/login/sidebar
+> path passed in a fresh Arch guest, with native clipboard/direct-controls checks
+> and new captures. The [current receipt](planning/swaync-reference-sync-20261107.md)
+> separates these results from the earlier complete 0.4.1 replay, unchanged task
+> checks and physical/human acceptance. Recheck the full checklist for a new target.
 
 ## 1. Prepare the account and record the starting state
 
@@ -140,11 +149,11 @@ starting another network manager or display manager.
 
 The first-party helper and its input inventory are checkout source files in the
 Niri Plus checkout containing this guide; the helper is not part of the
-published 0.4.1 component archive. It runs as your user and writes only into a
+published 0.4.3 component archive. It runs as your user and writes only into a
 new output tree. It verifies the immutable component archive, its manifest and
 all 44 payloads; the independently pinned identity; and the listed public
 examples from source commit
-[`f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2`](https://github.com/byebyebryan/niri-plus/tree/f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2).
+[`07cf4a393314c195ace7e66d162f21d3a2f73136`](https://github.com/byebyebryan/niri-plus/tree/07cf4a393314c195ace7e66d162f21d3a2f73136).
 It then renders appearance previews and writes `provenance.json` with the input
 and output hashes. It does not install packages, write normal configuration,
 start services, or import capture-pilot state.
@@ -156,28 +165,29 @@ sudo pacman -S --needed curl git less python unzip
 mkdir -p "$HOME/.local/share/niri-plus"
 python3 "$NIRI_PLUS_CHECKOUT/scripts/stage-arch-reference.py" \
   --inputs "$NIRI_PLUS_CHECKOUT/tools/reference/inputs.json" \
-  --output "$HOME/.local/share/niri-plus/arch-reference-0.4.1"
+  --output "$HOME/.local/share/niri-plus/arch-reference-0.4.3"
 ```
 
 Set these paths for the commands below:
 
 ```sh
-export STAGE="$HOME/.local/share/niri-plus/arch-reference-0.4.1"
+export STAGE="$HOME/.local/share/niri-plus/arch-reference-0.4.3"
 export SOURCE="$STAGE/source"
 export BUNDLE="$STAGE/bundle"
 export APPEARANCE="$STAGE/appearance"
 ```
 
 Inspect `$STAGE/provenance.json`. The source checkout is used only to provide
-the selected examples; the staged components and previews remain self-contained.
-The SwayNC `reference.json` described later is a separate candidate file and is
-deliberately not fetched from the pinned public snapshot.
+the selected public examples; the staged components and previews remain
+self-contained. The authored SwayNC `reference.json` described later is a
+separate reviewed checkout input and is deliberately not fetched from the
+pinned public snapshot.
 
 **Stage 2 gate:** The new staging tree has a verified provenance record,
 component payloads and rendered appearance. Record its exact paths and hashes.
 An existing or failed staging output is not a successful new stage.
 
-This numbered route selects only the components 0.4.1 reference pin. Manual
+This numbered route selects only the components 0.4.3 reference pin. Manual
 display-away is an optional post-reference branch with its own 0.5.0 input pin;
 it is not part of this stage or the required reference acceptance.
 
@@ -696,13 +706,16 @@ final running/stopped state. State whether the requested scope is complete or
 which required task is unresolved. Do not push, publish or extend to other
 hosts unless that was part of the user's request.
 
-The dated [installation receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
-records the 0.4.1 fresh-base run, its reviewed guide amendments and repeated
-gates. Physical-host and human acceptance remain separate.
+The [current sync receipt](planning/swaync-reference-sync-20261107.md) records
+the scoped 0.4.3/SwayNC 0.12.6-17 fresh-guest installation/login/sidebar, clipboard
+and direct-controls checks, with replacement native captures. The dated
+[0.4.1 installation receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
+retains the earlier fresh-base run, its guide amendments and repeated gates.
+Physical-host and human acceptance remain separate.
 
 ## Optional post-reference branch: manual display-away
 
-After completing the numbered 0.4.1 reference, you may separately select the
+After completing the numbered 0.4.3 reference, you may separately select the
 manual away companion. Read the [away-mode recipe](recipes/away-mode.md) for its
 0.5.0 pin, staged-file review, install paths, optional key binding, status and
 rollback. It retains `desktop-power`/`swayidle` as the automatic idle and
@@ -716,7 +729,7 @@ Record this extension separately from the required reference checklist:
 
 The [integration record](planning/desktop-away-integration.md) summarizes the
 current release split and dated host evidence. It does not extend or replace the
-preserved 0.4.1 VM and media receipts.
+preserved 0.4.1 VM and media receipts or the separate current 0.4.3 replay.
 
 ## Optional post-reference branch: unified session screen
 
@@ -726,7 +739,7 @@ through `desktop-session-menu --screen`. Treat it as an independently reviewed
 extension after the reference. Use the `components-v0.9.2` checkout's generated helpers
 and `examples/session/profiles/minimal-niri/session-screen.kdl`, preserving
 existing target and binding preimages. Do not take these files from the frozen
-0.4.1 `$SOURCE`, silently select the full new bundle, or add the screen to
+0.4.3 `$SOURCE`, silently select the full new bundle, or add the screen to
 the numbered reference's completion claim.
 
 Record the exact release revision and helper/profile selection; GTK and

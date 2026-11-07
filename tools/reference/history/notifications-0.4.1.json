@@ -1,0 +1,12 @@
+{
+  "$schema": "/etc/xdg/swaync/configSchema.json",
+  "control-center-width": 448,
+  "keyboard-shortcuts": true,
+  "widgets": ["title", "dnd", "dashboard", "notifications"],
+  "widget-config": {
+    "system-stats": {"interval": 1},
+    "gpu": {"interval": 2},
+    "battery": {"interval": 5},
+    "notifications": {"vexpand": true}
+  }
+}

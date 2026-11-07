@@ -468,7 +468,7 @@
     },
     {
       "path": "examples/notifications/reference.json",
-      "sha256": "da55b379747d5ac0208730354ebfd8901dc268ac8e5b5b717e81ee9243d15577",
+      "sha256": "c40e8a0cbf1327c87b5b713b6c68ba3d0462dff654d7b51d1bd58333bdf79543",
       "kind": "authored Arch reference configuration candidate",
       "source": "Niri Plus Arch reference walkthrough candidate, 2026-10-28",
       "notes": "Dashboard configuration for the existing pinned SwayNC fork. This candidate file is separate from components 0.3.1 and the pinned public example snapshot; review its fork version and schema before use."

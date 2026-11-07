@@ -62,7 +62,7 @@ class AwayStageTests(unittest.TestCase):
         self.assertEqual(stage.validate_inputs(self.inputs)["components"], published)
         self.assertEqual(hashlib.sha256(self.archive).hexdigest(), published["archive_sha256"])
         baseline = json.loads((ROOT / "tools/reference/inputs.json").read_bytes())
-        self.assertEqual(baseline["components"]["version"], "0.4.1")
+        self.assertEqual(baseline["components"]["version"], "0.4.3")
         self.assertFalse(any("desktop-away" in path for path in baseline["public_source"]["assets"]))
 
     def test_stages_only_two_selected_files_with_exact_bytes_modes_and_full_receipt(self):
@@ -86,8 +86,11 @@ class AwayStageTests(unittest.TestCase):
             self.assertFalse((output / "appearance").exists())
             self.assertFalse((output / "source").exists())
 
-    def test_optional_release_retains_all_qualified_core_payload_bytes_and_modes(self):
-        baseline = json.loads((ROOT / "tools/reference/inputs.json").read_bytes())["components"]
+    def test_optional_release_retains_its_historical_041_core_payload_bytes_and_modes(self):
+        # Away 0.5.0 was published on the 0.4.1 core. Retain that immutable
+        # comparison even when the separately selected core reference advances.
+        baseline = json.loads((ROOT / "tools/reference/history/inputs-0.4.1.json").read_bytes())["components"]
+        self.assertEqual(baseline["version"], "0.4.1")
         with tempfile.TemporaryDirectory(prefix="niri-plus-away-core-parity-") as temporary:
             archived = subprocess.run(["git", "archive", baseline["source_commit"], "components"], cwd=ROOT,
                                       check=True, capture_output=True).stdout

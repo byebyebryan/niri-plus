@@ -1,0 +1,209 @@
+{
+  "date": "2026-10-29",
+  "scope": "0.4.1 managed black workspace refinement and installed direct-controls verification; physical and fresh-Arch acceptance are separate",
+  "consumer_revision": "30c3559b5d69021bd47f5dabd75df33e61480218",
+  "producer_revision": "317658ee7913bb58536f6ec1b2575043a9494449",
+  "component_version": "0.4.1",
+  "canonical_identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
+  "identity_source_revision": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+  "hosts": [
+    "Carbon",
+    "Starship",
+    "Snap"
+  ],
+  "shell": "minimal Niri",
+  "notifier": "SwayNC fork",
+  "locker": "Gtklock",
+  "swaync": {
+    "package": "swaync-bryan",
+    "version": "0.12.6-15",
+    "recipe_revision": "cd1038d1c824f256ecb5a448d78df9f71b64850a",
+    "recipe_archive_sha256": "297852ede6f49cd9a2e75204d734807529e84b2dd0b01f6fc8789da4b53d9ff0",
+    "source_revision": "4114c9cd56f086e166253880d0c96c6c5212e4aa",
+    "source_archive_sha256": "8b69e2f47692a0dc53b00c5e9cf8c9df62c1295e5e7ee36acf16e40359f6bc83"
+  },
+  "chezmoi_source_visibility": "private",
+  "deployment": {
+    "status": "installed and converged; native startup/callback/read-only checks passed on all three",
+    "rollout_order": [
+      "Snap",
+      "Starship",
+      "Carbon"
+    ],
+    "host_results": [
+      {
+        "host": "Snap",
+        "status": "installed and read-only qualified",
+        "source_revision": "30c3559b5d69021bd47f5dabd75df33e61480218",
+        "native_targets_verified": 23,
+        "changed_targets": [
+          ".config/niri-plus/controls-appearance.json",
+          ".config/niri/config.kdl"
+        ],
+        "scoped_diff_files": 0,
+        "repeat_apply": "no writes",
+        "installed_read_only_probe": "passed",
+        "native_path_and_python_gi": "passed",
+        "protected_home_files": 38,
+        "protected_root_files": 73,
+        "native_processes_preserved": 8,
+        "network_unchanged": true,
+        "packages_unchanged": true,
+        "service_restarts": 0,
+        "physical_device_actions": "not performed",
+        "human_visual_and_device_acceptance": "normal-use follow-up"
+      },
+      {
+        "host": "Starship",
+        "status": "installed and read-only qualified",
+        "source_revision": "30c3559b5d69021bd47f5dabd75df33e61480218",
+        "native_targets_verified": 23,
+        "changed_targets": [
+          ".config/niri-plus/controls-appearance.json",
+          ".config/niri/config.kdl"
+        ],
+        "scoped_diff_files": 0,
+        "repeat_apply": "no writes",
+        "installed_read_only_probe": "passed",
+        "native_path_and_python_gi": "passed",
+        "protected_home_files": 38,
+        "protected_root_files": 75,
+        "native_processes_preserved": 6,
+        "network_unchanged": true,
+        "packages_unchanged": true,
+        "service_restarts": 0,
+        "physical_device_actions": "not performed",
+        "human_visual_and_device_acceptance": "normal-use follow-up"
+      },
+      {
+        "host": "Carbon",
+        "status": "installed and read-only qualified",
+        "source_revision": "30c3559b5d69021bd47f5dabd75df33e61480218",
+        "native_targets_verified": 23,
+        "changed_targets": [
+          ".config/niri-plus/controls-appearance.json",
+          ".config/niri/config.kdl"
+        ],
+        "scoped_diff_files": 0,
+        "repeat_apply": "no writes",
+        "installed_read_only_probe": "passed",
+        "native_path_and_python_gi": "passed",
+        "protected_home_files": 38,
+        "protected_root_files": 75,
+        "native_processes_preserved": 5,
+        "network_unchanged": true,
+        "packages_unchanged": true,
+        "service_restarts": 0,
+        "physical_device_actions": "not performed",
+        "human_visual_and_device_acceptance": "normal-use follow-up"
+      }
+    ],
+    "summary": "Pure-black workspaces and charcoal overview surrounds are installed on all three hosts. Warm UI surfaces, Balanced+ terminal colors and existing sessions are preserved. Physical and human visual checks remain separate.",
+    "root_greeter": {
+      "status": "unchanged; no root writes or SDDM restart",
+      "theme_path": "/usr/local/share/sddm/themes/niri-neutral-fe1a7a554ed6"
+    },
+    "appearance_outputs_verified_per_host": 41,
+    "unchanged_appearance_outputs": 36,
+    "controls_target_set_sha256": "f015c593640ade189f1d28ea006d0da9d3deb0d2a37f6186bd0da1132ce67e1e",
+    "remaining_normal_use_checks": [
+      "OLED/application visual review",
+      "Real Wi-Fi credentials and wallet compatibility",
+      "Physical output and microphone",
+      "Real Bluetooth peripheral actions"
+    ],
+    "fresh_install_acceptance": false,
+    "fresh_install_acceptance_note": "This fleet delivery updated existing managed homes. Fresh Arch acceptance is recorded independently under reference."
+  },
+  "appearance": {
+    "profile": "neutral-slate",
+    "accent_variant": "clear-blue",
+    "accent": "#6eafff",
+    "focus": "#a6ceff",
+    "selection": "#294e75",
+    "desktop_variant": "crisper",
+    "terminal_variant": "balanced-plus",
+    "desktop_canvas": "#111213",
+    "desktop_surface": "#1b1d1f",
+    "terminal_background": "#000000",
+    "terminal_foreground": "#efefec",
+    "terminal_background_opacity": 1,
+    "schema_version": 2,
+    "workspace_background": "#000000",
+    "overview_background": "#111213"
+  },
+  "personal_policy": {
+    "display_off_minutes": 10,
+    "automatic_lock": false,
+    "battery_suspend_minutes": 30,
+    "ac_suspend": false,
+    "lock_before_suspend": false
+  },
+  "portals": {
+    "baseline": "gtk+wlr",
+    "file_chooser": "gtk",
+    "access": "gtk",
+    "settings": "gtk",
+    "notifications": "gtk",
+    "screencast": "wlr",
+    "screenshot": "wlr",
+    "secrets": "kwallet",
+    "capture_source_types": [
+      "monitor"
+    ],
+    "per_window_sharing": "outside selected baseline"
+  },
+  "utilities": {
+    "entry_point": "Mod+D",
+    "component_version": "0.4.1",
+    "entries": [
+      {
+        "id": "niri-plus-network.desktop",
+        "name": "Network",
+        "command": "desktop-network-menu"
+      },
+      {
+        "id": "niri-plus-audio.desktop",
+        "name": "Audio",
+        "command": "desktop-audio-menu"
+      },
+      {
+        "id": "niri-plus-bluetooth.desktop",
+        "name": "Bluetooth",
+        "command": "desktop-bluetooth-menu"
+      },
+      {
+        "id": "niri-plus-session.desktop",
+        "name": "Session",
+        "command": "desktop-session-menu"
+      }
+    ],
+    "advanced_tools": [
+      "nm-connection-editor",
+      "pavucontrol",
+      "bluetoothctl"
+    ],
+    "native_providers": [
+      "NetworkManager",
+      "PipeWire/PulseAudio",
+      "BlueZ"
+    ],
+    "new_startup_services": 0
+  },
+  "reference": {
+    "qualified_version": "0.4.1",
+    "qualified_at": "2026-10-30",
+    "status": "passed fresh installed-Arch VM replay with recorded guide amendments and repeated affected gates",
+    "guide_source_revision": "bcaccd75d0d9ca890f8796f89d852abe33670237",
+    "initial_guide_revision": "7903048f008f98673b8b323dfa7e1342b8cb38c7",
+    "identity_sha256": "3fc1f9deef2bf7f4c377b34c452dcd965ac0e6dc5dcd96768ddbc6538321c563",
+    "public_source_commit": "f6d2ed05f0a855ab5ba884d6bc84f71e50d98ba2",
+    "receipt": "docs/planning/black-workspace-receipt.md#fresh-arch-reference",
+    "checkpoint": "arch-reference-0.4.1",
+    "sharing": "documented guest-only VirtIO compatibility package 0.8.2-1.3; stock0.8.4-1 yielded no frames",
+    "physical_and_human_acceptance": "separate; remaining hardware and human checks recorded in receipt"
+  },
+  "historical_records": [
+    "data/history/setup-20261026.json"
+  ]
+}

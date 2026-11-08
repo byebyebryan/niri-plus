@@ -1004,7 +1004,7 @@ def render_markdown(source):
 
 def shell(route, title, description, body):
     navigation = []
-    for target, label in [("tour/", "Tour"), ("design/", "Design"), ("setup/", "Setup"), ("reference/", "Reference")]:
+    for target, label in [("", "Overview"), ("tour/", "Tour"), ("design/", "Design"), ("setup/", "Setup"), ("reference/", "Reference")]:
         current = "page" if route == target else "location" if target in {"setup/", "tour/"} and route.startswith(target) else None
         selected = f' aria-current="{current}"' if current else ""
         navigation.append(f'<a href="{BASE}{target}"{selected}>{label}</a>')

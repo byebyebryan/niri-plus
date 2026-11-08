@@ -895,11 +895,6 @@ def demo(name):
 </figure>'''
 
 
-def panel():
-    image = f"{BASE}assets/workflow-panel-sidebar-800.png"
-    return f'''<figure class="panel-shot"><div class="media-label"><span>Current SwayNC sidebar</span><span>Native capture ↗</span></div><a class="panel-frame" href="{image}" aria-label="Open the full desktop capture showing the current sidebar"><img src="{image}" alt="Full-height SwayNC sidebar with a clock, unified system and connection details, inline Do Not Disturb and individual notification cards" width="1280" height="800" loading="lazy"></a><figcaption>Sidebar detail crop from the native staged Arch capture, 2026-11-07. Actual guest readings; sample notifications. <a href="{image}">Open full desktop</a> · <a href="{BASE}docs/planning/swaync-reference-sync-20261107.md">Capture details</a>.</figcaption></figure>'''
-
-
 def desktop_capture(kind, image, label, alt, caption, receipt):
     image = f"{BASE}assets/{image}"
     return f'''<figure class="native-{kind}-shot native-desktop-shot">
@@ -948,7 +943,7 @@ def render_markdown(source):
 
     def slot(match):
         name, fallback = match.groups()
-        if name not in {"workbench", "architecture", "keys", "snapshot", "panel", "panel-desktop", "agent-desktop", "overview", "gallery", "palette", "typography", "contrast", *(f"demo-{clip}" for clip in DEMO_CLIPS)} or name in enhancements.values():
+        if name not in {"workbench", "architecture", "keys", "snapshot", "panel-desktop", "agent-desktop", "overview", "gallery", "palette", "typography", "contrast", *(f"demo-{clip}" for clip in DEMO_CLIPS)} or name in enhancements.values():
             raise ValueError(f"{source}: invalid enhancement {name}")
         if not fallback.strip():
             raise ValueError(f"{source}: empty Markdown fallback")
@@ -987,7 +982,7 @@ def render_markdown(source):
     if source == "docs/setup.md":
         body = body.replace(f'<a href="{BASE}setup/agent/">Set up with an agent</a>',
                             f'<a class="button" href="{BASE}setup/agent/">Set up with an agent</a>', 1)
-    replacements = {"workbench": partial("workbench.html"), "architecture": partial("architecture.html"), "snapshot": snapshot(), "panel": panel(), "panel-desktop": desktop_panel(), "agent-desktop": desktop_agent(), "overview": partial("identity-overview.html"), "gallery": identity_gallery(), "palette": identity_palette(), "typography": identity_typography(), "contrast": contrast_html()}
+    replacements = {"workbench": partial("workbench.html"), "architecture": partial("architecture.html"), "snapshot": snapshot(), "panel-desktop": desktop_panel(), "agent-desktop": desktop_agent(), "overview": partial("identity-overview.html"), "gallery": identity_gallery(), "palette": identity_palette(), "typography": identity_typography(), "contrast": contrast_html()}
     replacements.update({f"demo-{name}": demo(name) for name in DEMO_CLIPS})
     for key, name in enhancements.items():
         if name != "keys":
@@ -1168,7 +1163,7 @@ def build(output, portable=False):
         if name in {"assets/style.css", "assets/site.js", "assets/contrast.css", "assets/contrast.js", "assets/favicon.svg"}:
             source = ROOT / "site" / Path(name).name
         shutil.copyfile(source, target)
-    home = partial("home.html").replace("@@WORKBENCH@@", partial("workbench.html")).replace("@@PANEL@@", panel())
+    home = partial("home.html").replace("@@WORKBENCH@@", partial("workbench.html"))
     (output / "index.html").write_text(shell("", "A desktop for the way I work", "Bryan's personal Niri desktop. Chrome, terminals, coding agents, and small integrations, with a tour and practical setup guides.", home))
     for route, (source, description) in PAGES.items():
         title, body = render_markdown(source)

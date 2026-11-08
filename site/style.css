@@ -69,12 +69,6 @@
   .row-index, .row-tag { font: 11px var(--mono); color: #8f989d; }
   .workflow-row > span:last-child { color: var(--blue); }
   .workflow-row:hover { background: #171c20; }
-  .panel-feature { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; padding-block: 66px; border-block: 1px solid var(--line); align-items: center; }
-  .panel-copy h2 { margin-block: 18px 24px; }
-  .panel-copy p:not(.eyebrow) { max-width: 400px; font-size: 14px; }
-  .panel-copy p + p { margin-top: 15px; }
-  .panel-copy a { margin-top: 25px; }
-  .panel-media { min-width: 0; max-width: 384px; justify-self: center; width: 100%; }
   .build-section { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; padding-block: 86px; }
   .build-section h2 { margin-block: 16px 24px; }
   .build-section p:not(.eyebrow) { font-size: 14px; color: var(--muted); max-width: 390px; }
@@ -134,9 +128,6 @@
   .scene-caption p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 5px; max-width: 430px; }
   .key-hint { white-space: nowrap; font-size: 10px; color: #93a2ac; margin-top: 3px; }
   .illustration-note { font: 9px/1.7 var(--mono); color: #8a949b; margin-top: 14px; }
-  .panel-shot figcaption { font: 10px/1.8 var(--mono); color: var(--muted); margin-top: 17px; }
-  .panel-frame { display: block; position: relative; aspect-ratio: 448 / 800; width: 100%; border-radius: 11px; overflow: hidden; border: 1px solid #454a4e; background: #111213; }
-  .panel-frame img { position: absolute; top: 0; right: 0; width: 285.7143%; max-width: none; height: auto; }
   .media-label { display: flex; justify-content: space-between; font: 9px var(--mono); color: var(--muted); letter-spacing: .05em; margin-bottom: 13px; }
   .architecture-map { margin-block: 32px; padding: 25px; border: 1px solid var(--line); background: #171c20; border-radius: 5px; }
   .map-workflows { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -183,7 +174,6 @@
   .prose > p > em { font-size: 11px; line-height: 1.8; color: #9da8af; font-style: normal; }
   .prose .workbench { margin-block: 30px 40px; }
   .prose .native-demo { margin-block: 28px 42px; }
-  .prose .panel-shot { width: min(100%, 448px); margin: 30px auto; }
   .prose .native-desktop-shot { margin: 30px 0; }
   .native-desktop-frame { display: block; overflow: hidden; border: 1px solid var(--line); border-radius: 4px; background: #000; }
   .prose .native-desktop-shot img { display: block; width: 100%; height: auto; border: 0; border-radius: 0; }
@@ -212,7 +202,6 @@
     .intro-band { grid-template-columns: .45fr 1fr 1.2fr; gap: 25px; }
     .workflow-row { grid-template-columns: 35px 1fr 155px 15px; gap: 16px; }
     .row-tag { font-size: 9px; }
-    .panel-feature { gap: 45px; }
     .build-section { gap: 60px; }
     .scene-controls button { gap: 5px; }
     .scene-caption { gap: 8px; }
@@ -231,8 +220,6 @@
     .source-link { padding-left: 20px; }
     .workflow-row { grid-template-columns: 30px 1fr 15px; }
     .row-tag { display: none; }
-    .panel-feature { gap: 28px; }
-    .panel-copy h2 { font-size: 31px; }
     .build-section { gap: 40px; }
     .footer-inner { grid-template-columns: 1fr 1fr; }
     .footer-note { text-align: left; grid-column: 1 / -1; }
@@ -270,9 +257,6 @@
     .workflow-row h3 { font-size: 17px; }
     .workflow-row p { font-size: 11px; }
     .row-index { font-size: 9px; }
-    .panel-feature { grid-template-columns: 1fr; padding-block: 40px; gap: 32px; }
-    .panel-copy p:not(.eyebrow) { font-size: 13px; }
-    .panel-media { max-width: 400px; }
     .build-section { grid-template-columns: 1fr; padding-block: 43px; gap: 34px; }
     .build-section h2 { font-size: 34px; }
     .build-section p:not(.eyebrow) { font-size: 13px; }

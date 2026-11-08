@@ -9,15 +9,14 @@ desktop and its choices.
 Agents: follow the numbered stages in order and open each linked recipe before
 applying its part.
 
-**Arch reference target: components 0.4.3 and SwayNC 0.12.6-17.** This route
-includes direct Network, Audio and Bluetooth controls, a pure-black workspace,
-the selected Neutral Slate appearance and the unified full-height information
-panel. Its authored profile uses width 448, zero margins, ungrouped
-notifications, a bold clock and inline Do Not Disturb control.
-Scoped fresh-Arch qualification passed: published-input staging, package installation,
-stock password login and logout/relogin, themed cold login, sidebar/DND,
-clipboard and direct-controls checks. New native media shows the current sidebar;
-see the [current receipt](planning/swaync-reference-sync-20261107.md). The previous
+**Arch reference install target: components 0.4.3 and SwayNC 0.12.6-18
+from fork release 1.** It includes direct Network, Audio and Bluetooth
+controls, a pure-black workspace, the selected Neutral Slate appearance and the
+unified full-height information panel. Its authored profile uses width 448,
+zero margins, ungrouped notifications, a bold clock and inline Do Not Disturb
+control.
+The scoped fresh-Arch qualification is described under
+[verified scope](#execution-contract) and in the dated receipt. The previous
 [0.4.1 guide at source revision 4672016](https://github.com/byebyebryan/niri-plus/blob/4672016e7cfe4f4631b67209636b0720e9068784/docs/setup-agent.md)
 and its [dated replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
 remain historical.
@@ -113,7 +112,10 @@ package notices; Chrome presents its own terms on first run.
 
 > **Verified scope:** the changed 0.4.3/SwayNC 0.12.6-17 installation/login/sidebar
 > path passed in a fresh Arch guest, with native clipboard/direct-controls checks
-> and new captures. The [current receipt](planning/swaync-reference-sync-20261107.md)
+> and new captures. Package 18 retains package 17's byte-identical runtime paths
+> (`src/`, `data/`, `meson.build`, unchanged `meson_options.txt`, `man/`); its pin
+> reset is not a new full fresh-Arch or physical replay.
+> The [dated receipt](planning/swaync-reference-sync-20261107.md)
 > separates these results from the earlier complete 0.4.1 replay, unchanged task
 > checks and physical/human acceptance. Recheck the full checklist for a new target.
 
@@ -706,9 +708,9 @@ final running/stopped state. State whether the requested scope is complete or
 which required task is unresolved. Do not push, publish or extend to other
 hosts unless that was part of the user's request.
 
-The [current sync receipt](planning/swaync-reference-sync-20261107.md) records
-the scoped 0.4.3/SwayNC 0.12.6-17 fresh-guest installation/login/sidebar, clipboard
-and direct-controls checks, with replacement native captures. The dated
+The [dated sync receipt](planning/swaync-reference-sync-20261107.md) records
+the scoped fresh-guest installation/login/sidebar, clipboard and direct-controls
+checks, with replacement native captures. The dated
 [0.4.1 installation receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
 retains the earlier fresh-base run, its guide amendments and repeated gates.
 Physical-host and human acceptance remain separate.

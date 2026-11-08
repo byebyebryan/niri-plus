@@ -14,12 +14,15 @@ checkout exports can belong to later optional releases; they do not change the
 numbered reference selection.
 See the [release and installation recipe](recipes/rofi-controls.md) and
 [implementation receipt](planning/rofi-controls-implementation-receipt.md).
-Components 0.4.3 and SwayNC 0.12.6-17 are delivered through chezmoi on Carbon,
+Components 0.4.3 and SwayNC 0.12.6-18 are delivered through chezmoi on Carbon,
 Starship and Snap, as recorded in the separate
-[managed-host delivery record](../data/setup.json). The numbered Arch reference
-uses the same pins. Scoped fresh-Arch installation/login/sidebar, clipboard and
-direct-controls checks passed, with new native captures recorded in the
-[current sync receipt](planning/swaync-reference-sync-20261107.md). The completed
+[managed-host delivery record](../data/setup.json). The numbered Arch install
+target now uses package 0.12.6-18 from fork release 1. The scoped fresh-Arch
+checks and native captures remain package 17 evidence. Package 18 retains
+package 17's byte-identical runtime paths (`src/`, `data/`, `meson.build`,
+unchanged `meson_options.txt`, `man/`); the pin reset is not a new full
+fresh-Arch or physical replay. See the [dated sync receipt](planning/swaync-reference-sync-20261107.md).
+The completed
 [0.4.1 replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
 and historical [0.4.1 setup guide](https://github.com/byebyebryan/niri-plus/blob/4672016e7cfe4f4631b67209636b0720e9068784/docs/setup-agent.md)
 remain tied to their original selection. Other dated adoption records retain
@@ -84,11 +87,9 @@ The [0.4.3 SwayNC maintenance backport](https://github.com/byebyebryan/niri-plus
 adds an opt-in translucent sidebar with matching information and notification
 cards. Only the appearance renderer and identity validator change among its
 44 runtime payloads; all other 42 match 0.4.2. Its independently pinned identity
-and host layout select the new appearance. The numbered Arch reference now
-selects this tuple with the authored 0.12.6-17 SwayNC profile; its scoped fresh-base
-qualification is recorded in the
-[current sync receipt](planning/swaync-reference-sync-20261107.md). Host
-delivery and fresh-Arch acceptance remain separate evidence.
+and host layout select the new appearance. The numbered Arch install now selects
+this tuple with the authored 0.12.6-18 SwayNC profile. Host delivery and
+fresh-Arch acceptance remain separate evidence.
 
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.

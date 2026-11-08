@@ -5,11 +5,14 @@ component guides let you adopt the parts you want.
 
 The [component source map](components.md) distinguishes published components,
 the Arch reference and dated adoption evidence. Components 0.4.3, SwayNC
-0.12.6-17 and the black-workspace sidebar identity are delivered on Carbon,
+0.12.6-18 and the black-workspace sidebar identity are delivered on Carbon,
 Starship and Snap through chezmoi, as recorded in the
-[managed-host delivery record](../data/setup.json). The numbered Arch reference
-uses the same pins. Its changed installation/login/sidebar path, clipboard and
-direct-controls checks passed in a fresh guest, with new native captures ([current receipt](planning/swaync-reference-sync-20261107.md)).
+[managed-host delivery record](../data/setup.json). The numbered Arch install
+target now uses SwayNC 0.12.6-18 from fork release 1. The dated fresh-guest
+acceptance remains package 17 evidence. Package 18 retains package 17's
+byte-identical runtime paths (`src/`, `data/`, `meson.build`, unchanged
+`meson_options.txt`, `man/`), but the pin reset is not a new full fresh-Arch or
+physical replay ([sync receipt](planning/swaync-reference-sync-20261107.md)).
 Earlier delivery records retain their historical context.
 
 Published components 0.9.2 include the
@@ -95,9 +98,9 @@ fresh callback/startup and no-write repeat checks on 2026-10-29; its result
 remains in the [0.4.1 delivery history](../data/history/setup-0.4.1.json).
 Physical Wi-Fi/wallet, speaker/microphone and peripheral actions remain
 normal-use checks. The [Arch agent guide](setup-agent.md) now targets
-0.4.3/SwayNC 0.12.6-17. The current scoped fresh-base qualification is recorded in the
-[sync receipt](planning/swaync-reference-sync-20261107.md);
-the [0.4.1 fresh-base receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
+0.4.3/SwayNC 0.12.6-18; the scoped fresh-base qualification is in the sync
+receipt linked above.
+The [0.4.1 fresh-base receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
 records only the earlier guest tasks and documented VirtIO sharing branch.
 
 ## Session and hardware ownership

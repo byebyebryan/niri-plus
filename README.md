@@ -36,12 +36,14 @@ Published components 0.9.2 include an opt-in
 [unified session screen](docs/recipes/session.md#optional-unified-session-screen).
 Ctrl+Alt+Delete opens the action grid only when its portable profile is selected;
 the published release catalog and numbered reference remain separate. The
-current 0.4.3/SwayNC 0.12.6-17 reference passed scoped fresh-Arch staging,
-package installation, password/cold login, sidebar/DND, clipboard and direct-controls
-checks. New native 125%-zoom captures show the selected sidebar. The earlier full
-reference replay retains its separate dated evidence. The matching managed-host
-rollout is recorded separately in [setup status](data/setup.json)
-([current receipt](docs/planning/swaync-reference-sync-20261107.md)). The
+current 0.4.3 Arch install target selects SwayNC 0.12.6-18 from fork release 1.
+The dated fresh-Arch checks and captures remain package 17 evidence. Package 18
+keeps package 17's byte-identical runtime paths (`src/`, `data/`, `meson.build`,
+unchanged `meson_options.txt`, `man/`), but this pin reset is not a new full
+fresh-Arch or physical replay. The earlier full reference replay retains its
+separate dated evidence.
+Managed-host rollout is recorded separately in [setup status](data/setup.json)
+([dated receipt](docs/planning/swaync-reference-sync-20261107.md)). The
 previous 0.4.1 setup guide remains available at
 [source revision 4672016](https://github.com/byebyebryan/niri-plus/blob/4672016e7cfe4f4631b67209636b0720e9068784/docs/setup-agent.md).
 

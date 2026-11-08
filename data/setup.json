@@ -1,7 +1,7 @@
 {
   "date": "2026-11-07",
-  "scope": "Core 0.4.3 and SwayNC 0.12.6-17 public-reference/sidebar sync; historical fleet and complete replay evidence retained separately",
-  "consumer_revision": "79a7a32261be85ad85dfc1ab350b8e681db9eb91",
+  "scope": "Core 0.4.3 install reference and maintained SwayNC fork release 1/package 0.12.6-18; dated release-17 fresh-Arch and media evidence retained separately",
+  "consumer_revision": "60ba363bec095035597af43244d3df44cdd27de7",
   "producer_revision": "07cf4a393314c195ace7e66d162f21d3a2f73136",
   "component_version": "0.4.3",
   "canonical_identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e",
@@ -15,23 +15,24 @@
   "notifier": "SwayNC fork",
   "locker": "Gtklock",
   "swaync": {
-    "recipe_revision": "c6eeafb4ded51afc0a5f9a3d092fb1d4a86d0662",
-    "recipe_archive_sha256": "f733190593dac14a9bbf47f286ed23b8681b80d53f5c88282a6d873f87a02d5a",
-    "source_revision": "3d4458262c23ac66820cbb7a63b171bab1053ae8",
-    "source_archive_sha256": "11d591899424a1cdc6a627c53f2b2aab3a91e56fa1ff390ba0d4878806e832e6",
+    "recipe_revision": "8998ab49dc71e2c1353d5518cd8cd30191f41d18",
+    "recipe_archive_sha256": "577103af2aa99d158416008430f54eb761f578e9c0401395528224c690e1494a",
+    "source_revision": "7e0ea67572a5c98412572c1ef3eb6920354fa1d6",
+    "source_archive_sha256": "aa54161e698a434f8b1b624b1cdbdc214d2516e56a708e31217dce4ccb413408",
     "package": "swaync-bryan",
-    "version": "0.12.6-17"
+    "version": "0.12.6-18",
+    "release_tag": "niri-plus-1"
   },
   "chezmoi_source_visibility": "private",
   "deployment": {
-    "status": "sidebar delivered through private chezmoi; current reference sync does not mutate fleet consumers",
+    "status": "SwayNC fork release 1/package 18 delivered and verified on all three managed hosts; existing sidebar/configuration retained",
     "rollout_order": [
       "Starship",
       "Snap",
       "Carbon"
     ],
-    "summary": "Core 0.4.3 sidebar and SwayNC 0.12.6-17 delivered; Carbon completed 2026-11-07. Physical and human acceptance remains separate.",
-    "source_receipt_revision": "79a7a32261be85ad85dfc1ab350b8e681db9eb91",
+    "summary": "SwayNC fork release 1/package 0.12.6-18 delivered to Carbon, Starship and Snap. Existing sidebar appearance retained; physical and human acceptance remains separate.",
+    "source_receipt_revision": "2c21bf23713c86599c348f61d38b972b92540415",
     "historical_deployment": "data/history/setup-0.4.1.json",
     "remaining_normal_use_checks": [
       "OLED/application visual review",
@@ -40,7 +41,51 @@
       "Real Bluetooth peripheral actions"
     ],
     "fresh_install_acceptance": false,
-    "fresh_install_acceptance_note": "Fresh reference checks are recorded independently under reference."
+    "fresh_install_acceptance_note": "Fresh reference checks are recorded independently under reference.",
+    "swaync_reset": {
+      "release_url": "https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-1",
+      "source_revision": "7e0ea67572a5c98412572c1ef3eb6920354fa1d6",
+      "recipe_revision": "8998ab49dc71e2c1353d5518cd8cd30191f41d18",
+      "canonical_package_sha256": "ad539bc1f6a1970d30455eb2370f47d6b50a8a8bda39dbb35adb35e3bb1bd15a",
+      "runtime_identity_compared_with": "3d4458262c23ac66820cbb7a63b171bab1053ae8",
+      "runtime_inputs_unchanged": [
+        "src/",
+        "data/",
+        "meson.build",
+        "meson_options.txt",
+        "man/"
+      ],
+      "hosts": {
+        "Starship": {
+          "status": "verified",
+          "package": "swaync-bryan 0.12.6-18",
+          "binary_sha256": "c05a004a11626b850bf9b54f4921db5b80ba535242851eb91350e3f0f53db29f",
+          "configuration_and_theme_preserved": true,
+          "other_user_services_preserved": true,
+          "canonical_selector_preserved": true,
+          "repeat_installer_no_restart": true
+        },
+        "Snap": {
+          "status": "verified",
+          "package": "swaync-bryan 0.12.6-18",
+          "binary_sha256": "f4fd17ee5549ac23b3b8867b1e7df5c5779520050fcaf56087f37e24f257f747",
+          "configuration_and_theme_preserved": true,
+          "other_user_services_preserved": true,
+          "canonical_selector_preserved": true,
+          "repeat_installer_no_restart": true
+        },
+        "Carbon": {
+          "status": "verified",
+          "package": "swaync-bryan 0.12.6-18",
+          "binary_sha256": "c05a004a11626b850bf9b54f4921db5b80ba535242851eb91350e3f0f53db29f",
+          "configuration_and_theme_preserved": true,
+          "other_user_services_preserved": true,
+          "canonical_selector_preserved": true,
+          "repeat_installer_no_restart": true
+        }
+      },
+      "physical_visual_acceptance": "not repeated"
+    }
   },
   "appearance": {
     "profile": "neutral-slate",
@@ -132,7 +177,9 @@
     "checkpoint": "swaync-sync-20261107",
     "historical_full_reference": "docs/planning/black-workspace-receipt.md#fresh-arch-reference",
     "physical_and_human_acceptance": "separate; unavailable VM hardware is not emulated as physical acceptance",
-    "qualification_scope": "Changed core 0.4.3/SwayNC 0.12.6-17 installation/login/sidebar/control path; not a new complete replay of unchanged sharing, wallet, IME, suspend or physical-device tasks."
+    "qualification_scope": "Changed core 0.4.3/SwayNC 0.12.6-17 installation/login/sidebar/control path; not a new complete replay of unchanged sharing, wallet, IME, suspend or physical-device tasks.",
+    "swaync_version": "0.12.6-17",
+    "swaync_pin_record": "tools/reference/history/swaync-pins-0.12.6-17.json"
   },
   "historical_records": [
     "data/history/setup-20261026.json",

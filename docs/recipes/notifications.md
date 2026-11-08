@@ -14,20 +14,21 @@ these widgets.
 
 | Input | Pin |
 | --- | --- |
-| Arch recipe revision | `c6eeafb4ded51afc0a5f9a3d092fb1d4a86d0662` |
-| Recipe archive SHA-256 | `f733190593dac14a9bbf47f286ed23b8681b80d53f5c88282a6d873f87a02d5a` |
-| SwayNC source revision | `3d4458262c23ac66820cbb7a63b171bab1053ae8` |
-| Source archive SHA-256 | `11d591899424a1cdc6a627c53f2b2aab3a91e56fa1ff390ba0d4878806e832e6` |
-| Runtime package | `swaync-bryan 0.12.6-17` |
+| Fork release | [`niri-plus-1`](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-1) |
+| Arch recipe revision | `8998ab49dc71e2c1353d5518cd8cd30191f41d18` |
+| Recipe archive SHA-256 | `577103af2aa99d158416008430f54eb761f578e9c0401395528224c690e1494a` |
+| SwayNC source revision | `7e0ea67572a5c98412572c1ef3eb6920354fa1d6` |
+| Source archive SHA-256 | `aa54161e698a434f8b1b624b1cdbdc214d2516e56a708e31217dce4ccb413408` |
+| Runtime package | `swaync-bryan 0.12.6-18` |
 
 Fetch and verify the immutable Arch recipe archive before extracting it:
 
 ```sh
 SWAYNC_BUILD=$(mktemp -d)
 curl --fail --location --output "$SWAYNC_BUILD/recipe.tar.gz" \
-  https://codeload.github.com/byebyebryan/SwayNotificationCenter/tar.gz/c6eeafb4ded51afc0a5f9a3d092fb1d4a86d0662
+  https://codeload.github.com/byebyebryan/SwayNotificationCenter/tar.gz/8998ab49dc71e2c1353d5518cd8cd30191f41d18
 printf '%s  %s\n' \
-  f733190593dac14a9bbf47f286ed23b8681b80d53f5c88282a6d873f87a02d5a \
+  577103af2aa99d158416008430f54eb761f578e9c0401395528224c690e1494a \
   "$SWAYNC_BUILD/recipe.tar.gz" | sha256sum --check
 mkdir "$SWAYNC_BUILD/source"
 tar -xzf "$SWAYNC_BUILD/recipe.tar.gz" --strip-components=1 -C "$SWAYNC_BUILD/source"
@@ -54,7 +55,7 @@ transaction: the fork replaces upstream `swaync`.
 ## Install the reference config and rendered stylesheet
 
 The [`reference.json`](../../examples/notifications/reference.json) is the
-authored profile for the current 0.4.3/SwayNC 0.12.6-17 Arch reference. Its
+authored profile for the current 0.4.3/SwayNC 0.12.6-18 Arch install target. Its
 SHA-256 is
 `c40e8a0cbf1327c87b5b713b6c68ba3d0462dff654d7b51d1bd58333bdf79543`. It
 selects the unified `information`, `title` and `notifications` widgets,
@@ -100,8 +101,7 @@ remain active. Omitting the block keeps the legacy stylesheet output.
 The style is available in the [0.4.3 maintenance backport](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.3),
 which changes only the two appearance implementation files from 0.4.2 and
 retains all 42 other runtime payloads. The current numbered reference selects
-this sidebar appearance; the changed native reference path passed scoped
-fresh-Arch qualification.
+this sidebar appearance.
 
 The authored reference profile uses this edge-attached layout with individual
 notification cards. Merge the same values into another SwayNC config when
@@ -121,9 +121,8 @@ selecting that layout:
 
 ## Unified information panel
 
-The current Arch reference selects the divided information panel introduced in
-fork revision 16 and refined by
-[revision 17](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/swaync-bryan-0.12.6-17),
+The current Arch install target selects the unified information panel in
+[fork release 1](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-1),
 with the matching [components 0.4.3 appearance](https://github.com/byebyebryan/niri-plus/releases/tag/components-v0.4.3).
 The selected profile is:
 
@@ -151,8 +150,7 @@ unreported battery. Battery uses a 0–100 gauge and marks only an actual report
 charge limit. Missing sections disappear with their dividers, while their
 readers continue to observe changes whenever the panel is open.
 
-[Fork package revision 17](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/swaync-bryan-0.12.6-17)
-keeps this configuration and refines networking into two equal columns. The
+Networking uses two equal columns. The
 left has the active SSID or Ethernet identity above a Signal/IP label and
 right-aligned value. Signal uses the same percentage formatting as CPU/RAM.
 The right has labelled upload and download rates from that primary interface,
@@ -163,12 +161,15 @@ sidebar and matching information/notification cards.
 The [fork maintenance guide](https://github.com/byebyebryan/SwayNotificationCenter/blob/niri-plus/docs/fork-maintenance.md)
 records its upstream baseline, downstream contracts and native regression checks.
 
-Legacy dashboard and standalone widgets remain available. Scoped fresh-Arch
-staging, exact package installation, password/cold login, sidebar/DND, clipboard
-and direct-controls checks passed, with new native media in the
-[sync receipt](../planning/swaync-reference-sync-20261107.md). Native widget
-and private-bus checks remain separate from the earlier 0.4.1 VM replay and
-physical hardware acceptance. The [fork widget documentation](https://github.com/byebyebryan/SwayNotificationCenter/blob/niri-plus/docs/system-widgets.md)
+Legacy dashboard and standalone widgets remain available. Dated scoped
+fresh-Arch staging, exact package installation, password/cold login, sidebar/DND,
+clipboard and direct-controls checks passed on package 0.12.6-17, with native
+media in the [sync receipt](../planning/swaync-reference-sync-20261107.md).
+Package 18 retains package 17's byte-identical runtime paths (`src/`, `data/`,
+`meson.build`, unchanged `meson_options.txt`, `man/`); this pin reset is not new
+fresh-Arch or physical acceptance.
+Native widget and private-bus checks remain separate from the earlier 0.4.1 VM
+replay and physical hardware acceptance. The [fork widget documentation](https://github.com/byebyebryan/SwayNotificationCenter/blob/niri-plus/docs/system-widgets.md)
 covers formats, suffixes, lifecycle and stylesheet hooks.
 
 This SwayNC profile does not select the separate components 0.5.0 Away

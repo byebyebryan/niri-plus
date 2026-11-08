@@ -421,11 +421,24 @@ class CurrentPublishedReferenceTests(unittest.TestCase):
 
         pins = json.loads((ROOT / "tools/reference/swaync-pins.json").read_text())
         self.assertEqual(pins["package"], "swaync-bryan")
-        self.assertEqual(pins["version"], "0.12.6-17")
-        self.assertEqual(pins["recipe_revision"], "c6eeafb4ded51afc0a5f9a3d092fb1d4a86d0662")
-        self.assertEqual(pins["recipe_archive_sha256"], "f733190593dac14a9bbf47f286ed23b8681b80d53f5c88282a6d873f87a02d5a")
-        self.assertEqual(pins["source_revision"], "3d4458262c23ac66820cbb7a63b171bab1053ae8")
-        self.assertEqual(pins["source_archive_sha256"], "11d591899424a1cdc6a627c53f2b2aab3a91e56fa1ff390ba0d4878806e832e6")
+        self.assertEqual(pins["version"], "0.12.6-18")
+        self.assertEqual(pins["recipe_revision"], "8998ab49dc71e2c1353d5518cd8cd30191f41d18")
+        self.assertEqual(pins["recipe_archive_sha256"], "577103af2aa99d158416008430f54eb761f578e9c0401395528224c690e1494a")
+        self.assertEqual(pins["source_revision"], "7e0ea67572a5c98412572c1ef3eb6920354fa1d6")
+        self.assertEqual(pins["source_archive_sha256"], "aa54161e698a434f8b1b624b1cdbdc214d2516e56a708e31217dce4ccb413408")
+
+        historical = json.loads(
+            (ROOT / "tools/reference/history/swaync-pins-0.12.6-17.json").read_text()
+        )
+        self.assertEqual(historical["version"], "0.12.6-17")
+        self.assertEqual(historical["recipe_revision"], "c6eeafb4ded51afc0a5f9a3d092fb1d4a86d0662")
+        self.assertEqual(historical["recipe_archive_sha256"], "f733190593dac14a9bbf47f286ed23b8681b80d53f5c88282a6d873f87a02d5a")
+        self.assertEqual(historical["source_revision"], "3d4458262c23ac66820cbb7a63b171bab1053ae8")
+        self.assertEqual(historical["source_archive_sha256"], "11d591899424a1cdc6a627c53f2b2aab3a91e56fa1ff390ba0d4878806e832e6")
+        self.assertNotEqual(pins["recipe_revision"], historical["recipe_revision"])
+        self.assertNotEqual(pins["recipe_archive_sha256"], historical["recipe_archive_sha256"])
+        self.assertNotEqual(pins["source_revision"], historical["source_revision"])
+        self.assertNotEqual(pins["source_archive_sha256"], historical["source_archive_sha256"])
 
 
 if __name__ == "__main__":

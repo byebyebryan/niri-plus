@@ -32,13 +32,15 @@ add another automatic idle or suspend policy.
 | Login and outputs | SDDM, Kanshi | Display-manager login theme and independent monitor profiles. |
 | Portals and input | xdg-desktop-portal, Fcitx5, Niri input | File/screen integration, input methods, and compositor-owned keyboard/touchpad behavior. |
 
-The numbered Arch reference selects components 0.4.3, SwayNC 0.12.6-17 and an
-authored profile for the unified full-height information panel. The changed
-installation/login/sidebar path passed in a fresh Arch guest, with native
-clipboard and direct-controls checks and new full-frame captures
-([current receipt](planning/swaync-reference-sync-20261107.md)). The same
-release is delivered through chezmoi to selected hosts
-([rollout record](../data/setup.json)). The earlier full reference replay and
+The numbered Arch install target selects components 0.4.3, SwayNC 0.12.6-18
+from fork release 1 and an authored profile for the unified full-height
+information panel. The dated fresh-Arch checks and captures remain package 17
+evidence. Package 18 retains package 17's byte-identical runtime paths
+(`src/`, `data/`, `meson.build`, unchanged `meson_options.txt`, `man/`), but this
+pin reset is not a new full fresh-Arch or physical replay
+([dated receipt](planning/swaync-reference-sync-20261107.md)).
+Managed-host delivery remains separately recorded in the
+[rollout record](../data/setup.json). The earlier full reference replay and
 physical acceptance retain their own evidence. Away, the session screen and
 Close All stay independent optional features.
 

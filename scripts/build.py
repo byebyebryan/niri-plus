@@ -108,6 +108,7 @@ PUBLIC_TOOLS = {
     "tools/reference/away-inputs.json",
 }
 PUBLIC_LOCAL_DOCS = {
+    "docs/planning/reference-qualification-20261108.md",
     "docs/planning/swaync-reference-sync-20261107.md",
     "tools/reference/history/inputs-0.4.1.json",
     "tools/reference/history/notifications-0.4.1.json",

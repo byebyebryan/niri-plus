@@ -95,6 +95,7 @@ class BuildContracts(unittest.TestCase):
                 "docs/planning/desktop-away-integration.md",
                 "docs/planning/rofi-controls-implementation-receipt.md",
                 "docs/planning/swaync-reference-sync-20261107.md",
+                "docs/planning/reference-qualification-20261108.md",
             },
         )
         self.assertTrue((self.output / "tools/vm/desktop/wlr-compat/README.md").is_file())

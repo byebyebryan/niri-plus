@@ -37,11 +37,13 @@ Published components 0.9.2 include an opt-in
 Ctrl+Alt+Delete opens the action grid only when its portable profile is selected;
 the published release catalog and numbered reference remain separate. The
 current 0.4.3 Arch install target selects SwayNC 0.12.6-18 from fork release 1.
-The dated fresh-Arch checks and captures remain package 17 evidence. Package 18
-keeps package 17's byte-identical runtime paths (`src/`, `data/`, `meson.build`,
-unchanged `meson_options.txt`, `man/`), but this pin reset is not a new full
-fresh-Arch or physical replay. The earlier full reference replay retains its
-separate dated evidence.
+The [2026-11-08 qualification](docs/planning/reference-qualification-20261108.md)
+completed 21 mapped routine native task groups through an independent fresh
+replay and supplemental checkpoint-copy checks, including cold wallet lookup
+and the conditional VirtIO monitor-sharing branch.
+The VM suspend/resume check is waived for this qualification at Bryan's request.
+Physical-device acceptance remains separate. Existing captures retain their
+original package 17 provenance; the earlier 0.4.1 replay remains historical.
 Managed-host rollout is recorded separately in [setup status](data/setup.json)
 ([dated receipt](docs/planning/swaync-reference-sync-20261107.md)). The
 previous 0.4.1 setup guide remains available at

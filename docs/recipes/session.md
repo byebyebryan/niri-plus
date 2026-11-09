@@ -107,6 +107,15 @@ a working `desktop-lock.service`, and the independently selected
 `desktop-session/power.toml`. The screen does not enable or install these
 providers. A missing or refused provider must be handled as an explicit error.
 
+On Arch, install the screen's GTK3 layer-shell dependency explicitly. The core
+reference's `gtk4-layer-shell` package does not provide the `GtkLayerShell`
+namespace used by this screen:
+
+```sh
+sudo pacman -S --needed python python-gobject gtk3 gtk-layer-shell
+python3 -c 'import gi; gi.require_version("Gtk", "3.0"); gi.require_version("GtkLayerShell", "0.1"); from gi.repository import Gtk, GtkLayerShell'
+```
+
 For a new unmanaged adoption, review the tagged release and preserve the
 preimages of the three helper targets and the existing Niri binding first.
 Finish or cancel any pending manual action with the installed helper before

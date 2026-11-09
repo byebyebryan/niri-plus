@@ -34,11 +34,13 @@ add another automatic idle or suspend policy.
 
 The numbered Arch install target selects components 0.4.3, SwayNC 0.12.6-18
 from fork release 1 and an authored profile for the unified full-height
-information panel. The dated fresh-Arch checks and captures remain package 17
-evidence. Package 18 retains package 17's byte-identical runtime paths
-(`src/`, `data/`, `meson.build`, unchanged `meson_options.txt`, `man/`), but this
-pin reset is not a new full fresh-Arch or physical replay
-([dated receipt](planning/swaync-reference-sync-20261107.md)).
+information panel. The [2026-11-08 qualification](planning/reference-qualification-20261108.md)
+completed 21 mapped routine native task groups through an independent fresh
+replay and supplemental checkpoint-copy checks, including cold wallet lookup
+and the conditional VirtIO monitor-sharing branch.
+Existing captures retain their [package 17 evidence](planning/swaync-reference-sync-20261107.md)
+and original dates. The VM suspend/resume check is waived for this qualification;
+physical-device acceptance remains separate.
 Managed-host delivery remains separately recorded in the
 [rollout record](../data/setup.json). The earlier full reference replay and
 physical acceptance retain their own evidence. Away, the session screen and

@@ -161,14 +161,16 @@ sidebar and matching information/notification cards.
 The [fork maintenance guide](https://github.com/byebyebryan/SwayNotificationCenter/blob/niri-plus/docs/fork-maintenance.md)
 records its upstream baseline, downstream contracts and native regression checks.
 
-Legacy dashboard and standalone widgets remain available. Dated scoped
-fresh-Arch staging, exact package installation, password/cold login, sidebar/DND,
-clipboard and direct-controls checks passed on package 0.12.6-17, with native
-media in the [sync receipt](../planning/swaync-reference-sync-20261107.md).
-Package 18 retains package 17's byte-identical runtime paths (`src/`, `data/`,
-`meson.build`, unchanged `meson_options.txt`, `man/`); this pin reset is not new
-fresh-Arch or physical acceptance.
-Native widget and private-bus checks remain separate from the earlier 0.4.1 VM
+Legacy dashboard and standalone widgets remain available. The current
+components 0.4.3/SwayNC 0.12.6-18 reference is covered by the
+[dated qualification](../planning/reference-qualification-20261108.md), which
+records the fresh replay, supplemental checks, evidence limits and the explicit
+VM suspend/resume waiver. Physical-device acceptance remains separate.
+
+The earlier scoped package 0.12.6-17 staging, installation, password/cold login,
+sidebar/DND, clipboard and direct-controls checks and their native media retain
+their dates in the [sync receipt](../planning/swaync-reference-sync-20261107.md).
+Native widget and private-bus checks retain their own scope, separate from that
 replay and physical hardware acceptance. The [fork widget documentation](https://github.com/byebyebryan/SwayNotificationCenter/blob/niri-plus/docs/system-widgets.md)
 covers formats, suffixes, lifecycle and stylesheet hooks.
 

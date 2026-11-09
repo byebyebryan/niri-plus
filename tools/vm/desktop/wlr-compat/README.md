@@ -33,7 +33,7 @@ advertised that fourcc with `DRM_FORMAT_MOD_INVALID`
 (`0x00ffffffffffffff`). The exact pair check rejected the buffer before a frame
 was copied.
 
-## Latest guest result and limits
+## Earlier guest comparison
 
 The Arch 0.8.4 repository package under the guest's existing 512 MiB unit cap
 created a live 1920x1080 Chrome track but produced zero frames and width zero;
@@ -55,11 +55,45 @@ image. An off-viewport preview can show a black canvas even while media frame
 counters advance. Chrome 156 passed without `--disable-gpu`; the observed test
 used the native Wayland route `--ozone-platform=wayland` only.
 
+## 2026-11-08 comparison
+
+The new development guest tested the ordinary, uncapped Arch 0.8.4-1 service.
+It aborted before an observed stream or frame at `wl_array_add` with a non-null
+zero-sized allocation; Chrome also dumped core. The service journal reported a
+7.1G memory peak. This is a different observed failure stage from the earlier
+live track with zero frames. Existing OOM counters lacked a before baseline
+and are not attributed to this attempt.
+
+The same pinned candidate, running through its normal packaged service without
+drop-ins or memory caps, passed warm and cold whole-monitor sharing. In the
+cold check, frames advanced 1064→1123; native Stop ended the same track and
+removed the WLR source and Chrome input nodes. Chrome was launched through
+Niri with `--ozone-platform=wayland`. A separate XWayland attempt produced frames
+without those provider nodes and was excluded from this WLR result.
+
+An independent fresh replay also passed with this pinned candidate, built in
+that guest as local package SHA-256
+`1a5b8162ff3afad8f4b44786b99ac0efc682d47bf84e06c06d3a058a95bdc54f`.
+Warm frames advanced 81→140 and cold frames 285→343; native Stop ended the
+same tracks and removed their exact video nodes and links. Its stock attempt
+was externally stopped after sampled memory crossed 512 MiB, at 566,194,176
+bytes. An ended monitor track appeared after Stop with zero frames. This is an
+observer intervention, separate from the development guest's natural crash.
+
+The
+[dated qualification record](../../../../docs/planning/reference-qualification-20261108.md)
+keeps the input tuple, failures and acceptance limits separate. These results
+do not establish the exact DMA-BUF cause or support replacing a working portal
+on other guests or physical machines.
+
 ## Optional Arch walkthrough branch
 
 The main [Arch walkthrough](https://dev.byebyebryan.com/niri-plus/setup/agent/) installs Arch's repository
 portal as part of its package group. Use this candidate only if a VirtIO/VirGL
-guest reproduces the exact whole-monitor failure above. It is built from the
+guest demonstrates the whole-monitor failure described above. Bound that
+comparison to an owned disposable guest and stop its exact test provider if
+memory growth threatens the guest. Record an observer stop as an intervention,
+not a natural crash or successful stream. It is built from the
 reviewed checkout and is not downloaded from the pilot guest or its cache.
 
 Keep a console available. Save the exact currently installed repository package

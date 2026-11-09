@@ -91,15 +91,24 @@ keep manual locking independent of idle-policy reloads.
 
 ## What has been checked
 
-The dated 0.4.3/SwayNC 0.12.6-17 reference passed scoped fresh-Arch staging,
-package installation, stock and themed password/cold login, sidebar/DND lifecycle,
-clipboard and direct-controls checks. New native videos and stills show the
-selected sidebar, with inputs and limitations in the
-[dated receipt](planning/swaync-reference-sync-20261107.md). Package 18 retains
-package 17's byte-identical runtime paths (`src/`, `data/`, `meson.build`,
-unchanged `meson_options.txt`, `man/`); the pin reset is not a new full
-fresh-Arch or physical replay. The last complete task
-replay used 0.4.1 and is preserved in its
-[dated installation receipt](planning/black-workspace-receipt.md#fresh-arch-reference).
-Sharing, wallet, IME, suspend and physical-device tasks were not relabelled as
-new results in this focused sync. Recheck the full guide on a new target.
+The [2026-11-08 qualification](planning/reference-qualification-20261108.md)
+completed the numbered 0.4.3/SwayNC 0.12.6-18 route and 21 mapped routine
+native task groups through an independent fresh replay and supplemental
+checkpoint-copy checks. These include ordinary browser
+and terminal first runs, files/media, controls, clipboard, lock/idle, scratch
+storage, Pinyin at two scales, cold wallet lookup and session lifecycle.
+Whole-monitor sharing required the documented conditional VirtIO portal
+candidate; warm and cold captures advanced frames and native Stop released
+their exact capture graph.
+
+The VM suspend/resume check is waived for this qualification at Bryan's
+request. Its failed observations remain in the receipt. Bryan reports no
+corresponding issue in ordinary daily use; that report is separate from a
+controlled physical acceptance test.
+
+This starts from an installed Arch base and does not qualify OS installation or
+physical devices. The receipt keeps a separate human checklist. Optional Away,
+session-screen and Close All selections have separate gates. Existing sidebar
+videos/stills retain their [package 17 receipt](planning/swaync-reference-sync-20261107.md)
+and dates; the [0.4.1 replay](planning/black-workspace-receipt.md#fresh-arch-reference)
+remains historical. Recheck the full guide on a new target.

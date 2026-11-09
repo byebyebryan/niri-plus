@@ -60,15 +60,41 @@
   },
   "reference": {
     "qualified_version": "0.4.3",
-    "qualified_at": "2026-11-07",
-    "status": "passed scoped fresh-Arch qualification: published-input staging, exact package build/install, stock and themed password login, cold login, sidebar/DND lifecycle, clipboard and direct-controls checks",
+    "qualified_at": "2026-11-08",
+    "status": "completed the numbered installation and 21 mapped routine native task groups through the independent fresh replay and supplemental checkpoint-copy checks; native VM suspend/resume check waived by user for this pass; optional and physical gates are separate",
     "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e",
     "public_source_commit": "07cf4a393314c195ace7e66d162f21d3a2f73136",
-    "receipt": "docs/planning/swaync-reference-sync-20261107.md",
-    "checkpoint": "swaync-sync-20261107",
+    "receipt": "docs/planning/reference-qualification-20261108.md",
+    "checkpoint": "niri-plus-qual-fresh-20261108",
     "historical_full_reference": "docs/planning/black-workspace-receipt.md#fresh-arch-reference",
     "physical_and_human_acceptance": "separate; unavailable VM hardware is not emulated as physical acceptance",
-    "qualification_scope": "Changed core 0.4.3/SwayNC 0.12.6-17 installation/login/sidebar/control path; not a new complete replay of unchanged sharing, wallet, IME, suspend or physical-device tasks."
+    "qualification_scope": "Untouched installed Arch-base copy for the numbered 0.4.3/SwayNC18 route and mapped routine tasks, with separately recorded native notification-action and audio-default checks on a standalone copy of its stopped checkpoint. Excludes OS installation, accepted VM suspend recovery and controlled physical-device acceptance.",
+    "swaync_version": "0.12.6-18",
+    "swaync_pin_record": "tools/reference/swaync-pins.json",
+    "guide_revision": "40077f8dbd96b2aac4ab05e64cfe7a813e6353c6",
+    "historical_scoped_reference": "docs/planning/swaync-reference-sync-20261107.md",
+    "conditional_portal": {
+      "package": "xdg-desktop-portal-wlr 0.8.2-1.3",
+      "scope": "VirtIO/VirGL guest only, after bounded stock failure; keep working stock providers elsewhere",
+      "fresh_local_package_sha256": "1a5b8162ff3afad8f4b44786b99ac0efc682d47bf84e06c06d3a058a95bdc54f",
+      "stock_result": "Observer stopped ordinary uncapped 0.8.4-1 for memory growth; no advancing frames observed. An ended zero-frame track appeared after native Stop.",
+      "accepted_result": "Actual Wayland monitor capture and native Stop with exact node/link cleanup, warm and after full power-off/start."
+    },
+    "acceptance_holds": [],
+    "qualification_exceptions": [
+      {
+        "id": "vm-suspend-resume",
+        "status": "waived",
+        "authority": "Bryan, direct user request",
+        "recorded_utc": "2026-11-09T00:39:10.461710+00:00",
+        "scope": "Native suspend/resume graphical recovery in the disposable VirtIO/3D lab guests for this qualification pass only.",
+        "reason": "Bryan reports no corresponding issue in ordinary daily use and requests skipping this VM check.",
+        "observed_result": "Previous VM failures and inconclusive control remain recorded with all raw receipts; the check is waived, not passed.",
+        "physical_acceptance": "User daily-use report recorded separately; the controlled physical checklist remains pending.",
+        "reopen_when": "An actual daily-use incident is reported or Bryan explicitly requests a VM graphics investigation."
+      }
+    ],
+    "supplemented_at": "2026-11-09"
   },
   "independent_selections": {
     "code_bundle": "The consumer pins one immutable archive and manifest; module admission is selected separately by host.",

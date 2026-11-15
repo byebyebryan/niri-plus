@@ -412,6 +412,8 @@ class CurrentPublishedReferenceTests(unittest.TestCase):
         self.assertEqual(profile["widget-config"]["gpu"], {"interval": 2})
         self.assertEqual(profile["widget-config"]["battery"], {"interval": 5})
         self.assertEqual(profile["widget-config"]["notifications"], {"vexpand": True})
+        self.assertNotIn("history-retention", profile)
+        self.assertNotIn("history-retention-critical", profile)
 
         manifest = json.loads((ROOT / "examples/manifest.json").read_text())
         record = next(item for item in manifest["files"] if item["path"] == "examples/notifications/reference.json")
@@ -421,11 +423,48 @@ class CurrentPublishedReferenceTests(unittest.TestCase):
 
         pins = json.loads((ROOT / "tools/reference/swaync-pins.json").read_text())
         self.assertEqual(pins["package"], "swaync-bryan")
-        self.assertEqual(pins["version"], "0.12.6-18")
-        self.assertEqual(pins["recipe_revision"], "8998ab49dc71e2c1353d5518cd8cd30191f41d18")
-        self.assertEqual(pins["recipe_archive_sha256"], "577103af2aa99d158416008430f54eb761f578e9c0401395528224c690e1494a")
-        self.assertEqual(pins["source_revision"], "7e0ea67572a5c98412572c1ef3eb6920354fa1d6")
-        self.assertEqual(pins["source_archive_sha256"], "aa54161e698a434f8b1b624b1cdbdc214d2516e56a708e31217dce4ccb413408")
+        self.assertEqual(pins["version"], "0.12.6-20")
+        self.assertEqual(pins["recipe_revision"], "d2a4bc709b7ea77567ca50fac9b1001088f90815")
+        self.assertEqual(pins["recipe_archive_sha256"], "ffcd5dbc373e062a82ec0daee3be5ae35385bfb1e73c0569c141801ca848ab0c")
+        self.assertEqual(pins["source_revision"], "96a2a9c4574e26fc6d6839a0e19d506a7638898e")
+        self.assertEqual(pins["source_archive_sha256"], "68f1cfa73eb79e344589fb2b1d62d04bb282034910f6118e366a979c5c256658")
+
+        preserved_18_path = ROOT / "tools/reference/history/swaync-pins-0.12.6-18.json"
+        self.assertEqual(
+            hashlib.sha256(preserved_18_path.read_bytes()).hexdigest(),
+            "86a958e504fc2f746df145c386e516191f7011a55525b9552a4a829d307db7ce",
+        )
+        preserved_18 = json.loads(preserved_18_path.read_text())
+        self.assertEqual(preserved_18["version"], "0.12.6-18")
+        self.assertEqual(preserved_18["recipe_revision"], "8998ab49dc71e2c1353d5518cd8cd30191f41d18")
+        self.assertEqual(preserved_18["recipe_archive_sha256"], "577103af2aa99d158416008430f54eb761f578e9c0401395528224c690e1494a")
+        self.assertEqual(preserved_18["source_revision"], "7e0ea67572a5c98412572c1ef3eb6920354fa1d6")
+        self.assertEqual(preserved_18["source_archive_sha256"], "aa54161e698a434f8b1b624b1cdbdc214d2516e56a708e31217dce4ccb413408")
+
+        frozen_20_path = ROOT / "tools/reference/history/swaync-pins-0.12.6-20.json"
+        frozen_20 = json.loads(frozen_20_path.read_text())
+        self.assertEqual(frozen_20, pins)
+        self.assertEqual(frozen_20_path.read_bytes(), (ROOT / "tools/reference/swaync-pins.json").read_bytes())
+
+        setup = json.loads((ROOT / "data/setup.json").read_text())
+        self.assertEqual(setup["reference"]["swaync_pin_record"], "tools/reference/history/swaync-pins-0.12.6-18.json")
+        self.assertEqual(setup["current_reference_route"]["swaync_pin_record"], "tools/reference/history/swaync-pins-0.12.6-20.json")
+        self.assertEqual(setup["current_reference_route"]["receipt"], "docs/planning/swaync-reference-release2-20261114.md")
+        old_setup_path = ROOT / "data/history/setup-20261107.json"
+        self.assertEqual(
+            hashlib.sha256(old_setup_path.read_bytes()).hexdigest(),
+            "1fb4f68f4129d9b3cb8086fc4ef328e2f0f037b98d9ff1aa3d6a92783964049b",
+        )
+        old_setup = json.loads(old_setup_path.read_text())
+        self.assertEqual(old_setup["date"], "2026-11-07")
+        self.assertEqual(old_setup["swaync"]["version"], "0.12.6-18")
+
+        component_record = json.loads((ROOT / "data/components.json").read_text())
+        self.assertEqual(component_record["reference"]["swaync_version"], "0.12.6-18")
+        self.assertEqual(component_record["reference"]["swaync_pin_record"], "tools/reference/history/swaync-pins-0.12.6-18.json")
+        self.assertEqual(component_record["current_reference_route"]["swaync_version"], "0.12.6-20")
+        self.assertEqual(component_record["current_reference_route"]["swaync_pin_record"], "tools/reference/history/swaync-pins-0.12.6-20.json")
+        self.assertEqual(component_record["current_reference_route"]["receipt"], "docs/planning/swaync-reference-release2-20261114.md")
 
         historical = json.loads(
             (ROOT / "tools/reference/history/swaync-pins-0.12.6-17.json").read_text()
@@ -439,7 +478,6 @@ class CurrentPublishedReferenceTests(unittest.TestCase):
         self.assertNotEqual(pins["recipe_archive_sha256"], historical["recipe_archive_sha256"])
         self.assertNotEqual(pins["source_revision"], historical["source_revision"])
         self.assertNotEqual(pins["source_archive_sha256"], historical["source_archive_sha256"])
-
 
 if __name__ == "__main__":
     unittest.main()

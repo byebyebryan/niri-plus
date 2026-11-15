@@ -95,6 +95,7 @@ class BuildContracts(unittest.TestCase):
                 "docs/planning/desktop-away-integration.md",
                 "docs/planning/rofi-controls-implementation-receipt.md",
                 "docs/planning/swaync-reference-sync-20261107.md",
+                "docs/planning/swaync-reference-release2-20261114.md",
                 "docs/planning/reference-qualification-20261108.md",
             },
         )

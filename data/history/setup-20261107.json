@@ -1,0 +1,212 @@
+{
+  "date": "2026-11-07",
+  "scope": "Core 0.4.3 install reference and maintained SwayNC fork release 1/package 0.12.6-18; dated release-17 fresh-Arch and media evidence retained separately",
+  "consumer_revision": "60ba363bec095035597af43244d3df44cdd27de7",
+  "producer_revision": "07cf4a393314c195ace7e66d162f21d3a2f73136",
+  "component_version": "0.4.3",
+  "canonical_identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e",
+  "identity_source_revision": "07cf4a393314c195ace7e66d162f21d3a2f73136",
+  "hosts": [
+    "Carbon",
+    "Starship",
+    "Snap"
+  ],
+  "shell": "minimal Niri",
+  "notifier": "SwayNC fork",
+  "locker": "Gtklock",
+  "swaync": {
+    "recipe_revision": "8998ab49dc71e2c1353d5518cd8cd30191f41d18",
+    "recipe_archive_sha256": "577103af2aa99d158416008430f54eb761f578e9c0401395528224c690e1494a",
+    "source_revision": "7e0ea67572a5c98412572c1ef3eb6920354fa1d6",
+    "source_archive_sha256": "aa54161e698a434f8b1b624b1cdbdc214d2516e56a708e31217dce4ccb413408",
+    "package": "swaync-bryan",
+    "version": "0.12.6-18",
+    "release_tag": "niri-plus-1"
+  },
+  "chezmoi_source_visibility": "private",
+  "deployment": {
+    "status": "SwayNC fork release 1/package 18 delivered and verified on all three managed hosts; existing sidebar/configuration retained",
+    "rollout_order": [
+      "Starship",
+      "Snap",
+      "Carbon"
+    ],
+    "summary": "SwayNC fork release 1/package 0.12.6-18 delivered to Carbon, Starship and Snap. Existing sidebar appearance retained; physical and human acceptance remains separate.",
+    "source_receipt_revision": "2c21bf23713c86599c348f61d38b972b92540415",
+    "historical_deployment": "data/history/setup-0.4.1.json",
+    "remaining_normal_use_checks": [
+      "OLED/application visual review",
+      "Real Wi-Fi credentials and wallet compatibility",
+      "Physical output and microphone",
+      "Real Bluetooth peripheral actions"
+    ],
+    "fresh_install_acceptance": false,
+    "fresh_install_acceptance_note": "Fresh reference checks are recorded independently under reference.",
+    "swaync_reset": {
+      "release_url": "https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-1",
+      "source_revision": "7e0ea67572a5c98412572c1ef3eb6920354fa1d6",
+      "recipe_revision": "8998ab49dc71e2c1353d5518cd8cd30191f41d18",
+      "canonical_package_sha256": "ad539bc1f6a1970d30455eb2370f47d6b50a8a8bda39dbb35adb35e3bb1bd15a",
+      "runtime_identity_compared_with": "3d4458262c23ac66820cbb7a63b171bab1053ae8",
+      "runtime_inputs_unchanged": [
+        "src/",
+        "data/",
+        "meson.build",
+        "meson_options.txt",
+        "man/"
+      ],
+      "hosts": {
+        "Starship": {
+          "status": "verified",
+          "package": "swaync-bryan 0.12.6-18",
+          "binary_sha256": "c05a004a11626b850bf9b54f4921db5b80ba535242851eb91350e3f0f53db29f",
+          "configuration_and_theme_preserved": true,
+          "other_user_services_preserved": true,
+          "canonical_selector_preserved": true,
+          "repeat_installer_no_restart": true
+        },
+        "Snap": {
+          "status": "verified",
+          "package": "swaync-bryan 0.12.6-18",
+          "binary_sha256": "f4fd17ee5549ac23b3b8867b1e7df5c5779520050fcaf56087f37e24f257f747",
+          "configuration_and_theme_preserved": true,
+          "other_user_services_preserved": true,
+          "canonical_selector_preserved": true,
+          "repeat_installer_no_restart": true
+        },
+        "Carbon": {
+          "status": "verified",
+          "package": "swaync-bryan 0.12.6-18",
+          "binary_sha256": "c05a004a11626b850bf9b54f4921db5b80ba535242851eb91350e3f0f53db29f",
+          "configuration_and_theme_preserved": true,
+          "other_user_services_preserved": true,
+          "canonical_selector_preserved": true,
+          "repeat_installer_no_restart": true
+        }
+      },
+      "physical_visual_acceptance": "not repeated"
+    }
+  },
+  "appearance": {
+    "profile": "neutral-slate",
+    "accent_variant": "clear-blue",
+    "accent": "#6eafff",
+    "focus": "#a6ceff",
+    "selection": "#294e75",
+    "desktop_variant": "crisper",
+    "terminal_variant": "balanced-plus",
+    "desktop_canvas": "#111213",
+    "desktop_surface": "#1b1d1f",
+    "terminal_background": "#000000",
+    "terminal_foreground": "#efefec",
+    "terminal_background_opacity": 1,
+    "schema_version": 2,
+    "workspace_background": "#000000",
+    "overview_background": "#111213",
+    "swaync_sidebar": {
+      "opacity": 0.75,
+      "layout": "full-height zero-margin",
+      "information_surface": "same fill and outline as notification cards"
+    }
+  },
+  "personal_policy": {
+    "display_off_minutes": 10,
+    "automatic_lock": false,
+    "battery_suspend_minutes": 30,
+    "ac_suspend": false,
+    "lock_before_suspend": false
+  },
+  "portals": {
+    "baseline": "gtk+wlr",
+    "file_chooser": "gtk",
+    "access": "gtk",
+    "settings": "gtk",
+    "notifications": "gtk",
+    "screencast": "wlr",
+    "screenshot": "wlr",
+    "secrets": "kwallet",
+    "capture_source_types": [
+      "monitor"
+    ],
+    "per_window_sharing": "outside selected baseline"
+  },
+  "utilities": {
+    "entry_point": "Mod+D",
+    "component_version": "0.4.3",
+    "entries": [
+      {
+        "id": "niri-plus-network.desktop",
+        "name": "Network",
+        "command": "desktop-network-menu"
+      },
+      {
+        "id": "niri-plus-audio.desktop",
+        "name": "Audio",
+        "command": "desktop-audio-menu"
+      },
+      {
+        "id": "niri-plus-bluetooth.desktop",
+        "name": "Bluetooth",
+        "command": "desktop-bluetooth-menu"
+      },
+      {
+        "id": "niri-plus-session.desktop",
+        "name": "Session",
+        "command": "desktop-session-menu"
+      }
+    ],
+    "advanced_tools": [
+      "nm-connection-editor",
+      "pavucontrol",
+      "bluetoothctl"
+    ],
+    "native_providers": [
+      "NetworkManager",
+      "PipeWire/PulseAudio",
+      "BlueZ"
+    ],
+    "new_startup_services": 0
+  },
+  "reference": {
+    "qualified_version": "0.4.3",
+    "qualified_at": "2026-11-08",
+    "status": "completed the numbered installation and 21 mapped routine native task groups through the independent fresh replay and supplemental checkpoint-copy checks; native VM suspend/resume check waived by user for this pass; optional and physical gates are separate",
+    "identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e",
+    "public_source_commit": "07cf4a393314c195ace7e66d162f21d3a2f73136",
+    "receipt": "docs/planning/reference-qualification-20261108.md",
+    "checkpoint": "niri-plus-qual-fresh-20261108",
+    "historical_full_reference": "docs/planning/black-workspace-receipt.md#fresh-arch-reference",
+    "physical_and_human_acceptance": "separate; unavailable VM hardware is not emulated as physical acceptance",
+    "qualification_scope": "Untouched installed Arch-base copy for the numbered 0.4.3/SwayNC18 route and mapped routine tasks, with separately recorded native notification-action and audio-default checks on a standalone copy of its stopped checkpoint. Excludes OS installation, accepted VM suspend recovery and controlled physical-device acceptance.",
+    "swaync_version": "0.12.6-18",
+    "swaync_pin_record": "tools/reference/swaync-pins.json",
+    "guide_revision": "40077f8dbd96b2aac4ab05e64cfe7a813e6353c6",
+    "historical_scoped_reference": "docs/planning/swaync-reference-sync-20261107.md",
+    "conditional_portal": {
+      "package": "xdg-desktop-portal-wlr 0.8.2-1.3",
+      "scope": "VirtIO/VirGL guest only, after bounded stock failure; keep working stock providers elsewhere",
+      "fresh_local_package_sha256": "1a5b8162ff3afad8f4b44786b99ac0efc682d47bf84e06c06d3a058a95bdc54f",
+      "stock_result": "Observer stopped ordinary uncapped 0.8.4-1 for memory growth; no advancing frames observed. An ended zero-frame track appeared after native Stop.",
+      "accepted_result": "Actual Wayland monitor capture and native Stop with exact node/link cleanup, warm and after full power-off/start."
+    },
+    "acceptance_holds": [],
+    "qualification_exceptions": [
+      {
+        "id": "vm-suspend-resume",
+        "status": "waived",
+        "authority": "Bryan, direct user request",
+        "recorded_utc": "2026-11-09T00:39:10.461710+00:00",
+        "scope": "Native suspend/resume graphical recovery in the disposable VirtIO/3D lab guests for this qualification pass only.",
+        "reason": "Bryan reports no corresponding issue in ordinary daily use and requests skipping this VM check.",
+        "observed_result": "Previous VM failures and inconclusive control remain recorded with all raw receipts; the check is waived, not passed.",
+        "physical_acceptance": "User daily-use report recorded separately; the controlled physical checklist remains pending.",
+        "reopen_when": "An actual daily-use incident is reported or Bryan explicitly requests a VM graphics investigation."
+      }
+    ],
+    "supplemented_at": "2026-11-09"
+  },
+  "historical_records": [
+    "data/history/setup-20261026.json",
+    "data/history/setup-0.4.1.json"
+  ]
+}

@@ -4,18 +4,23 @@ The bindings below describe my managed Niri desktop. Portable examples and
 component guides let you adopt the parts you want.
 
 The [component source map](components.md) distinguishes published components,
-the Arch reference and dated adoption evidence. Components 0.4.3, SwayNC
-0.12.6-18 and the black-workspace sidebar identity are delivered on Carbon,
-Starship and Snap through chezmoi, as recorded in the
-[managed-host delivery record](../data/setup.json). The numbered Arch install
-target now uses SwayNC 0.12.6-18 from fork release 1. The
+the Arch reference and dated adoption evidence. Components 0.4.3 and the
+black-workspace sidebar identity remain selected through chezmoi. The
+[managed-host record](../data/setup.json) reports the producer's 2026-11-14
+receipt: stable SwayNC 0.12.6-20 on Starship and Snap, with Carbon offline-pending.
+The current numbered Arch install target uses SwayNC 0.12.6-20 from
+[fork release 2](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-2).
+Its [release supplement](planning/swaync-reference-release2-20261114.md)
+records producer provenance and a native checkpoint-copy supplement passed on
+2026-11-15. The bounded pass is not a fresh OS or full 21-task replay. The
 [2026-11-08 qualification](planning/reference-qualification-20261108.md)
-completed the numbered installation and 21 mapped routine native task groups
-through an independent fresh replay and supplemental checkpoint-copy checks,
-with a conditional VirtIO sharing branch. The VM suspend/resume check is waived for this
-qualification; physical-device acceptance remains separate. Existing media retain their [package 17 receipt](planning/swaync-reference-sync-20261107.md)
-and capture dates.
-Earlier delivery records retain their historical context.
+completed 21 mapped routine native task groups for package 18 only, through an
+independent fresh replay and supplemental checkpoint-copy checks, with a
+conditional VirtIO sharing branch. Its VM suspend/resume check was waived for
+that pass; physical-device acceptance remains separate. Existing media retain
+their [package 17 receipt](planning/swaync-reference-sync-20261107.md) and
+capture dates. Earlier host evidence remains in the dated
+[package-18 delivery record](../data/history/setup-20261107.json).
 
 Published components 0.9.2 include the
 [optional unified session screen](recipes/session.md#optional-unified-session-screen).
@@ -100,12 +105,15 @@ fresh callback/startup and no-write repeat checks on 2026-10-29; its result
 remains in the [0.4.1 delivery history](../data/history/setup-0.4.1.json).
 Physical Wi-Fi/wallet, speaker/microphone and peripheral actions remain
 normal-use checks. The [Arch agent guide](setup-agent.md) now targets
-0.4.3/SwayNC 0.12.6-18. Its [2026-11-08 qualification](planning/reference-qualification-20261108.md)
+0.4.3/SwayNC 0.12.6-20; its bounded checkpoint-copy supplement passed native
+login, panel/DND, history retention, action and cold-boot checks. This did not
+repeat the full package-18 task replay or test suspend, physical devices or
+multiple outputs. The [2026-11-08 package-18 qualification](planning/reference-qualification-20261108.md)
 completed 21 mapped routine native task groups through the fresh replay and
 supplemental checkpoint-copy checks, including cold wallet lookup and the
-conditional VirtIO monitor-sharing branch.
-The VM suspend/resume check is waived at Bryan's request. This is separate
-from fleet delivery and physical-device acceptance; historical
+conditional VirtIO monitor-sharing branch. Its VM suspend/resume check was
+waived at Bryan's request. Those results remain separate from the package-20
+qualification, fleet delivery and physical-device acceptance; historical
 captures keep their original package 17 provenance.
 The [0.4.1 fresh-base receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
 records only the earlier guest tasks and documented VirtIO sharing branch.
@@ -129,12 +137,14 @@ records only the earlier guest tasks and documented VirtIO sharing branch.
 ## Working setup
 
 Crisper Neutral Slate, the pure-black workspace, Balanced+ terminal and the
-components 0.4.3/SwayNC 0.12.6-18 sidebar are delivered on Carbon, Starship and Snap.
-The sidebar uses a unified information surface and separate notification cards
-with 75% fill; chezmoi selects host layout and policy. Carbon's delivery completed
-on 2026-11-07. Exact installed checks, retained preimages and recovery artifacts
-stay in the private consumer receipts. This public sync changes the reference
-and showcase, with no new fleet deployment.
+components 0.4.3 sidebar are selected through chezmoi. The sidebar uses a unified
+information surface and separate notification cards with 75% fill; chezmoi
+selects host layout and policy. The Nov7 package-18 deployment is preserved in
+its dated [host record](../data/history/setup-20261107.json). The producer's
+Nov14 receipt records package 20 on Starship and Snap, while Carbon is
+offline-pending. Exact installed checks and recovery artifacts stay in the
+consumer receipts. This public sync updates the reference documentation; it
+does not perform a fleet deployment.
 
 The earlier black-workspace-only rollout changed Niri configuration and controls
 role metadata; its 23-target/no-write repeat results remain in

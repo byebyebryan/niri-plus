@@ -1,7 +1,7 @@
 {
-  "date": "2026-11-07",
-  "scope": "Core 0.4.3 install reference and maintained SwayNC fork release 1/package 0.12.6-18; dated release-17 fresh-Arch and media evidence retained separately",
-  "consumer_revision": "60ba363bec095035597af43244d3df44cdd27de7",
+  "date": "2026-11-14",
+  "scope": "Core 0.4.3 install reference and maintained SwayNC fork release 2/package 0.12.6-20; package-18 qualification and earlier host evidence retained separately; package-20 checkpoint-copy supplement qualified 2026-11-15",
+  "consumer_revision": "3146eee089db444c76a5a1ed2d12abed85900e61",
   "producer_revision": "07cf4a393314c195ace7e66d162f21d3a2f73136",
   "component_version": "0.4.3",
   "canonical_identity_sha256": "c4d61361a61dcd900e23c07d01f02ebe6b326529ccd144e86c7460d672ea1e5e",
@@ -15,25 +15,28 @@
   "notifier": "SwayNC fork",
   "locker": "Gtklock",
   "swaync": {
-    "recipe_revision": "8998ab49dc71e2c1353d5518cd8cd30191f41d18",
-    "recipe_archive_sha256": "577103af2aa99d158416008430f54eb761f578e9c0401395528224c690e1494a",
-    "source_revision": "7e0ea67572a5c98412572c1ef3eb6920354fa1d6",
-    "source_archive_sha256": "aa54161e698a434f8b1b624b1cdbdc214d2516e56a708e31217dce4ccb413408",
+    "recipe_revision": "d2a4bc709b7ea77567ca50fac9b1001088f90815",
+    "recipe_archive_sha256": "ffcd5dbc373e062a82ec0daee3be5ae35385bfb1e73c0569c141801ca848ab0c",
+    "source_revision": "96a2a9c4574e26fc6d6839a0e19d506a7638898e",
+    "source_archive_sha256": "68f1cfa73eb79e344589fb2b1d62d04bb282034910f6118e366a979c5c256658",
     "package": "swaync-bryan",
-    "version": "0.12.6-18",
-    "release_tag": "niri-plus-1"
+    "version": "0.12.6-20",
+    "release_tag": "niri-plus-2",
+    "release_url": "https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-2"
   },
   "chezmoi_source_visibility": "private",
   "deployment": {
-    "status": "SwayNC fork release 1/package 18 delivered and verified on all three managed hosts; existing sidebar/configuration retained",
+    "status": "The 2026-11-14 producer receipt verifies stable package 20 on Starship and Snap; Carbon was offline-pending. The Niri Plus package-20 checkpoint-copy supplement passed on 2026-11-15; full fresh-reference acceptance remains separate.",
     "rollout_order": [
       "Starship",
-      "Snap",
+      "Snap"
+    ],
+    "pending_hosts": [
       "Carbon"
     ],
-    "summary": "SwayNC fork release 1/package 0.12.6-18 delivered to Carbon, Starship and Snap. Existing sidebar appearance retained; physical and human acceptance remains separate.",
-    "source_receipt_revision": "2c21bf23713c86599c348f61d38b972b92540415",
-    "historical_deployment": "data/history/setup-0.4.1.json",
+    "summary": "The 2026-11-14 producer receipt records stable SwayNC 0.12.6-20 on Starship and Snap; Carbon was offline-pending. A package-20 native checkpoint-copy supplement passed on 2026-11-15; full fresh-reference and physical acceptance remain separate.",
+    "source_receipt_revision": "4cafaebe306453e1fbb8fbd7483db7b060bedf48",
+    "historical_deployment": "data/history/setup-20261107.json",
     "remaining_normal_use_checks": [
       "OLED/application visual review",
       "Real Wi-Fi credentials and wallet compatibility",
@@ -41,51 +44,7 @@
       "Real Bluetooth peripheral actions"
     ],
     "fresh_install_acceptance": false,
-    "fresh_install_acceptance_note": "Fresh reference checks are recorded independently under reference.",
-    "swaync_reset": {
-      "release_url": "https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-1",
-      "source_revision": "7e0ea67572a5c98412572c1ef3eb6920354fa1d6",
-      "recipe_revision": "8998ab49dc71e2c1353d5518cd8cd30191f41d18",
-      "canonical_package_sha256": "ad539bc1f6a1970d30455eb2370f47d6b50a8a8bda39dbb35adb35e3bb1bd15a",
-      "runtime_identity_compared_with": "3d4458262c23ac66820cbb7a63b171bab1053ae8",
-      "runtime_inputs_unchanged": [
-        "src/",
-        "data/",
-        "meson.build",
-        "meson_options.txt",
-        "man/"
-      ],
-      "hosts": {
-        "Starship": {
-          "status": "verified",
-          "package": "swaync-bryan 0.12.6-18",
-          "binary_sha256": "c05a004a11626b850bf9b54f4921db5b80ba535242851eb91350e3f0f53db29f",
-          "configuration_and_theme_preserved": true,
-          "other_user_services_preserved": true,
-          "canonical_selector_preserved": true,
-          "repeat_installer_no_restart": true
-        },
-        "Snap": {
-          "status": "verified",
-          "package": "swaync-bryan 0.12.6-18",
-          "binary_sha256": "f4fd17ee5549ac23b3b8867b1e7df5c5779520050fcaf56087f37e24f257f747",
-          "configuration_and_theme_preserved": true,
-          "other_user_services_preserved": true,
-          "canonical_selector_preserved": true,
-          "repeat_installer_no_restart": true
-        },
-        "Carbon": {
-          "status": "verified",
-          "package": "swaync-bryan 0.12.6-18",
-          "binary_sha256": "c05a004a11626b850bf9b54f4921db5b80ba535242851eb91350e3f0f53db29f",
-          "configuration_and_theme_preserved": true,
-          "other_user_services_preserved": true,
-          "canonical_selector_preserved": true,
-          "repeat_installer_no_restart": true
-        }
-      },
-      "physical_visual_acceptance": "not repeated"
-    }
+    "fresh_install_acceptance_note": "The 2026-11-08 package-18 qualification remains historical. The package-20 checkpoint-copy supplement passed on 2026-11-15; it is not a fresh OS or full 21-task replay, and suspend, physical and multi-output acceptance remain separate."
   },
   "appearance": {
     "profile": "neutral-slate",
@@ -179,7 +138,7 @@
     "physical_and_human_acceptance": "separate; unavailable VM hardware is not emulated as physical acceptance",
     "qualification_scope": "Untouched installed Arch-base copy for the numbered 0.4.3/SwayNC18 route and mapped routine tasks, with separately recorded native notification-action and audio-default checks on a standalone copy of its stopped checkpoint. Excludes OS installation, accepted VM suspend recovery and controlled physical-device acceptance.",
     "swaync_version": "0.12.6-18",
-    "swaync_pin_record": "tools/reference/swaync-pins.json",
+    "swaync_pin_record": "tools/reference/history/swaync-pins-0.12.6-18.json",
     "guide_revision": "40077f8dbd96b2aac4ab05e64cfe7a813e6353c6",
     "historical_scoped_reference": "docs/planning/swaync-reference-sync-20261107.md",
     "conditional_portal": {
@@ -205,8 +164,23 @@
     ],
     "supplemented_at": "2026-11-09"
   },
+  "current_reference_route": {
+    "prepared_at": "2026-11-14",
+    "status": "qualified checkpoint-copy supplement",
+    "qualified_at": "2026-11-15T08:44:29.933481+00:00",
+    "components_version": "0.4.3",
+    "swaync_version": "0.12.6-20",
+    "swaync_pin_record": "tools/reference/history/swaync-pins-0.12.6-20.json",
+    "receipt": "docs/planning/swaync-reference-release2-20261114.md",
+    "producer_release": "niri-plus-2",
+    "producer_source_revision": "96a2a9c4574e26fc6d6839a0e19d506a7638898e",
+    "producer_recipe_revision": "d2a4bc709b7ea77567ca50fac9b1001088f90815",
+    "qualification_scope": "Native package-20 build/install, SDDM login, Mod+N panel and DND, default and overridden history retention, live popup action, and cold power-cycle/login on a standalone stopped copy of the accepted package-18 core.",
+    "qualification_boundary": "This is not a fresh OS or full 21-task replay. The prior 21 task groups and waived VM suspend/resume check remain package-18 evidence; package-20 suspend, physical-device and multi-output checks are separate."
+  },
   "historical_records": [
     "data/history/setup-20261026.json",
-    "data/history/setup-0.4.1.json"
+    "data/history/setup-0.4.1.json",
+    "data/history/setup-20261107.json"
   ]
 }

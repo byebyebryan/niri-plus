@@ -14,14 +14,22 @@ checkout exports can belong to later optional releases; they do not change the
 numbered reference selection.
 See the [release and installation recipe](recipes/rofi-controls.md) and
 [implementation receipt](planning/rofi-controls-implementation-receipt.md).
-Components 0.4.3 and SwayNC 0.12.6-18 are delivered through chezmoi on Carbon,
-Starship and Snap, as recorded in the separate
-[managed-host delivery record](../data/setup.json). The numbered Arch install
-target now uses package 0.12.6-18 from fork release 1. The scoped fresh-Arch
-checks and native captures remain package 17 evidence. Package 18 retains
-package 17's byte-identical runtime paths (`src/`, `data/`, `meson.build`,
-unchanged `meson_options.txt`, `man/`); the pin reset is not a new full
-fresh-Arch or physical replay. See the [dated sync receipt](planning/swaync-reference-sync-20261107.md).
+Components 0.4.3 and the SwayNC fork are selected through chezmoi on each
+managed host. The [2026-11-07 delivery record](../data/history/setup-20261107.json)
+documents package 18 on Carbon, Starship and Snap. The producer's
+[2026-11-14 receipt](../data/setup.json) records stable package 20 on Starship
+and Snap, with Carbon offline-pending. The current numbered Arch install target
+uses package 0.12.6-20 from fork release 2. Its bounded native checkpoint-copy
+supplement passed on 2026-11-15, with a separate boundary from fresh-Arch
+acceptance, in the [release-2 supplement](planning/swaync-reference-release2-20261114.md).
+The scoped fresh-Arch checks and native captures remain package 17 evidence.
+Package 18 retained package 17's byte-identical runtime paths (`src/`, `data/`,
+`meson.build`, unchanged `meson_options.txt`, `man/`); that 17→18 pin reset was
+not a new full fresh-Arch or physical replay. Package 20 adds configurable
+history retention and passed a bounded checkpoint-copy qualification; it does
+not repeat the full package-18 replay.
+See the [package-17 sync receipt](planning/swaync-reference-sync-20261107.md)
+and [package-20 supplement](planning/swaync-reference-release2-20261114.md).
 The completed
 [0.4.1 replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
 and historical [0.4.1 setup guide](https://github.com/byebyebryan/niri-plus/blob/4672016e7cfe4f4631b67209636b0720e9068784/docs/setup-agent.md)
@@ -87,9 +95,11 @@ The [0.4.3 SwayNC maintenance backport](https://github.com/byebyebryan/niri-plus
 adds an opt-in translucent sidebar with matching information and notification
 cards. Only the appearance renderer and identity validator change among its
 44 runtime payloads; all other 42 match 0.4.2. Its independently pinned identity
-and host layout select the new appearance. The numbered Arch install now selects
-this tuple with the authored 0.12.6-18 SwayNC profile. Host delivery and
-fresh-Arch acceptance remain separate evidence.
+and host layout select the new appearance. The numbered Arch install selects
+this tuple with the unchanged authored SwayNC profile on package 0.12.6-20.
+Package 20 passed a bounded native checkpoint-copy supplement, separate from
+the package-18 replay and the producer's partial host receipt. Fresh-OS, VM
+suspend and physical/multi-output acceptance remain separate.
 
 The [release catalog](../data/component-releases.json) records immutable
 published tuples independently of the installation reference and recordings.

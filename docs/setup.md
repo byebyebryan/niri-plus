@@ -29,9 +29,12 @@ report what it verified. For one component, use a [focused recipe](setup-agent.m
   whole-monitor sharing.
 
 The numbered Arch install target selects components 0.4.3 with SwayNC
-0.12.6-18 from fork release 1. Its authored reference profile selects the unified
-information panel at width 448, full height, with zero margins, individual
-notifications, a bold clock and inline Do Not Disturb control.
+0.12.6-20 from [fork release 2](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-2).
+Its authored reference profile selects the unified information panel at width
+448, full height, with zero margins, individual notifications, a bold clock and
+inline Do Not Disturb control. Its bounded native checkpoint-copy supplement
+passed on 2026-11-15; it is not a fresh OS or full 21-task replay. See the
+[release supplement](planning/swaync-reference-release2-20261114.md).
 Managed-host rollout evidence remains separate in
 [setup status](../data/setup.json).
 
@@ -92,19 +95,21 @@ keep manual locking independent of idle-policy reloads.
 ## What has been checked
 
 The [2026-11-08 qualification](planning/reference-qualification-20261108.md)
-completed the numbered 0.4.3/SwayNC 0.12.6-18 route and 21 mapped routine
-native task groups through an independent fresh replay and supplemental
-checkpoint-copy checks. These include ordinary browser
-and terminal first runs, files/media, controls, clipboard, lock/idle, scratch
-storage, Pinyin at two scales, cold wallet lookup and session lifecycle.
-Whole-monitor sharing required the documented conditional VirtIO portal
-candidate; warm and cold captures advanced frames and native Stop released
-their exact capture graph.
+completed 21 mapped routine native task groups for the numbered 0.4.3/SwayNC
+0.12.6-18 route through an independent fresh replay and supplemental
+checkpoint-copy checks. These include ordinary browser and terminal first runs,
+files/media, controls, clipboard, lock/idle, scratch storage, Pinyin at two
+scales, cold wallet lookup and session lifecycle. Whole-monitor sharing
+required the documented conditional VirtIO portal candidate; warm and cold
+captures advanced frames and native Stop released their exact capture graph.
+These are historical package-18 results; they do not qualify package 20.
 
-The VM suspend/resume check is waived for this qualification at Bryan's
-request. Its failed observations remain in the receipt. Bryan reports no
-corresponding issue in ordinary daily use; that report is separate from a
-controlled physical acceptance test.
+The package-20 checkpoint-copy supplement passed SDDM login, panel/DND,
+default and overridden retention, a live notification action and a cold
+power-cycle/login. It did not repeat the package-18 21-task replay. Package-20
+suspend was not tested. The package-18 VM suspend/resume waiver and its failed
+observations remain specific to that earlier pass. Physical and multi-output
+acceptance remain separate.
 
 This starts from an installed Arch base and does not qualify OS installation or
 physical devices. The receipt keeps a separate human checklist. Optional Away,

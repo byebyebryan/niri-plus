@@ -32,15 +32,19 @@ add another automatic idle or suspend policy.
 | Login and outputs | SDDM, Kanshi | Display-manager login theme and independent monitor profiles. |
 | Portals and input | xdg-desktop-portal, Fcitx5, Niri input | File/screen integration, input methods, and compositor-owned keyboard/touchpad behavior. |
 
-The numbered Arch install target selects components 0.4.3, SwayNC 0.12.6-18
-from fork release 1 and an authored profile for the unified full-height
-information panel. The [2026-11-08 qualification](planning/reference-qualification-20261108.md)
-completed 21 mapped routine native task groups through an independent fresh
-replay and supplemental checkpoint-copy checks, including cold wallet lookup
-and the conditional VirtIO monitor-sharing branch.
-Existing captures retain their [package 17 evidence](planning/swaync-reference-sync-20261107.md)
-and original dates. The VM suspend/resume check is waived for this qualification;
-physical-device acceptance remains separate.
+The current numbered Arch install target selects components 0.4.3,
+SwayNC 0.12.6-20 from [fork release 2](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-2),
+and the authored profile for the unified full-height information panel. The
+[2026-11-14 supplement](planning/swaync-reference-release2-20261114.md) records
+the release provenance and a native checkpoint-copy supplement completed on
+2026-11-15. It covers login, panel/DND, retention, actions and cold boot, but is
+not a fresh OS or full 21-task replay. The
+[2026-11-08 qualification](planning/reference-qualification-20261108.md)
+completed 21 mapped routine native task groups for package 18 only, through an
+independent fresh replay and supplemental checkpoint-copy checks. Its VM
+suspend/resume waiver remains specific to that pass; physical-device acceptance
+is separate. Existing captures retain their [package 17 evidence](planning/swaync-reference-sync-20261107.md)
+and original dates.
 Managed-host delivery remains separately recorded in the
 [rollout record](../data/setup.json). The earlier full reference replay and
 physical acceptance retain their own evidence. Away, the session screen and

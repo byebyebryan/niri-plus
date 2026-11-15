@@ -9,14 +9,15 @@ desktop and its choices.
 Agents: follow the numbered stages in order and open each linked recipe before
 applying its part.
 
-**Arch reference install target: components 0.4.3 and SwayNC 0.12.6-18
-from fork release 1.** It includes direct Network, Audio and Bluetooth
-controls, a pure-black workspace, the selected Neutral Slate appearance and the
-unified full-height information panel. Its authored profile uses width 448,
-zero margins, ungrouped notifications, a bold clock and inline Do Not Disturb
-control.
-The fresh-Arch installation and routine-task qualification is described under
-[verified scope](#execution-contract) and in the dated receipt. The previous
+**Arch reference install target: components 0.4.3 and SwayNC 0.12.6-20
+(`swaync-bryan`) from [fork release 2](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-2).**
+It includes direct Network, Audio and Bluetooth controls, a pure-black
+workspace, the selected Neutral Slate appearance and the unified full-height
+information panel. Its authored profile uses width 448, zero margins, ungrouped
+notifications, a bold clock and inline Do Not Disturb control. The primary
+native checkpoint-copy supplement for this current package-20 route passed on
+2026-11-15; it is not a fresh OS or full 21-task replay. See the
+[release supplement](planning/swaync-reference-release2-20261114.md). The prior
 [0.4.1 guide at source revision 4672016](https://github.com/byebyebryan/niri-plus/blob/4672016e7cfe4f4631b67209636b0720e9068784/docs/setup-agent.md)
 and its [dated replay receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
 remain historical.
@@ -110,16 +111,20 @@ recipe](recipes/notifications.md); fetched Zsh dependencies include their own
 fonts, GTK themes, and icon themes remain governed by their upstream terms and
 package notices; Chrome presents its own terms on first run.
 
-> **Verified scope:** the numbered 0.4.3/SwayNC 0.12.6-18 route and 21 mapped
-> routine native task groups completed through the independent fresh replay
-> starting on 2026-11-08 from an untouched installed Arch base, with later
+> **Historical verified scope:** the numbered 0.4.3/SwayNC 0.12.6-18 route and
+> 21 mapped routine native task groups completed through the independent fresh
+> replay starting on 2026-11-08 from an untouched installed Arch base, with later
 > checkpoint-copy supplements recorded separately. Cold wallet lookup and
 > warm/cold monitor sharing passed; sharing used the documented conditional
-> VirtIO portal candidate after a bounded stock failure.
-> The [dated qualification](planning/reference-qualification-20261108.md)
-> records exact inputs, evidence limits and the separate physical-host checklist.
-> The VM suspend/resume check is waived at Bryan's request, with its failed
-> observations retained. Optional extensions remain independent. Historical media and the earlier
+> VirtIO portal candidate after a bounded stock failure. This evidence does not
+> qualify the current package-20 route. The [dated qualification](planning/reference-qualification-20261108.md)
+> records the exact package-18 inputs, evidence limits and separate physical-host
+> checklist. Its VM suspend/resume check is waived at Bryan's request, with its
+> failed observations retained. Package 20 has a separate native checkpoint-copy
+> supplement covering login, panel/DND, retention, actions and cold boot. It does
+> not extend the package-18 replay or qualify suspend, physical devices or
+> multi-output behavior; see the [release supplement](planning/swaync-reference-release2-20261114.md).
+> Optional extensions remain independent. Historical media and the earlier
 > 0.4.1/package 17 receipts retain their dates. Recheck every task on a new target.
 
 ## 1. Prepare the account and record the starting state
@@ -712,11 +717,15 @@ final running/stopped state. State whether the requested scope is complete or
 which required task is unresolved. Do not push, publish or extend to other
 hosts unless that was part of the user's request.
 
-The [current qualification](planning/reference-qualification-20261108.md)
+The [package-18 qualification](planning/reference-qualification-20261108.md)
 records the numbered 0.4.3/SwayNC18 installation, 21 mapped routine tasks and the
-user-waived VM suspend/resume check, alongside its
-conditional VirtIO branch. The [earlier sync](planning/swaync-reference-sync-20261107.md)
-retains scoped package 17 checks and their native captures. The dated
+user-waived VM suspend/resume check, alongside its conditional VirtIO branch.
+The package-20 route has a separate qualified checkpoint-copy supplement in
+the [release supplement](planning/swaync-reference-release2-20261114.md); it is
+not a fresh OS or full 21-task replay. Package-20 suspend, physical-device and
+multi-output checks remain separate. The
+[earlier sync](planning/swaync-reference-sync-20261107.md) retains scoped package
+17 checks and their native captures. The dated
 [0.4.1 installation receipt](planning/black-workspace-receipt.md#fresh-arch-reference)
 retains the earlier fresh-base run, its guide amendments and repeated gates.
 Physical-host and human acceptance remain separate.

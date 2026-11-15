@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/byebyebryan/SwayNotificationCenter",
+  "recipe_revision": "8998ab49dc71e2c1353d5518cd8cd30191f41d18",
+  "recipe_archive_sha256": "577103af2aa99d158416008430f54eb761f578e9c0401395528224c690e1494a",
+  "source_revision": "7e0ea67572a5c98412572c1ef3eb6920354fa1d6",
+  "source_archive_sha256": "aa54161e698a434f8b1b624b1cdbdc214d2516e56a708e31217dce4ccb413408",
+  "package": "swaync-bryan",
+  "version": "0.12.6-18"
+}

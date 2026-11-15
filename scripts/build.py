@@ -110,10 +110,13 @@ PUBLIC_TOOLS = {
 PUBLIC_LOCAL_DOCS = {
     "docs/planning/reference-qualification-20261108.md",
     "docs/planning/swaync-reference-sync-20261107.md",
+    "docs/planning/swaync-reference-release2-20261114.md",
     "tools/reference/history/inputs-0.4.1.json",
     "tools/reference/history/notifications-0.4.1.json",
     "tools/reference/swaync-pins.json",
     "tools/reference/history/swaync-pins-0.12.6-17.json",
+    "tools/reference/history/swaync-pins-0.12.6-18.json",
+    "tools/reference/history/swaync-pins-0.12.6-20.json",
     "LICENSE",
     "docs/planning/arch-installation-receipt.md",
     "docs/planning/components-0.3.1-receipt.md",
@@ -768,7 +771,7 @@ def public_files():
     provenance = json.loads((ROOT / "assets/provenance.json").read_text())["desktop_demos"]
     captures = [provenance["source_versions"], *(clip["source_versions"] for clip in provenance["clips"] if "source_versions" in clip)]
     retained_identities = {item["identity"]["path"] for item in captures}
-    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/history/setup-20261026.json", "data/history/components-0.3.1.json", "data/components.json", "data/component-releases.json", "data/history/components-0.4.1.json", "data/history/setup-0.4.1.json", "examples/manifest.json"} | retained_identities | examples | FONT_ASSETS | GENERATED
+    return {"assets/" + x for x in ASSETS} | DEMO_ASSETS | PUBLIC_LOCAL_DOCS | {"data/setup.json", "data/history/setup-20261026.json", "data/history/components-0.3.1.json", "data/components.json", "data/component-releases.json", "data/history/components-0.4.1.json", "data/history/setup-0.4.1.json", "data/history/setup-20261107.json", "examples/manifest.json"} | retained_identities | examples | FONT_ASSETS | GENERATED
 
 
 def validate_identity_associations(records):

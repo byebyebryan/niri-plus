@@ -35,8 +35,8 @@ profile is a separate reviewed input from that guide checkout.
 | SwayNC | `swaync-bryan 0.12.6-18`, source `7e0ea67572a5c98412572c1ef3eb6920354fa1d6` |
 | SwayNC recipe | `8998ab49dc71e2c1353d5518cd8cd30191f41d18` |
 
-The [SwayNC pin](../../tools/reference/swaync-pins.json) also records the recipe
-and source archive hashes. The development guest built the package through
+The [preserved package-18 SwayNC pin](../../tools/reference/history/swaync-pins-0.12.6-18.json)
+records the recipe and source archive hashes. The development guest built the package through
 ordinary `makepkg`; its local package SHA-256 is
 `7e73e7101e7e0ca2f80941cda71488e9368f8a5fb34cb0c0e53a0a439aac92a9`.
 That hash identifies this guest build, not the separately released package.

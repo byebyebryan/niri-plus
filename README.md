@@ -36,16 +36,21 @@ Published components 0.9.2 include an opt-in
 [unified session screen](docs/recipes/session.md#optional-unified-session-screen).
 Ctrl+Alt+Delete opens the action grid only when its portable profile is selected;
 the published release catalog and numbered reference remain separate. The
-current 0.4.3 Arch install target selects SwayNC 0.12.6-18 from fork release 1.
-The [2026-11-08 qualification](docs/planning/reference-qualification-20261108.md)
-completed 21 mapped routine native task groups through an independent fresh
-replay and supplemental checkpoint-copy checks, including cold wallet lookup
-and the conditional VirtIO monitor-sharing branch.
-The VM suspend/resume check is waived for this qualification at Bryan's request.
-Physical-device acceptance remains separate. Existing captures retain their
-original package 17 provenance; the earlier 0.4.1 replay remains historical.
+current 0.4.3 Arch install target selects SwayNC 0.12.6-20 from
+[fork release 2](https://github.com/byebyebryan/SwayNotificationCenter/releases/tag/niri-plus-2).
+Its [2026-11-14 supplement](docs/planning/swaync-reference-release2-20261114.md)
+records producer provenance and a native checkpoint-copy supplement completed
+on 2026-11-15. It covers login, panel/DND, retention, actions and cold boot; it
+is not a fresh OS or full 21-task replay. The
+[2026-11-08 qualification](docs/planning/reference-qualification-20261108.md)
+completed 21 mapped routine native task groups for package 18 only, through an
+independent fresh replay and supplemental checkpoint-copy checks, including
+cold wallet lookup and the conditional VirtIO monitor-sharing branch. Its VM
+suspend/resume check was waived for that pass; physical-device acceptance
+remains separate. Existing captures retain their original package 17
+provenance; the earlier 0.4.1 replay remains historical.
 Managed-host rollout is recorded separately in [setup status](data/setup.json)
-([dated receipt](docs/planning/swaync-reference-sync-20261107.md)). The
+([release-2 supplement](docs/planning/swaync-reference-release2-20261114.md)). The
 previous 0.4.1 setup guide remains available at
 [source revision 4672016](https://github.com/byebyebryan/niri-plus/blob/4672016e7cfe4f4631b67209636b0720e9068784/docs/setup-agent.md).
 

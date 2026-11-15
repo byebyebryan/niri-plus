@@ -70,7 +70,7 @@
     "physical_and_human_acceptance": "separate; unavailable VM hardware is not emulated as physical acceptance",
     "qualification_scope": "Untouched installed Arch-base copy for the numbered 0.4.3/SwayNC18 route and mapped routine tasks, with separately recorded native notification-action and audio-default checks on a standalone copy of its stopped checkpoint. Excludes OS installation, accepted VM suspend recovery and controlled physical-device acceptance.",
     "swaync_version": "0.12.6-18",
-    "swaync_pin_record": "tools/reference/swaync-pins.json",
+    "swaync_pin_record": "tools/reference/history/swaync-pins-0.12.6-18.json",
     "guide_revision": "40077f8dbd96b2aac4ab05e64cfe7a813e6353c6",
     "historical_scoped_reference": "docs/planning/swaync-reference-sync-20261107.md",
     "conditional_portal": {
@@ -95,6 +95,20 @@
       }
     ],
     "supplemented_at": "2026-11-09"
+  },
+  "current_reference_route": {
+    "prepared_at": "2026-11-14",
+    "status": "qualified checkpoint-copy supplement",
+    "qualified_at": "2026-11-15T08:44:29.933481+00:00",
+    "components_version": "0.4.3",
+    "swaync_version": "0.12.6-20",
+    "swaync_pin_record": "tools/reference/history/swaync-pins-0.12.6-20.json",
+    "receipt": "docs/planning/swaync-reference-release2-20261114.md",
+    "producer_release": "niri-plus-2",
+    "producer_source_revision": "96a2a9c4574e26fc6d6839a0e19d506a7638898e",
+    "producer_recipe_revision": "d2a4bc709b7ea77567ca50fac9b1001088f90815",
+    "qualification_scope": "Native package-20 build/install, SDDM login, Mod+N panel and DND, default and overridden history retention, live popup action, and cold power-cycle/login on a standalone stopped copy of the accepted package-18 core.",
+    "qualification_boundary": "This is not a fresh OS or full 21-task replay. Package-18 task groups and its VM suspend/resume waiver remain historical; package-20 suspend, physical-device and multi-output checks are separate."
   },
   "independent_selections": {
     "code_bundle": "The consumer pins one immutable archive and manifest; module admission is selected separately by host.",
